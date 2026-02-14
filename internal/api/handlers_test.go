@@ -10,7 +10,6 @@ import (
 	"testing"
 	"time"
 	"updater/internal/models"
-	"updater/internal/update"
 
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
@@ -87,7 +86,7 @@ func TestHandlers_CheckForUpdates_Success(t *testing.T) {
 	assert.Equal(t, "application/json", recorder.Header().Get("Content-Type"))
 
 	var response models.UpdateCheckResponse
-	err = json.Unmarshal(recorder.Body.Bytes(), &response)
+	err := json.Unmarshal(recorder.Body.Bytes(), &response)
 	require.NoError(t, err)
 
 	assert.Equal(t, expectedResponse.UpdateAvailable, response.UpdateAvailable)
@@ -231,8 +230,21 @@ func TestHandlers_ListReleases_Success(t *testing.T) {
 		},
 	}
 
+	// Convert releases to ReleaseInfo format for expected response
+	releaseInfos := make([]models.ReleaseInfo, len(releases))
+	for i, r := range releases {
+		releaseInfos[i] = models.ReleaseInfo{
+			ID:           r.ID,
+			Version:      r.Version,
+			Platform:     r.Platform,
+			Architecture: r.Architecture,
+			DownloadURL:  r.DownloadURL,
+			ReleaseDate:  r.ReleaseDate,
+		}
+	}
+
 	expectedResponse := &models.ListReleasesResponse{
-		Releases:   releases,
+		Releases:   releaseInfos,
 		TotalCount: 2,
 		Page:       1,
 		PageSize:   10,
@@ -279,8 +291,21 @@ func TestHandlers_ListReleases_WithPagination(t *testing.T) {
 		},
 	}
 
+	// Convert releases to ReleaseInfo format for expected response
+	releaseInfos2 := make([]models.ReleaseInfo, len(releases))
+	for i, r := range releases {
+		releaseInfos2[i] = models.ReleaseInfo{
+			ID:           r.ID,
+			Version:      r.Version,
+			Platform:     r.Platform,
+			Architecture: r.Architecture,
+			DownloadURL:  r.DownloadURL,
+			ReleaseDate:  r.ReleaseDate,
+		}
+	}
+
 	expectedResponse := &models.ListReleasesResponse{
-		Releases:   releases,
+		Releases:   releaseInfos2,
 		TotalCount: 5, // Total available
 		Page:       2, // (offset/limit) + 1 = (1/1) + 1 = 2
 		PageSize:   1,
@@ -475,8 +500,7 @@ func TestHandlers_ParseQueryParams(t *testing.T) {
 		},
 	}
 
-	mockService := &MockUpdateService{}
-	handlers := NewHandlers(mockService)
+	// This test focuses on query parameter parsing logic
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
