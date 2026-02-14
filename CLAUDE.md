@@ -144,5 +144,5 @@ The service follows a layered architecture:
 - ALWAYS: Consider security when designing and implementing.
 - ALWAYS: Write unit tests for the code.
 - ALWAYS: Write docs to go with the code.
-- ALWAYS: Use mermaid for diagrams in docs.
+- ALWAYS: Use mermaid for diagrams in docs, except for directory structures.
 - NEVER: Use emojis.

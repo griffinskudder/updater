@@ -57,21 +57,46 @@ Comprehensive documentation of all data models, organized by component:
 
 ## Architecture Overview
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    API Layer (Planned)                      │
-├─────────────────────────────────────────────────────────────┤
-│                 Business Logic (Planned)                    │
-├─────────────────────────────────────────────────────────────┤
-│ Models Layer (COMPLETE)                                     │
-│ ┌─────────────┬─────────────┬─────────────┬─────────────────┤
-│ │   Version   │  Platform   │   Release   │       API       │
-│ │   Models    │   Models    │   Models    │     Models      │
-│ └─────────────┴─────────────┴─────────────┴─────────────────┤
-│                 Configuration Models                        │
-├─────────────────────────────────────────────────────────────┤
-│                Storage Layer (Planned)                      │
-└─────────────────────────────────────────────────────────────┘
+```mermaid
+graph TB
+    subgraph "API Layer (Planned)"
+        api[HTTP Handlers & Routing]
+    end
+
+    subgraph "Business Logic (Planned)"
+        logic[Update Determination & Version Comparison]
+    end
+
+    subgraph "Models Layer (COMPLETE)"
+        subgraph "Core Models"
+            version[Version Models]
+            platform[Platform Models]
+            release[Release Models]
+            apimodels[API Models]
+        end
+        config[Configuration Models]
+    end
+
+    subgraph "Storage Layer (Planned)"
+        storage[Data Persistence & Retrieval]
+    end
+
+    api --> logic
+    logic --> version
+    logic --> platform
+    logic --> release
+    logic --> apimodels
+    logic --> config
+    version --> storage
+    platform --> storage
+    release --> storage
+    config --> storage
+
+    classDef complete fill:#4caf50,stroke:#2e7d32,color:#fff
+    classDef planned fill:#ff9800,stroke:#f57c00,color:#fff
+
+    class version,platform,release,apimodels,config complete
+    class api,logic,storage planned
 ```
 
 ## Core Principles
