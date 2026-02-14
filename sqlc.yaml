@@ -1,0 +1,27 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries: "internal/storage/sqlc/queries/postgres"
+    schema: "internal/storage/sqlc/schema/postgres"
+    gen:
+      go:
+        package: "sqlcpg"
+        out: "internal/storage/sqlc/postgres"
+        sql_package: "pgx/v5"
+        emit_json_tags: true
+        emit_prepared_queries: false
+        emit_interface: false
+        emit_exact_table_names: false
+        emit_empty_slices: true
+  - engine: "sqlite"
+    queries: "internal/storage/sqlc/queries/sqlite"
+    schema: "internal/storage/sqlc/schema/sqlite"
+    gen:
+      go:
+        package: "sqlcite"
+        out: "internal/storage/sqlc/sqlite"
+        emit_json_tags: true
+        emit_prepared_queries: false
+        emit_interface: false
+        emit_exact_table_names: false
+        emit_empty_slices: true

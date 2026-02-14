@@ -368,10 +368,10 @@ func TestNormalizeArchitecture(t *testing.T) {
 
 func TestPlatformInfo_Validate(t *testing.T) {
 	tests := []struct {
-		name        string
+		name         string
 		platformInfo PlatformInfo
-		expectError bool
-		errorMsg    string
+		expectError  bool
+		errorMsg     string
 	}{
 		{
 			name: "valid platform info",

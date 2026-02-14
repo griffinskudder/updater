@@ -1,0 +1,225 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: updater-service
+  namespace: updater
+  labels:
+    app: updater-service
+    version: v1
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: updater-service
+  template:
+    metadata:
+      labels:
+        app: updater-service
+        version: v1
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+    spec:
+      # Security Context for Pod
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+
+      containers:
+      - name: updater
+        image: your-registry/updater:latest
+        imagePullPolicy: Always
+
+        # Security Context for Container
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+          runAsNonRoot: true
+          runAsUser: 65532
+          runAsGroup: 65532
+
+        ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+
+        # Environment Variables
+        env:
+        - name: UPDATER_CONFIG_SECTION
+          value: "production"
+        - name: UPDATER_PORT
+          value: "8080"
+        - name: UPDATER_LOG_LEVEL
+          value: "info"
+
+        # Secrets from Kubernetes Secret
+        envFrom:
+        - secretRef:
+            name: updater-secrets
+
+        # Volume Mounts
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: data
+          mountPath: /app/data
+        - name: config
+          mountPath: /app/config.yaml
+          subPath: config.yaml
+          readOnly: true
+
+        # Resource Limits
+        resources:
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+
+        # Health Checks
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: http
+            scheme: HTTP
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 3
+          successThreshold: 1
+          failureThreshold: 3
+
+        # Startup Probe
+        startupProbe:
+          httpGet:
+            path: /health
+            port: http
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          successThreshold: 1
+          failureThreshold: 10
+
+      # Volumes
+      volumes:
+      - name: tmp
+        emptyDir:
+          sizeLimit: 10Mi
+      - name: data
+        emptyDir:
+          sizeLimit: 100Mi
+      - name: config
+        configMap:
+          name: updater-config
+
+      # Node Selection and Affinity
+      nodeSelector:
+        kubernetes.io/os: linux
+
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - updater-service
+              topologyKey: kubernetes.io/hostname
+
+      # Tolerations (if needed for specific node taints)
+      tolerations: []
+
+      # Service Account (if specific RBAC is needed)
+      serviceAccountName: updater-service
+
+      # Image Pull Secrets (for private registries)
+      imagePullSecrets:
+      - name: registry-secret
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: updater-service
+  namespace: updater
+  labels:
+    app: updater-service
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+    protocol: TCP
+  selector:
+    app: updater-service
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: updater-config
+  namespace: updater
+data:
+  config.yaml: |
+    server:
+      port: 8080
+      read_timeout: 30s
+      write_timeout: 30s
+
+    security:
+      enable_auth: true
+      rate_limit:
+        enabled: true
+        requests_per_minute: 60
+        requests_per_hour: 1000
+
+    storage:
+      type: json
+      path: /app/data/releases.json
+
+    logging:
+      level: info
+      format: json
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: updater-secrets
+  namespace: updater
+type: Opaque
+stringData:
+  PRODUCTION_ADMIN_API_KEY: "replace-with-secure-key"
+  PRODUCTION_RELEASE_API_KEY: "replace-with-secure-key"
+  PRODUCTION_MONITORING_API_KEY: "replace-with-secure-key"
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: updater-service
+  namespace: updater

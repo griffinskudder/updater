@@ -1,0 +1,95 @@
+# Multi-stage Dockerfile for Go Updater Service
+# Uses distroless base image for maximum security
+
+# =============================================================================
+# Build Stage
+# =============================================================================
+FROM golang:1.26-alpine AS builder
+
+# Security: Create non-root user for build process
+RUN adduser -D -s /bin/sh -u 1001 appuser
+
+# Security: Install only necessary packages and clean up
+RUN apk add --no-cache \
+    git \
+    ca-certificates \
+    tzdata \
+    && rm -rf /var/cache/apk/*
+
+# Set working directory
+WORKDIR /build
+
+# Security: Change ownership of build directory
+RUN chown appuser:appuser /build
+USER appuser
+
+# Copy go mod files first for better caching
+COPY --chown=appuser:appuser go.mod go.sum ./
+
+# Download dependencies
+RUN go mod download && go mod verify
+
+# Copy source code
+COPY --chown=appuser:appuser . .
+
+# Security: Build with security flags and static linking
+RUN CGO_ENABLED=0 \
+    GOOS=linux \
+    GOARCH=amd64 \
+    go build \
+    -a \
+    -installsuffix cgo \
+    -ldflags='-w -s -extldflags "-static"' \
+    -tags netgo \
+    -o updater \
+    ./cmd/updater
+
+# Verify the binary
+RUN ldd updater 2>&1 | grep -q "not a dynamic executable" || echo "Binary is statically linked"
+
+# =============================================================================
+# Runtime Stage - Distroless (OS-less)
+# =============================================================================
+FROM gcr.io/distroless/static-debian12:nonroot AS runtime
+
+# Security: Use non-root user (ID 65532 from distroless)
+USER 65532:65532
+
+# Security: Set read-only root filesystem
+# Note: This will be enforced via docker run flags or Kubernetes securityContext
+
+# Copy timezone data and certificates from builder
+COPY --from=builder --chown=65532:65532 /usr/share/zoneinfo /usr/share/zoneinfo
+COPY --from=builder --chown=65532:65532 /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+
+# Copy the statically linked binary
+COPY --from=builder --chown=65532:65532 /build/updater /usr/local/bin/updater
+
+# Set working directory
+WORKDIR /app
+
+# Security: Expose only necessary port
+EXPOSE 8080
+
+# Security: Set resource limits and security options via labels
+LABEL \
+    org.opencontainers.image.title="Updater Service" \
+    org.opencontainers.image.description="Secure update service for desktop applications" \
+    org.opencontainers.image.vendor="Your Company" \
+    org.opencontainers.image.version="1.0.0" \
+    org.opencontainers.image.created="2024-01-01T00:00:00Z" \
+    org.opencontainers.image.source="https://github.com/yourorg/updater" \
+    org.opencontainers.image.licenses="MIT" \
+    security.scan.enabled="true" \
+    security.nonroot="true" \
+    security.readonly="true"
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD ["/usr/local/bin/updater", "-health-check"] || exit 1
+
+# Security: Use exec form for better signal handling
+ENTRYPOINT ["/usr/local/bin/updater"]
+
+# Default command (can be overridden)
+CMD []

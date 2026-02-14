@@ -110,9 +110,10 @@ func (v *Version) String() string {
 // Compare compares two versions according to semantic versioning precedence rules.
 //
 // Returns:
-//   -1 if v < other
-//    0 if v == other
-//   +1 if v > other
+//
+//	-1 if v < other
+//	 0 if v == other
+//	+1 if v > other
 //
 // Comparison Logic:
 // 1. Major, minor, patch versions are compared numerically
@@ -121,9 +122,10 @@ func (v *Version) String() string {
 // 4. Build metadata is ignored in comparisons (per semver spec)
 //
 // Examples:
-//   1.0.0 > 0.9.9
-//   1.0.0 > 1.0.0-alpha
-//   1.0.0-beta > 1.0.0-alpha
+//
+//	1.0.0 > 0.9.9
+//	1.0.0 > 1.0.0-alpha
+//	1.0.0-beta > 1.0.0-alpha
 func (v *Version) Compare(other *Version) int {
 	if v.Major != other.Major {
 		return compareInt(v.Major, other.Major)

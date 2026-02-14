@@ -49,22 +49,22 @@ var SupportedChecksumTypes = []string{
 // - Extensible metadata for future needs (signatures, mirrors, etc.)
 // - Audit trail with creation and update timestamps
 type Release struct {
-	ID             string            `json:"id" validate:"required"`                // Unique release identifier (app-version-platform-arch)
-	ApplicationID  string            `json:"application_id" validate:"required"`    // Parent application identifier
-	Version        string            `json:"version" validate:"required"`           // Semantic version string
-	Platform       string            `json:"platform" validate:"required"`          // Target operating system
-	Architecture   string            `json:"architecture" validate:"required"`      // Target CPU architecture
-	DownloadURL    string            `json:"download_url" validate:"required,url"`  // External download location
-	Checksum       string            `json:"checksum" validate:"required"`          // Cryptographic hash for integrity
-	ChecksumType   string            `json:"checksum_type" validate:"required"`     // Hash algorithm (sha256, md5, sha1)
-	FileSize       int64             `json:"file_size" validate:"min=0"`            // File size in bytes
-	ReleaseNotes   string            `json:"release_notes"`                         // Human-readable change description
-	ReleaseDate    time.Time         `json:"release_date"`                          // Official release timestamp
-	Required       bool              `json:"required"`                              // Force update (security patches)
-	MinimumVersion string            `json:"minimum_version,omitempty"`             // Required current version for upgrade
-	Metadata       map[string]string `json:"metadata,omitempty"`                    // Extensible key-value metadata
-	CreatedAt      time.Time         `json:"created_at"`                            // Record creation timestamp
-	UpdatedAt      time.Time         `json:"updated_at"`                            // Last modification timestamp
+	ID             string            `json:"id" validate:"required"`               // Unique release identifier (app-version-platform-arch)
+	ApplicationID  string            `json:"application_id" validate:"required"`   // Parent application identifier
+	Version        string            `json:"version" validate:"required"`          // Semantic version string
+	Platform       string            `json:"platform" validate:"required"`         // Target operating system
+	Architecture   string            `json:"architecture" validate:"required"`     // Target CPU architecture
+	DownloadURL    string            `json:"download_url" validate:"required,url"` // External download location
+	Checksum       string            `json:"checksum" validate:"required"`         // Cryptographic hash for integrity
+	ChecksumType   string            `json:"checksum_type" validate:"required"`    // Hash algorithm (sha256, md5, sha1)
+	FileSize       int64             `json:"file_size" validate:"min=0"`           // File size in bytes
+	ReleaseNotes   string            `json:"release_notes"`                        // Human-readable change description
+	ReleaseDate    time.Time         `json:"release_date"`                         // Official release timestamp
+	Required       bool              `json:"required"`                             // Force update (security patches)
+	MinimumVersion string            `json:"minimum_version,omitempty"`            // Required current version for upgrade
+	Metadata       map[string]string `json:"metadata,omitempty"`                   // Extensible key-value metadata
+	CreatedAt      time.Time         `json:"created_at"`                           // Record creation timestamp
+	UpdatedAt      time.Time         `json:"updated_at"`                           // Last modification timestamp
 }
 
 // ReleaseFilter provides flexible querying and pagination for release lists.
@@ -293,11 +293,11 @@ func isValidChecksumType(checksumType string) bool {
 }
 
 type ReleaseStats struct {
-	TotalReleases    int       `json:"total_releases"`
-	LatestVersion    string    `json:"latest_version"`
+	TotalReleases     int       `json:"total_releases"`
+	LatestVersion     string    `json:"latest_version"`
 	LatestReleaseDate time.Time `json:"latest_release_date"`
-	PlatformCount    int       `json:"platform_count"`
-	RequiredReleases int       `json:"required_releases"`
+	PlatformCount     int       `json:"platform_count"`
+	RequiredReleases  int       `json:"required_releases"`
 }
 
 func (rf *ReleaseFilter) Validate() error {

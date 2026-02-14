@@ -1,0 +1,61 @@
+# Development Docker Compose Configuration
+# For local development with security best practices
+
+services:
+  updater:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: updater-dev
+    ports:
+      - "8080:8080"
+    environment:
+      - UPDATER_CONFIG_SECTION=development
+      - UPDATER_LOG_LEVEL=debug
+      - DEV_ADMIN_API_KEY=dev-admin-key-12345678901234567890
+      - DEV_READ_API_KEY=dev-read-key-09876543210987654321
+    volumes:
+      # Mount config file
+      - ./configs/security-examples.yaml:/app/config.yaml:ro
+      # Mount data directory for persistence
+      - updater-data:/app/data
+    restart: unless-stopped
+
+    # Security configurations
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE  # Only if running on port < 1024
+    read_only: true
+    tmpfs:
+      - /tmp:noexec,nosuid,size=10m
+
+    # Resource limits
+    mem_limit: 128m
+    mem_reservation: 64m
+    cpus: '0.5'
+
+    # Health check
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  updater-data:
+    driver: local
+
+networks:
+  default:
+    driver: bridge

@@ -260,7 +260,7 @@ func TestJSONStorage_GetLatestRelease(t *testing.T) {
 		createTestRelease("test-app", "1.0.0", "windows", "amd64"),
 		createTestRelease("test-app", "1.2.0", "windows", "amd64"),
 		createTestRelease("test-app", "1.1.0", "windows", "amd64"),
-		createTestRelease("test-app", "1.0.0", "linux", "amd64"), // Different platform
+		createTestRelease("test-app", "1.0.0", "linux", "amd64"),    // Different platform
 		createTestRelease("other-app", "2.0.0", "windows", "amd64"), // Different app
 	}
 

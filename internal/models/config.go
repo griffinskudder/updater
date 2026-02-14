@@ -77,11 +77,11 @@ type DatabaseConfig struct {
 }
 
 type SecurityConfig struct {
-	APIKeys         []APIKey      `yaml:"api_keys" json:"api_keys"`
-	RateLimit       RateLimitConfig `yaml:"rate_limit" json:"rate_limit"`
-	JWTSecret       string        `yaml:"jwt_secret" json:"jwt_secret"`
-	EnableAuth      bool          `yaml:"enable_auth" json:"enable_auth"`
-	TrustedProxies  []string      `yaml:"trusted_proxies" json:"trusted_proxies"`
+	APIKeys        []APIKey        `yaml:"api_keys" json:"api_keys"`
+	RateLimit      RateLimitConfig `yaml:"rate_limit" json:"rate_limit"`
+	JWTSecret      string          `yaml:"jwt_secret" json:"jwt_secret"`
+	EnableAuth     bool            `yaml:"enable_auth" json:"enable_auth"`
+	TrustedProxies []string        `yaml:"trusted_proxies" json:"trusted_proxies"`
 }
 
 type APIKey struct {
@@ -92,11 +92,11 @@ type APIKey struct {
 }
 
 type RateLimitConfig struct {
-	Enabled            bool `yaml:"enabled" json:"enabled"`
-	RequestsPerMinute  int  `yaml:"requests_per_minute" json:"requests_per_minute"`
-	RequestsPerHour    int  `yaml:"requests_per_hour" json:"requests_per_hour"`
-	BurstSize          int  `yaml:"burst_size" json:"burst_size"`
-	CleanupInterval    time.Duration `yaml:"cleanup_interval" json:"cleanup_interval"`
+	Enabled           bool          `yaml:"enabled" json:"enabled"`
+	RequestsPerMinute int           `yaml:"requests_per_minute" json:"requests_per_minute"`
+	RequestsPerHour   int           `yaml:"requests_per_hour" json:"requests_per_hour"`
+	BurstSize         int           `yaml:"burst_size" json:"burst_size"`
+	CleanupInterval   time.Duration `yaml:"cleanup_interval" json:"cleanup_interval"`
 }
 
 type LoggingConfig struct {
@@ -126,7 +126,7 @@ type RedisConfig struct {
 }
 
 type MemoryConfig struct {
-	MaxSize      int           `yaml:"max_size" json:"max_size"`
+	MaxSize         int           `yaml:"max_size" json:"max_size"`
 	CleanupInterval time.Duration `yaml:"cleanup_interval" json:"cleanup_interval"`
 }
 
@@ -185,11 +185,11 @@ func NewDefaultConfig() *Config {
 		Security: SecurityConfig{
 			APIKeys: []APIKey{},
 			RateLimit: RateLimitConfig{
-				Enabled:            true,
-				RequestsPerMinute:  60,
-				RequestsPerHour:    1000,
-				BurstSize:          10,
-				CleanupInterval:    5 * time.Minute,
+				Enabled:           true,
+				RequestsPerMinute: 60,
+				RequestsPerHour:   1000,
+				BurstSize:         10,
+				CleanupInterval:   5 * time.Minute,
 			},
 			EnableAuth:     false,
 			TrustedProxies: []string{},
@@ -282,7 +282,7 @@ func (sc *ServerConfig) Validate() error {
 }
 
 func (stc *StorageConfig) Validate() error {
-	validTypes := []string{"json", "sqlite", "postgres", "mysql"}
+	validTypes := []string{"json", "memory"}
 	found := false
 	for _, vt := range validTypes {
 		if stc.Type == vt {
@@ -298,7 +298,12 @@ func (stc *StorageConfig) Validate() error {
 		return errors.New("path is required for JSON storage")
 	}
 
-	if stc.Type != "json" && stc.Database.DSN == "" {
+	if stc.Type == "memory" {
+		// Memory storage requires no additional configuration
+		return nil
+	}
+
+	if stc.Type != "json" && stc.Type != "memory" && stc.Database.DSN == "" {
 		return errors.New("database DSN is required for database storage")
 	}
 

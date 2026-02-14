@@ -1,0 +1,89 @@
+# Docker ignore file for security and performance
+
+# Version control
+.git/
+.gitignore
+.gitattributes
+
+# Development files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Build artifacts
+bin/
+*.exe
+updater
+dist/
+build/
+
+# Dependencies (will be downloaded in container)
+vendor/
+
+# Documentation (not needed in runtime)
+docs/
+*.md
+LICENSE
+
+# Configuration files that might contain secrets
+config.yaml
+config.yml
+*.env
+.env*
+
+# Test files
+*_test.go
+testdata/
+coverage.out
+coverage.html
+
+# Development tools
+.golangci.yml
+Makefile
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# IDE files
+*.iml
+.project
+.classpath
+
+# Security sensitive files
+*.key
+*.pem
+*.crt
+secrets/
+.secrets/
+
+# Local data
+data/
+*.db
+*.sqlite
+
+# Docker files (except main Dockerfile)
+docker-compose*.yml
+Dockerfile.*
+!Dockerfile.secure
+
+# CI/CD files
+.github/
+.gitlab-ci.yml
+Jenkinsfile
+
+# Package manager files
+node_modules/
+package-lock.json
+yarn.lock

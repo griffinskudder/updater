@@ -11,8 +11,8 @@ import (
 func TestNewRelease(t *testing.T) {
 	appID := "test-app"
 	version := "1.2.3"
-	platform := "Windows"  // Test normalization
-	arch := "AMD64"        // Test normalization
+	platform := "Windows" // Test normalization
+	arch := "AMD64"       // Test normalization
 	downloadURL := "https://example.com/download"
 
 	release := NewRelease(appID, version, platform, arch, downloadURL)
@@ -20,8 +20,8 @@ func TestNewRelease(t *testing.T) {
 	assert.Equal(t, "test-app-1.2.3-windows-amd64", release.ID)
 	assert.Equal(t, appID, release.ApplicationID)
 	assert.Equal(t, version, release.Version)
-	assert.Equal(t, "windows", release.Platform)     // Should be normalized
-	assert.Equal(t, "amd64", release.Architecture)   // Should be normalized
+	assert.Equal(t, "windows", release.Platform)   // Should be normalized
+	assert.Equal(t, "amd64", release.Architecture) // Should be normalized
 	assert.Equal(t, downloadURL, release.DownloadURL)
 	assert.Equal(t, ChecksumTypeSHA256, release.ChecksumType)
 	assert.False(t, release.Required)

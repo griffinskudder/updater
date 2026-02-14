@@ -29,14 +29,14 @@ import (
 // - All fields are validated before processing
 // - Version format is strictly validated to prevent injection
 type UpdateCheckRequest struct {
-	ApplicationID    string `json:"application_id" validate:"required"`    // Target application identifier
-	CurrentVersion   string `json:"current_version" validate:"required"`   // Client's current version
-	Platform         string `json:"platform" validate:"required"`          // Target OS (windows, linux, darwin)
-	Architecture     string `json:"architecture" validate:"required"`      // Target arch (amd64, arm64, 386, arm)
-	AllowPrerelease  bool   `json:"allow_prerelease"`                      // Include pre-release versions
-	IncludeMetadata  bool   `json:"include_metadata"`                      // Include release metadata in response
-	UserAgent        string `json:"user_agent,omitempty"`                  // Client identification (optional)
-	ClientID         string `json:"client_id,omitempty"`                   // Unique client ID (optional analytics)
+	ApplicationID   string `json:"application_id" validate:"required"`  // Target application identifier
+	CurrentVersion  string `json:"current_version" validate:"required"` // Client's current version
+	Platform        string `json:"platform" validate:"required"`        // Target OS (windows, linux, darwin)
+	Architecture    string `json:"architecture" validate:"required"`    // Target arch (amd64, arm64, 386, arm)
+	AllowPrerelease bool   `json:"allow_prerelease"`                    // Include pre-release versions
+	IncludeMetadata bool   `json:"include_metadata"`                    // Include release metadata in response
+	UserAgent       string `json:"user_agent,omitempty"`                // Client identification (optional)
+	ClientID        string `json:"client_id,omitempty"`                 // Unique client ID (optional analytics)
 }
 
 type LatestVersionRequest struct {
@@ -76,18 +76,18 @@ type ListReleasesRequest struct {
 // - Checksums must be provided to ensure integrity
 // - File size helps detect corruption and manage storage
 type RegisterReleaseRequest struct {
-	ApplicationID  string            `json:"application_id" validate:"required"`     // Target application
-	Version        string            `json:"version" validate:"required"`            // Release version (semantic)
-	Platform       string            `json:"platform" validate:"required"`           // Target platform
-	Architecture   string            `json:"architecture" validate:"required"`       // Target architecture
-	DownloadURL    string            `json:"download_url" validate:"required,url"`   // External download location
-	Checksum       string            `json:"checksum" validate:"required"`           // File integrity hash
-	ChecksumType   string            `json:"checksum_type" validate:"required"`      // Hash algorithm
-	FileSize       int64             `json:"file_size" validate:"min=0"`             // File size in bytes
-	ReleaseNotes   string            `json:"release_notes"`                          // Change description
-	Required       bool              `json:"required"`                               // Force update flag
-	MinimumVersion string            `json:"minimum_version,omitempty"`              // Required current version
-	Metadata       map[string]string `json:"metadata,omitempty"`                     // Additional metadata
+	ApplicationID  string            `json:"application_id" validate:"required"`   // Target application
+	Version        string            `json:"version" validate:"required"`          // Release version (semantic)
+	Platform       string            `json:"platform" validate:"required"`         // Target platform
+	Architecture   string            `json:"architecture" validate:"required"`     // Target architecture
+	DownloadURL    string            `json:"download_url" validate:"required,url"` // External download location
+	Checksum       string            `json:"checksum" validate:"required"`         // File integrity hash
+	ChecksumType   string            `json:"checksum_type" validate:"required"`    // Hash algorithm
+	FileSize       int64             `json:"file_size" validate:"min=0"`           // File size in bytes
+	ReleaseNotes   string            `json:"release_notes"`                        // Change description
+	Required       bool              `json:"required"`                             // Force update flag
+	MinimumVersion string            `json:"minimum_version,omitempty"`            // Required current version
+	Metadata       map[string]string `json:"metadata,omitempty"`                   // Additional metadata
 }
 
 type CreateApplicationRequest struct {

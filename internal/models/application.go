@@ -63,13 +63,13 @@ var (
 // - Timestamps as strings for flexibility with different storage backends
 // - Validation tags provide input validation constraints
 type Application struct {
-	ID          string            `json:"id" validate:"required"`          // Unique application identifier (URL-safe)
-	Name        string            `json:"name" validate:"required"`        // Human-readable application name
-	Description string            `json:"description"`                     // Optional application description
+	ID          string            `json:"id" validate:"required"`              // Unique application identifier (URL-safe)
+	Name        string            `json:"name" validate:"required"`            // Human-readable application name
+	Description string            `json:"description"`                         // Optional application description
 	Platforms   []string          `json:"platforms" validate:"required,min=1"` // Supported platforms (windows, linux, etc.)
-	Config      ApplicationConfig `json:"config"`                          // Application-specific configuration
-	CreatedAt   string            `json:"created_at,omitempty"`            // Creation timestamp (RFC3339 format)
-	UpdatedAt   string            `json:"updated_at,omitempty"`            // Last modification timestamp
+	Config      ApplicationConfig `json:"config"`                              // Application-specific configuration
+	CreatedAt   string            `json:"created_at,omitempty"`                // Creation timestamp (RFC3339 format)
+	UpdatedAt   string            `json:"updated_at,omitempty"`                // Last modification timestamp
 }
 
 // ApplicationConfig contains application-specific settings for update behavior.
@@ -81,16 +81,16 @@ type Application struct {
 // - Privacy-conscious analytics (disabled by default)
 // - Extensible via CustomFields for application-specific metadata
 type ApplicationConfig struct {
-	UpdateCheckURL    string            `json:"update_check_url,omitempty"`    // Custom update check endpoint override
-	AutoUpdate        bool              `json:"auto_update"`                   // Enable automatic updates
-	UpdateInterval    int               `json:"update_interval"`               // Update check interval in seconds
-	RequiredUpdate    bool              `json:"required_update"`               // Force updates (security patches)
-	MinVersion        string            `json:"min_version,omitempty"`         // Minimum supported version
-	MaxVersion        string            `json:"max_version,omitempty"`         // Maximum supported version
-	AllowPrerelease   bool              `json:"allow_prerelease"`              // Include pre-release versions
-	CustomFields      map[string]string `json:"custom_fields,omitempty"`       // Application-specific metadata
-	NotificationURL   string            `json:"notification_url,omitempty"`    // Webhook for update notifications
-	AnalyticsEnabled  bool              `json:"analytics_enabled"`             // Privacy-conscious usage analytics
+	UpdateCheckURL   string            `json:"update_check_url,omitempty"` // Custom update check endpoint override
+	AutoUpdate       bool              `json:"auto_update"`                // Enable automatic updates
+	UpdateInterval   int               `json:"update_interval"`            // Update check interval in seconds
+	RequiredUpdate   bool              `json:"required_update"`            // Force updates (security patches)
+	MinVersion       string            `json:"min_version,omitempty"`      // Minimum supported version
+	MaxVersion       string            `json:"max_version,omitempty"`      // Maximum supported version
+	AllowPrerelease  bool              `json:"allow_prerelease"`           // Include pre-release versions
+	CustomFields     map[string]string `json:"custom_fields,omitempty"`    // Application-specific metadata
+	NotificationURL  string            `json:"notification_url,omitempty"` // Webhook for update notifications
+	AnalyticsEnabled bool              `json:"analytics_enabled"`          // Privacy-conscious usage analytics
 }
 
 // NewApplication creates a new Application with sensible defaults.

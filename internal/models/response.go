@@ -30,18 +30,18 @@ import (
 // - Verify checksums before installation
 // - Display ReleaseNotes to users for informed decisions
 type UpdateCheckResponse struct {
-	UpdateAvailable     bool              `json:"update_available"`              // Primary decision flag
-	LatestVersion       string            `json:"latest_version,omitempty"`      // Available version (if update exists)
-	CurrentVersion      string            `json:"current_version"`               // Client's current version (echoed)
-	DownloadURL         string            `json:"download_url,omitempty"`        // Download location (if update exists)
-	Checksum            string            `json:"checksum,omitempty"`            // File integrity hash
-	ChecksumType        string            `json:"checksum_type,omitempty"`       // Hash algorithm
-	FileSize            int64             `json:"file_size,omitempty"`           // File size for progress tracking
-	ReleaseNotes        string            `json:"release_notes,omitempty"`       // Human-readable changes
-	ReleaseDate         *time.Time        `json:"release_date,omitempty"`        // Release timestamp
-	Required            bool              `json:"required"`                      // Critical update flag
-	MinimumVersion      string            `json:"minimum_version,omitempty"`     // Required current version
-	Metadata            map[string]string `json:"metadata,omitempty"`            // Extended metadata (optional)
+	UpdateAvailable     bool              `json:"update_available"`               // Primary decision flag
+	LatestVersion       string            `json:"latest_version,omitempty"`       // Available version (if update exists)
+	CurrentVersion      string            `json:"current_version"`                // Client's current version (echoed)
+	DownloadURL         string            `json:"download_url,omitempty"`         // Download location (if update exists)
+	Checksum            string            `json:"checksum,omitempty"`             // File integrity hash
+	ChecksumType        string            `json:"checksum_type,omitempty"`        // Hash algorithm
+	FileSize            int64             `json:"file_size,omitempty"`            // File size for progress tracking
+	ReleaseNotes        string            `json:"release_notes,omitempty"`        // Human-readable changes
+	ReleaseDate         *time.Time        `json:"release_date,omitempty"`         // Release timestamp
+	Required            bool              `json:"required"`                       // Critical update flag
+	MinimumVersion      string            `json:"minimum_version,omitempty"`      // Required current version
+	Metadata            map[string]string `json:"metadata,omitempty"`             // Extended metadata (optional)
 	UpgradeInstructions string            `json:"upgrade_instructions,omitempty"` // Custom upgrade steps
 }
 
@@ -120,21 +120,21 @@ type DeleteReleaseResponse struct {
 // - Authorization errors: Authentication/permission failures
 // - Internal errors: Server-side issues
 type ErrorResponse struct {
-	Error     string            `json:"error"`               // Error type (always "error")
-	Message   string            `json:"message"`             // Human-readable error description
-	Code      string            `json:"code,omitempty"`      // Machine-readable error code
-	Details   map[string]string `json:"details,omitempty"`   // Field-specific error details
-	Timestamp time.Time         `json:"timestamp"`           // Error occurrence time
+	Error     string            `json:"error"`                // Error type (always "error")
+	Message   string            `json:"message"`              // Human-readable error description
+	Code      string            `json:"code,omitempty"`       // Machine-readable error code
+	Details   map[string]string `json:"details,omitempty"`    // Field-specific error details
+	Timestamp time.Time         `json:"timestamp"`            // Error occurrence time
 	RequestID string            `json:"request_id,omitempty"` // Unique request identifier
 }
 
 type HealthCheckResponse struct {
-	Status     string                       `json:"status"`
-	Timestamp  time.Time                    `json:"timestamp"`
-	Version    string                       `json:"version,omitempty"`
-	Uptime     string                       `json:"uptime,omitempty"`
-	Components map[string]ComponentHealth   `json:"components,omitempty"`
-	Metrics    map[string]interface{}       `json:"metrics,omitempty"`
+	Status     string                     `json:"status"`
+	Timestamp  time.Time                  `json:"timestamp"`
+	Version    string                     `json:"version,omitempty"`
+	Uptime     string                     `json:"uptime,omitempty"`
+	Components map[string]ComponentHealth `json:"components,omitempty"`
+	Metrics    map[string]interface{}     `json:"metrics,omitempty"`
 }
 
 type ComponentHealth struct {
@@ -156,11 +156,11 @@ type ApplicationInfoResponse struct {
 }
 
 type ApplicationStats struct {
-	TotalReleases     int       `json:"total_releases"`
-	LatestVersion     string    `json:"latest_version,omitempty"`
+	TotalReleases     int        `json:"total_releases"`
+	LatestVersion     string     `json:"latest_version,omitempty"`
 	LatestReleaseDate *time.Time `json:"latest_release_date,omitempty"`
-	PlatformCount     int       `json:"platform_count"`
-	RequiredReleases  int       `json:"required_releases"`
+	PlatformCount     int        `json:"platform_count"`
+	RequiredReleases  int        `json:"required_releases"`
 }
 
 type ListApplicationsResponse struct {
@@ -181,18 +181,18 @@ type ApplicationSummary struct {
 }
 
 type StatsResponse struct {
-	TotalApplications int                        `json:"total_applications"`
-	TotalReleases     int                        `json:"total_releases"`
-	PlatformStats     map[string]int             `json:"platform_stats"`
-	VersionStats      map[string]int             `json:"version_stats"`
-	RecentActivity    []ActivityItem             `json:"recent_activity"`
-	SystemInfo        map[string]interface{}     `json:"system_info"`
+	TotalApplications int                    `json:"total_applications"`
+	TotalReleases     int                    `json:"total_releases"`
+	PlatformStats     map[string]int         `json:"platform_stats"`
+	VersionStats      map[string]int         `json:"version_stats"`
+	RecentActivity    []ActivityItem         `json:"recent_activity"`
+	SystemInfo        map[string]interface{} `json:"system_info"`
 }
 
 type ActivityItem struct {
-	Type        string    `json:"type"`
-	Description string    `json:"description"`
-	Timestamp   time.Time `json:"timestamp"`
+	Type        string            `json:"type"`
+	Description string            `json:"description"`
+	Timestamp   time.Time         `json:"timestamp"`
 	Metadata    map[string]string `json:"metadata,omitempty"`
 }
 
@@ -229,7 +229,7 @@ const (
 	ErrorCodeInternalError      = "INTERNAL_ERROR"      // 500: Server-side error
 	ErrorCodeUnauthorized       = "UNAUTHORIZED"        // 401: Authentication required
 	ErrorCodeForbidden          = "FORBIDDEN"           // 403: Permission denied
-	ErrorCodeConflict          = "CONFLICT"             // 409: Resource conflict
+	ErrorCodeConflict           = "CONFLICT"            // 409: Resource conflict
 	ErrorCodeServiceUnavailable = "SERVICE_UNAVAILABLE" // 503: Service temporarily down
 )
 

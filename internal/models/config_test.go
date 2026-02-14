@@ -682,10 +682,10 @@ func TestMetricsConfig_Validate(t *testing.T) {
 
 func TestAPIKey_HasPermission(t *testing.T) {
 	tests := []struct {
-		name        string
-		apiKey      APIKey
-		permission  string
-		expected    bool
+		name       string
+		apiKey     APIKey
+		permission string
+		expected   bool
 	}{
 		{
 			name: "has specific permission",
@@ -787,11 +787,11 @@ func TestDatabaseConfig_Structure(t *testing.T) {
 
 func TestRateLimitConfig_Structure(t *testing.T) {
 	rateLimitConfig := RateLimitConfig{
-		Enabled:            true,
-		RequestsPerMinute:  120,
-		RequestsPerHour:    5000,
-		BurstSize:          20,
-		CleanupInterval:    10 * time.Minute,
+		Enabled:           true,
+		RequestsPerMinute: 120,
+		RequestsPerHour:   5000,
+		BurstSize:         20,
+		CleanupInterval:   10 * time.Minute,
 	}
 
 	assert.True(t, rateLimitConfig.Enabled)

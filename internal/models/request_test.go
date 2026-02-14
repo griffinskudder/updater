@@ -333,9 +333,9 @@ func TestListReleasesRequest_Normalize(t *testing.T) {
 		Platform:      "Windows",
 		Architecture:  "AMD64",
 		Platforms:     []string{"LINUX", "Darwin"},
-		Limit:         0,    // Should be set to default
-		SortBy:        "",   // Should be set to default
-		SortOrder:     "",   // Should be set to default
+		Limit:         0,  // Should be set to default
+		SortBy:        "", // Should be set to default
+		SortOrder:     "", // Should be set to default
 	}
 
 	request.Normalize()
@@ -344,7 +344,7 @@ func TestListReleasesRequest_Normalize(t *testing.T) {
 	assert.Equal(t, "windows", request.Platform)
 	assert.Equal(t, "amd64", request.Architecture)
 	assert.Equal(t, []string{"linux", "darwin"}, request.Platforms)
-	assert.Equal(t, 50, request.Limit)           // Default limit
+	assert.Equal(t, 50, request.Limit)              // Default limit
 	assert.Equal(t, "release_date", request.SortBy) // Default sort field
 	assert.Equal(t, "desc", request.SortOrder)      // Default sort order
 }

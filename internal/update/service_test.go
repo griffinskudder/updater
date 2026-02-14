@@ -168,12 +168,12 @@ func TestService_CheckForUpdate(t *testing.T) {
 	mockStorage.SaveRelease(ctx, release2)
 
 	tests := []struct {
-		name              string
-		request           *models.UpdateCheckRequest
-		expectUpdate      bool
-		expectedVersion   string
-		expectError       bool
-		errorContains     string
+		name            string
+		request         *models.UpdateCheckRequest
+		expectUpdate    bool
+		expectedVersion string
+		expectError     bool
+		errorContains   string
 	}{
 		{
 			name: "update available",
@@ -274,9 +274,9 @@ func TestService_CheckForUpdate_PreRelease(t *testing.T) {
 	mockStorage.SaveRelease(ctx, preRelease)
 
 	tests := []struct {
-		name             string
-		allowPrerelease  bool
-		expectedVersion  string
+		name            string
+		allowPrerelease bool
+		expectedVersion string
 	}{
 		{
 			name:            "allow prerelease",

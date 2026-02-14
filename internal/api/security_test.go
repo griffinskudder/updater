@@ -125,65 +125,65 @@ func TestAuthMiddleware(t *testing.T) {
 	middleware := authMiddleware(securityConfig)
 
 	tests := []struct {
-		name               string
-		authHeader         string
-		path               string
-		expectedStatus     int
-		expectedError      string
-		expectAPIKeyInCtx  bool
+		name              string
+		authHeader        string
+		path              string
+		expectedStatus    int
+		expectedError     string
+		expectAPIKeyInCtx bool
 	}{
 		{
-			name:               "valid API key",
-			authHeader:         "Bearer valid-key-123",
-			path:               "/api/v1/test",
-			expectedStatus:     http.StatusOK,
-			expectAPIKeyInCtx:  true,
+			name:              "valid API key",
+			authHeader:        "Bearer valid-key-123",
+			path:              "/api/v1/test",
+			expectedStatus:    http.StatusOK,
+			expectAPIKeyInCtx: true,
 		},
 		{
-			name:               "missing authorization header",
-			authHeader:         "",
-			path:               "/api/v1/test",
-			expectedStatus:     http.StatusUnauthorized,
-			expectedError:      "Authorization required",
-			expectAPIKeyInCtx:  false,
+			name:              "missing authorization header",
+			authHeader:        "",
+			path:              "/api/v1/test",
+			expectedStatus:    http.StatusUnauthorized,
+			expectedError:     "Authorization required",
+			expectAPIKeyInCtx: false,
 		},
 		{
-			name:               "invalid authorization format",
-			authHeader:         "InvalidFormat",
-			path:               "/api/v1/test",
-			expectedStatus:     http.StatusUnauthorized,
-			expectedError:      "Invalid authorization format",
-			expectAPIKeyInCtx:  false,
+			name:              "invalid authorization format",
+			authHeader:        "InvalidFormat",
+			path:              "/api/v1/test",
+			expectedStatus:    http.StatusUnauthorized,
+			expectedError:     "Invalid authorization format",
+			expectAPIKeyInCtx: false,
 		},
 		{
-			name:               "invalid API key",
-			authHeader:         "Bearer invalid-key",
-			path:               "/api/v1/test",
-			expectedStatus:     http.StatusUnauthorized,
-			expectedError:      "Invalid API key",
-			expectAPIKeyInCtx:  false,
+			name:              "invalid API key",
+			authHeader:        "Bearer invalid-key",
+			path:              "/api/v1/test",
+			expectedStatus:    http.StatusUnauthorized,
+			expectedError:     "Invalid API key",
+			expectAPIKeyInCtx: false,
 		},
 		{
-			name:               "disabled API key",
-			authHeader:         "Bearer disabled-key",
-			path:               "/api/v1/test",
-			expectedStatus:     http.StatusUnauthorized,
-			expectedError:      "Invalid API key",
-			expectAPIKeyInCtx:  false,
+			name:              "disabled API key",
+			authHeader:        "Bearer disabled-key",
+			path:              "/api/v1/test",
+			expectedStatus:    http.StatusUnauthorized,
+			expectedError:     "Invalid API key",
+			expectAPIKeyInCtx: false,
 		},
 		{
-			name:               "health check skips auth",
-			authHeader:         "",
-			path:               "/health",
-			expectedStatus:     http.StatusOK,
-			expectAPIKeyInCtx:  false,
+			name:              "health check skips auth",
+			authHeader:        "",
+			path:              "/health",
+			expectedStatus:    http.StatusOK,
+			expectAPIKeyInCtx: false,
 		},
 		{
-			name:               "api health check skips auth",
-			authHeader:         "",
-			path:               "/api/v1/health",
-			expectedStatus:     http.StatusOK,
-			expectAPIKeyInCtx:  false,
+			name:              "api health check skips auth",
+			authHeader:        "",
+			path:              "/api/v1/health",
+			expectedStatus:    http.StatusOK,
+			expectAPIKeyInCtx: false,
 		},
 	}
 
@@ -796,29 +796,29 @@ func TestOptionalAuthMiddleware(t *testing.T) {
 	middleware := OptionalAuth(securityConfig)
 
 	tests := []struct {
-		name               string
-		authHeader         string
-		expectAPIKeyInCtx  bool
+		name              string
+		authHeader        string
+		expectAPIKeyInCtx bool
 	}{
 		{
-			name:               "valid API key sets context",
-			authHeader:         "Bearer valid-key-123",
-			expectAPIKeyInCtx:  true,
+			name:              "valid API key sets context",
+			authHeader:        "Bearer valid-key-123",
+			expectAPIKeyInCtx: true,
 		},
 		{
-			name:               "no auth header continues without context",
-			authHeader:         "",
-			expectAPIKeyInCtx:  false,
+			name:              "no auth header continues without context",
+			authHeader:        "",
+			expectAPIKeyInCtx: false,
 		},
 		{
-			name:               "invalid format continues without context",
-			authHeader:         "InvalidFormat",
-			expectAPIKeyInCtx:  false,
+			name:              "invalid format continues without context",
+			authHeader:        "InvalidFormat",
+			expectAPIKeyInCtx: false,
 		},
 		{
-			name:               "invalid key continues without context",
-			authHeader:         "Bearer invalid-key",
-			expectAPIKeyInCtx:  false,
+			name:              "invalid key continues without context",
+			authHeader:        "Bearer invalid-key",
+			expectAPIKeyInCtx: false,
 		},
 	}
 

@@ -157,11 +157,11 @@ storage:
 
 	// Verify defaults are applied
 	assert.Equal(t, 3000, config.Server.Port)
-	assert.Equal(t, "0.0.0.0", config.Server.Host) // Default
-	assert.Equal(t, 30*time.Second, config.Server.ReadTimeout) // Default
+	assert.Equal(t, "0.0.0.0", config.Server.Host)              // Default
+	assert.Equal(t, 30*time.Second, config.Server.ReadTimeout)  // Default
 	assert.Equal(t, 30*time.Second, config.Server.WriteTimeout) // Default
-	assert.Equal(t, 60*time.Second, config.Server.IdleTimeout) // Default
-	assert.False(t, config.Server.TLSEnabled) // Default
+	assert.Equal(t, 60*time.Second, config.Server.IdleTimeout)  // Default
+	assert.False(t, config.Server.TLSEnabled)                   // Default
 
 	// Storage config should be as specified
 	assert.Equal(t, "json", config.Storage.Type)
@@ -173,35 +173,35 @@ storage:
 	assert.Empty(t, config.Security.APIKeys)
 
 	// Rate limiting defaults
-	assert.True(t, config.Security.RateLimit.Enabled) // Default
+	assert.True(t, config.Security.RateLimit.Enabled)                // Default
 	assert.Equal(t, 60, config.Security.RateLimit.RequestsPerMinute) // Default
 	assert.Equal(t, 1000, config.Security.RateLimit.RequestsPerHour) // Default
 
 	// Logging defaults
-	assert.Equal(t, "info", config.Logging.Level) // Default
-	assert.Equal(t, "json", config.Logging.Format) // Default
+	assert.Equal(t, "info", config.Logging.Level)    // Default
+	assert.Equal(t, "json", config.Logging.Format)   // Default
 	assert.Equal(t, "stdout", config.Logging.Output) // Default
 
 	// Cache defaults
-	assert.True(t, config.Cache.Enabled) // Default
-	assert.Equal(t, "memory", config.Cache.Type) // Default
+	assert.True(t, config.Cache.Enabled)               // Default
+	assert.Equal(t, "memory", config.Cache.Type)       // Default
 	assert.Equal(t, 300*time.Second, config.Cache.TTL) // Default
 
 	// Metrics defaults
-	assert.True(t, config.Metrics.Enabled) // Default
+	assert.True(t, config.Metrics.Enabled)           // Default
 	assert.Equal(t, "/metrics", config.Metrics.Path) // Default
-	assert.Equal(t, 9090, config.Metrics.Port) // Default
+	assert.Equal(t, 9090, config.Metrics.Port)       // Default
 }
 
 func TestLoad_WithEnvironmentVariables(t *testing.T) {
 	// Set environment variables
 	originalEnv := map[string]string{
-		"UPDATER_SERVER_PORT":     os.Getenv("UPDATER_SERVER_PORT"),
-		"UPDATER_SERVER_HOST":     os.Getenv("UPDATER_SERVER_HOST"),
-		"UPDATER_STORAGE_TYPE":    os.Getenv("UPDATER_STORAGE_TYPE"),
-		"UPDATER_STORAGE_PATH":    os.Getenv("UPDATER_STORAGE_PATH"),
+		"UPDATER_SERVER_PORT":          os.Getenv("UPDATER_SERVER_PORT"),
+		"UPDATER_SERVER_HOST":          os.Getenv("UPDATER_SERVER_HOST"),
+		"UPDATER_STORAGE_TYPE":         os.Getenv("UPDATER_STORAGE_TYPE"),
+		"UPDATER_STORAGE_PATH":         os.Getenv("UPDATER_STORAGE_PATH"),
 		"UPDATER_SECURITY_ENABLE_AUTH": os.Getenv("UPDATER_SECURITY_ENABLE_AUTH"),
-		"UPDATER_LOGGING_LEVEL":   os.Getenv("UPDATER_LOGGING_LEVEL"),
+		"UPDATER_LOGGING_LEVEL":        os.Getenv("UPDATER_LOGGING_LEVEL"),
 	}
 
 	// Clean up after test
@@ -294,9 +294,9 @@ func TestLoad_EmptyConfigFile(t *testing.T) {
 	require.NoError(t, err)
 
 	// Should have all defaults applied
-	assert.Equal(t, 8080, config.Server.Port) // Default
-	assert.Equal(t, "0.0.0.0", config.Server.Host) // Default
-	assert.Equal(t, "json", config.Storage.Type) // Default
+	assert.Equal(t, 8080, config.Server.Port)                // Default
+	assert.Equal(t, "0.0.0.0", config.Server.Host)           // Default
+	assert.Equal(t, "json", config.Storage.Type)             // Default
 	assert.Contains(t, config.Storage.Path, "releases.json") // Default
 }
 
