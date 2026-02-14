@@ -1,0 +1,100 @@
+site_name: Updater Service Documentation
+site_description: Documentation for the Go-based software update service
+site_author: Updater Service Team
+site_url: https://your-domain.com/docs
+
+repo_name: updater
+repo_url: https://github.com/your-org/updater
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.path
+    - navigation.top
+    - search.highlight
+    - search.share
+    - toc.follow
+    - content.code.copy
+    - content.code.annotate
+
+nav:
+  - Home: index.md
+  - Architecture: ARCHITECTURE.md
+  - Models:
+    - Overview: models/index.md
+    - Version Models: models/version-models.md
+    - Platform & Application Models: models/platform-models.md
+    - Release Models: models/release-models.md
+    - API Models: models/api-models.md
+    - Configuration Models: models/config-models.md
+
+markdown_extensions:
+  - toc:
+      permalink: true
+      toc_depth: 3
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - attr_list
+  - md_in_html
+  - tables
+  - footnotes
+  - pymdownx.critic
+  - pymdownx.caret
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.tilde
+
+plugins:
+  - search:
+      lang: en
+      separator: '[\s\-,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/your-org/updater
+  version:
+    provider: mike
+    default: latest
+
+extra_css:
+  - assets/extra.css
+
+copyright: Copyright &copy; 2024 Updater Service Team
+
+docs_dir: docs
+site_dir: site
+
+watch:
+  - docs
+  - mkdocs.yml
