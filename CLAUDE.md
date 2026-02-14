@@ -145,4 +145,6 @@ The service follows a layered architecture:
 - ALWAYS: Write unit tests for the code.
 - ALWAYS: Write docs to go with the code.
 - ALWAYS: Use mermaid for diagrams in docs, except for directory structures.
+- ALWAYS: Add docs to the nav config for the mkdocs site.
 - NEVER: Use emojis.
+- NEVER: Link to files outside the docs directory in documentation inside the docs directory.

@@ -134,8 +134,6 @@ graph TB
 ## Related Documentation
 
 - [Architecture Overview](../ARCHITECTURE.md) - Complete system design and API specification
-- [Development Guide](../../README.md) - Setup and development workflows
-- [Build System](../../Makefile) - Development commands and automation
 
 ## Development Workflow
 
