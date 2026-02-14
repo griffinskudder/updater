@@ -131,13 +131,25 @@ func (h *Handlers) ListReleases(w http.ResponseWriter, r *http.Request) {
 
 // RegisterRelease handles release registration requests
 // POST /api/v1/updates/{app_id}/register
+// Requires authentication and 'write' permission
 func (h *Handlers) RegisterRelease(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	appID := vars["app_id"]
 
+	// Get security context for audit logging
+	securityContext := GetSecurityContext(r)
+
+	// Log the admin operation attempt
+	fmt.Printf("SECURITY: Release registration attempt for app %s by API key: %s, IP: %s\n",
+		appID,
+		getAPIKeyName(securityContext),
+		getClientIP(r))
+
 	// Parse request body
 	var req models.RegisterReleaseRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		fmt.Printf("SECURITY: Invalid JSON in release registration for app %s by %s\n",
+			appID, getAPIKeyName(securityContext))
 		h.writeErrorResponse(w, http.StatusBadRequest, models.ErrorCodeBadRequest, "Invalid JSON body")
 		return
 	}
@@ -148,15 +160,22 @@ func (h *Handlers) RegisterRelease(w http.ResponseWriter, r *http.Request) {
 	// Register release
 	response, err := h.updateService.RegisterRelease(r.Context(), &req)
 	if err != nil {
+		fmt.Printf("SECURITY: Release registration failed for app %s, version %s by %s: %s\n",
+			appID, req.Version, getAPIKeyName(securityContext), err.Error())
 		h.writeErrorResponse(w, http.StatusBadRequest, models.ErrorCodeBadRequest, err.Error())
 		return
 	}
+
+	// Log successful registration
+	fmt.Printf("SECURITY: Release registration successful for app %s, version %s by %s\n",
+		appID, req.Version, getAPIKeyName(securityContext))
 
 	h.writeJSONResponse(w, http.StatusCreated, response)
 }
 
 // HealthCheck handles health check requests
 // GET /health
+// Provides basic health info publicly, enhanced details with authentication
 func (h *Handlers) HealthCheck(w http.ResponseWriter, r *http.Request) {
 	response := models.NewHealthCheckResponse(models.StatusHealthy)
 	response.Version = "1.0.0" // This could be injected from build info
@@ -164,6 +183,28 @@ func (h *Handlers) HealthCheck(w http.ResponseWriter, r *http.Request) {
 	// Add basic health metrics
 	response.AddComponent("storage", models.StatusHealthy, "Storage is operational")
 	response.AddComponent("api", models.StatusHealthy, "API is operational")
+
+	// Get security context to check if user is authenticated
+	securityContext := GetSecurityContext(r)
+
+	// If authenticated, add enhanced details
+	if securityContext != nil && securityContext.HasPermission(PermissionRead) {
+		// Add enhanced metrics for authenticated users
+		if response.Metrics == nil {
+			response.Metrics = make(map[string]interface{})
+		}
+
+		response.Metrics["authentication_enabled"] = true
+		response.Metrics["api_key_name"] = getAPIKeyName(securityContext)
+		response.Metrics["permissions"] = securityContext.APIKey.Permissions
+		response.AddComponent("auth", models.StatusHealthy, "Authentication system operational")
+	} else {
+		// Add limited info for public access
+		if response.Metrics == nil {
+			response.Metrics = make(map[string]interface{})
+		}
+		response.Metrics["authentication_enabled"] = false
+	}
 
 	h.writeJSONResponse(w, http.StatusOK, response)
 }
@@ -203,4 +244,15 @@ func splitAndTrim(s, delim string) []string {
 		}
 	}
 	return parts
+}
+
+// getAPIKeyName safely extracts the API key name for logging
+func getAPIKeyName(securityContext *SecurityContext) string {
+	if securityContext == nil || securityContext.APIKey == nil {
+		return "anonymous"
+	}
+	if securityContext.APIKey.Name != "" {
+		return securityContext.APIKey.Name
+	}
+	return "unnamed-key"
 }

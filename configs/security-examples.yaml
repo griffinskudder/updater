@@ -1,0 +1,494 @@
+# Security Configuration Examples for Updater Service
+# This file contains example configurations for different security scenarios
+
+# =============================================================================
+# DEVELOPMENT CONFIGURATION
+# =============================================================================
+# For local development and testing
+# WARNING: This configuration is NOT suitable for production
+
+development:
+  server:
+    port: 8080
+    read_timeout: 30s
+    write_timeout: 30s
+    tls_enabled: false  # TLS disabled for local development
+
+    cors:
+      enabled: true
+      allowed_origins: ["http://localhost:3000", "http://127.0.0.1:3000"]
+      allowed_methods: ["GET", "POST", "OPTIONS"]
+      allowed_headers: ["Authorization", "Content-Type"]
+      max_age: 3600
+
+  security:
+    enable_auth: true
+
+    # Development API keys - use strong keys even in development
+    api_keys:
+      - key: "dev-admin-key-12345678901234567890"
+        name: "Development Admin"
+        permissions: ["admin"]
+        enabled: true
+
+      - key: "dev-read-key-09876543210987654321"
+        name: "Development Read-Only"
+        permissions: ["read"]
+        enabled: true
+
+    # Lenient rate limiting for development
+    rate_limit:
+      enabled: true
+      requests_per_minute: 120
+      requests_per_hour: 2000
+      burst_size: 20
+      cleanup_interval: 300s
+
+  storage:
+    type: json
+    path: ./data/dev-releases.json
+
+  logging:
+    level: debug
+    format: text
+
+---
+
+# =============================================================================
+# STAGING CONFIGURATION
+# =============================================================================
+# For staging/testing environments
+# Simulates production security with test data
+
+staging:
+  server:
+    port: 8080
+    read_timeout: 30s
+    write_timeout: 30s
+    tls_enabled: true
+    tls_cert_file: "/etc/ssl/certs/staging.pem"
+    tls_key_file: "/etc/ssl/private/staging.key"
+
+    cors:
+      enabled: true
+      allowed_origins: ["https://staging.example.com"]
+      allowed_methods: ["GET", "POST"]
+      allowed_headers: ["Authorization", "Content-Type"]
+      max_age: 86400
+
+  security:
+    enable_auth: true
+
+    # Staging API keys - use environment variables
+    api_keys:
+      - key: "${STAGING_ADMIN_API_KEY}"
+        name: "Staging Admin"
+        permissions: ["admin"]
+        enabled: true
+
+      - key: "${STAGING_RELEASE_API_KEY}"
+        name: "Staging Release Publisher"
+        permissions: ["write"]
+        enabled: true
+
+      - key: "${STAGING_READONLY_API_KEY}"
+        name: "Staging Monitoring"
+        permissions: ["read"]
+        enabled: true
+
+    # Moderate rate limiting for staging
+    rate_limit:
+      enabled: true
+      requests_per_minute: 100
+      requests_per_hour: 1500
+      burst_size: 15
+      cleanup_interval: 300s
+
+    # Configure trusted proxy networks
+    trusted_proxies:
+      - "10.0.0.0/8"
+      - "172.16.0.0/12"
+
+  storage:
+    type: json
+    path: ./data/staging-releases.json
+
+  logging:
+    level: info
+    format: json
+
+---
+
+# =============================================================================
+# PRODUCTION CONFIGURATION
+# =============================================================================
+# For production environments
+# Maximum security settings
+
+production:
+  server:
+    port: 8080
+    read_timeout: 30s
+    write_timeout: 30s
+    tls_enabled: true
+    tls_cert_file: "/etc/ssl/certs/production.pem"
+    tls_key_file: "/etc/ssl/private/production.key"
+
+    # Strict CORS for production
+    cors:
+      enabled: true
+      allowed_origins: ["https://api.yourdomain.com", "https://admin.yourdomain.com"]
+      allowed_methods: ["GET", "POST"]
+      allowed_headers: ["Authorization", "Content-Type"]
+      max_age: 86400
+
+  security:
+    enable_auth: true
+
+    # Production API keys - MUST use environment variables
+    api_keys:
+      - key: "${PRODUCTION_ADMIN_API_KEY}"
+        name: "Production Admin"
+        permissions: ["admin"]
+        enabled: true
+
+      - key: "${PRODUCTION_RELEASE_API_KEY}"
+        name: "Production Release Publisher"
+        permissions: ["write"]
+        enabled: true
+
+      - key: "${PRODUCTION_MONITORING_API_KEY}"
+        name: "Production Monitoring"
+        permissions: ["read"]
+        enabled: true
+
+      # Backup admin key (disabled by default)
+      - key: "${PRODUCTION_BACKUP_ADMIN_API_KEY}"
+        name: "Production Backup Admin"
+        permissions: ["admin"]
+        enabled: false
+
+    # Strict rate limiting for production
+    rate_limit:
+      enabled: true
+      requests_per_minute: 60
+      requests_per_hour: 1000
+      burst_size: 10
+      cleanup_interval: 300s
+
+    # Production proxy networks (adjust for your infrastructure)
+    trusted_proxies:
+      - "10.0.0.0/8"      # Internal network
+      - "172.16.0.0/12"   # Docker networks
+      - "203.0.113.0/24"  # Load balancer subnet (example)
+
+  storage:
+    type: database
+    connection_string: "${DATABASE_URL}"
+
+  logging:
+    level: info
+    format: json
+
+---
+
+# =============================================================================
+# HIGH-SECURITY CONFIGURATION
+# =============================================================================
+# For high-security environments
+# Additional security measures and monitoring
+
+high_security:
+  server:
+    port: 8080
+    read_timeout: 20s  # Shorter timeouts
+    write_timeout: 20s
+    tls_enabled: true
+    tls_cert_file: "/etc/ssl/certs/secure.pem"
+    tls_key_file: "/etc/ssl/private/secure.key"
+
+    # Very restrictive CORS
+    cors:
+      enabled: true
+      allowed_origins: ["https://secure-api.yourdomain.com"]
+      allowed_methods: ["GET", "POST"]
+      allowed_headers: ["Authorization", "Content-Type"]
+      max_age: 3600  # Shorter cache time
+
+  security:
+    enable_auth: true
+
+    # High-security API keys
+    api_keys:
+      - key: "${SECURE_ADMIN_API_KEY}"
+        name: "Secure Admin"
+        permissions: ["admin"]
+        enabled: true
+
+      - key: "${SECURE_RELEASE_API_KEY}"
+        name: "Secure Release Publisher"
+        permissions: ["write"]
+        enabled: true
+
+      # No read-only keys in high-security mode
+
+    # Very strict rate limiting
+    rate_limit:
+      enabled: true
+      requests_per_minute: 30
+      requests_per_hour: 500
+      burst_size: 5
+      cleanup_interval: 60s  # More frequent cleanup
+
+    # Minimal trusted proxy configuration
+    trusted_proxies:
+      - "10.0.0.0/16"  # Only specific internal subnet
+
+  storage:
+    type: database
+    connection_string: "${SECURE_DATABASE_URL}"
+    encryption_key: "${DATABASE_ENCRYPTION_KEY}"
+
+  logging:
+    level: warn  # Only log warnings and errors to reduce log noise
+    format: json
+
+---
+
+# =============================================================================
+# CLOUD DEPLOYMENT CONFIGURATIONS
+# =============================================================================
+
+# AWS ECS/EKS Configuration
+aws_production:
+  server:
+    port: 8080
+    tls_enabled: true  # TLS terminated at ALB
+
+    cors:
+      enabled: true
+      allowed_origins: ["https://api.example.com"]
+      allowed_methods: ["GET", "POST"]
+      allowed_headers: ["Authorization", "Content-Type"]
+
+  security:
+    enable_auth: true
+
+    api_keys:
+      - key: "${AWS_ADMIN_API_KEY}"        # From AWS Secrets Manager
+        name: "AWS Admin"
+        permissions: ["admin"]
+        enabled: true
+
+      - key: "${AWS_RELEASE_API_KEY}"      # From AWS Secrets Manager
+        name: "AWS Release Publisher"
+        permissions: ["write"]
+        enabled: true
+
+    rate_limit:
+      enabled: true
+      requests_per_minute: 60
+      requests_per_hour: 1000
+
+    # AWS load balancer subnets
+    trusted_proxies:
+      - "10.0.0.0/8"
+      - "172.31.0.0/16"
+
+  storage:
+    type: database
+    connection_string: "${RDS_CONNECTION_STRING}"
+
+---
+
+# Google Cloud Run Configuration
+gcp_production:
+  server:
+    port: 8080
+    tls_enabled: false  # TLS terminated at Cloud Load Balancer
+
+  security:
+    enable_auth: true
+
+    api_keys:
+      - key: "${GCP_ADMIN_API_KEY}"        # From Secret Manager
+        name: "GCP Admin"
+        permissions: ["admin"]
+        enabled: true
+
+    rate_limit:
+      enabled: true
+      requests_per_minute: 60
+
+    # Google Cloud load balancer networks
+    trusted_proxies:
+      - "169.254.0.0/16"  # Metadata server
+      - "10.0.0.0/8"
+
+---
+
+# Kubernetes Configuration
+k8s_production:
+  server:
+    port: 8080
+    tls_enabled: false  # TLS terminated at ingress
+
+  security:
+    enable_auth: true
+
+    api_keys:
+      - key: "${K8S_ADMIN_API_KEY}"        # From Kubernetes Secret
+        name: "K8s Admin"
+        permissions: ["admin"]
+        enabled: true
+
+    rate_limit:
+      enabled: true
+      requests_per_minute: 60
+
+    # Kubernetes service mesh networks
+    trusted_proxies:
+      - "10.244.0.0/16"   # Pod CIDR (example)
+      - "10.96.0.0/16"    # Service CIDR (example)
+
+---
+
+# =============================================================================
+# SECURITY HARDENING EXAMPLES
+# =============================================================================
+
+# Zero-Trust Configuration
+zero_trust:
+  server:
+    port: 8080
+    tls_enabled: true
+
+  security:
+    enable_auth: true
+
+    # Only admin access, no read-only endpoints
+    api_keys:
+      - key: "${ZERO_TRUST_ADMIN_KEY}"
+        name: "Zero Trust Admin"
+        permissions: ["admin"]
+        enabled: true
+
+    # Very aggressive rate limiting
+    rate_limit:
+      enabled: true
+      requests_per_minute: 10
+      requests_per_hour: 100
+      burst_size: 2
+
+    # No trusted proxies - direct connections only
+    trusted_proxies: []
+
+---
+
+# Multi-Tenant Configuration
+multi_tenant:
+  server:
+    port: 8080
+    tls_enabled: true
+
+  security:
+    enable_auth: true
+
+    # Separate keys per tenant
+    api_keys:
+      # Tenant A
+      - key: "${TENANT_A_ADMIN_KEY}"
+        name: "Tenant A Admin"
+        permissions: ["admin"]
+        enabled: true
+
+      - key: "${TENANT_A_READ_KEY}"
+        name: "Tenant A Read"
+        permissions: ["read"]
+        enabled: true
+
+      # Tenant B
+      - key: "${TENANT_B_ADMIN_KEY}"
+        name: "Tenant B Admin"
+        permissions: ["admin"]
+        enabled: true
+
+      - key: "${TENANT_B_READ_KEY}"
+        name: "Tenant B Read"
+        permissions: ["read"]
+        enabled: true
+
+      # Platform admin
+      - key: "${PLATFORM_ADMIN_KEY}"
+        name: "Platform Admin"
+        permissions: ["admin"]
+        enabled: true
+
+    rate_limit:
+      enabled: true
+      requests_per_minute: 100  # Shared across all tenants
+      requests_per_hour: 2000
+
+---
+
+# =============================================================================
+# MONITORING AND COMPLIANCE CONFIGURATIONS
+# =============================================================================
+
+# GDPR Compliant Configuration
+gdpr_compliant:
+  server:
+    port: 8080
+    tls_enabled: true
+
+  security:
+    enable_auth: true
+
+    api_keys:
+      - key: "${GDPR_ADMIN_KEY}"
+        name: "GDPR Admin"
+        permissions: ["admin"]
+        enabled: true
+
+    rate_limit:
+      enabled: true
+      requests_per_minute: 60
+
+  # Minimal logging to reduce data collection
+  logging:
+    level: error  # Only log errors
+    format: json
+    # Privacy settings would be added here in actual implementation
+
+---
+
+# SOC 2 Compliant Configuration
+soc2_compliant:
+  server:
+    port: 8080
+    tls_enabled: true
+
+  security:
+    enable_auth: true
+
+    api_keys:
+      - key: "${SOC2_ADMIN_KEY}"
+        name: "SOC2 Admin"
+        permissions: ["admin"]
+        enabled: true
+
+      # Audit-specific read-only key
+      - key: "${SOC2_AUDIT_KEY}"
+        name: "SOC2 Audit"
+        permissions: ["read"]
+        enabled: true
+
+    rate_limit:
+      enabled: true
+      requests_per_minute: 60
+
+  # Enhanced logging for audit trails
+  logging:
+    level: info
+    format: json
+    # Audit logging settings would be added here

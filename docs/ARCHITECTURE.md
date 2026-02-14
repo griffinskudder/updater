@@ -206,22 +206,250 @@ type Release struct {
 }
 ```
 
-## Security Considerations
+## Security Architecture
+
+### Overview
+
+The updater service implements a comprehensive multi-layered security architecture following defense-in-depth principles. The security model protects against unauthorized access, data tampering, and service abuse while maintaining high availability and performance.
+
+### Security Flow Diagram
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant RL as Rate Limiter
+    participant AM as Auth Middleware
+    participant PM as Permission Middleware
+    participant H as Handler
+    participant S as Storage
+
+    C->>RL: HTTP Request
+    RL->>AM: Rate Check Passed
+    AM->>AM: Validate API Key
+    AM->>PM: Authentication Success
+    PM->>PM: Check Permissions
+    PM->>H: Authorization Success
+    H->>S: Business Logic
+    S->>H: Data Response
+    H->>C: JSON Response
+
+    Note over AM,PM: Security Context Added
+    Note over H: Audit Logging
+```
+
+### Security Layers
+
+#### 1. Network Security Layer
+- **TLS/HTTPS Enforcement**: All communications encrypted in transit
+- **CORS Protection**: Configurable origin validation prevents unauthorized cross-origin requests
+- **Trusted Proxy Support**: Proper client IP detection through reverse proxies
+
+#### 2. Authentication Layer
+- **API Key Authentication**: Bearer token-based authentication system
+- **Key Management**: Support for multiple keys with individual enable/disable
+- **Secure Key Storage**: Environment variable and secure configuration support
+
+#### 3. Authorization Layer
+- **Permission-Based Access Control**: Granular permissions per API key
+- **Endpoint Protection**: Different permission requirements per endpoint
+- **Principle of Least Privilege**: Minimal permissions by default
+
+#### 4. Application Security Layer
+- **Input Validation**: Comprehensive validation of all request data
+- **Output Sanitization**: Secure error messages without information leakage
+- **SQL Injection Prevention**: Parameterized queries and input sanitization
+
+#### 5. Operational Security Layer
+- **Rate Limiting**: Per-IP request throttling with configurable limits
+- **Audit Logging**: Comprehensive security event logging
+- **Health Monitoring**: Service health checks and metrics
+
+### Permission Model
+
+#### Permission Types
+
+| Permission | Scope | Endpoints | Description |
+|------------|-------|-----------|-------------|
+| `read` | Query Operations | `GET /api/v1/updates/*` | Access to update checking and release information |
+| `write` | Release Management | `POST /api/v1/updates/*/register` | Ability to register new releases |
+| `admin` | Full Access | All endpoints | Complete administrative access |
+
+#### Permission Matrix
+
+```
+Endpoint                                | read | write | admin
+---------------------------------------|------|-------|-------
+GET  /api/v1/updates/{app}/check       |  ✓   |   ✓   |   ✓
+GET  /api/v1/updates/{app}/latest      |  ✓   |   ✓   |   ✓
+GET  /api/v1/updates/{app}/releases    |  ✓   |   ✓   |   ✓
+POST /api/v1/updates/{app}/register    |  ✗   |   ✓   |   ✓
+GET  /health                           |  ✓   |   ✓   |   ✓
+```
+
+#### Permission Inheritance
+- `admin` permission grants access to all operations
+- `write` permission includes all `read` operations
+- Permissions are cumulative, not exclusive
+
+### Security Configuration
+
+#### Production Security Settings
+
+```yaml
+server:
+  tls_enabled: true
+  tls_cert_file: "/etc/ssl/certs/updater.pem"
+  tls_key_file: "/etc/ssl/private/updater.key"
+
+  cors:
+    enabled: true
+    allowed_origins: ["https://api.yourdomain.com"]
+    allowed_methods: ["GET", "POST"]
+    allowed_headers: ["Authorization", "Content-Type"]
+    max_age: 86400
+
+security:
+  enable_auth: true
+  api_keys:
+    - key: "${ADMIN_API_KEY}"
+      name: "Production Admin"
+      permissions: ["admin"]
+      enabled: true
+    - key: "${RELEASE_API_KEY}"
+      name: "Release Publisher"
+      permissions: ["write"]
+      enabled: true
+    - key: "${MONITORING_API_KEY}"
+      name: "Monitoring System"
+      permissions: ["read"]
+      enabled: true
+
+  rate_limit:
+    enabled: true
+    requests_per_minute: 120
+    requests_per_hour: 2000
+    burst_size: 20
+    cleanup_interval: 300s
+
+  trusted_proxies:
+    - "10.0.0.0/8"
+    - "172.16.0.0/12"
+    - "192.168.0.0/16"
+```
+
+### Threat Mitigation
+
+#### Identified Threats and Countermeasures
+
+1. **Unauthorized Release Injection**
+   - **Threat**: Malicious actors registering fake releases
+   - **Mitigation**: API key authentication + write permission requirement
+   - **Detection**: Audit logging of all release operations
+
+2. **API Key Compromise**
+   - **Threat**: Stolen or leaked API keys
+   - **Mitigation**: Permission scoping + key rotation + rate limiting
+   - **Detection**: Unusual usage pattern monitoring
+
+3. **Denial of Service**
+   - **Threat**: Service overwhelm through request flooding
+   - **Mitigation**: Rate limiting + connection limits + graceful degradation
+   - **Detection**: Request rate monitoring and alerting
+
+4. **Version Downgrade Attack**
+   - **Threat**: Forcing clients to use vulnerable versions
+   - **Mitigation**: Checksum validation + version constraint enforcement
+   - **Detection**: Checksum mismatch logging
+
+### Security Monitoring
+
+#### Security Event Logging
+
+All security-relevant events are logged with structured JSON format:
+
+```json
+{
+  "timestamp": "2024-01-15T10:30:00Z",
+  "level": "WARN",
+  "component": "auth",
+  "event": "permission_denied",
+  "message": "Insufficient permissions for endpoint",
+  "client_ip": "192.168.1.100",
+  "api_key_name": "Monitoring System",
+  "endpoint": "/api/v1/updates/myapp/register",
+  "required_permission": "write",
+  "user_permissions": ["read"],
+  "request_id": "req_123456"
+}
+```
+
+#### Monitored Security Events
+
+- Authentication failures and successes
+- Authorization failures (insufficient permissions)
+- Rate limit violations
+- Suspicious request patterns
+- Admin operations (release registration)
+- Configuration changes
+- Health check failures
 
 ### Authentication & Authorization
-- API key authentication for administrative endpoints
-- Rate limiting to prevent abuse
-- Request validation and sanitization
+
+#### API Key Format
+
+```http
+GET /api/v1/updates/myapp/check HTTP/1.1
+Host: updater.example.com
+Authorization: Bearer <base64-encoded-api-key>
+Content-Type: application/json
+```
+
+#### Authentication Flow
+
+1. **Request Reception**: Extract Authorization header
+2. **Format Validation**: Verify Bearer token format
+3. **Key Lookup**: Find matching API key in configuration
+4. **Status Check**: Verify key is enabled
+5. **Context Enhancement**: Add key information to request context
+
+#### Authorization Flow
+
+1. **Endpoint Mapping**: Determine required permission for endpoint
+2. **Permission Check**: Verify API key has required permission
+3. **Access Grant**: Proceed with request processing
+4. **Audit Log**: Record authorization decision
 
 ### Data Integrity
-- Checksum validation for download files
-- HTTPS enforcement for all communications
-- Signed release metadata (future enhancement)
 
-### Privacy
-- Minimal data collection
-- No user tracking or analytics storage
-- Optional usage statistics aggregation
+#### Checksum Validation
+
+- **SHA256 Checksums**: All releases must include SHA256 checksums
+- **Validation**: Optional checksum verification before serving
+- **Storage**: Checksums stored alongside release metadata
+- **Transmission**: Checksums included in API responses
+
+#### HTTPS Enforcement
+
+- **TLS Configuration**: Modern TLS versions (1.2+) required
+- **Certificate Management**: Support for Let's Encrypt and custom certificates
+- **Header Security**: Security headers (HSTS, CSP) configurable
+- **Redirect**: HTTP to HTTPS redirects in production
+
+### Privacy Protection
+
+#### Data Minimization
+
+- **No Personal Data**: Service doesn't collect personally identifiable information
+- **Minimal Logging**: Only necessary operational data logged
+- **Retention Policies**: Configurable log retention periods
+- **Anonymization**: IP addresses can be anonymized in logs
+
+#### Analytics
+
+- **Disabled by Default**: Analytics collection disabled by default
+- **Opt-in**: Explicit configuration required for analytics
+- **Aggregated Only**: No individual user tracking
+- **Configurable**: Granular control over collected metrics
 
 ## Configuration Management
 

@@ -37,8 +37,9 @@ type UpdateCheckRequest struct {
 ```
 
 **Purpose**: Primary endpoint for checking update availability
-**Security**: No sensitive information, all fields validated
+**Security**: Public endpoint requiring no authentication
 **Usage Pattern**: High-frequency endpoint, optimized for performance
+**Authorization**: No API key required - publicly accessible for update checks
 
 **Validation Rules:**
 - ApplicationID: Required, non-empty string
@@ -75,6 +76,8 @@ type LatestVersionRequest struct {
 
 **Purpose**: Get latest version without comparison to current version
 **Use Case**: Initial installation, clean slate updates
+**Security**: Public endpoint requiring no authentication
+**Authorization**: No API key required - publicly accessible for version information
 
 #### ListReleasesRequest
 ```go
@@ -94,6 +97,8 @@ type ListReleasesRequest struct {
 
 **Purpose**: Comprehensive release querying with pagination
 **Features**: Flexible filtering, sorting, and pagination support
+**Security**: Read-only endpoint requiring authentication with `read` permission
+**Authorization**: API key with `read`, `write`, or `admin` permission required
 
 ### Administrative Request Types
 
@@ -115,8 +120,24 @@ type RegisterReleaseRequest struct {
 }
 ```
 
-**Security**: Admin-only operation requiring authentication
+**Security**: Admin-only operation requiring authentication and `write` permission
+**Authorization**: API key must have `write` or `admin` permission
 **Validation**: Comprehensive validation of all security-critical fields
+**Rate Limiting**: Subject to admin operation rate limits
+**Audit Logging**: All registration attempts are logged for security monitoring
+
+**Security Requirements:**
+- Valid API key in Authorization header: `Authorization: Bearer <api-key>`
+- API key must have `write` or `admin` permission
+- HTTPS required in production environments
+- Request size limited to prevent DoS attacks
+
+**Validation Rules:**
+- ApplicationID: Required, must match existing application
+- Version: Required, valid semantic version format
+- DownloadURL: Required, must be valid HTTPS URL
+- Checksum: Required, valid SHA256 hash format
+- ChecksumType: Must be "sha256" (other algorithms deprecated for security)
 
 #### CreateApplicationRequest
 ```go
@@ -130,7 +151,15 @@ type CreateApplicationRequest struct {
 ```
 
 **Purpose**: Register new applications in the system
+**Security**: Admin-only operation requiring authentication and `admin` permission
+**Authorization**: API key must have `admin` permission
 **Requirements**: Admin authentication, unique ID validation
+
+**Security Requirements:**
+- Valid API key in Authorization header: `Authorization: Bearer <api-key>`
+- API key must have `admin` permission
+- HTTPS required in production environments
+- Request size limited to prevent DoS attacks
 
 ### Request Validation System
 
@@ -299,6 +328,12 @@ type HealthCheckResponse struct {
     Metrics    map[string]interface{}       // Performance metrics
 }
 ```
+
+**Purpose**: Service health monitoring and status verification
+**Security**: Public endpoint for basic health status, detailed metrics require authentication
+**Authorization**:
+- Basic health status: No API key required
+- Detailed metrics: API key with `read`, `write`, or `admin` permission required
 
 **Health Status Constants:**
 ```go

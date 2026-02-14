@@ -20,13 +20,12 @@ func SetupRoutes(handlers *Handlers, config *models.Config) *mux.Router {
 	// API prefix
 	api := router.PathPrefix("/api/v1").Subrouter()
 
-	// Update endpoints
-	api.HandleFunc("/updates/{app_id}/check", handlers.CheckForUpdates).Methods("GET")
-	api.HandleFunc("/updates/{app_id}/latest", handlers.GetLatestVersion).Methods("GET")
-	api.HandleFunc("/updates/{app_id}/releases", handlers.ListReleases).Methods("GET")
-	api.HandleFunc("/updates/{app_id}/register", handlers.RegisterRelease).Methods("POST")
+	// Public update endpoints (no authentication required)
+	publicAPI := api.PathPrefix("").Subrouter()
+	publicAPI.HandleFunc("/updates/{app_id}/check", handlers.CheckForUpdates).Methods("GET")
+	publicAPI.HandleFunc("/updates/{app_id}/latest", handlers.GetLatestVersion).Methods("GET")
 
-	// Health check endpoint
+	// Health check endpoint (public with optional enhanced details for authenticated users)
 	router.HandleFunc("/health", handlers.HealthCheck).Methods("GET")
 	router.HandleFunc("/api/v1/health", handlers.HealthCheck).Methods("GET")
 
@@ -38,14 +37,31 @@ func SetupRoutes(handlers *Handlers, config *models.Config) *mux.Router {
 	router.Use(loggingMiddleware)
 	router.Use(recoveryMiddleware)
 
-	// Add authentication middleware if enabled
-	if config.Security.EnableAuth {
-		api.Use(authMiddleware(config.Security))
-	}
-
 	// Add rate limiting if enabled
 	if config.Security.RateLimit.Enabled {
 		router.Use(rateLimitMiddleware(config.Security.RateLimit))
+	}
+
+	// Apply authentication and permission middleware
+	if config.Security.EnableAuth {
+		// Protected endpoints with read permission
+		readAPI := api.PathPrefix("").Subrouter()
+		readAPI.Use(authMiddleware(config.Security))
+		readAPI.Use(RequirePermission(PermissionRead))
+		readAPI.HandleFunc("/updates/{app_id}/releases", handlers.ListReleases).Methods("GET")
+
+		// Protected endpoints with write permission
+		writeAPI := api.PathPrefix("").Subrouter()
+		writeAPI.Use(authMiddleware(config.Security))
+		writeAPI.Use(RequirePermission(PermissionWrite))
+		writeAPI.HandleFunc("/updates/{app_id}/register", handlers.RegisterRelease).Methods("POST")
+
+		// Health endpoint uses optional auth for enhanced details
+		router.Use(OptionalAuth(config.Security))
+	} else {
+		// If auth is disabled, add endpoints without protection (for development)
+		api.HandleFunc("/updates/{app_id}/releases", handlers.ListReleases).Methods("GET")
+		api.HandleFunc("/updates/{app_id}/register", handlers.RegisterRelease).Methods("POST")
 	}
 
 	return router
