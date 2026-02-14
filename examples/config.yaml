@@ -1,0 +1,93 @@
+# Example configuration for the updater service
+server:
+  port: 8080
+  host: "0.0.0.0"
+  read_timeout: 30s
+  write_timeout: 30s
+  idle_timeout: 60s
+  tls_enabled: false
+  # Uncomment and set paths for HTTPS
+  # tls_cert_file: "/path/to/cert.pem"
+  # tls_key_file: "/path/to/key.pem"
+
+  cors:
+    enabled: true
+    allowed_origins:
+      - "*"
+    allowed_methods:
+      - "GET"
+      - "POST"
+      - "PUT"
+      - "DELETE"
+      - "OPTIONS"
+    allowed_headers:
+      - "*"
+    max_age: 86400
+
+storage:
+  type: "json"
+  path: "./data/releases.json"
+  # Database configuration (when using database storage)
+  database:
+    driver: "sqlite3"
+    dsn: ""
+    max_open_conns: 25
+    max_idle_conns: 5
+    conn_max_lifetime: 300s
+    conn_max_idle_time: 300s
+  options: {}
+
+security:
+  # Set to true to enable API key authentication
+  enable_auth: false
+  jwt_secret: "your-jwt-secret-here-change-in-production"
+
+  # Example API keys
+  api_keys:
+    - key: "admin-key-12345"
+      name: "Admin Key"
+      permissions:
+        - "read"
+        - "write"
+      enabled: true
+
+  rate_limit:
+    enabled: true
+    requests_per_minute: 60
+    requests_per_hour: 1000
+    burst_size: 10
+    cleanup_interval: 300s
+
+  trusted_proxies: []
+
+logging:
+  level: "info"  # debug, info, warn, error
+  format: "json"  # json, text
+  output: "stdout"  # stdout, stderr, file
+  # file_path: "/var/log/updater.log"  # Required when output is "file"
+  max_size: 100    # Max size in MB before rotation
+  max_backups: 3   # Max number of backup files
+  max_age: 28      # Max age in days
+  compress: true
+
+cache:
+  enabled: true
+  type: "memory"  # memory, redis
+  ttl: 300s
+
+  # Redis configuration (when using redis cache)
+  redis:
+    addr: "localhost:6379"
+    password: ""
+    db: 0
+    pool_size: 10
+
+  # Memory cache configuration
+  memory:
+    max_size: 1000
+    cleanup_interval: 600s
+
+metrics:
+  enabled: true
+  path: "/metrics"
+  port: 9090

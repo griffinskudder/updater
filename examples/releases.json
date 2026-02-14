@@ -1,0 +1,124 @@
+{
+  "applications": [
+    {
+      "id": "my-desktop-app",
+      "name": "My Desktop Application",
+      "description": "A sample desktop application for demonstration",
+      "platforms": ["windows", "linux", "darwin"],
+      "config": {
+        "auto_update": false,
+        "update_interval": 3600,
+        "required_update": false,
+        "allow_prerelease": false,
+        "analytics_enabled": false,
+        "custom_fields": {}
+      },
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "releases": [
+    {
+      "id": "my-desktop-app-1.0.0-windows-amd64",
+      "application_id": "my-desktop-app",
+      "version": "1.0.0",
+      "platform": "windows",
+      "architecture": "amd64",
+      "download_url": "https://releases.example.com/my-app/v1.0.0/my-app-windows-amd64.exe",
+      "checksum": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456",
+      "checksum_type": "sha256",
+      "file_size": 25165824,
+      "release_notes": "Initial release with core functionality",
+      "release_date": "2024-01-15T10:00:00Z",
+      "required": false,
+      "metadata": {
+        "installer_type": "exe",
+        "signed": "true"
+      },
+      "created_at": "2024-01-15T10:00:00Z",
+      "updated_at": "2024-01-15T10:00:00Z"
+    },
+    {
+      "id": "my-desktop-app-1.0.0-linux-amd64",
+      "application_id": "my-desktop-app",
+      "version": "1.0.0",
+      "platform": "linux",
+      "architecture": "amd64",
+      "download_url": "https://releases.example.com/my-app/v1.0.0/my-app-linux-amd64.tar.gz",
+      "checksum": "b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef1234567a",
+      "checksum_type": "sha256",
+      "file_size": 22020096,
+      "release_notes": "Initial release with core functionality",
+      "release_date": "2024-01-15T10:00:00Z",
+      "required": false,
+      "metadata": {
+        "package_type": "tar.gz",
+        "signed": "true"
+      },
+      "created_at": "2024-01-15T10:00:00Z",
+      "updated_at": "2024-01-15T10:00:00Z"
+    },
+    {
+      "id": "my-desktop-app-1.1.0-windows-amd64",
+      "application_id": "my-desktop-app",
+      "version": "1.1.0",
+      "platform": "windows",
+      "architecture": "amd64",
+      "download_url": "https://releases.example.com/my-app/v1.1.0/my-app-windows-amd64.exe",
+      "checksum": "c3d4e5f6789012345678901234567890abcdef1234567890abcdef1234567ab2",
+      "checksum_type": "sha256",
+      "file_size": 26214400,
+      "release_notes": "Bug fixes and performance improvements:\n- Fixed memory leak in background processing\n- Improved startup time by 30%\n- Added support for high-DPI displays",
+      "release_date": "2024-02-01T14:30:00Z",
+      "required": false,
+      "metadata": {
+        "installer_type": "exe",
+        "signed": "true"
+      },
+      "created_at": "2024-02-01T14:30:00Z",
+      "updated_at": "2024-02-01T14:30:00Z"
+    },
+    {
+      "id": "my-desktop-app-1.1.0-linux-amd64",
+      "application_id": "my-desktop-app",
+      "version": "1.1.0",
+      "platform": "linux",
+      "architecture": "amd64",
+      "download_url": "https://releases.example.com/my-app/v1.1.0/my-app-linux-amd64.tar.gz",
+      "checksum": "d4e5f6789012345678901234567890abcdef1234567890abcdef1234567ab2c3",
+      "checksum_type": "sha256",
+      "file_size": 23068672,
+      "release_notes": "Bug fixes and performance improvements:\n- Fixed memory leak in background processing\n- Improved startup time by 30%\n- Added support for high-DPI displays",
+      "release_date": "2024-02-01T14:30:00Z",
+      "required": false,
+      "metadata": {
+        "package_type": "tar.gz",
+        "signed": "true"
+      },
+      "created_at": "2024-02-01T14:30:00Z",
+      "updated_at": "2024-02-01T14:30:00Z"
+    },
+    {
+      "id": "my-desktop-app-1.2.0-beta.1-windows-amd64",
+      "application_id": "my-desktop-app",
+      "version": "1.2.0-beta.1",
+      "platform": "windows",
+      "architecture": "amd64",
+      "download_url": "https://releases.example.com/my-app/v1.2.0-beta.1/my-app-windows-amd64.exe",
+      "checksum": "e5f6789012345678901234567890abcdef1234567890abcdef1234567ab2c3d4",
+      "checksum_type": "sha256",
+      "file_size": 27262976,
+      "release_notes": "Beta release with new features:\n- New plugin system\n- Dark mode support\n- Enhanced security features\n\nNote: This is a beta release. Please report any issues.",
+      "release_date": "2024-02-10T16:00:00Z",
+      "required": false,
+      "metadata": {
+        "installer_type": "exe",
+        "signed": "true",
+        "beta": "true"
+      },
+      "created_at": "2024-02-10T16:00:00Z",
+      "updated_at": "2024-02-10T16:00:00Z"
+    }
+  ],
+  "last_updated": "2024-02-10T16:00:00Z"
+}

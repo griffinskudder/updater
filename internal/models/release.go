@@ -112,12 +112,14 @@ type ReleaseMetadata struct {
 // - Initialized metadata map for extensibility
 func NewRelease(appID, version, platform, arch, downloadURL string) *Release {
 	now := time.Now()
+	normalizedPlatform := NormalizePlatform(platform)
+	normalizedArch := NormalizeArchitecture(arch)
 	return &Release{
-		ID:            generateReleaseID(appID, version, platform, arch),
+		ID:            generateReleaseID(appID, version, normalizedPlatform, normalizedArch),
 		ApplicationID: appID,
 		Version:       version,
-		Platform:      NormalizePlatform(platform),
-		Architecture:  NormalizeArchitecture(arch),
+		Platform:      normalizedPlatform,
+		Architecture:  normalizedArch,
 		DownloadURL:   downloadURL,
 		ChecksumType:  ChecksumTypeSHA256,
 		Required:      false,
