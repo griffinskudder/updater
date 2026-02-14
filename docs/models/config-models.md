@@ -129,9 +129,7 @@ type StorageConfig struct {
 
 #### Supported Storage Types
 - **json**: File-based JSON storage (development, small deployments)
-- **sqlite**: SQLite database (single-instance production)
-- **postgres**: PostgreSQL database (multi-instance production)
-- **mysql**: MySQL database (high-availability production)
+- **memory**: In-memory storage (development, testing)
 
 #### Database Configuration
 ```go

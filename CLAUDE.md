@@ -54,6 +54,10 @@ make docs-serve  # Start MkDocs development server with Docker
 make docs-build  # Build documentation site with Docker
 make docs-clean  # Clean documentation artifacts
 
+# Database commands
+make sqlc-generate  # Generate Go code from SQL schemas using sqlc
+make sqlc-vet      # Validate SQL schemas and queries
+
 # Show all available commands
 make help
 ```
@@ -119,12 +123,27 @@ The project has a comprehensive models layer implemented and documented. See `do
   - Release management with security and integrity verification
   - API request/response types with validation
   - Comprehensive service configuration system
+- Storage layer (`internal/storage/`) with multiple providers:
+  - JSON file storage with caching and concurrent access
+  - In-memory storage for development/testing
+  - Database foundation using sqlc-generated type-safe queries
+  - Factory pattern for provider instantiation
+  - Comprehensive test coverage with concurrency testing
+- Database schema management:
+  - Migration-friendly folder structure for PostgreSQL and SQLite
+  - sqlc integration for type-safe database operations
+  - Automated code generation from SQL schemas
 - Comprehensive documentation and design rationales
 - Build system (Makefile) with development commands
+- Docker containerization with security-first approach:
+  - Distroless base images for minimal attack surface
+  - Multi-stage builds for optimized image sizes
+  - Security hardening (non-root users, read-only filesystems, dropped capabilities)
+  - Environment-based configuration management
 
 **🚧 Next Steps:**
 - API layer implementation (`internal/api/`)
-- Storage layer implementation (`internal/storage/`)
+- Complete database storage provider implementations
 - Core update logic (`internal/update/`)
 - HTTP server setup and routing
 - Configuration loading and management
@@ -135,8 +154,111 @@ The service follows a layered architecture:
 - **API Layer**: HTTP handlers and routing (planned)
 - **Business Logic**: Update determination and version comparison (planned)
 - **Models Layer**: Data structures and validation ✅ **COMPLETE**
-- **Storage Layer**: Data persistence abstraction (planned)
+- **Storage Layer**: Data persistence abstraction ✅ **COMPLETE**
 - **Configuration**: Service configuration and settings ✅ **COMPLETE**
+
+## Implementation Patterns & Best Practices
+
+This section documents key patterns and approaches used in the codebase to maintain consistency and guide future development.
+
+### Storage Layer Pattern
+
+**Factory Pattern Implementation**
+- **Location**: `internal/storage/factory.go`
+- **Purpose**: Centralized provider instantiation with validation
+- **Pattern**: Abstract Factory with provider registration
+- **Usage**: `factory.Create(config)` returns interface-compliant storage
+- **Benefits**: Easy provider switching, consistent validation, extensibility
+
+**Provider Interface Design**
+- **Location**: `internal/storage/interface.go`
+- **Pattern**: Interface segregation with context support
+- **Key Features**:
+  - All methods accept `context.Context` for cancellation/timeouts
+  - Consistent error handling patterns
+  - Copy-on-return to prevent external mutation
+  - Resource cleanup via `Close()` method
+
+**Concrete Implementations**
+- **JSON Provider**: File-based with caching, concurrent-safe, configurable TTL
+- **Memory Provider**: Fast in-memory for development/testing, concurrent-safe
+- **Database Foundation**: sqlc-generated type-safe queries (PostgreSQL/SQLite)
+
+### Database Schema Management
+
+**Migration-Friendly Structure**
+- **Schema Organization**: Engine-specific folders (`postgres/`, `sqlite/`)
+- **Naming Convention**: `{number}_{description}.sql` (001_initial.sql)
+- **Sequential Numbering**: 3-digit zero-padded for proper ordering
+- **Engine Optimization**: PostgreSQL uses JSONB, SQLite uses TEXT
+
+**sqlc Integration Pattern**
+- **Configuration**: `sqlc.yaml` points to schema folders, not individual files
+- **Code Generation**: Type-safe Go structs and query methods
+- **Query Organization**: Separate files per entity (applications.sql, releases.sql)
+- **Makefile Integration**: `make sqlc-generate` and `make sqlc-vet` commands
+
+### Docker Containerization Pattern
+
+**Security-First Approach**
+- **Base Image**: Distroless for minimal attack surface (3.9MB final image)
+- **Multi-Stage Build**: Separate build and runtime stages for optimization
+- **User Security**: Non-root user (65532:65532) with proper permissions
+- **Filesystem**: Read-only root filesystem with tmpfs for temporary data
+- **Capabilities**: All Linux capabilities dropped for minimal privileges
+
+**Environment-Based Configuration**
+- **Single Dockerfile**: Use environment variables instead of multiple Dockerfiles
+- **Configuration**: `UPDATER_CONFIG_SECTION` for development/production modes
+- **Secrets**: External environment files (`.env.example`) for sensitive data
+- **Resource Limits**: Memory and CPU limits for production deployments
+
+### Testing Patterns
+
+**Comprehensive Coverage Approach**
+- **Unit Tests**: All providers tested independently
+- **Integration Tests**: Factory pattern with real provider creation
+- **Concurrency Tests**: Multi-goroutine access validation
+- **Mock/Fake**: Memory provider serves as fast fake for other layer testing
+- **Error Scenarios**: Negative cases and edge conditions covered
+
+**Test Organization**
+- **Co-located**: `*_test.go` files alongside implementation
+- **Table-Driven**: Multiple scenarios in single test functions
+- **Helper Functions**: Reusable test utilities and setup
+- **Cleanup**: Proper resource cleanup in test teardown
+
+### Configuration Management Pattern
+
+**Hierarchical Structure**
+- **Organization**: Logical grouping (server, storage, security)
+- **Validation**: Built-in validation methods per configuration section
+- **Defaults**: Secure defaults with override capability
+- **Environment Support**: Multiple environments (development, production)
+- **Extensibility**: Easy addition of new configuration sections
+
+### Error Handling Patterns
+
+**Consistent Error Wrapping**
+- **Pattern**: `fmt.Errorf("operation failed: %w", err)` for context
+- **Storage Errors**: Specific error types for different failure modes
+- **Validation**: Structured validation errors with field-specific messages
+- **Context Preservation**: Original error context maintained through layers
+
+### Development Workflow Patterns
+
+**Makefile-Driven Development**
+- **Consistency**: Standardized commands across environments
+- **Docker Integration**: Both local and containerized development
+- **Code Generation**: Automated sqlc and documentation generation
+- **Testing**: Multiple test scenarios (unit, integration, security)
+- **Documentation**: Automated docs building and serving
+
+**Documentation-Driven Development**
+- **Architecture First**: Design documented before implementation
+- **Model Documentation**: Comprehensive model layer documentation
+- **Migration Guides**: Clear schema evolution documentation
+- **Pattern Documentation**: This section for consistency
 
 # IMPORTANT
 
@@ -148,3 +270,5 @@ The service follows a layered architecture:
 - ALWAYS: Add docs to the nav config for the mkdocs site.
 - NEVER: Use emojis.
 - NEVER: Link to files outside the docs directory in documentation inside the docs directory.
+- ALWAYS: Generate code after modifying sql files.
+- NEVER: Use CGO. CGO IS NOT GO.
