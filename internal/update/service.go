@@ -25,36 +25,39 @@ func NewService(storage storage.Storage) *Service {
 func (s *Service) CheckForUpdate(ctx context.Context, req *models.UpdateCheckRequest) (*models.UpdateCheckResponse, error) {
 	// Validate and normalize request
 	if err := req.Validate(); err != nil {
-		return nil, fmt.Errorf("invalid request: %w", err)
+		return nil, NewValidationError("invalid request", err)
 	}
 	req.Normalize()
 
 	// Get application to verify it exists and supports the platform
 	app, err := s.storage.GetApplication(ctx, req.ApplicationID)
 	if err != nil {
-		return nil, fmt.Errorf("application not found: %w", err)
+		return nil, NewApplicationNotFoundError(req.ApplicationID)
 	}
 
 	// Check if application supports the requested platform
 	if !app.SupportsPlatform(req.Platform) {
-		return nil, fmt.Errorf("application %s does not support platform %s", req.ApplicationID, req.Platform)
+		return nil, NewInvalidRequestError(
+			fmt.Sprintf("application %s does not support platform %s", req.ApplicationID, req.Platform),
+			nil,
+		)
 	}
 
 	// Get the latest available release for this platform/architecture
 	latestRelease, err := s.storage.GetLatestRelease(ctx, req.ApplicationID, req.Platform, req.Architecture)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get latest release: %w", err)
+		return nil, NewInternalError("failed to get latest release", err)
 	}
 
 	// Parse current and latest versions for comparison
 	currentVersion, err := semver.NewVersion(req.CurrentVersion)
 	if err != nil {
-		return nil, fmt.Errorf("invalid current version: %w", err)
+		return nil, NewValidationError("invalid current version format", err)
 	}
 
 	latestVersion, err := semver.NewVersion(latestRelease.Version)
 	if err != nil {
-		return nil, fmt.Errorf("invalid latest version: %w", err)
+		return nil, NewInternalError("invalid latest version format", err)
 	}
 
 	response := &models.UpdateCheckResponse{
@@ -68,7 +71,7 @@ func (s *Service) CheckForUpdate(ctx context.Context, req *models.UpdateCheckReq
 			// Look for the latest non-prerelease version
 			releases, err := s.storage.Releases(ctx, req.ApplicationID)
 			if err != nil {
-				return nil, fmt.Errorf("failed to get releases: %w", err)
+				return nil, NewInternalError("failed to get releases", err)
 			}
 
 			var latestStable *models.Release
@@ -122,11 +125,11 @@ func (s *Service) CheckForUpdate(ctx context.Context, req *models.UpdateCheckReq
 		if latestRelease.MinimumVersion != "" {
 			meets, err := latestRelease.MeetsMinimumVersion(req.CurrentVersion)
 			if err != nil {
-				return nil, fmt.Errorf("failed to check minimum version: %w", err)
+				return nil, NewInternalError("failed to check minimum version", err)
 			}
 			if !meets {
-				return nil, fmt.Errorf("current version %s does not meet minimum required version %s for update to %s",
-					req.CurrentVersion, latestRelease.MinimumVersion, latestRelease.Version)
+				return nil, NewInvalidRequestError(fmt.Sprintf("current version %s does not meet minimum required version %s for update to %s",
+					req.CurrentVersion, latestRelease.MinimumVersion, latestRelease.Version), nil)
 			}
 		}
 
@@ -149,39 +152,42 @@ func (s *Service) CheckForUpdate(ctx context.Context, req *models.UpdateCheckReq
 func (s *Service) GetLatestVersion(ctx context.Context, req *models.LatestVersionRequest) (*models.LatestVersionResponse, error) {
 	// Validate and normalize request
 	if err := req.Validate(); err != nil {
-		return nil, fmt.Errorf("invalid request: %w", err)
+		return nil, NewValidationError("invalid request", err)
 	}
 	req.Normalize()
 
 	// Get application to verify it exists and supports the platform
 	app, err := s.storage.GetApplication(ctx, req.ApplicationID)
 	if err != nil {
-		return nil, fmt.Errorf("application not found: %w", err)
+		return nil, NewApplicationNotFoundError(req.ApplicationID)
 	}
 
 	// Check if application supports the requested platform
 	if !app.SupportsPlatform(req.Platform) {
-		return nil, fmt.Errorf("application %s does not support platform %s", req.ApplicationID, req.Platform)
+		return nil, NewInvalidRequestError(
+			fmt.Sprintf("application %s does not support platform %s", req.ApplicationID, req.Platform),
+			nil,
+		)
 	}
 
 	// Get the latest available release for this platform/architecture
 	latestRelease, err := s.storage.GetLatestRelease(ctx, req.ApplicationID, req.Platform, req.Architecture)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get latest release: %w", err)
+		return nil, NewInternalError("failed to get latest release", err)
 	}
 
 	// Handle pre-release filtering
 	if !req.AllowPrerelease {
 		latestVersion, err := semver.NewVersion(latestRelease.Version)
 		if err != nil {
-			return nil, fmt.Errorf("invalid latest version: %w", err)
+			return nil, NewInternalError("invalid latest version", err)
 		}
 
 		if latestVersion.Prerelease() != "" {
 			// Look for the latest non-prerelease version
 			releases, err := s.storage.Releases(ctx, req.ApplicationID)
 			if err != nil {
-				return nil, fmt.Errorf("failed to get releases: %w", err)
+				return nil, NewInternalError("failed to get releases", err)
 			}
 
 			var latestStable *models.Release
@@ -220,7 +226,7 @@ func (s *Service) GetLatestVersion(ctx context.Context, req *models.LatestVersio
 			if latestStable != nil {
 				latestRelease = latestStable
 			} else {
-				return nil, fmt.Errorf("no stable releases found for %s on %s-%s", req.ApplicationID, req.Platform, req.Architecture)
+				return nil, NewApplicationNotFoundError(fmt.Sprintf("%s on %s-%s (no stable releases)", req.ApplicationID, req.Platform, req.Architecture))
 			}
 		}
 	}
@@ -240,14 +246,14 @@ func (s *Service) GetLatestVersion(ctx context.Context, req *models.LatestVersio
 func (s *Service) ListReleases(ctx context.Context, req *models.ListReleasesRequest) (*models.ListReleasesResponse, error) {
 	// Validate and normalize request
 	if err := req.Validate(); err != nil {
-		return nil, fmt.Errorf("invalid request: %w", err)
+		return nil, NewValidationError("invalid request", err)
 	}
 	req.Normalize()
 
 	// Get all releases for the application
 	allReleases, err := s.storage.Releases(ctx, req.ApplicationID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get releases: %w", err)
+		return nil, NewInternalError("failed to get releases", err)
 	}
 
 	// Apply filters
@@ -326,19 +332,19 @@ func (s *Service) ListReleases(ctx context.Context, req *models.ListReleasesRequ
 func (s *Service) RegisterRelease(ctx context.Context, req *models.RegisterReleaseRequest) (*models.RegisterReleaseResponse, error) {
 	// Validate and normalize request
 	if err := req.Validate(); err != nil {
-		return nil, fmt.Errorf("invalid request: %w", err)
+		return nil, NewValidationError("invalid request", err)
 	}
 	req.Normalize()
 
 	// Verify application exists
 	app, err := s.storage.GetApplication(ctx, req.ApplicationID)
 	if err != nil {
-		return nil, fmt.Errorf("application not found: %w", err)
+		return nil, NewApplicationNotFoundError(req.ApplicationID)
 	}
 
 	// Check if application supports the platform
 	if !app.SupportsPlatform(req.Platform) {
-		return nil, fmt.Errorf("application %s does not support platform %s", req.ApplicationID, req.Platform)
+		return nil, NewInvalidRequestError(fmt.Sprintf("application %s does not support platform %s", req.ApplicationID, req.Platform), nil)
 	}
 
 	// Create release from request
@@ -360,12 +366,12 @@ func (s *Service) RegisterRelease(ctx context.Context, req *models.RegisterRelea
 
 	// Validate the created release
 	if err := release.Validate(); err != nil {
-		return nil, fmt.Errorf("invalid release: %w", err)
+		return nil, NewValidationError("invalid release", err)
 	}
 
 	// Save the release
 	if err := s.storage.SaveRelease(ctx, release); err != nil {
-		return nil, fmt.Errorf("failed to save release: %w", err)
+		return nil, NewInternalError("failed to save release", err)
 	}
 
 	return &models.RegisterReleaseResponse{

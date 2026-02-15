@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -25,27 +26,47 @@ func NewHandlers(updateService update.ServiceInterface) *Handlers {
 }
 
 // CheckForUpdates handles update check requests
-// GET /api/v1/updates/{app_id}/check
+// GET /api/v1/updates/{app_id}/check (path variables + query params)
+// POST /api/v1/check (JSON body)
 func (h *Handlers) CheckForUpdates(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	appID := vars["app_id"]
+	var req *models.UpdateCheckRequest
 
-	// Parse query parameters
-	req := &models.UpdateCheckRequest{
-		ApplicationID:   appID,
-		CurrentVersion:  r.URL.Query().Get("current_version"),
-		Platform:        r.URL.Query().Get("platform"),
-		Architecture:    r.URL.Query().Get("architecture"),
-		AllowPrerelease: r.URL.Query().Get("allow_prerelease") == "true",
-		IncludeMetadata: r.URL.Query().Get("include_metadata") == "true",
-		UserAgent:       r.Header.Get("User-Agent"),
-		ClientID:        r.URL.Query().Get("client_id"),
+	if r.Method == http.MethodPost {
+		// Validate content-type for POST requests
+		contentType := r.Header.Get("Content-Type")
+		if contentType == "" || (!strings.HasPrefix(contentType, "application/json")) {
+			h.writeErrorResponse(w, http.StatusUnsupportedMediaType, models.ErrorCodeBadRequest, "Content-Type must be application/json")
+			return
+		}
+
+		// Handle POST request with JSON body
+		var requestBody models.UpdateCheckRequest
+		if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
+			h.writeErrorResponse(w, http.StatusBadRequest, models.ErrorCodeInvalidRequest, "Invalid JSON body")
+			return
+		}
+		req = &requestBody
+	} else {
+		// Handle GET request with path variables and query parameters
+		vars := mux.Vars(r)
+		appID := vars["app_id"]
+
+		req = &models.UpdateCheckRequest{
+			ApplicationID:   appID,
+			CurrentVersion:  r.URL.Query().Get("current_version"),
+			Platform:        r.URL.Query().Get("platform"),
+			Architecture:    r.URL.Query().Get("architecture"),
+			AllowPrerelease: r.URL.Query().Get("allow_prerelease") == "true",
+			IncludeMetadata: r.URL.Query().Get("include_metadata") == "true",
+			UserAgent:       r.Header.Get("User-Agent"),
+			ClientID:        r.URL.Query().Get("client_id"),
+		}
 	}
 
 	// Check for updates
 	response, err := h.updateService.CheckForUpdate(r.Context(), req)
 	if err != nil {
-		h.writeErrorResponse(w, http.StatusBadRequest, models.ErrorCodeBadRequest, err.Error())
+		h.writeServiceErrorResponse(w, err)
 		return
 	}
 
@@ -54,9 +75,21 @@ func (h *Handlers) CheckForUpdates(w http.ResponseWriter, r *http.Request) {
 
 // GetLatestVersion handles latest version requests
 // GET /api/v1/updates/{app_id}/latest
+// GET /api/v1/latest (with app_id in query params)
 func (h *Handlers) GetLatestVersion(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	appID := vars["app_id"]
+
+	// If app_id is not in path, get it from query parameters
+	if appID == "" {
+		appID = r.URL.Query().Get("app_id")
+	}
+
+	// Validate required app_id parameter
+	if appID == "" {
+		h.writeErrorResponse(w, http.StatusBadRequest, models.ErrorCodeInvalidRequest, "app_id parameter is required")
+		return
+	}
 
 	// Parse query parameters
 	req := &models.LatestVersionRequest{
@@ -70,7 +103,7 @@ func (h *Handlers) GetLatestVersion(w http.ResponseWriter, r *http.Request) {
 	// Get latest version
 	response, err := h.updateService.GetLatestVersion(r.Context(), req)
 	if err != nil {
-		h.writeErrorResponse(w, http.StatusBadRequest, models.ErrorCodeBadRequest, err.Error())
+		h.writeServiceErrorResponse(w, err)
 		return
 	}
 
@@ -122,7 +155,7 @@ func (h *Handlers) ListReleases(w http.ResponseWriter, r *http.Request) {
 	// List releases
 	response, err := h.updateService.ListReleases(r.Context(), req)
 	if err != nil {
-		h.writeErrorResponse(w, http.StatusBadRequest, models.ErrorCodeBadRequest, err.Error())
+		h.writeServiceErrorResponse(w, err)
 		return
 	}
 
@@ -150,7 +183,7 @@ func (h *Handlers) RegisterRelease(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		fmt.Printf("SECURITY: Invalid JSON in release registration for app %s by %s\n",
 			appID, getAPIKeyName(securityContext))
-		h.writeErrorResponse(w, http.StatusBadRequest, models.ErrorCodeBadRequest, "Invalid JSON body")
+		h.writeErrorResponse(w, http.StatusBadRequest, models.ErrorCodeInvalidRequest, "Invalid JSON body")
 		return
 	}
 
@@ -162,7 +195,7 @@ func (h *Handlers) RegisterRelease(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Printf("SECURITY: Release registration failed for app %s, version %s by %s: %s\n",
 			appID, req.Version, getAPIKeyName(securityContext), err.Error())
-		h.writeErrorResponse(w, http.StatusBadRequest, models.ErrorCodeBadRequest, err.Error())
+		h.writeServiceErrorResponse(w, err)
 		return
 	}
 
@@ -231,6 +264,22 @@ func (h *Handlers) writeErrorResponse(w http.ResponseWriter, statusCode int, err
 	h.writeJSONResponse(w, statusCode, errorResp)
 }
 
+// writeServiceErrorResponse maps service errors to appropriate HTTP responses
+func (h *Handlers) writeServiceErrorResponse(w http.ResponseWriter, err error) {
+	var serviceError *update.ServiceError
+	if errors.As(err, &serviceError) {
+		h.writeErrorResponse(w, serviceError.StatusCode, serviceError.Code, serviceError.Message)
+	} else {
+		// Check if it's a validation error (for backward compatibility with tests)
+		if strings.Contains(err.Error(), "invalid request") || strings.Contains(err.Error(), "missing required fields") {
+			h.writeErrorResponse(w, http.StatusBadRequest, models.ErrorCodeInvalidRequest, err.Error())
+		} else {
+			// Fallback for unexpected errors
+			h.writeErrorResponse(w, http.StatusInternalServerError, models.ErrorCodeInternalError, err.Error())
+		}
+	}
+}
+
 // splitAndTrim splits a string by delimiter and trims whitespace
 func splitAndTrim(s, delim string) []string {
 	if s == "" {
@@ -255,4 +304,23 @@ func getAPIKeyName(securityContext *SecurityContext) string {
 		return securityContext.APIKey.Name
 	}
 	return "unnamed-key"
+}
+
+// getClientIP extracts the client IP address from the request
+func getClientIP(r *http.Request) string {
+	// Check X-Forwarded-For header first (for proxies)
+	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
+		ips := strings.Split(xff, ",")
+		if len(ips) > 0 {
+			return strings.TrimSpace(ips[0])
+		}
+	}
+
+	// Check X-Real-IP header
+	if xri := r.Header.Get("X-Real-IP"); xri != "" {
+		return xri
+	}
+
+	// Fallback to RemoteAddr
+	return r.RemoteAddr
 }

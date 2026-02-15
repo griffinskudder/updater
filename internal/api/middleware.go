@@ -72,7 +72,8 @@ func RequirePermission(required Permission) mux.MiddlewareFunc {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			securityContext := GetSecurityContext(r)
 
-			if !securityContext.HasPermission(required) {
+			// Check for nil security context or insufficient permissions
+			if securityContext == nil || !securityContext.HasPermission(required) {
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusForbidden)
 

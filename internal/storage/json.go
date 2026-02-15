@@ -63,7 +63,7 @@ func NewJSONStorage(config Config) (*JSONStorage, error) {
 func (j *JSONStorage) ensureFileExists() error {
 	if _, err := os.Stat(j.filePath); os.IsNotExist(err) {
 		// Create directory if it doesn't exist
-		if err := os.MkdirAll(filepath.Dir(j.filePath), 0755); err != nil {
+		if err := os.MkdirAll(filepath.Dir(j.filePath), 0644); err != nil {
 			return fmt.Errorf("failed to create directory: %w", err)
 		}
 

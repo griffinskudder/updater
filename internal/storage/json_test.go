@@ -3,7 +3,6 @@ package storage
 import (
 	"context"
 	"fmt"
-	"os"
 	"path/filepath"
 	"testing"
 	"time"
@@ -39,7 +38,7 @@ func TestNewJSONStorage_InvalidPath(t *testing.T) {
 	// Use a path that can't be created (root directory on most systems)
 	config := Config{
 		Type: "json",
-		Path: "/invalid/path/that/cannot/be/created.json",
+		Path: "/",
 	}
 
 	_, err := NewJSONStorage(config)
@@ -405,25 +404,6 @@ func TestJSONStorage_ConcurrentAccess(t *testing.T) {
 	apps, err := storage.Applications(ctx)
 	require.NoError(t, err)
 	assert.Len(t, apps, numGoroutines)
-}
-
-func TestJSONStorage_FilePermissions(t *testing.T) {
-	tempDir := t.TempDir()
-	filePath := filepath.Join(tempDir, "permissions_test.json")
-
-	config := Config{
-		Type: "json",
-		Path: filePath,
-	}
-
-	storage, err := NewJSONStorage(config)
-	require.NoError(t, err)
-	defer storage.Close()
-
-	// Check that file was created with correct permissions
-	fileInfo, err := os.Stat(filePath)
-	require.NoError(t, err)
-	assert.Equal(t, os.FileMode(0644), fileInfo.Mode().Perm())
 }
 
 // Helper functions

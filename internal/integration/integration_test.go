@@ -96,7 +96,7 @@ func TestIntegration_FullUpdateFlow(t *testing.T) {
 	body, err := json.Marshal(registerRequest)
 	require.NoError(t, err)
 
-	resp, err := http.Post(server.URL+"/api/v1/releases", "application/json", bytes.NewReader(body))
+	resp, err := http.Post(server.URL+"/api/v1/updates/integration-test-app/register", "application/json", bytes.NewReader(body))
 	require.NoError(t, err)
 	defer resp.Body.Close()
 
@@ -125,7 +125,7 @@ func TestIntegration_FullUpdateFlow(t *testing.T) {
 	body, err = json.Marshal(newerRegisterRequest)
 	require.NoError(t, err)
 
-	resp, err = http.Post(server.URL+"/api/v1/releases", "application/json", bytes.NewReader(body))
+	resp, err = http.Post(server.URL+"/api/v1/updates/integration-test-app/register", "application/json", bytes.NewReader(body))
 	require.NoError(t, err)
 	defer resp.Body.Close()
 
@@ -193,7 +193,7 @@ func TestIntegration_FullUpdateFlow(t *testing.T) {
 	assert.Equal(t, "https://releases.example.com/v1.1.0/app-windows-amd64.exe", latestVersionResponse.DownloadURL)
 
 	// Step 7: List all releases
-	resp, err = http.Get(server.URL + "/api/v1/releases?app_id=integration-test-app&platform=windows&architecture=amd64")
+	resp, err = http.Get(server.URL + "/api/v1/updates/integration-test-app/releases?platform=windows&architecture=amd64")
 	require.NoError(t, err)
 	defer resp.Body.Close()
 
@@ -221,7 +221,7 @@ func TestIntegration_FullUpdateFlow(t *testing.T) {
 	err = json.NewDecoder(resp.Body).Decode(&healthResponse)
 	require.NoError(t, err)
 
-	assert.Equal(t, "ok", healthResponse["status"])
+	assert.Equal(t, "healthy", healthResponse["status"])
 	assert.NotEmpty(t, healthResponse["timestamp"])
 }
 
@@ -290,7 +290,7 @@ func TestIntegration_PreReleaseHandling(t *testing.T) {
 	body, err := json.Marshal(registerStable)
 	require.NoError(t, err)
 
-	resp, err := http.Post(server.URL+"/api/v1/releases", "application/json", bytes.NewReader(body))
+	resp, err := http.Post(server.URL+"/api/v1/updates/prerelease-test-app/register", "application/json", bytes.NewReader(body))
 	require.NoError(t, err)
 	resp.Body.Close()
 	assert.Equal(t, http.StatusCreated, resp.StatusCode)
@@ -312,7 +312,7 @@ func TestIntegration_PreReleaseHandling(t *testing.T) {
 	body, err = json.Marshal(registerPrerelease)
 	require.NoError(t, err)
 
-	resp, err = http.Post(server.URL+"/api/v1/releases", "application/json", bytes.NewReader(body))
+	resp, err = http.Post(server.URL+"/api/v1/updates/prerelease-test-app/register", "application/json", bytes.NewReader(body))
 	require.NoError(t, err)
 	resp.Body.Close()
 	assert.Equal(t, http.StatusCreated, resp.StatusCode)
@@ -512,7 +512,7 @@ func TestIntegration_ConcurrentRequests(t *testing.T) {
 	body, err := json.Marshal(registerRequest)
 	require.NoError(t, err)
 
-	resp, err := http.Post(server.URL+"/api/v1/releases", "application/json", bytes.NewReader(body))
+	resp, err := http.Post(server.URL+"/api/v1/updates/concurrent-test-app/register", "application/json", bytes.NewReader(body))
 	require.NoError(t, err)
 	resp.Body.Close()
 
@@ -707,7 +707,7 @@ func TestIntegration_PaginationAndFiltering(t *testing.T) {
 			body, err := json.Marshal(registerRequest)
 			require.NoError(t, err)
 
-			resp, err := http.Post(server.URL+"/api/v1/releases", "application/json", bytes.NewReader(body))
+			resp, err := http.Post(server.URL+"/api/v1/updates/pagination-test-app/register", "application/json", bytes.NewReader(body))
 			require.NoError(t, err)
 			resp.Body.Close()
 			assert.Equal(t, http.StatusCreated, resp.StatusCode)
@@ -715,7 +715,7 @@ func TestIntegration_PaginationAndFiltering(t *testing.T) {
 	}
 
 	// Test 1: List all releases (default pagination)
-	resp, err := http.Get(server.URL + "/api/v1/releases?app_id=pagination-test-app")
+	resp, err := http.Get(server.URL + "/api/v1/updates/pagination-test-app/releases")
 	require.NoError(t, err)
 	defer resp.Body.Close()
 
@@ -727,7 +727,7 @@ func TestIntegration_PaginationAndFiltering(t *testing.T) {
 	assert.Equal(t, 10, listResponse.TotalCount)
 
 	// Test 2: Pagination with limit and offset
-	resp, err = http.Get(server.URL + "/api/v1/releases?app_id=pagination-test-app&limit=3&offset=2")
+	resp, err = http.Get(server.URL + "/api/v1/updates/pagination-test-app/releases?limit=3&offset=2")
 	require.NoError(t, err)
 	defer resp.Body.Close()
 
@@ -740,7 +740,7 @@ func TestIntegration_PaginationAndFiltering(t *testing.T) {
 	assert.Equal(t, 1, listResponse.Page) // Page is calculated as (offset/limit) + 1 = (2/3) + 1 = 0 + 1 = 1 (integer division)
 
 	// Test 3: Platform filtering
-	resp, err = http.Get(server.URL + "/api/v1/releases?app_id=pagination-test-app&platform=windows")
+	resp, err = http.Get(server.URL + "/api/v1/updates/pagination-test-app/releases?platform=windows")
 	require.NoError(t, err)
 	defer resp.Body.Close()
 
@@ -753,7 +753,7 @@ func TestIntegration_PaginationAndFiltering(t *testing.T) {
 	}
 
 	// Test 4: Combined filtering and pagination
-	resp, err = http.Get(server.URL + "/api/v1/releases?app_id=pagination-test-app&platform=linux&limit=2&offset=1")
+	resp, err = http.Get(server.URL + "/api/v1/updates/pagination-test-app/releases?platform=linux&limit=2&offset=1")
 	require.NoError(t, err)
 	defer resp.Body.Close()
 

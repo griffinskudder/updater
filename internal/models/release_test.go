@@ -515,10 +515,10 @@ func TestRelease_VerifyChecksum(t *testing.T) {
 func TestRelease_SetMetadata(t *testing.T) {
 	release := &Release{
 		Metadata:  nil,
-		UpdatedAt: time.Now().Add(-time.Hour), // Set to past time
+		UpdatedAt: time.Now(),
 	}
 
-	beforeUpdate := time.Now()
+	beforeUpdate := time.Now().Add(-time.Hour) // Set to past time
 	release.SetMetadata("key1", "value1")
 
 	assert.NotNil(t, release.Metadata)

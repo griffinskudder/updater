@@ -12,7 +12,7 @@ func TestFactory(t *testing.T) {
 
 	t.Run("GetSupportedProviders", func(t *testing.T) {
 		providers := factory.GetSupportedProviders()
-		expected := []string{"json", "memory", "postgres", "sqlite"}
+		expected := []string{models.StorageTypeJSON, models.StorageTypeMemory, models.StorageTypePostgres, models.StorageTypeSQLite}
 
 		if len(providers) != len(expected) {
 			t.Errorf("Expected %d providers, got %d", len(expected), len(providers))
@@ -34,7 +34,7 @@ func TestFactory(t *testing.T) {
 			{
 				name: "valid json config",
 				config: models.StorageConfig{
-					Type: "json",
+					Type: models.StorageTypeJSON,
 					Path: "/tmp/test.json",
 				},
 				expectErr: false,
@@ -42,7 +42,7 @@ func TestFactory(t *testing.T) {
 			{
 				name: "valid memory config",
 				config: models.StorageConfig{
-					Type: "memory",
+					Type: models.StorageTypeMemory,
 				},
 				expectErr: false,
 			},
@@ -56,14 +56,14 @@ func TestFactory(t *testing.T) {
 			{
 				name: "json without path",
 				config: models.StorageConfig{
-					Type: "json",
+					Type: models.StorageTypeJSON,
 				},
 				expectErr: true,
 			},
 			{
 				name: "valid postgres config",
 				config: models.StorageConfig{
-					Type: "postgres",
+					Type: models.StorageTypePostgres,
 					Database: models.DatabaseConfig{
 						DSN: "postgres://user:pass@localhost/dbname",
 					},
@@ -73,7 +73,7 @@ func TestFactory(t *testing.T) {
 			{
 				name: "valid sqlite config",
 				config: models.StorageConfig{
-					Type: "sqlite",
+					Type: models.StorageTypeSQLite,
 					Database: models.DatabaseConfig{
 						DSN: "file:test.db",
 					},
@@ -83,14 +83,14 @@ func TestFactory(t *testing.T) {
 			{
 				name: "postgres without DSN",
 				config: models.StorageConfig{
-					Type: "postgres",
+					Type: models.StorageTypePostgres,
 				},
 				expectErr: true,
 			},
 			{
 				name: "sqlite without DSN",
 				config: models.StorageConfig{
-					Type: "sqlite",
+					Type: models.StorageTypeSQLite,
 				},
 				expectErr: true,
 			},
@@ -119,7 +119,7 @@ func TestFactory(t *testing.T) {
 			defer os.RemoveAll(tempDir)
 
 			config := models.StorageConfig{
-				Type: "json",
+				Type: models.StorageTypeJSON,
 				Path: filepath.Join(tempDir, "test.json"),
 			}
 
@@ -141,7 +141,7 @@ func TestFactory(t *testing.T) {
 		// Test Memory storage creation
 		t.Run("Memory Storage", func(t *testing.T) {
 			config := models.StorageConfig{
-				Type: "memory",
+				Type: models.StorageTypeMemory,
 			}
 
 			storage, err := factory.Create(config)

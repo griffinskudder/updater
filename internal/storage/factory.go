@@ -30,13 +30,13 @@ func (f *Factory) Create(config models.StorageConfig) (Storage, error) {
 	}
 
 	switch config.Type {
-	case "json":
+	case models.StorageTypeJSON:
 		return NewJSONStorage(storageConfig)
-	case "memory":
+	case models.StorageTypeMemory:
 		return NewMemoryStorage(storageConfig)
-	case "postgres":
+	case models.StorageTypePostgres:
 		return NewPostgresStorage(storageConfig)
-	case "sqlite":
+	case models.StorageTypeSQLite:
 		return NewSQLiteStorage(storageConfig)
 	default:
 		return nil, fmt.Errorf("unsupported storage type: %s", config.Type)
@@ -45,19 +45,19 @@ func (f *Factory) Create(config models.StorageConfig) (Storage, error) {
 
 // GetSupportedProviders returns a list of all supported storage provider types
 func (f *Factory) GetSupportedProviders() []string {
-	return []string{"json", "memory", "postgres", "sqlite"}
+	return []string{models.StorageTypeJSON, models.StorageTypeMemory, models.StorageTypePostgres, models.StorageTypeSQLite}
 }
 
 // ValidateConfig validates that a storage configuration is valid for its type
 func (f *Factory) ValidateConfig(config models.StorageConfig) error {
 	switch config.Type {
-	case "json":
+	case models.StorageTypeJSON:
 		if config.Path == "" {
 			return fmt.Errorf("path is required for JSON storage")
 		}
-	case "memory":
+	case models.StorageTypeMemory:
 		// Memory storage requires no additional configuration
-	case "postgres", "sqlite":
+	case models.StorageTypePostgres, models.StorageTypeSQLite:
 		if config.Database.DSN == "" {
 			return fmt.Errorf("database DSN is required for %s storage", config.Type)
 		}

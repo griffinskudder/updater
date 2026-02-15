@@ -7,13 +7,17 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
 	"updater/internal/models"
+	"updater/internal/update"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
+
 
 // TestSecurityContext tests the security context functionality
 func TestSecurityContext(t *testing.T) {
@@ -373,8 +377,27 @@ func TestEndpointSecurity(t *testing.T) {
 		},
 	}
 
-	// Mock handlers
-	mockHandlers := &Handlers{}
+	// Mock handlers with update service
+	mockUpdateService := &MockUpdateService{}
+
+	// Set up mock expectations to return application not found for all requests
+	mockUpdateService.On("CheckForUpdate", mock.Anything, mock.Anything).
+		Return((*models.UpdateCheckResponse)(nil), update.NewApplicationNotFoundError("test-app"))
+	mockUpdateService.On("GetLatestVersion", mock.Anything, mock.Anything).
+		Return((*models.LatestVersionResponse)(nil), update.NewApplicationNotFoundError("test-app"))
+	mockUpdateService.On("ListReleases", mock.Anything, mock.Anything).
+		Return((*models.ListReleasesResponse)(nil), update.NewApplicationNotFoundError("test-app"))
+	mockUpdateService.On("RegisterRelease", mock.Anything, mock.MatchedBy(func(req *models.RegisterReleaseRequest) bool {
+		return req.Version == ""
+	})).Return((*models.RegisterReleaseResponse)(nil), update.NewInvalidRequestError("invalid request: missing required fields", nil))
+	mockUpdateService.On("RegisterRelease", mock.Anything, mock.MatchedBy(func(req *models.RegisterReleaseRequest) bool {
+		return req.Version != ""
+	})).Return(&models.RegisterReleaseResponse{
+		ID:      "test-id",
+		Message: "Release registered successfully",
+	}, nil)
+
+	mockHandlers := NewHandlers(mockUpdateService)
 
 	// Setup routes
 	router := SetupRoutes(mockHandlers, config)
@@ -440,7 +463,7 @@ func TestEndpointSecurity(t *testing.T) {
 			method:         "POST",
 			path:           "/api/v1/updates/test-app/register",
 			authHeader:     "Bearer write-key-456",
-			expectedStatus: http.StatusNotFound, // Handler not implemented, but should pass auth
+			expectedStatus: http.StatusCreated, // Mock returns successful response
 			description:    "Release registration should accept write permission",
 		},
 		{
@@ -448,7 +471,7 @@ func TestEndpointSecurity(t *testing.T) {
 			method:         "POST",
 			path:           "/api/v1/updates/test-app/register",
 			authHeader:     "Bearer admin-key-789",
-			expectedStatus: http.StatusNotFound, // Handler not implemented, but should pass auth
+			expectedStatus: http.StatusCreated, // Mock returns successful response
 			description:    "Release registration should accept admin permission",
 		},
 		{
@@ -456,15 +479,23 @@ func TestEndpointSecurity(t *testing.T) {
 			method:         "GET",
 			path:           "/health",
 			authHeader:     "",
-			expectedStatus: http.StatusNotFound, // Handler not implemented, but should pass auth
+			expectedStatus: http.StatusOK, // Health check should return 200 OK
 			description:    "Health check should be publicly accessible",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Create request
-			req := httptest.NewRequest(tt.method, tt.path, bytes.NewReader([]byte(`{"test": "data"}`)))
+			// Create request with proper payload for POST requests
+			var body []byte
+			if tt.method == "POST" {
+				// Send a valid registration request
+				body = []byte(`{"version": "1.0.0", "platform": "windows", "architecture": "amd64", "download_url": "https://example.com/download.exe"}`)
+			} else {
+				body = []byte(`{"test": "data"}`)
+			}
+
+			req := httptest.NewRequest(tt.method, tt.path, bytes.NewReader(body))
 			if tt.authHeader != "" {
 				req.Header.Set("Authorization", tt.authHeader)
 			}
@@ -506,7 +537,22 @@ func TestSecurityVulnerabilities(t *testing.T) {
 		},
 	}
 
-	mockHandlers := &Handlers{}
+	mockUpdateService := &MockUpdateService{}
+
+	// Set up mock expectations for vulnerability tests
+	mockUpdateService.On("CheckForUpdate", mock.Anything, mock.Anything).
+		Return((*models.UpdateCheckResponse)(nil), update.NewApplicationNotFoundError("test-app")).Maybe()
+	mockUpdateService.On("GetLatestVersion", mock.Anything, mock.Anything).
+		Return((*models.LatestVersionResponse)(nil), update.NewApplicationNotFoundError("test-app")).Maybe()
+	mockUpdateService.On("ListReleases", mock.Anything, mock.Anything).
+		Return((*models.ListReleasesResponse)(nil), update.NewApplicationNotFoundError("test-app")).Maybe()
+	mockUpdateService.On("RegisterRelease", mock.Anything, mock.Anything).
+		Return(&models.RegisterReleaseResponse{
+			ID:      "test-id",
+			Message: "Release registered successfully",
+		}, nil).Maybe()
+
+	mockHandlers := NewHandlers(mockUpdateService)
 	router := SetupRoutes(mockHandlers, config)
 
 	t.Run("SQL Injection Protection", func(t *testing.T) {
@@ -518,7 +564,9 @@ func TestSecurityVulnerabilities(t *testing.T) {
 		}
 
 		for _, maliciousInput := range maliciousInputs {
-			path := fmt.Sprintf("/api/v1/updates/%s/check", maliciousInput)
+			// Properly URL-encode the malicious input to prevent NewRequest parsing issues
+			encodedInput := url.QueryEscape(maliciousInput)
+			path := fmt.Sprintf("/api/v1/updates/%s/check", encodedInput)
 			req := httptest.NewRequest("GET", path, nil)
 			rr := httptest.NewRecorder()
 
@@ -606,6 +654,7 @@ func TestSecurityVulnerabilities(t *testing.T) {
 		// Should handle large payloads gracefully (either reject or process)
 		assert.True(t, rr.Code == http.StatusRequestEntityTooLarge ||
 			rr.Code == http.StatusBadRequest ||
+			rr.Code == http.StatusCreated || // Mock might accept the payload
 			rr.Code == http.StatusNotFound, // Handler not implemented
 			"Large payload should be handled gracefully, got: %d", rr.Code)
 	})
@@ -656,7 +705,13 @@ func TestRateLimiting(t *testing.T) {
 		},
 	}
 
-	mockHandlers := &Handlers{}
+	mockUpdateService := &MockUpdateService{}
+
+	// Set up mock expectations for rate limiting tests
+	mockUpdateService.On("CheckForUpdate", mock.Anything, mock.Anything).
+		Return((*models.UpdateCheckResponse)(nil), update.NewApplicationNotFoundError("test")).Maybe()
+
+	mockHandlers := NewHandlers(mockUpdateService)
 	router := SetupRoutes(mockHandlers, config)
 
 	// Simulate multiple requests from the same IP
@@ -700,7 +755,13 @@ func TestSecurityHeaders(t *testing.T) {
 		},
 	}
 
-	mockHandlers := &Handlers{}
+	mockUpdateService := &MockUpdateService{}
+
+	// Set up mock expectations for header tests
+	mockUpdateService.On("CheckForUpdate", mock.Anything, mock.Anything).
+		Return((*models.UpdateCheckResponse)(nil), update.NewApplicationNotFoundError("test")).Maybe()
+
+	mockHandlers := NewHandlers(mockUpdateService)
 	router := SetupRoutes(mockHandlers, config)
 
 	t.Run("CORS Headers", func(t *testing.T) {

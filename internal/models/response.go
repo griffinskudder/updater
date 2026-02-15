@@ -223,14 +223,16 @@ const (
 // - Machine-readable for client error handling
 // - Extensible for service-specific errors
 const (
-	ErrorCodeNotFound           = "NOT_FOUND"           // 404: Resource doesn't exist
-	ErrorCodeBadRequest         = "BAD_REQUEST"         // 400: Invalid request format
-	ErrorCodeValidation         = "VALIDATION_ERROR"    // 422: Input validation failed
-	ErrorCodeInternalError      = "INTERNAL_ERROR"      // 500: Server-side error
-	ErrorCodeUnauthorized       = "UNAUTHORIZED"        // 401: Authentication required
-	ErrorCodeForbidden          = "FORBIDDEN"           // 403: Permission denied
-	ErrorCodeConflict           = "CONFLICT"            // 409: Resource conflict
-	ErrorCodeServiceUnavailable = "SERVICE_UNAVAILABLE" // 503: Service temporarily down
+	ErrorCodeNotFound            = "NOT_FOUND"            // 404: Resource doesn't exist
+	ErrorCodeApplicationNotFound = "APPLICATION_NOT_FOUND" // 404: Application doesn't exist
+	ErrorCodeBadRequest          = "BAD_REQUEST"          // 400: Invalid request format
+	ErrorCodeInvalidRequest      = "INVALID_REQUEST"      // 400: Invalid request data
+	ErrorCodeValidation          = "VALIDATION_ERROR"     // 422: Input validation failed
+	ErrorCodeInternalError       = "INTERNAL_ERROR"       // 500: Server-side error
+	ErrorCodeUnauthorized        = "UNAUTHORIZED"         // 401: Authentication required
+	ErrorCodeForbidden           = "FORBIDDEN"            // 403: Permission denied
+	ErrorCodeConflict            = "CONFLICT"             // 409: Resource conflict
+	ErrorCodeServiceUnavailable  = "SERVICE_UNAVAILABLE"  // 503: Service temporarily down
 )
 
 func NewErrorResponse(message string, code string) *ErrorResponse {

@@ -24,10 +24,22 @@ func SetupRoutes(handlers *Handlers, config *models.Config) *mux.Router {
 	publicAPI := api.PathPrefix("").Subrouter()
 	publicAPI.HandleFunc("/updates/{app_id}/check", handlers.CheckForUpdates).Methods("GET")
 	publicAPI.HandleFunc("/updates/{app_id}/latest", handlers.GetLatestVersion).Methods("GET")
+	publicAPI.HandleFunc("/check", handlers.CheckForUpdates).Methods("POST")  // POST version with JSON body
+	publicAPI.HandleFunc("/check", methodNotAllowedHandler).Methods("GET", "PUT", "DELETE", "PATCH") // Explicitly handle other methods
+	publicAPI.HandleFunc("/latest", handlers.GetLatestVersion).Methods("GET")  // GET version for compatibility
 
 	// Health check endpoint (public with optional enhanced details for authenticated users)
 	router.HandleFunc("/health", handlers.HealthCheck).Methods("GET")
 	router.HandleFunc("/api/v1/health", handlers.HealthCheck).Methods("GET")
+
+	// Add OPTIONS handler for all API routes
+	api.PathPrefix("").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		w.WriteHeader(http.StatusNotFound)
+	}).Methods("OPTIONS")
 
 	// Add middleware
 	if config.Server.CORS.Enabled {
@@ -41,6 +53,14 @@ func SetupRoutes(handlers *Handlers, config *models.Config) *mux.Router {
 	if config.Security.RateLimit.Enabled {
 		router.Use(rateLimitMiddleware(config.Security.RateLimit))
 	}
+
+	// Add method not allowed handler
+	router.MethodNotAllowedHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		errorResp := models.NewErrorResponse("Method not allowed", models.ErrorCodeInvalidRequest)
+		json.NewEncoder(w).Encode(errorResp)
+	})
 
 	// Apply authentication and permission middleware
 	if config.Security.EnableAuth {
@@ -65,6 +85,14 @@ func SetupRoutes(handlers *Handlers, config *models.Config) *mux.Router {
 	}
 
 	return router
+}
+
+// methodNotAllowedHandler handles requests with invalid HTTP methods
+func methodNotAllowedHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusMethodNotAllowed)
+	errorResp := models.NewErrorResponse("Method not allowed", models.ErrorCodeInvalidRequest)
+	json.NewEncoder(w).Encode(errorResp)
 }
 
 // corsMiddleware handles Cross-Origin Resource Sharing
@@ -232,20 +260,3 @@ func joinStrings(slice []string, separator string) string {
 	return strings.Join(slice, separator)
 }
 
-func getClientIP(r *http.Request) string {
-	// Check X-Forwarded-For header first (for proxies)
-	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
-		ips := strings.Split(xff, ",")
-		if len(ips) > 0 {
-			return strings.TrimSpace(ips[0])
-		}
-	}
-
-	// Check X-Real-IP header
-	if xri := r.Header.Get("X-Real-IP"); xri != "" {
-		return xri
-	}
-
-	// Fallback to RemoteAddr
-	return r.RemoteAddr
-}

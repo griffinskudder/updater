@@ -196,12 +196,12 @@ storage:
 func TestLoad_WithEnvironmentVariables(t *testing.T) {
 	// Set environment variables
 	originalEnv := map[string]string{
-		"UPDATER_SERVER_PORT":          os.Getenv("UPDATER_SERVER_PORT"),
-		"UPDATER_SERVER_HOST":          os.Getenv("UPDATER_SERVER_HOST"),
-		"UPDATER_STORAGE_TYPE":         os.Getenv("UPDATER_STORAGE_TYPE"),
-		"UPDATER_STORAGE_PATH":         os.Getenv("UPDATER_STORAGE_PATH"),
-		"UPDATER_SECURITY_ENABLE_AUTH": os.Getenv("UPDATER_SECURITY_ENABLE_AUTH"),
-		"UPDATER_LOGGING_LEVEL":        os.Getenv("UPDATER_LOGGING_LEVEL"),
+		"UPDATER_PORT":         os.Getenv("UPDATER_PORT"),
+		"UPDATER_HOST":         os.Getenv("UPDATER_HOST"),
+		"UPDATER_STORAGE_TYPE": os.Getenv("UPDATER_STORAGE_TYPE"),
+		"UPDATER_STORAGE_PATH": os.Getenv("UPDATER_STORAGE_PATH"),
+		"UPDATER_ENABLE_AUTH":  os.Getenv("UPDATER_ENABLE_AUTH"),
+		"UPDATER_LOG_LEVEL":    os.Getenv("UPDATER_LOG_LEVEL"),
 	}
 
 	// Clean up after test
@@ -216,12 +216,12 @@ func TestLoad_WithEnvironmentVariables(t *testing.T) {
 	}()
 
 	// Set test environment variables
-	os.Setenv("UPDATER_SERVER_PORT", "9999")
-	os.Setenv("UPDATER_SERVER_HOST", "127.0.0.1")
+	os.Setenv("UPDATER_PORT", "9999")
+	os.Setenv("UPDATER_HOST", "127.0.0.1")
 	os.Setenv("UPDATER_STORAGE_TYPE", "memory")
 	os.Setenv("UPDATER_STORAGE_PATH", "/tmp/test.json")
-	os.Setenv("UPDATER_SECURITY_ENABLE_AUTH", "true")
-	os.Setenv("UPDATER_LOGGING_LEVEL", "warn")
+	os.Setenv("UPDATER_ENABLE_AUTH", "true")
+	os.Setenv("UPDATER_LOG_LEVEL", "warn")
 
 	tempDir := t.TempDir()
 	configFile := filepath.Join(tempDir, "env_config.yaml")
@@ -261,7 +261,7 @@ logging:
 func TestLoad_NonExistentFile(t *testing.T) {
 	_, err := Load("/non/existent/path.yaml")
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "failed to read config file")
+	assert.Contains(t, err.Error(), "config file not found")
 }
 
 func TestLoad_InvalidYAML(t *testing.T) {
@@ -280,7 +280,7 @@ server:
 
 	_, err = Load(configFile)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "failed to unmarshal config")
+	assert.Contains(t, err.Error(), "failed to parse YAML config")
 }
 
 func TestLoad_EmptyConfigFile(t *testing.T) {
@@ -337,7 +337,7 @@ server:
   port: 8080
 
 storage:
-  type: "database"
+  type: "postgres"
   path: ""
   database:
     driver: "postgres"
@@ -354,7 +354,7 @@ storage:
 	config, err := Load(configFile)
 	require.NoError(t, err)
 
-	assert.Equal(t, "database", config.Storage.Type)
+	assert.Equal(t, "postgres", config.Storage.Type)
 	assert.Equal(t, "postgres", config.Storage.Database.Driver)
 	assert.Equal(t, "postgres://user:pass@localhost/updater", config.Storage.Database.DSN)
 	assert.Equal(t, 50, config.Storage.Database.MaxOpenConns)
@@ -516,6 +516,11 @@ func TestValidate_ValidConfig(t *testing.T) {
 			Type: "json",
 			Path: "./test.json",
 		},
+		Logging: models.LoggingConfig{
+			Level:  "error",
+			Format: "text",
+			Output: "stdout",
+		},
 	}
 
 	err := config.Validate()
@@ -553,7 +558,7 @@ func TestValidate_EmptyStorageType(t *testing.T) {
 
 	err := config.Validate()
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "storage type cannot be empty")
+	assert.Contains(t, err.Error(), "invalid storage type")
 }
 
 func TestValidate_TLSEnabledWithoutCerts(t *testing.T) {
@@ -572,5 +577,5 @@ func TestValidate_TLSEnabledWithoutCerts(t *testing.T) {
 
 	err := config.Validate()
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "TLS cert file and key file must be specified when TLS is enabled")
+	assert.Contains(t, err.Error(), "TLS cert file is required when TLS is enabled")
 }

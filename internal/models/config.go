@@ -16,6 +16,14 @@ import (
 	"time"
 )
 
+// Storage type constants
+const (
+	StorageTypeJSON     = "json"
+	StorageTypeMemory   = "memory"
+	StorageTypePostgres = "postgres"
+	StorageTypeSQLite   = "sqlite"
+)
+
 // Config is the root configuration structure containing all service settings.
 //
 // Configuration Structure:
@@ -282,7 +290,7 @@ func (sc *ServerConfig) Validate() error {
 }
 
 func (stc *StorageConfig) Validate() error {
-	validTypes := []string{"json", "memory"}
+	validTypes := []string{StorageTypeJSON, StorageTypeMemory, StorageTypePostgres, StorageTypeSQLite}
 	found := false
 	for _, vt := range validTypes {
 		if stc.Type == vt {
@@ -294,16 +302,16 @@ func (stc *StorageConfig) Validate() error {
 		return fmt.Errorf("invalid storage type: %s", stc.Type)
 	}
 
-	if stc.Type == "json" && stc.Path == "" {
+	if stc.Type == StorageTypeJSON && stc.Path == "" {
 		return errors.New("path is required for JSON storage")
 	}
 
-	if stc.Type == "memory" {
+	if stc.Type == StorageTypeMemory {
 		// Memory storage requires no additional configuration
 		return nil
 	}
 
-	if stc.Type != "json" && stc.Type != "memory" && stc.Database.DSN == "" {
+	if (stc.Type == StorageTypePostgres || stc.Type == StorageTypeSQLite) && stc.Database.DSN == "" {
 		return errors.New("database DSN is required for database storage")
 	}
 

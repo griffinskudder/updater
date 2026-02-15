@@ -215,7 +215,7 @@ func TestService_CheckForUpdate(t *testing.T) {
 				Architecture:   "amd64",
 			},
 			expectError:   true,
-			errorContains: "application not found",
+			errorContains: "not found",
 		},
 		{
 			name: "unsupported platform",
@@ -503,7 +503,7 @@ func TestService_RegisterRelease_Validation(t *testing.T) {
 				ChecksumType:  "sha256",
 			},
 			expectError:   true,
-			errorContains: "application not found",
+			errorContains: "not found",
 		},
 		{
 			name: "unsupported platform",
