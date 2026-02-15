@@ -40,6 +40,8 @@ nav:
   - Security:
     - Overview: SECURITY.md
     - Deployments: DEPLOYMENT_SECURITY.md
+  - Logging: logging.md
+  - Storage: storage.md
   - Models:
     - Overview: models/index.md
     - Version Models: models/version-models.md
