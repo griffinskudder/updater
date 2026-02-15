@@ -1,6 +1,3 @@
-SHELL := C:/WINDOWS/System32/WindowsPowerShell/v1.0/powershell.exe
-.SHELLFLAGS := -NoProfile -Command
-
 .PHONY: build run test fmt vet clean tidy check docs-serve docs-build docs-clean \
 	docker-build docker-scan docker-run docker-dev docker-prod \
 	docker-clean docker-push docker-obs-up docker-obs-down \
@@ -28,10 +25,10 @@ vet:
 
 # Clean build artifacts
 clean:
-	if (Test-Path bin) { Remove-Item -Recurse -Force bin }
+	rm -rf bin
 
 # Tidy dependencies
-tidy:/comm
+tidy:
 	go mod tidy
 
 # Run all checks (format, vet, test)
@@ -50,7 +47,7 @@ docs-build:
 # Clean built documentation
 docs-clean:
 	@echo "Cleaning documentation build artifacts..."
-	if (Test-Path site) { Remove-Item -Recurse -Force site }
+	rm -rf site
 
 # =============================================================================
 # Docker Commands
@@ -59,12 +56,12 @@ docs-clean:
 # Build Docker image
 docker-build:
 	@echo "Building secure Docker image..."
-	& ./scripts/docker-build.sh
+	./scripts/docker-build.sh
 
 # Scan Docker image for vulnerabilities
 docker-scan:
 	@echo "Scanning Docker image for vulnerabilities..."
-	& ./scripts/docker-build.sh --scan
+	./scripts/docker-build.sh --scan
 
 # Run Docker container with security defaults
 docker-run:
@@ -112,7 +109,7 @@ docker-clean:
 # Push Docker image to registry
 docker-push:
 	@echo "Building and pushing Docker image to registry..."
-	& ./scripts/docker-build.sh --push
+	./scripts/docker-build.sh --push
 
 # =============================================================================
 # Database Commands

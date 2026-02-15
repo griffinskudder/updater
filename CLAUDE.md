@@ -110,6 +110,6 @@ See `docs/ARCHITECTURE.md` for full design details and rationales.
 
 ## Gotchas
 
-- **Makefile uses PowerShell**: `SHELL` is set to PowerShell on Windows. Clean/path commands use PowerShell syntax.
+- **Makefile requires POSIX shell**: On Windows, GNU Make + Git for Windows (which provides `sh`) are needed. All Makefile commands use POSIX syntax.
 - **Config loading**: Use `-config path/to/config.yaml` CLI flag. Environment variables override file values.
 - **`make docs-serve`/`docs-build` require Docker**: MkDocs runs in a container, not locally installed.
