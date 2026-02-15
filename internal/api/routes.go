@@ -91,12 +91,44 @@ func SetupRoutes(handlers *Handlers, config *models.Config, opts ...RouteOption)
 		writeAPI.Use(RequirePermission(PermissionWrite))
 		writeAPI.HandleFunc("/updates/{app_id}/register", handlers.RegisterRelease).Methods("POST")
 
+		// Application management endpoints (read permission)
+		appReadAPI := api.PathPrefix("/applications").Subrouter()
+		appReadAPI.Use(authMiddleware(config.Security))
+		appReadAPI.Use(RequirePermission(PermissionRead))
+		appReadAPI.HandleFunc("", handlers.ListApplications).Methods("GET")
+		appReadAPI.HandleFunc("/{app_id}", handlers.GetApplication).Methods("GET")
+
+		// Application management endpoints (write permission)
+		appWriteAPI := api.PathPrefix("/applications").Subrouter()
+		appWriteAPI.Use(authMiddleware(config.Security))
+		appWriteAPI.Use(RequirePermission(PermissionWrite))
+		appWriteAPI.HandleFunc("", handlers.CreateApplication).Methods("POST")
+
+		// Application management endpoints (admin permission)
+		appAdminAPI := api.PathPrefix("/applications").Subrouter()
+		appAdminAPI.Use(authMiddleware(config.Security))
+		appAdminAPI.Use(RequirePermission(PermissionAdmin))
+		appAdminAPI.HandleFunc("/{app_id}", handlers.UpdateApplication).Methods("PUT")
+		appAdminAPI.HandleFunc("/{app_id}", handlers.DeleteApplication).Methods("DELETE")
+
+		// Release deletion (admin permission)
+		adminAPI := api.PathPrefix("").Subrouter()
+		adminAPI.Use(authMiddleware(config.Security))
+		adminAPI.Use(RequirePermission(PermissionAdmin))
+		adminAPI.HandleFunc("/updates/{app_id}/releases/{version}/{platform}/{arch}", handlers.DeleteRelease).Methods("DELETE")
+
 		// Health endpoint uses optional auth for enhanced details
 		router.Use(OptionalAuth(config.Security))
 	} else {
 		// If auth is disabled, add endpoints without protection (for development)
 		api.HandleFunc("/updates/{app_id}/releases", handlers.ListReleases).Methods("GET")
 		api.HandleFunc("/updates/{app_id}/register", handlers.RegisterRelease).Methods("POST")
+		api.HandleFunc("/applications", handlers.ListApplications).Methods("GET")
+		api.HandleFunc("/applications/{app_id}", handlers.GetApplication).Methods("GET")
+		api.HandleFunc("/applications", handlers.CreateApplication).Methods("POST")
+		api.HandleFunc("/applications/{app_id}", handlers.UpdateApplication).Methods("PUT")
+		api.HandleFunc("/applications/{app_id}", handlers.DeleteApplication).Methods("DELETE")
+		api.HandleFunc("/updates/{app_id}/releases/{version}/{platform}/{arch}", handlers.DeleteRelease).Methods("DELETE")
 	}
 
 	return router
