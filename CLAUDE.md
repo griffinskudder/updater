@@ -21,6 +21,7 @@ internal/
   storage/            - Storage providers (JSON, memory, PostgreSQL, SQLite)
     sqlc/             - Generated type-safe database code (postgres/, sqlite/)
   update/             - Business logic: version comparison, release management, errors
+make/                 - Split Makefile targets (go.mk, docs.mk, docker.mk, db.mk)
 configs/              - Configuration files
 data/                 - Data directory (releases.json)
 deployments/          - Kubernetes deployment manifests
@@ -32,20 +33,20 @@ scripts/              - Build scripts (docker-build.sh)
 
 ## Development Commands
 
-Use the Makefile (recommended):
+All targets run inside Docker containers. Only Docker is required locally. Targets are split across `make/*.mk` files and auto-discovered by the root Makefile. Run `make help` to see all available targets.
 
 ```bash
-make build          # Build to bin/updater
-make run            # Run the application
-make test           # Run tests
-make fmt            # Format code
-make vet            # Vet code
-make check          # Format + vet + test
-make docs-serve     # MkDocs dev server via Docker (http://localhost:8000)
-make docs-build     # Build docs site via Docker
+make build          # Build to bin/updater (Docker)
+make run            # Run the application (Docker)
+make test           # Run tests (Docker)
+make fmt            # Format code (Docker)
+make vet            # Vet code (Docker)
+make check          # Format + vet + test (Docker)
+make docs-serve     # MkDocs dev server (http://localhost:8000)
+make docs-build     # Build docs site
 make docs-clean     # Clean docs artifacts
-make sqlc-generate  # Generate Go code from SQL schemas
-make sqlc-vet       # Validate SQL schemas and queries
+make sqlc-generate  # Generate Go code from SQL schemas (Docker)
+make sqlc-vet       # Validate SQL schemas and queries (Docker)
 make help           # Show all commands
 ```
 
@@ -57,8 +58,6 @@ make docker-dev       # Start dev environment with Docker Compose
 make docker-obs-up    # Start full observability stack (Jaeger, Prometheus, Grafana)
 make docker-obs-down  # Stop observability stack
 ```
-
-Direct Go equivalents: `go build ./cmd/updater`, `go test ./...`, `go fmt ./...`, `go vet ./...`
 
 ## Documentation
 
@@ -110,6 +109,6 @@ See `docs/ARCHITECTURE.md` for full design details and rationales.
 
 ## Gotchas
 
+- **Docker is the only local requirement**: All Make targets run inside Docker containers. No local Go, sqlc, or Python needed.
 - **Makefile requires POSIX shell**: On Windows, GNU Make + Git for Windows (which provides `sh`) are needed. All Makefile commands use POSIX syntax.
 - **Config loading**: Use `-config path/to/config.yaml` CLI flag. Environment variables override file values.
-- **`make docs-serve`/`docs-build` require Docker**: MkDocs runs in a container, not locally installed.
