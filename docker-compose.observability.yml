@@ -1,0 +1,57 @@
+# Observability Stack Override
+# Usage: docker compose -f docker-compose.yml -f docker-compose.observability.yml up -d
+# Or:    make docker-obs-up
+
+services:
+  # Override updater to enable observability features
+  updater:
+    ports:
+      - "8080:8080"
+      - "9090:9090"
+    volumes:
+      - ./configs/dev-observability.yaml:/app/config.yaml:ro
+    environment:
+      - UPDATER_LOG_LEVEL=debug
+    depends_on:
+      jaeger:
+        condition: service_started
+
+  # Jaeger v2 - Trace collection and visualization
+  # Natively accepts OTLP gRPC on port 4317
+  jaeger:
+    image: jaegertracing/jaeger:2
+    container_name: jaeger
+    ports:
+      - "16686:16686"   # Jaeger UI
+      - "4317:4317"     # OTLP gRPC
+    restart: unless-stopped
+
+  # Prometheus - Metrics scraping and storage
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9091:9090"     # Prometheus UI (9091 to avoid conflict with updater metrics)
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    depends_on:
+      updater:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Grafana - Dashboards for metrics and traces
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+    volumes:
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+      - jaeger
+    restart: unless-stopped

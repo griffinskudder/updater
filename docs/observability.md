@@ -229,6 +229,90 @@ stateDiagram-v2
 }
 ```
 
+## Local Development Stack
+
+A Docker Compose-based observability stack is available for local development. It runs Jaeger, Prometheus, and Grafana alongside the updater service, providing trace visualization, metrics scraping, and dashboards without any external dependencies.
+
+### Quick Start
+
+```bash
+make docker-obs-up
+```
+
+This starts all four services:
+
+| Service | URL | Purpose |
+|---------|-----|---------|
+| Updater | `http://localhost:8080` | The update service API |
+| Updater Metrics | `http://localhost:9090/metrics` | Prometheus-format metrics endpoint |
+| Jaeger UI | `http://localhost:16686` | Trace visualization |
+| Prometheus | `http://localhost:9091` | Metrics querying and scrape status |
+| Grafana | `http://localhost:3000` | Dashboards (no login required) |
+
+To stop the stack:
+
+```bash
+make docker-obs-down
+```
+
+### Architecture
+
+```mermaid
+graph LR
+    subgraph "Docker Compose"
+        Updater["Updater<br/>:8080 API<br/>:9090 Metrics"]
+        Jaeger["Jaeger v2<br/>:16686 UI<br/>:4317 OTLP"]
+        Prom["Prometheus<br/>:9091 UI"]
+        Grafana["Grafana<br/>:3000 UI"]
+    end
+
+    Updater -- "OTLP gRPC :4317" --> Jaeger
+    Prom -- "Scrape :9090/metrics" --> Updater
+    Grafana -- "Query" --> Prom
+    Grafana -- "Query" --> Jaeger
+```
+
+The updater sends traces directly to Jaeger v2 via OTLP gRPC (no separate OpenTelemetry Collector required). Prometheus scrapes the updater's metrics endpoint every 15 seconds. Grafana is pre-configured with both Prometheus and Jaeger as datasources.
+
+### Configuration
+
+The observability stack uses `configs/dev-observability.yaml`, which configures:
+
+- **Storage**: In-memory (no file or database dependencies)
+- **Auth**: Disabled (simplifies local development)
+- **Metrics**: Enabled on port 9090
+- **Tracing**: OTLP exporter pointing to `jaeger:4317` with 100% sampling
+- **Logging**: Debug level, text format
+
+### Verifying Traces
+
+1. Start the stack with `make docker-obs-up`
+2. Send a request to the API:
+
+    ```bash
+    curl "http://localhost:8080/api/v1/updates/test-app/check?current_version=1.0.0&platform=windows&architecture=amd64"
+    ```
+
+3. Open the Jaeger UI at `http://localhost:16686`
+4. Select the `updater` service and click **Find Traces**
+5. Trace spans for the HTTP request and storage operations are visible
+
+### Verifying Metrics
+
+1. Open Prometheus at `http://localhost:9091`
+2. Navigate to **Status > Targets** to confirm the updater target is in the `UP` state
+3. Query metrics such as `storage_operation_duration_seconds_bucket` or `http_server_request_duration_seconds_bucket`
+
+### Files
+
+```
+docker-compose.observability.yml           # Compose override (layered on docker-compose.yml)
+configs/dev-observability.yaml             # Updater config with OTLP tracing
+docker/prometheus/prometheus.yml           # Prometheus scrape configuration
+docker/grafana/provisioning/
+    datasources/datasources.yml            # Auto-provisioned Grafana datasources
+```
+
 ## Package Structure
 
 ```

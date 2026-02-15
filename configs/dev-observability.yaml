@@ -1,0 +1,39 @@
+# Development configuration with full observability stack
+# Used by docker-compose.observability.yml
+# Memory storage, no auth, OTLP tracing to Jaeger
+
+server:
+  port: 8080
+  read_timeout: 30s
+  write_timeout: 30s
+
+  cors:
+    enabled: true
+    allowed_origins: ["http://localhost:3000", "http://127.0.0.1:3000"]
+    allowed_methods: ["GET", "POST", "OPTIONS"]
+    allowed_headers: ["Authorization", "Content-Type"]
+    max_age: 3600
+
+storage:
+  type: memory
+
+security:
+  enable_auth: false
+
+metrics:
+  enabled: true
+  port: 9090
+  path: "/metrics"
+
+observability:
+  service_name: "updater"
+  service_version: "1.0.0"
+  tracing:
+    enabled: true
+    exporter: "otlp"
+    otlp_endpoint: "jaeger:4317"
+    sample_rate: 1.0
+
+logging:
+  level: debug
+  format: text

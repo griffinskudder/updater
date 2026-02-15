@@ -1,0 +1,10 @@
+# Prometheus configuration for local observability stack
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: "updater"
+    static_configs:
+      - targets: ["updater:9090"]
+    metrics_path: "/metrics"
