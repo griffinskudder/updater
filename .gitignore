@@ -33,3 +33,6 @@ go.work.sum
 .vscode/
 
 *.local*
+
+# Git worktrees
+.worktrees/
