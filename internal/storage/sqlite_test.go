@@ -410,6 +410,61 @@ func TestSQLiteStorageApplicationConfig(t *testing.T) {
 	}
 }
 
+func TestSQLiteStorage_DeleteApplication(t *testing.T) {
+	s := newSQLiteTestStorage(t)
+	ctx := context.Background()
+
+	tests := []struct {
+		name    string
+		setup   func()
+		appID   string
+		wantErr bool
+	}{
+		{
+			name: "delete existing application",
+			setup: func() {
+				app := models.NewApplication("del-app", "Delete App", []string{"windows"})
+				if err := s.SaveApplication(ctx, app); err != nil {
+					t.Fatalf("setup failed: %v", err)
+				}
+			},
+			appID:   "del-app",
+			wantErr: false,
+		},
+		{
+			name:    "delete non-existent application",
+			setup:   func() {},
+			appID:   "non-existent",
+			wantErr: false, // SQL DELETE with no matching rows does not return an error
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.setup()
+
+			err := s.DeleteApplication(ctx, tt.appID)
+			if tt.wantErr {
+				if err == nil {
+					t.Error("expected error, got nil")
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+				return
+			}
+
+			// Verify application is gone
+			_, err = s.GetApplication(ctx, tt.appID)
+			if err == nil {
+				t.Error("expected error when getting deleted application")
+			}
+		})
+	}
+}
+
 func TestSQLiteStorageClose(t *testing.T) {
 	s, err := NewSQLiteStorage(Config{ConnectionString: ":memory:"})
 	if err != nil {

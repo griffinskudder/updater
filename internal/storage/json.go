@@ -197,6 +197,25 @@ func (j *JSONStorage) SaveApplication(ctx context.Context, app *models.Applicati
 	return j.saveData(j.data)
 }
 
+// DeleteApplication removes an application by its ID
+func (j *JSONStorage) DeleteApplication(ctx context.Context, appID string) error {
+	if err := j.loadData(); err != nil {
+		return err
+	}
+
+	j.mu.Lock()
+	defer j.mu.Unlock()
+
+	for i, app := range j.data.Applications {
+		if app.ID == appID {
+			j.data.Applications = append(j.data.Applications[:i], j.data.Applications[i+1:]...)
+			return j.saveData(j.data)
+		}
+	}
+
+	return fmt.Errorf("application %s not found", appID)
+}
+
 // Releases returns all releases for a given application
 func (j *JSONStorage) Releases(ctx context.Context, appID string) ([]*models.Release, error) {
 	if err := j.loadData(); err != nil {

@@ -765,3 +765,355 @@ func TestIntegration_PaginationAndFiltering(t *testing.T) {
 		assert.Equal(t, "linux", release.Platform)
 	}
 }
+
+// setupTestServer creates a test server with the given auth configuration.
+// When enableAuth is true, it configures API keys with read, write, and admin permissions.
+func setupTestServer(t *testing.T, enableAuth bool) (*httptest.Server, storage.Storage) {
+	t.Helper()
+
+	tempDir := t.TempDir()
+	storageFile := filepath.Join(tempDir, "test_releases.json")
+
+	storageConfig := storage.Config{
+		Type:     "json",
+		Path:     storageFile,
+		CacheTTL: "1m",
+	}
+
+	store, err := storage.NewJSONStorage(storageConfig)
+	require.NoError(t, err)
+	t.Cleanup(func() { store.Close() })
+
+	updateService := update.NewService(store)
+	handlers := api.NewHandlers(updateService)
+
+	cfg := &models.Config{
+		Server: models.ServerConfig{
+			Port: 8080,
+			Host: "localhost",
+		},
+		Storage: models.StorageConfig{
+			Type: "json",
+			Path: storageFile,
+		},
+	}
+
+	if enableAuth {
+		cfg.Security = models.SecurityConfig{
+			EnableAuth: true,
+			APIKeys: []models.APIKey{
+				{
+					Key:         "test-read-key",
+					Name:        "read-key",
+					Permissions: []string{"read"},
+					Enabled:     true,
+				},
+				{
+					Key:         "test-write-key",
+					Name:        "write-key",
+					Permissions: []string{"write"},
+					Enabled:     true,
+				},
+				{
+					Key:         "test-admin-key",
+					Name:        "admin-key",
+					Permissions: []string{"admin"},
+					Enabled:     true,
+				},
+			},
+		}
+	}
+
+	router := api.SetupRoutes(handlers, cfg)
+	server := httptest.NewServer(router)
+	t.Cleanup(func() { server.Close() })
+
+	return server, store
+}
+
+// doRequest is a helper that creates and executes an HTTP request with optional auth and body.
+func doRequest(t *testing.T, method, url, authToken string, body interface{}) *http.Response {
+	t.Helper()
+
+	var reqBody *bytes.Reader
+	if body != nil {
+		data, err := json.Marshal(body)
+		require.NoError(t, err)
+		reqBody = bytes.NewReader(data)
+	} else {
+		reqBody = bytes.NewReader(nil)
+	}
+
+	req, err := http.NewRequest(method, url, reqBody)
+	require.NoError(t, err)
+
+	if body != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
+
+	if authToken != "" {
+		req.Header.Set("Authorization", "Bearer "+authToken)
+	}
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	require.NoError(t, err)
+
+	return resp
+}
+
+func TestApplicationLifecycle(t *testing.T) {
+	server, _ := setupTestServer(t, true)
+
+	// Step 1: Create application via POST with write auth
+	createReq := models.CreateApplicationRequest{
+		ID:          "lifecycle-test-app",
+		Name:        "Lifecycle Test App",
+		Description: "An application for lifecycle testing",
+		Platforms:   []string{"windows", "linux", "darwin"},
+		Config: models.ApplicationConfig{
+			AutoUpdate:      true,
+			UpdateInterval:  3600,
+			AllowPrerelease: false,
+		},
+	}
+
+	resp := doRequest(t, "POST", server.URL+"/api/v1/applications", "test-write-key", createReq)
+	defer resp.Body.Close()
+	assert.Equal(t, http.StatusCreated, resp.StatusCode)
+
+	var createResp models.CreateApplicationResponse
+	err := json.NewDecoder(resp.Body).Decode(&createResp)
+	require.NoError(t, err)
+	assert.Equal(t, "lifecycle-test-app", createResp.ID)
+	assert.NotEmpty(t, createResp.Message)
+
+	// Step 2: Get application via GET with read auth
+	resp = doRequest(t, "GET", server.URL+"/api/v1/applications/lifecycle-test-app", "test-read-key", nil)
+	defer resp.Body.Close()
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+	var appInfo models.ApplicationInfoResponse
+	err = json.NewDecoder(resp.Body).Decode(&appInfo)
+	require.NoError(t, err)
+	assert.Equal(t, "lifecycle-test-app", appInfo.ID)
+	assert.Equal(t, "Lifecycle Test App", appInfo.Name)
+	assert.Equal(t, "An application for lifecycle testing", appInfo.Description)
+	assert.ElementsMatch(t, []string{"windows", "linux", "darwin"}, appInfo.Platforms)
+	assert.True(t, appInfo.Config.AutoUpdate)
+	assert.Equal(t, 3600, appInfo.Config.UpdateInterval)
+	assert.False(t, appInfo.Config.AllowPrerelease)
+
+	// Step 3: List applications via GET with read auth
+	resp = doRequest(t, "GET", server.URL+"/api/v1/applications", "test-read-key", nil)
+	defer resp.Body.Close()
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+	var listResp models.ListApplicationsResponse
+	err = json.NewDecoder(resp.Body).Decode(&listResp)
+	require.NoError(t, err)
+	assert.GreaterOrEqual(t, listResp.TotalCount, 1)
+
+	found := false
+	for _, app := range listResp.Applications {
+		if app.ID == "lifecycle-test-app" {
+			found = true
+			assert.Equal(t, "Lifecycle Test App", app.Name)
+			break
+		}
+	}
+	assert.True(t, found, "lifecycle-test-app should be in the application list")
+
+	// Step 4: Update application via PUT with admin auth
+	updatedName := "Lifecycle Test App Updated"
+	updatedDescription := "Updated description"
+	updateReq := models.UpdateApplicationRequest{
+		Name:        &updatedName,
+		Description: &updatedDescription,
+		Platforms:   []string{"windows", "linux"},
+	}
+
+	resp = doRequest(t, "PUT", server.URL+"/api/v1/applications/lifecycle-test-app", "test-admin-key", updateReq)
+	defer resp.Body.Close()
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+	var updateResp models.UpdateApplicationResponse
+	err = json.NewDecoder(resp.Body).Decode(&updateResp)
+	require.NoError(t, err)
+	assert.Equal(t, "lifecycle-test-app", updateResp.ID)
+	assert.NotEmpty(t, updateResp.Message)
+
+	// Step 5: Get updated application and verify updated fields
+	resp = doRequest(t, "GET", server.URL+"/api/v1/applications/lifecycle-test-app", "test-read-key", nil)
+	defer resp.Body.Close()
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+	err = json.NewDecoder(resp.Body).Decode(&appInfo)
+	require.NoError(t, err)
+	assert.Equal(t, "Lifecycle Test App Updated", appInfo.Name)
+	assert.Equal(t, "Updated description", appInfo.Description)
+	assert.ElementsMatch(t, []string{"windows", "linux"}, appInfo.Platforms)
+
+	// Step 6: Delete application via DELETE with admin auth
+	resp = doRequest(t, "DELETE", server.URL+"/api/v1/applications/lifecycle-test-app", "test-admin-key", nil)
+	defer resp.Body.Close()
+	assert.Equal(t, http.StatusNoContent, resp.StatusCode)
+
+	// Step 7: Get deleted application -- expect 404
+	resp = doRequest(t, "GET", server.URL+"/api/v1/applications/lifecycle-test-app", "test-read-key", nil)
+	defer resp.Body.Close()
+	assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+}
+
+func TestDeleteApplicationWithReleases(t *testing.T) {
+	server, _ := setupTestServer(t, true)
+
+	// Step 1: Create application
+	createReq := models.CreateApplicationRequest{
+		ID:        "delete-with-releases-app",
+		Name:      "Delete With Releases App",
+		Platforms: []string{"windows"},
+		Config:    models.ApplicationConfig{},
+	}
+
+	resp := doRequest(t, "POST", server.URL+"/api/v1/applications", "test-write-key", createReq)
+	defer resp.Body.Close()
+	require.Equal(t, http.StatusCreated, resp.StatusCode)
+
+	// Step 2: Register a release for the application
+	registerReq := models.RegisterReleaseRequest{
+		ApplicationID: "delete-with-releases-app",
+		Version:       "1.0.0",
+		Platform:      "windows",
+		Architecture:  "amd64",
+		DownloadURL:   "https://releases.example.com/v1.0.0/app-windows-amd64.exe",
+		Checksum:      "abc123def456",
+		ChecksumType:  "sha256",
+		FileSize:      10485760,
+		ReleaseNotes:  "Initial release",
+		Required:      false,
+	}
+
+	resp = doRequest(t, "POST", server.URL+"/api/v1/updates/delete-with-releases-app/register", "test-write-key", registerReq)
+	defer resp.Body.Close()
+	require.Equal(t, http.StatusCreated, resp.StatusCode)
+
+	// Step 3: Try to delete the application -- expect 409 Conflict
+	resp = doRequest(t, "DELETE", server.URL+"/api/v1/applications/delete-with-releases-app", "test-admin-key", nil)
+	defer resp.Body.Close()
+	assert.Equal(t, http.StatusConflict, resp.StatusCode)
+
+	var errorResp models.ErrorResponse
+	err := json.NewDecoder(resp.Body).Decode(&errorResp)
+	require.NoError(t, err)
+	assert.Equal(t, "CONFLICT", errorResp.Code)
+
+	// Step 4: Delete the release
+	resp = doRequest(t, "DELETE", server.URL+"/api/v1/updates/delete-with-releases-app/releases/1.0.0/windows/amd64", "test-admin-key", nil)
+	defer resp.Body.Close()
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+	// Step 5: Delete the application now that releases are gone -- expect 204
+	resp = doRequest(t, "DELETE", server.URL+"/api/v1/applications/delete-with-releases-app", "test-admin-key", nil)
+	defer resp.Body.Close()
+	assert.Equal(t, http.StatusNoContent, resp.StatusCode)
+
+	// Verify the application is gone
+	resp = doRequest(t, "GET", server.URL+"/api/v1/applications/delete-with-releases-app", "test-read-key", nil)
+	defer resp.Body.Close()
+	assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+}
+
+func TestApplicationPermissions(t *testing.T) {
+	server, _ := setupTestServer(t, true)
+
+	// First, create an application with admin key for permission testing
+	createReq := models.CreateApplicationRequest{
+		ID:        "permissions-test-app",
+		Name:      "Permissions Test App",
+		Platforms: []string{"windows"},
+		Config:    models.ApplicationConfig{},
+	}
+
+	resp := doRequest(t, "POST", server.URL+"/api/v1/applications", "test-admin-key", createReq)
+	defer resp.Body.Close()
+	require.Equal(t, http.StatusCreated, resp.StatusCode)
+
+	// Test 1: Read-only key cannot create applications (expect 403)
+	newAppReq := models.CreateApplicationRequest{
+		ID:        "should-not-exist",
+		Name:      "Should Not Exist",
+		Platforms: []string{"windows"},
+		Config:    models.ApplicationConfig{},
+	}
+
+	resp = doRequest(t, "POST", server.URL+"/api/v1/applications", "test-read-key", newAppReq)
+	defer resp.Body.Close()
+	assert.Equal(t, http.StatusForbidden, resp.StatusCode)
+
+	// Verify the application was not created
+	resp = doRequest(t, "GET", server.URL+"/api/v1/applications/should-not-exist", "test-admin-key", nil)
+	defer resp.Body.Close()
+	assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+
+	// Test 2: Write key can create but cannot delete (expect 403 on delete)
+	writeCreateReq := models.CreateApplicationRequest{
+		ID:        "write-created-app",
+		Name:      "Write Created App",
+		Platforms: []string{"linux"},
+		Config:    models.ApplicationConfig{},
+	}
+
+	resp = doRequest(t, "POST", server.URL+"/api/v1/applications", "test-write-key", writeCreateReq)
+	defer resp.Body.Close()
+	assert.Equal(t, http.StatusCreated, resp.StatusCode)
+
+	// Write key cannot delete
+	resp = doRequest(t, "DELETE", server.URL+"/api/v1/applications/write-created-app", "test-write-key", nil)
+	defer resp.Body.Close()
+	assert.Equal(t, http.StatusForbidden, resp.StatusCode)
+
+	// Write key cannot update (requires admin)
+	updatedName := "Updated by Write"
+	updateReq := models.UpdateApplicationRequest{
+		Name: &updatedName,
+	}
+	resp = doRequest(t, "PUT", server.URL+"/api/v1/applications/write-created-app", "test-write-key", updateReq)
+	defer resp.Body.Close()
+	assert.Equal(t, http.StatusForbidden, resp.StatusCode)
+
+	// Test 3: Admin key can do everything
+	// Admin can read
+	resp = doRequest(t, "GET", server.URL+"/api/v1/applications/permissions-test-app", "test-admin-key", nil)
+	defer resp.Body.Close()
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+	// Admin can list
+	resp = doRequest(t, "GET", server.URL+"/api/v1/applications", "test-admin-key", nil)
+	defer resp.Body.Close()
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+	// Admin can update
+	adminUpdateName := "Updated by Admin"
+	adminUpdateReq := models.UpdateApplicationRequest{
+		Name: &adminUpdateName,
+	}
+	resp = doRequest(t, "PUT", server.URL+"/api/v1/applications/permissions-test-app", "test-admin-key", adminUpdateReq)
+	defer resp.Body.Close()
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+	// Admin can delete
+	resp = doRequest(t, "DELETE", server.URL+"/api/v1/applications/permissions-test-app", "test-admin-key", nil)
+	defer resp.Body.Close()
+	assert.Equal(t, http.StatusNoContent, resp.StatusCode)
+
+	// Clean up write-created-app with admin key
+	resp = doRequest(t, "DELETE", server.URL+"/api/v1/applications/write-created-app", "test-admin-key", nil)
+	defer resp.Body.Close()
+	assert.Equal(t, http.StatusNoContent, resp.StatusCode)
+
+	// Test 4: No auth header at all returns 401
+	resp = doRequest(t, "GET", server.URL+"/api/v1/applications", "", nil)
+	defer resp.Body.Close()
+	assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+}

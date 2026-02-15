@@ -132,6 +132,15 @@ func (ss *SQLiteStorage) SaveApplication(ctx context.Context, app *models.Applic
 	return nil
 }
 
+// DeleteApplication removes an application by its ID.
+func (ss *SQLiteStorage) DeleteApplication(ctx context.Context, appID string) error {
+	err := ss.queries.DeleteApplication(ctx, appID)
+	if err != nil {
+		return fmt.Errorf("failed to delete application %s: %w", appID, err)
+	}
+	return nil
+}
+
 // Releases returns all releases for a given application.
 func (ss *SQLiteStorage) Releases(ctx context.Context, appID string) ([]*models.Release, error) {
 	rows, err := ss.queries.GetReleasesByAppID(ctx, appID)

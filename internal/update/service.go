@@ -2,7 +2,9 @@ package update
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"time"
 	"updater/internal/models"
 	"updater/internal/storage"
 
@@ -410,4 +412,245 @@ func (s *Service) findLatestStableRelease(ctx context.Context, appID, platform, 
 	}
 
 	return latestStable, nil
+}
+
+// CreateApplication creates a new application after validating and normalizing the request.
+func (s *Service) CreateApplication(ctx context.Context, req *models.CreateApplicationRequest) (*models.CreateApplicationResponse, error) {
+	// Validate and normalize request
+	if err := req.Validate(); err != nil {
+		return nil, NewValidationError("invalid request", err)
+	}
+	req.Normalize()
+
+	// Check for duplicate ID
+	if _, err := s.storage.GetApplication(ctx, req.ID); err == nil {
+		return nil, NewConflictError(fmt.Sprintf("application '%s' already exists", req.ID))
+	}
+
+	// Create application with defaults
+	app := models.NewApplication(req.ID, req.Name, req.Platforms)
+	app.Description = req.Description
+	app.Config = req.Config
+	now := time.Now().Format(time.RFC3339)
+	app.CreatedAt = now
+	app.UpdatedAt = now
+
+	// Save application
+	if err := s.storage.SaveApplication(ctx, app); err != nil {
+		return nil, NewInternalError("failed to save application", err)
+	}
+
+	createdAt, _ := time.Parse(time.RFC3339, app.CreatedAt)
+	return &models.CreateApplicationResponse{
+		ID:        app.ID,
+		Message:   fmt.Sprintf("Application '%s' created successfully", app.ID),
+		CreatedAt: createdAt,
+	}, nil
+}
+
+// GetApplication retrieves an application by ID with computed statistics.
+func (s *Service) GetApplication(ctx context.Context, appID string) (*models.ApplicationInfoResponse, error) {
+	app, err := s.storage.GetApplication(ctx, appID)
+	if err != nil {
+		return nil, NewApplicationNotFoundError(appID)
+	}
+
+	// Fetch releases to compute stats
+	releases, err := s.storage.Releases(ctx, appID)
+	if err != nil {
+		return nil, NewInternalError("failed to get releases", err)
+	}
+
+	stats := computeApplicationStats(releases)
+
+	createdAt, _ := time.Parse(time.RFC3339, app.CreatedAt)
+	updatedAt, _ := time.Parse(time.RFC3339, app.UpdatedAt)
+
+	return &models.ApplicationInfoResponse{
+		ID:          app.ID,
+		Name:        app.Name,
+		Description: app.Description,
+		Platforms:   app.Platforms,
+		Config:      app.Config,
+		Stats:       stats,
+		CreatedAt:   createdAt,
+		UpdatedAt:   updatedAt,
+	}, nil
+}
+
+// ListApplications returns a paginated list of applications.
+func (s *Service) ListApplications(ctx context.Context, limit, offset int) (*models.ListApplicationsResponse, error) {
+	if limit <= 0 {
+		limit = 50
+	}
+	if offset < 0 {
+		offset = 0
+	}
+
+	allApps, err := s.storage.Applications(ctx)
+	if err != nil {
+		return nil, NewInternalError("failed to list applications", err)
+	}
+
+	totalCount := len(allApps)
+
+	// Apply pagination
+	start := offset
+	end := start + limit
+	if start > totalCount {
+		start = totalCount
+	}
+	if end > totalCount {
+		end = totalCount
+	}
+
+	paginatedApps := allApps[start:end]
+
+	summaries := make([]models.ApplicationSummary, len(paginatedApps))
+	for i, app := range paginatedApps {
+		summaries[i].FromApplication(app)
+		summaries[i].CreatedAt, _ = time.Parse(time.RFC3339, app.CreatedAt)
+		summaries[i].UpdatedAt, _ = time.Parse(time.RFC3339, app.UpdatedAt)
+	}
+
+	return &models.ListApplicationsResponse{
+		Applications: summaries,
+		TotalCount:   totalCount,
+		Page:         (offset / limit) + 1,
+		PageSize:     limit,
+		HasMore:      end < totalCount,
+	}, nil
+}
+
+// UpdateApplication applies partial updates to an existing application.
+func (s *Service) UpdateApplication(ctx context.Context, appID string, req *models.UpdateApplicationRequest) (*models.UpdateApplicationResponse, error) {
+	// Validate and normalize request
+	if err := req.Validate(); err != nil {
+		return nil, NewValidationError("invalid request", err)
+	}
+	req.Normalize()
+
+	// Fetch existing application
+	app, err := s.storage.GetApplication(ctx, appID)
+	if err != nil {
+		return nil, NewApplicationNotFoundError(appID)
+	}
+
+	// Apply partial updates
+	if req.Name != nil {
+		app.Name = *req.Name
+	}
+	if req.Description != nil {
+		app.Description = *req.Description
+	}
+	if req.Platforms != nil {
+		app.Platforms = req.Platforms
+	}
+	if req.Config != nil {
+		app.Config = *req.Config
+	}
+
+	// Update timestamp
+	now := time.Now()
+	app.UpdatedAt = now.Format(time.RFC3339)
+
+	// Save updated application
+	if err := s.storage.SaveApplication(ctx, app); err != nil {
+		return nil, NewInternalError("failed to save application", err)
+	}
+
+	return &models.UpdateApplicationResponse{
+		ID:        app.ID,
+		Message:   fmt.Sprintf("Application '%s' updated successfully", app.ID),
+		UpdatedAt: now,
+	}, nil
+}
+
+// DeleteApplication removes an application that has no existing releases.
+func (s *Service) DeleteApplication(ctx context.Context, appID string) error {
+	// Verify application exists
+	if _, err := s.storage.GetApplication(ctx, appID); err != nil {
+		return NewApplicationNotFoundError(appID)
+	}
+
+	// Check for existing releases
+	releases, err := s.storage.Releases(ctx, appID)
+	if err != nil {
+		return NewInternalError("failed to check releases", err)
+	}
+	if len(releases) > 0 {
+		return NewConflictError(fmt.Sprintf("cannot delete application '%s': has %d existing releases", appID, len(releases)))
+	}
+
+	// Delete application
+	if err := s.storage.DeleteApplication(ctx, appID); err != nil {
+		if errors.Is(err, storage.ErrHasDependencies) {
+			return NewConflictError(fmt.Sprintf("cannot delete application '%s': has existing releases", appID))
+		}
+		return NewInternalError("failed to delete application", err)
+	}
+
+	return nil
+}
+
+// DeleteRelease removes a specific release.
+func (s *Service) DeleteRelease(ctx context.Context, appID, version, platform, arch string) (*models.DeleteReleaseResponse, error) {
+	// Verify release exists
+	release, err := s.storage.GetRelease(ctx, appID, version, platform, arch)
+	if err != nil {
+		return nil, NewNotFoundError(fmt.Sprintf("release '%s-%s-%s-%s' not found", appID, version, platform, arch))
+	}
+
+	// Delete release
+	if err := s.storage.DeleteRelease(ctx, appID, version, platform, arch); err != nil {
+		return nil, NewInternalError("failed to delete release", err)
+	}
+
+	return &models.DeleteReleaseResponse{
+		ID:      release.ID,
+		Message: fmt.Sprintf("Release '%s' deleted successfully", release.ID),
+	}, nil
+}
+
+// computeApplicationStats computes statistics from a list of releases.
+func computeApplicationStats(releases []*models.Release) models.ApplicationStats {
+	stats := models.ApplicationStats{
+		TotalReleases: len(releases),
+	}
+
+	if len(releases) == 0 {
+		return stats
+	}
+
+	platforms := make(map[string]struct{})
+	var latestVersion *semver.Version
+	var latestReleaseDate *time.Time
+
+	for _, release := range releases {
+		platforms[release.Platform] = struct{}{}
+
+		if release.Required {
+			stats.RequiredReleases++
+		}
+
+		// Track latest version
+		ver, err := semver.NewVersion(release.Version)
+		if err == nil {
+			if latestVersion == nil || ver.GreaterThan(latestVersion) {
+				latestVersion = ver
+				stats.LatestVersion = release.Version
+			}
+		}
+
+		// Track latest release date
+		if latestReleaseDate == nil || release.ReleaseDate.After(*latestReleaseDate) {
+			rd := release.ReleaseDate
+			latestReleaseDate = &rd
+		}
+	}
+
+	stats.PlatformCount = len(platforms)
+	stats.LatestReleaseDate = latestReleaseDate
+
+	return stats
 }

@@ -18,6 +18,9 @@ type Storage interface {
 	// SaveApplication stores or updates an application
 	SaveApplication(ctx context.Context, app *models.Application) error
 
+	// DeleteApplication removes an application by its ID
+	DeleteApplication(ctx context.Context, appID string) error
+
 	// Releases returns all releases for a given application
 	Releases(ctx context.Context, appID string) ([]*models.Release, error)
 

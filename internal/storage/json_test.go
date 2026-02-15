@@ -243,6 +243,64 @@ func TestJSONStorage_DeleteRelease(t *testing.T) {
 	assert.Contains(t, err.Error(), "not found")
 }
 
+func TestJSONStorage_DeleteApplication(t *testing.T) {
+	ctx := context.Background()
+
+	tests := []struct {
+		name      string
+		setup     func(s *JSONStorage)
+		appID     string
+		wantErr   bool
+		errSubstr string
+	}{
+		{
+			name: "delete existing application",
+			setup: func(s *JSONStorage) {
+				s.SaveApplication(ctx, &models.Application{
+					ID:        "app-to-delete",
+					Name:      "Delete Me",
+					Platforms: []string{"windows"},
+					Config:    models.ApplicationConfig{},
+				})
+			},
+			appID:   "app-to-delete",
+			wantErr: false,
+		},
+		{
+			name:      "delete non-existent application",
+			setup:     func(s *JSONStorage) {},
+			appID:     "non-existent",
+			wantErr:   true,
+			errSubstr: "not found",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			storage := setupTestStorage(t)
+			defer storage.Close()
+
+			tt.setup(storage)
+
+			err := storage.DeleteApplication(ctx, tt.appID)
+			if tt.wantErr {
+				assert.Error(t, err)
+				if tt.errSubstr != "" {
+					assert.Contains(t, err.Error(), tt.errSubstr)
+				}
+				return
+			}
+
+			require.NoError(t, err)
+
+			// Verify application is gone
+			_, err = storage.GetApplication(ctx, tt.appID)
+			assert.Error(t, err)
+			assert.Contains(t, err.Error(), "not found")
+		})
+	}
+}
+
 func TestJSONStorage_GetLatestRelease(t *testing.T) {
 	storage := setupTestStorage(t)
 	defer storage.Close()

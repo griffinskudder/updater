@@ -31,6 +31,12 @@ Fully implemented HTTP API with production-ready features and comprehensive secu
 - `GET /api/v1/latest` - Get latest version with query params (public)
 - `GET /api/v1/updates/{app_id}/releases` - List releases (protected: read permission)
 - `POST /api/v1/updates/{app_id}/register` - Register new release (protected: write permission)
+- `DELETE /api/v1/updates/{app_id}/releases/{version}/{platform}/{arch}` - Delete a release (protected: admin permission)
+- `GET /api/v1/applications` - List applications (protected: read permission)
+- `GET /api/v1/applications/{app_id}` - Get application details (protected: read permission)
+- `POST /api/v1/applications` - Create application (protected: write permission)
+- `PUT /api/v1/applications/{app_id}` - Update application (protected: admin permission)
+- `DELETE /api/v1/applications/{app_id}` - Delete application (protected: admin permission)
 - `GET /health` - Health check (public with enhanced details for authenticated users)
 - `GET /api/v1/health` - Versioned health check alias (public)
 
@@ -419,20 +425,26 @@ sequenceDiagram
 
 | Permission | Scope | Endpoints | Description |
 |------------|-------|-----------|-------------|
-| `read` | Query Operations | `GET /api/v1/updates/*` | Access to update checking and release information |
-| `write` | Release Management | `POST /api/v1/updates/*/register` | Ability to register new releases |
-| `admin` | Full Access | All endpoints | Complete administrative access |
+| `read` | Query Operations | `GET /api/v1/updates/*`, `GET /api/v1/applications*` | Access to update checking, release information, and application details |
+| `write` | Release & App Creation | `POST /api/v1/updates/*/register`, `POST /api/v1/applications` | Register releases and create applications |
+| `admin` | Full Access | All endpoints including `PUT`, `DELETE` on applications and releases | Complete administrative access |
 
 #### Permission Matrix
 
 ```
-Endpoint                                | read | write | admin
----------------------------------------|------|-------|-------
-GET  /api/v1/updates/{app}/check       |  ✓   |   ✓   |   ✓
-GET  /api/v1/updates/{app}/latest      |  ✓   |   ✓   |   ✓
-GET  /api/v1/updates/{app}/releases    |  ✓   |   ✓   |   ✓
-POST /api/v1/updates/{app}/register    |  ✗   |   ✓   |   ✓
-GET  /health                           |  ✓   |   ✓   |   ✓
+Endpoint                                                        | read | write | admin
+----------------------------------------------------------------|------|-------|-------
+GET    /api/v1/updates/{app}/check                              |  ✓   |   ✓   |   ✓
+GET    /api/v1/updates/{app}/latest                             |  ✓   |   ✓   |   ✓
+GET    /api/v1/updates/{app}/releases                           |  ✓   |   ✓   |   ✓
+POST   /api/v1/updates/{app}/register                           |  ✗   |   ✓   |   ✓
+DELETE /api/v1/updates/{app}/releases/{ver}/{plat}/{arch}        |  ✗   |   ✗   |   ✓
+GET    /api/v1/applications                                     |  ✓   |   ✓   |   ✓
+GET    /api/v1/applications/{app}                               |  ✓   |   ✓   |   ✓
+POST   /api/v1/applications                                     |  ✗   |   ✓   |   ✓
+PUT    /api/v1/applications/{app}                               |  ✗   |   ✗   |   ✓
+DELETE /api/v1/applications/{app}                               |  ✗   |   ✗   |   ✓
+GET    /health                                                  |  ✓   |   ✓   |   ✓
 ```
 
 #### Permission Inheritance

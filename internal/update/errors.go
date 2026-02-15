@@ -61,3 +61,21 @@ func NewInternalError(message string, err error) *ServiceError {
 		Err:        err,
 	}
 }
+
+// NewConflictError returns a ServiceError indicating a conflict (HTTP 409).
+func NewConflictError(message string) *ServiceError {
+	return &ServiceError{
+		Code:       models.ErrorCodeConflict,
+		Message:    message,
+		StatusCode: http.StatusConflict,
+	}
+}
+
+// NewNotFoundError returns a ServiceError indicating a resource was not found (HTTP 404).
+func NewNotFoundError(message string) *ServiceError {
+	return &ServiceError{
+		Code:       models.ErrorCodeNotFound,
+		Message:    message,
+		StatusCode: http.StatusNotFound,
+	}
+}

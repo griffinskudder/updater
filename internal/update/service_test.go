@@ -45,6 +45,14 @@ func (m *MockStorage) SaveApplication(ctx context.Context, app *models.Applicati
 	return nil
 }
 
+func (m *MockStorage) DeleteApplication(ctx context.Context, appID string) error {
+	if _, exists := m.applications[appID]; !exists {
+		return fmt.Errorf("application %s not found", appID)
+	}
+	delete(m.applications, appID)
+	return nil
+}
+
 func (m *MockStorage) Releases(ctx context.Context, appID string) ([]*models.Release, error) {
 	releases, exists := m.releases[appID]
 	if !exists {
@@ -530,6 +538,530 @@ func TestService_RegisterRelease_Validation(t *testing.T) {
 			_, err := service.RegisterRelease(ctx, tt.request)
 			assert.Error(t, err)
 			assert.Contains(t, err.Error(), tt.errorContains)
+		})
+	}
+}
+
+func TestService_CreateApplication(t *testing.T) {
+	tests := []struct {
+		name          string
+		setup         func(*MockStorage)
+		request       *models.CreateApplicationRequest
+		expectError   bool
+		errorContains string
+		checkResult   func(*testing.T, *models.CreateApplicationResponse)
+	}{
+		{
+			name:  "success",
+			setup: func(m *MockStorage) {},
+			request: &models.CreateApplicationRequest{
+				ID:          "new-app",
+				Name:        "New App",
+				Description: "A new application",
+				Platforms:   []string{"windows", "linux"},
+				Config:      models.ApplicationConfig{},
+			},
+			expectError: false,
+			checkResult: func(t *testing.T, resp *models.CreateApplicationResponse) {
+				assert.Equal(t, "new-app", resp.ID)
+				assert.Contains(t, resp.Message, "created successfully")
+				assert.False(t, resp.CreatedAt.IsZero())
+			},
+		},
+		{
+			name: "duplicate application returns conflict",
+			setup: func(m *MockStorage) {
+				app := models.NewApplication("existing-app", "Existing", []string{"windows"})
+				m.applications[app.ID] = app
+			},
+			request: &models.CreateApplicationRequest{
+				ID:        "existing-app",
+				Name:      "Duplicate",
+				Platforms: []string{"windows"},
+				Config:    models.ApplicationConfig{},
+			},
+			expectError:   true,
+			errorContains: "already exists",
+		},
+		{
+			name:  "validation error - missing name",
+			setup: func(m *MockStorage) {},
+			request: &models.CreateApplicationRequest{
+				ID:        "app-no-name",
+				Name:      "",
+				Platforms: []string{"windows"},
+				Config:    models.ApplicationConfig{},
+			},
+			expectError:   true,
+			errorContains: "invalid request",
+		},
+		{
+			name:  "validation error - no platforms",
+			setup: func(m *MockStorage) {},
+			request: &models.CreateApplicationRequest{
+				ID:        "app-no-plat",
+				Name:      "No Platforms",
+				Platforms: []string{},
+				Config:    models.ApplicationConfig{},
+			},
+			expectError:   true,
+			errorContains: "invalid request",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockStorage := NewMockStorage()
+			tt.setup(mockStorage)
+			service := NewService(mockStorage)
+			ctx := context.Background()
+
+			resp, err := service.CreateApplication(ctx, tt.request)
+
+			if tt.expectError {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), tt.errorContains)
+				return
+			}
+
+			require.NoError(t, err)
+			require.NotNil(t, resp)
+			if tt.checkResult != nil {
+				tt.checkResult(t, resp)
+			}
+
+			// Verify application was saved in storage
+			saved, sErr := mockStorage.GetApplication(ctx, tt.request.ID)
+			require.NoError(t, sErr)
+			assert.Equal(t, tt.request.Name, saved.Name)
+		})
+	}
+}
+
+func TestService_GetApplication(t *testing.T) {
+	tests := []struct {
+		name          string
+		setup         func(*MockStorage)
+		appID         string
+		expectError   bool
+		errorContains string
+		checkResult   func(*testing.T, *models.ApplicationInfoResponse)
+	}{
+		{
+			name: "success with releases",
+			setup: func(m *MockStorage) {
+				app := models.NewApplication("test-app", "Test App", []string{"windows", "linux"})
+				app.Description = "A test application"
+				app.CreatedAt = "2025-01-01T00:00:00Z"
+				app.UpdatedAt = "2025-01-02T00:00:00Z"
+				m.applications[app.ID] = app
+
+				r1 := createTestReleaseForUpdate("test-app", "1.0.0", "windows", "amd64")
+				r1.Required = true
+				r2 := createTestReleaseForUpdate("test-app", "1.1.0", "linux", "amd64")
+				m.releases["test-app"] = []*models.Release{r1, r2}
+			},
+			appID:       "test-app",
+			expectError: false,
+			checkResult: func(t *testing.T, resp *models.ApplicationInfoResponse) {
+				assert.Equal(t, "test-app", resp.ID)
+				assert.Equal(t, "Test App", resp.Name)
+				assert.Equal(t, 2, resp.Stats.TotalReleases)
+				assert.Equal(t, 2, resp.Stats.PlatformCount)
+				assert.Equal(t, 1, resp.Stats.RequiredReleases)
+				assert.Equal(t, "1.1.0", resp.Stats.LatestVersion)
+				assert.NotNil(t, resp.Stats.LatestReleaseDate)
+			},
+		},
+		{
+			name: "success with no releases",
+			setup: func(m *MockStorage) {
+				app := models.NewApplication("empty-app", "Empty App", []string{"windows"})
+				app.CreatedAt = "2025-01-01T00:00:00Z"
+				app.UpdatedAt = "2025-01-01T00:00:00Z"
+				m.applications[app.ID] = app
+			},
+			appID:       "empty-app",
+			expectError: false,
+			checkResult: func(t *testing.T, resp *models.ApplicationInfoResponse) {
+				assert.Equal(t, 0, resp.Stats.TotalReleases)
+				assert.Equal(t, 0, resp.Stats.PlatformCount)
+				assert.Empty(t, resp.Stats.LatestVersion)
+			},
+		},
+		{
+			name:          "not found",
+			setup:         func(m *MockStorage) {},
+			appID:         "nonexistent",
+			expectError:   true,
+			errorContains: "not found",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockStorage := NewMockStorage()
+			tt.setup(mockStorage)
+			service := NewService(mockStorage)
+			ctx := context.Background()
+
+			resp, err := service.GetApplication(ctx, tt.appID)
+
+			if tt.expectError {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), tt.errorContains)
+				return
+			}
+
+			require.NoError(t, err)
+			require.NotNil(t, resp)
+			if tt.checkResult != nil {
+				tt.checkResult(t, resp)
+			}
+		})
+	}
+}
+
+func TestService_ListApplications(t *testing.T) {
+	tests := []struct {
+		name        string
+		setup       func(*MockStorage)
+		limit       int
+		offset      int
+		checkResult func(*testing.T, *models.ListApplicationsResponse)
+	}{
+		{
+			name:   "empty list",
+			setup:  func(m *MockStorage) {},
+			limit:  50,
+			offset: 0,
+			checkResult: func(t *testing.T, resp *models.ListApplicationsResponse) {
+				assert.Len(t, resp.Applications, 0)
+				assert.Equal(t, 0, resp.TotalCount)
+				assert.False(t, resp.HasMore)
+			},
+		},
+		{
+			name: "multiple applications",
+			setup: func(m *MockStorage) {
+				for i := 0; i < 3; i++ {
+					id := fmt.Sprintf("app-%d", i)
+					app := models.NewApplication(id, fmt.Sprintf("App %d", i), []string{"windows"})
+					app.CreatedAt = "2025-01-01T00:00:00Z"
+					app.UpdatedAt = "2025-01-01T00:00:00Z"
+					m.applications[id] = app
+				}
+			},
+			limit:  50,
+			offset: 0,
+			checkResult: func(t *testing.T, resp *models.ListApplicationsResponse) {
+				assert.Len(t, resp.Applications, 3)
+				assert.Equal(t, 3, resp.TotalCount)
+				assert.False(t, resp.HasMore)
+				assert.Equal(t, 1, resp.Page)
+				assert.Equal(t, 50, resp.PageSize)
+			},
+		},
+		{
+			name: "pagination - first page",
+			setup: func(m *MockStorage) {
+				for i := 0; i < 5; i++ {
+					id := fmt.Sprintf("app-%d", i)
+					app := models.NewApplication(id, fmt.Sprintf("App %d", i), []string{"windows"})
+					app.CreatedAt = "2025-01-01T00:00:00Z"
+					app.UpdatedAt = "2025-01-01T00:00:00Z"
+					m.applications[id] = app
+				}
+			},
+			limit:  2,
+			offset: 0,
+			checkResult: func(t *testing.T, resp *models.ListApplicationsResponse) {
+				assert.Len(t, resp.Applications, 2)
+				assert.Equal(t, 5, resp.TotalCount)
+				assert.True(t, resp.HasMore)
+				assert.Equal(t, 1, resp.Page)
+			},
+		},
+		{
+			name: "pagination - second page",
+			setup: func(m *MockStorage) {
+				for i := 0; i < 5; i++ {
+					id := fmt.Sprintf("app-%d", i)
+					app := models.NewApplication(id, fmt.Sprintf("App %d", i), []string{"windows"})
+					app.CreatedAt = "2025-01-01T00:00:00Z"
+					app.UpdatedAt = "2025-01-01T00:00:00Z"
+					m.applications[id] = app
+				}
+			},
+			limit:  2,
+			offset: 2,
+			checkResult: func(t *testing.T, resp *models.ListApplicationsResponse) {
+				assert.Len(t, resp.Applications, 2)
+				assert.Equal(t, 5, resp.TotalCount)
+				assert.True(t, resp.HasMore)
+				assert.Equal(t, 2, resp.Page)
+			},
+		},
+		{
+			name: "default limit when zero",
+			setup: func(m *MockStorage) {
+				app := models.NewApplication("app-1", "App 1", []string{"windows"})
+				app.CreatedAt = "2025-01-01T00:00:00Z"
+				app.UpdatedAt = "2025-01-01T00:00:00Z"
+				m.applications["app-1"] = app
+			},
+			limit:  0,
+			offset: 0,
+			checkResult: func(t *testing.T, resp *models.ListApplicationsResponse) {
+				assert.Len(t, resp.Applications, 1)
+				assert.Equal(t, 50, resp.PageSize)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockStorage := NewMockStorage()
+			tt.setup(mockStorage)
+			service := NewService(mockStorage)
+			ctx := context.Background()
+
+			resp, err := service.ListApplications(ctx, tt.limit, tt.offset)
+			require.NoError(t, err)
+			require.NotNil(t, resp)
+			if tt.checkResult != nil {
+				tt.checkResult(t, resp)
+			}
+		})
+	}
+}
+
+func TestService_UpdateApplication(t *testing.T) {
+	tests := []struct {
+		name          string
+		setup         func(*MockStorage)
+		appID         string
+		request       *models.UpdateApplicationRequest
+		expectError   bool
+		errorContains string
+		checkResult   func(*testing.T, *MockStorage, *models.UpdateApplicationResponse)
+	}{
+		{
+			name: "success - full update",
+			setup: func(m *MockStorage) {
+				app := models.NewApplication("test-app", "Old Name", []string{"windows"})
+				app.CreatedAt = "2025-01-01T00:00:00Z"
+				app.UpdatedAt = "2025-01-01T00:00:00Z"
+				m.applications[app.ID] = app
+			},
+			appID: "test-app",
+			request: func() *models.UpdateApplicationRequest {
+				name := "New Name"
+				desc := "New Description"
+				return &models.UpdateApplicationRequest{
+					Name:        &name,
+					Description: &desc,
+					Platforms:   []string{"windows", "linux"},
+				}
+			}(),
+			expectError: false,
+			checkResult: func(t *testing.T, m *MockStorage, resp *models.UpdateApplicationResponse) {
+				assert.Equal(t, "test-app", resp.ID)
+				assert.Contains(t, resp.Message, "updated successfully")
+
+				app := m.applications["test-app"]
+				assert.Equal(t, "New Name", app.Name)
+				assert.Equal(t, "New Description", app.Description)
+				assert.Equal(t, []string{"windows", "linux"}, app.Platforms)
+			},
+		},
+		{
+			name: "success - partial update (only name)",
+			setup: func(m *MockStorage) {
+				app := models.NewApplication("test-app", "Old Name", []string{"windows"})
+				app.Description = "Existing Description"
+				app.CreatedAt = "2025-01-01T00:00:00Z"
+				app.UpdatedAt = "2025-01-01T00:00:00Z"
+				m.applications[app.ID] = app
+			},
+			appID: "test-app",
+			request: func() *models.UpdateApplicationRequest {
+				name := "Updated Name"
+				return &models.UpdateApplicationRequest{
+					Name: &name,
+				}
+			}(),
+			expectError: false,
+			checkResult: func(t *testing.T, m *MockStorage, resp *models.UpdateApplicationResponse) {
+				app := m.applications["test-app"]
+				assert.Equal(t, "Updated Name", app.Name)
+				assert.Equal(t, "Existing Description", app.Description)
+				assert.Equal(t, []string{"windows"}, app.Platforms)
+			},
+		},
+		{
+			name:  "not found",
+			setup: func(m *MockStorage) {},
+			appID: "nonexistent",
+			request: func() *models.UpdateApplicationRequest {
+				name := "Name"
+				return &models.UpdateApplicationRequest{Name: &name}
+			}(),
+			expectError:   true,
+			errorContains: "not found",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockStorage := NewMockStorage()
+			tt.setup(mockStorage)
+			service := NewService(mockStorage)
+			ctx := context.Background()
+
+			resp, err := service.UpdateApplication(ctx, tt.appID, tt.request)
+
+			if tt.expectError {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), tt.errorContains)
+				return
+			}
+
+			require.NoError(t, err)
+			require.NotNil(t, resp)
+			if tt.checkResult != nil {
+				tt.checkResult(t, mockStorage, resp)
+			}
+		})
+	}
+}
+
+func TestService_DeleteApplication(t *testing.T) {
+	tests := []struct {
+		name          string
+		setup         func(*MockStorage)
+		appID         string
+		expectError   bool
+		errorContains string
+	}{
+		{
+			name: "success - no releases",
+			setup: func(m *MockStorage) {
+				app := models.NewApplication("test-app", "Test App", []string{"windows"})
+				m.applications[app.ID] = app
+			},
+			appID:       "test-app",
+			expectError: false,
+		},
+		{
+			name:          "not found",
+			setup:         func(m *MockStorage) {},
+			appID:         "nonexistent",
+			expectError:   true,
+			errorContains: "not found",
+		},
+		{
+			name: "has releases - conflict",
+			setup: func(m *MockStorage) {
+				app := models.NewApplication("test-app", "Test App", []string{"windows"})
+				m.applications[app.ID] = app
+				release := createTestReleaseForUpdate("test-app", "1.0.0", "windows", "amd64")
+				m.releases["test-app"] = []*models.Release{release}
+			},
+			appID:         "test-app",
+			expectError:   true,
+			errorContains: "cannot delete application",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockStorage := NewMockStorage()
+			tt.setup(mockStorage)
+			service := NewService(mockStorage)
+			ctx := context.Background()
+
+			err := service.DeleteApplication(ctx, tt.appID)
+
+			if tt.expectError {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), tt.errorContains)
+				return
+			}
+
+			require.NoError(t, err)
+
+			// Verify application was deleted from storage
+			_, getErr := mockStorage.GetApplication(ctx, tt.appID)
+			assert.Error(t, getErr)
+		})
+	}
+}
+
+func TestService_DeleteRelease(t *testing.T) {
+	tests := []struct {
+		name          string
+		setup         func(*MockStorage)
+		appID         string
+		version       string
+		platform      string
+		arch          string
+		expectError   bool
+		errorContains string
+		checkResult   func(*testing.T, *models.DeleteReleaseResponse)
+	}{
+		{
+			name: "success",
+			setup: func(m *MockStorage) {
+				release := createTestReleaseForUpdate("test-app", "1.0.0", "windows", "amd64")
+				m.releases["test-app"] = []*models.Release{release}
+			},
+			appID:       "test-app",
+			version:     "1.0.0",
+			platform:    "windows",
+			arch:        "amd64",
+			expectError: false,
+			checkResult: func(t *testing.T, resp *models.DeleteReleaseResponse) {
+				assert.NotEmpty(t, resp.ID)
+				assert.Contains(t, resp.Message, "deleted successfully")
+			},
+		},
+		{
+			name:          "not found",
+			setup:         func(m *MockStorage) {},
+			appID:         "test-app",
+			version:       "1.0.0",
+			platform:      "windows",
+			arch:          "amd64",
+			expectError:   true,
+			errorContains: "not found",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockStorage := NewMockStorage()
+			tt.setup(mockStorage)
+			service := NewService(mockStorage)
+			ctx := context.Background()
+
+			resp, err := service.DeleteRelease(ctx, tt.appID, tt.version, tt.platform, tt.arch)
+
+			if tt.expectError {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), tt.errorContains)
+				return
+			}
+
+			require.NoError(t, err)
+			require.NotNil(t, resp)
+			if tt.checkResult != nil {
+				tt.checkResult(t, resp)
+			}
+
+			// Verify release was deleted
+			_, getErr := mockStorage.GetRelease(ctx, tt.appID, tt.version, tt.platform, tt.arch)
+			assert.Error(t, getErr)
 		})
 	}
 }

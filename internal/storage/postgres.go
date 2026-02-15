@@ -105,6 +105,15 @@ func (ps *PostgresStorage) SaveApplication(ctx context.Context, app *models.Appl
 	return nil
 }
 
+// DeleteApplication removes an application by its ID.
+func (ps *PostgresStorage) DeleteApplication(ctx context.Context, appID string) error {
+	err := ps.queries.DeleteApplication(ctx, appID)
+	if err != nil {
+		return fmt.Errorf("failed to delete application %s: %w", appID, err)
+	}
+	return nil
+}
+
 // Releases returns all releases for a given application.
 func (ps *PostgresStorage) Releases(ctx context.Context, appID string) ([]*models.Release, error) {
 	rows, err := ps.queries.GetReleasesByAppID(ctx, appID)
