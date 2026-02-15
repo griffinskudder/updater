@@ -3,6 +3,9 @@
 # All targets run inside Docker containers. Only Docker is required locally.
 # See make/*.mk for target definitions.
 
+# Prevent MSYS/Git Bash path conversion (Windows)
+export MSYS_NO_PATHCONV := 1
+
 # Guard: require Docker
 DOCKER := $(shell command -v docker 2>/dev/null)
 ifndef DOCKER
