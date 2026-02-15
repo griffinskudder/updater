@@ -18,7 +18,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-
 // TestSecurityContext tests the security context functionality
 func TestSecurityContext(t *testing.T) {
 	tests := []struct {
