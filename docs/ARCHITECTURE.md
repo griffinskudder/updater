@@ -16,25 +16,58 @@ The updater service is designed to be queried by desktop applications to check f
 
 ## Architecture Components
 
-### 1. API Layer (`internal/api/`)
-Handles HTTP requests and responses for update checks.
+### 1. API Layer (`internal/api/`) ✅ **COMPLETE**
+Fully implemented HTTP API with production-ready features and comprehensive security.
 
-**Responsibilities:**
-- REST/HTTP handlers for update checks
-- Version comparison endpoints
-- Health checks and monitoring
-- Request validation and authentication
-- Rate limiting and security
+**Core Components:**
+- **Handlers** (`handlers.go`): HTTP request/response processing for all endpoints
+- **Middleware** (`middleware.go`): Security, authentication, and request processing pipeline
+- **Routes** (`routes.go`): URL routing, CORS, rate limiting, and middleware orchestration
 
-### 2. Update Management (`internal/update/`)
-Core business logic for version comparison and update determination.
+**Implemented Endpoints:**
+- `GET /api/v1/updates/{app_id}/check` - Check for updates (public)
+- `GET /api/v1/updates/{app_id}/latest` - Get latest version (public)
+- `GET /api/v1/updates/{app_id}/releases` - List releases (protected: read permission)
+- `POST /api/v1/updates/{app_id}/register` - Register new release (protected: write permission)
+- `GET /health` - Health check (public with enhanced details for authenticated users)
 
-**Responsibilities:**
-- Version comparison logic (semantic versioning)
-- Update availability determination
-- Release metadata management
-- Platform/architecture filtering
+**Security Features:**
+- API key authentication with Bearer token format
+- Role-based authorization (read/write/admin permissions with hierarchy)
+- Rate limiting with configurable requests per minute
+- CORS support with configurable origins, methods, and headers
+- Request validation and structured error responses
+- Audit logging for all security-sensitive operations
+- Protection against common vulnerabilities (SQL injection, path traversal, etc.)
+
+**Error Handling:**
+- Structured ServiceError types with HTTP status code mapping
+- Consistent JSON error response format
+- Panic recovery middleware with proper logging
+- Request/response logging for debugging and monitoring
+
+### 2. Update Management (`internal/update/`) ✅ **COMPLETE**
+Fully implemented business logic for version comparison and update determination.
+
+**Core Components:**
+- **Service** (`service.go`): Main business logic implementation
+- **Interface** (`interface.go`): Service contract definition
+- **Errors** (`errors.go`): Structured error types with HTTP status mapping
+
+**Implemented Operations:**
+- `CheckForUpdate()` - Intelligent update availability determination
+- `GetLatestVersion()` - Latest version retrieval with platform filtering
+- `ListReleases()` - Release listing with filtering, sorting, and pagination
+- `RegisterRelease()` - New release registration with validation
+
+**Features:**
+- Semantic versioning support with pre-release handling
+- Platform and architecture awareness
 - Update requirement rules (critical vs optional updates)
+- Minimum version enforcement
+- Pre-release filtering (configurable inclusion/exclusion)
+- Release metadata management with validation
+- Structured error responses with proper HTTP status codes
 
 ### 3. Storage Layer (`internal/storage/`)
 Abstraction for release metadata persistence and retrieval.
@@ -239,30 +272,41 @@ sequenceDiagram
 
 ### Security Layers
 
-#### 1. Network Security Layer
+#### 1. Network Security Layer ✅ **IMPLEMENTED**
 - **TLS/HTTPS Enforcement**: All communications encrypted in transit
-- **CORS Protection**: Configurable origin validation prevents unauthorized cross-origin requests
-- **Trusted Proxy Support**: Proper client IP detection through reverse proxies
+- **CORS Protection**: `corsMiddleware` with configurable origin validation prevents unauthorized cross-origin requests
+- **OPTIONS Request Handling**: Proper CORS preflight request handling with 204 No Content responses
+- **Trusted Proxy Support**: `getClientIP` function provides proper client IP detection through reverse proxies
 
-#### 2. Authentication Layer
-- **API Key Authentication**: Bearer token-based authentication system
+#### 2. Authentication Layer ✅ **IMPLEMENTED**
+- **API Key Authentication**: Bearer token-based authentication system (`authMiddleware`)
 - **Key Management**: Support for multiple keys with individual enable/disable
+- **Optional Authentication**: `OptionalAuth` middleware for endpoints that enhance data based on auth status
 - **Secure Key Storage**: Environment variable and secure configuration support
+- **Context Propagation**: Security context passed through request lifecycle
 
-#### 3. Authorization Layer
-- **Permission-Based Access Control**: Granular permissions per API key
-- **Endpoint Protection**: Different permission requirements per endpoint
+#### 3. Authorization Layer ✅ **IMPLEMENTED**
+- **Permission-Based Access Control**: Granular permissions per API key (read/write/admin)
+- **Permission Hierarchy**: Admin includes write, write includes read permissions
+- **Endpoint Protection**: `RequirePermission` middleware enforces different permission requirements
 - **Principle of Least Privilege**: Minimal permissions by default
+- **Security Context**: `SecurityContext` type for permission validation
 
-#### 4. Application Security Layer
-- **Input Validation**: Comprehensive validation of all request data
-- **Output Sanitization**: Secure error messages without information leakage
-- **SQL Injection Prevention**: Parameterized queries and input sanitization
+#### 4. Application Security Layer ✅ **IMPLEMENTED**
+- **Input Validation**: Comprehensive validation of all request data with structured error responses
+- **Output Sanitization**: Secure error messages without information leakage using `ServiceError` types
+- **Request Size Limits**: Protection against large payload attacks
+- **Header Injection Protection**: Validation of HTTP headers for malicious content
+- **Path Traversal Protection**: URL path validation and sanitization
+- **JSON Parsing Security**: Secure JSON parsing with error handling
 
-#### 5. Operational Security Layer
-- **Rate Limiting**: Per-IP request throttling with configurable limits
-- **Audit Logging**: Comprehensive security event logging
-- **Health Monitoring**: Service health checks and metrics
+#### 5. Operational Security Layer ✅ **IMPLEMENTED**
+- **Rate Limiting**: Per-IP request throttling with configurable limits (`rateLimitMiddleware`)
+- **Audit Logging**: Comprehensive security event logging with client IP identification
+- **Health Monitoring**: Service health checks with authenticated enhanced details
+- **Panic Recovery**: `recoveryMiddleware` handles panics gracefully
+- **Request Logging**: `loggingMiddleware` for request/response monitoring
+- **Client IP Detection**: `getClientIP` function with proxy support (X-Forwarded-For, X-Real-IP)
 
 ### Permission Model
 

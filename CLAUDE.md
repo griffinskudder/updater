@@ -133,6 +133,19 @@ The project has a comprehensive models layer implemented and documented. See `do
   - Migration-friendly folder structure for PostgreSQL and SQLite
   - sqlc integration for type-safe database operations
   - Automated code generation from SQL schemas
+- Complete API layer (`internal/api/`) with production-ready features:
+  - HTTP handlers for all update operations (check, latest, list, register)
+  - Comprehensive middleware stack (authentication, authorization, CORS, rate limiting)
+  - Security-first design with API key authentication and permission system
+  - Robust error handling with structured ServiceError types
+  - Complete test coverage including security vulnerability testing
+  - Request validation, logging, and panic recovery
+- Core update service (`internal/update/`) with business logic:
+  - Version comparison and update determination logic
+  - Release management and filtering
+  - Semantic versioning support with pre-release handling
+  - Platform and architecture awareness
+  - Structured error handling with HTTP status code mapping
 - Comprehensive documentation and design rationales
 - Build system (Makefile) with development commands
 - Docker containerization with security-first approach:
@@ -142,17 +155,16 @@ The project has a comprehensive models layer implemented and documented. See `do
   - Environment-based configuration management
 
 **🚧 Next Steps:**
-- API layer implementation (`internal/api/`)
 - Complete database storage provider implementations
-- Core update logic (`internal/update/`)
-- HTTP server setup and routing
+- HTTP server setup and routing integration
 - Configuration loading and management
+- Production deployment configuration
 
 ### Architecture Overview
 
 The service follows a layered architecture:
-- **API Layer**: HTTP handlers and routing (planned)
-- **Business Logic**: Update determination and version comparison (planned)
+- **API Layer**: HTTP handlers and routing ✅ **COMPLETE**
+- **Business Logic**: Update determination and version comparison ✅ **COMPLETE**
 - **Models Layer**: Data structures and validation ✅ **COMPLETE**
 - **Storage Layer**: Data persistence abstraction ✅ **COMPLETE**
 - **Configuration**: Service configuration and settings ✅ **COMPLETE**
@@ -239,11 +251,50 @@ This section documents key patterns and approaches used in the codebase to maint
 
 ### Error Handling Patterns
 
+**ServiceError Pattern (API Layer)**
+- **Location**: `internal/update/errors.go`
+- **Purpose**: Structured errors with HTTP status code mapping
+- **Pattern**: Type-safe error constructors for common scenarios
+- **Usage**: `NewApplicationNotFoundError(appID)` returns proper HTTP 404
+- **Benefits**: Consistent error responses, proper HTTP status codes, structured logging
+
 **Consistent Error Wrapping**
 - **Pattern**: `fmt.Errorf("operation failed: %w", err)` for context
 - **Storage Errors**: Specific error types for different failure modes
 - **Validation**: Structured validation errors with field-specific messages
 - **Context Preservation**: Original error context maintained through layers
+- **API Integration**: ServiceError types provide HTTP status code mapping
+
+### API Layer Patterns
+
+**Middleware Chain Pattern**
+- **Location**: `internal/api/routes.go` and `internal/api/middleware.go`
+- **Purpose**: Composable request processing pipeline
+- **Implementation**: Sequential middleware application (CORS → Auth → Permissions → Business Logic)
+- **Features**: Authentication, authorization, rate limiting, CORS, logging, panic recovery
+- **Benefits**: Separation of concerns, reusable components, testable in isolation
+
+**Security Middleware Pattern**
+- **Authentication**: API key-based with Bearer token format
+- **Authorization**: Role-based permissions (read/write/admin) with hierarchy
+- **Optional Auth**: Endpoints that enhance data based on authentication status
+- **Context Propagation**: Security context passed through request lifecycle
+- **Audit Logging**: Security events logged with client identification
+
+**Handler Pattern (API Layer)**
+- **Location**: `internal/api/handlers.go`
+- **Purpose**: Clean separation between HTTP concerns and business logic
+- **Pattern**: Dependency injection of service interfaces
+- **Error Handling**: ServiceError integration for proper HTTP status codes
+- **Validation**: Request validation with structured error responses
+- **Security**: Client IP detection and security context integration
+
+**Testing Patterns (API Layer)**
+- **Mock Services**: `MockUpdateService` with testify/mock for behavior verification
+- **Security Testing**: Comprehensive vulnerability testing (SQL injection, path traversal, etc.)
+- **Integration Testing**: End-to-end API testing with authentication flows
+- **Mock Expectations**: Proper setup of service method expectations for different test scenarios
+- **Test Organization**: Separate test files for different concerns (handlers vs security)
 
 ### Development Workflow Patterns
 
@@ -272,3 +323,4 @@ This section documents key patterns and approaches used in the codebase to maint
 - NEVER: Link to files outside the docs directory in documentation inside the docs directory.
 - ALWAYS: Generate code after modifying sql files.
 - NEVER: Use CGO. CGO IS NOT GO.
+- ALWAYS: Ensure all tests are passing before finalising the request.
