@@ -62,6 +62,13 @@ func TestNewDefaultConfig(t *testing.T) {
 	assert.True(t, config.Metrics.Enabled)
 	assert.Equal(t, "/metrics", config.Metrics.Path)
 	assert.Equal(t, 9090, config.Metrics.Port)
+
+	// Test observability defaults
+	assert.Equal(t, "updater", config.Observability.ServiceName)
+	assert.Equal(t, "1.0.0", config.Observability.ServiceVersion)
+	assert.False(t, config.Observability.Tracing.Enabled)
+	assert.Equal(t, "stdout", config.Observability.Tracing.Exporter)
+	assert.Equal(t, 1.0, config.Observability.Tracing.SampleRate)
 }
 
 func TestConfig_Validate(t *testing.T) {
@@ -680,6 +687,107 @@ func TestMetricsConfig_Validate(t *testing.T) {
 	}
 }
 
+func TestObservabilityConfig_Validate(t *testing.T) {
+	tests := []struct {
+		name        string
+		config      ObservabilityConfig
+		expectError bool
+		errorMsg    string
+	}{
+		{
+			name: "tracing disabled",
+			config: ObservabilityConfig{
+				Tracing: TracingConfig{Enabled: false},
+			},
+			expectError: false,
+		},
+		{
+			name: "valid stdout tracing",
+			config: ObservabilityConfig{
+				Tracing: TracingConfig{
+					Enabled:    true,
+					Exporter:   "stdout",
+					SampleRate: 1.0,
+				},
+			},
+			expectError: false,
+		},
+		{
+			name: "valid otlp tracing",
+			config: ObservabilityConfig{
+				Tracing: TracingConfig{
+					Enabled:      true,
+					Exporter:     "otlp",
+					SampleRate:   0.5,
+					OTLPEndpoint: "localhost:4317",
+				},
+			},
+			expectError: false,
+		},
+		{
+			name: "invalid exporter",
+			config: ObservabilityConfig{
+				Tracing: TracingConfig{
+					Enabled:    true,
+					Exporter:   "invalid",
+					SampleRate: 1.0,
+				},
+			},
+			expectError: true,
+			errorMsg:    "invalid tracing exporter: invalid",
+		},
+		{
+			name: "negative sample rate",
+			config: ObservabilityConfig{
+				Tracing: TracingConfig{
+					Enabled:    true,
+					Exporter:   "stdout",
+					SampleRate: -0.1,
+				},
+			},
+			expectError: true,
+			errorMsg:    "tracing sample rate must be between 0 and 1",
+		},
+		{
+			name: "sample rate above 1",
+			config: ObservabilityConfig{
+				Tracing: TracingConfig{
+					Enabled:    true,
+					Exporter:   "stdout",
+					SampleRate: 1.5,
+				},
+			},
+			expectError: true,
+			errorMsg:    "tracing sample rate must be between 0 and 1",
+		},
+		{
+			name: "otlp without endpoint",
+			config: ObservabilityConfig{
+				Tracing: TracingConfig{
+					Enabled:    true,
+					Exporter:   "otlp",
+					SampleRate: 1.0,
+				},
+			},
+			expectError: true,
+			errorMsg:    "OTLP endpoint is required when tracing exporter is otlp",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.config.Validate()
+
+			if tt.expectError {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), tt.errorMsg)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
 func TestAPIKey_HasPermission(t *testing.T) {
 	tests := []struct {
 		name       string
@@ -758,6 +866,7 @@ func TestConfigStructFields(t *testing.T) {
 	assert.NotNil(t, config.Logging)
 	assert.NotNil(t, config.Cache)
 	assert.NotNil(t, config.Metrics)
+	assert.NotNil(t, config.Observability)
 
 	// Verify nested structures
 	assert.NotNil(t, config.Server.CORS)

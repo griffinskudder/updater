@@ -40,12 +40,13 @@ const (
 // - Easy to serialize/deserialize from YAML/JSON
 // - Comprehensive validation across all components
 type Config struct {
-	Server   ServerConfig   `yaml:"server" json:"server"`     // HTTP server configuration
-	Storage  StorageConfig  `yaml:"storage" json:"storage"`   // Data persistence settings
-	Security SecurityConfig `yaml:"security" json:"security"` // Authentication and authorization
-	Logging  LoggingConfig  `yaml:"logging" json:"logging"`   // Logging and output configuration
-	Cache    CacheConfig    `yaml:"cache" json:"cache"`       // Performance caching
-	Metrics  MetricsConfig  `yaml:"metrics" json:"metrics"`   // Monitoring and metrics
+	Server        ServerConfig        `yaml:"server" json:"server"`               // HTTP server configuration
+	Storage       StorageConfig       `yaml:"storage" json:"storage"`             // Data persistence settings
+	Security      SecurityConfig      `yaml:"security" json:"security"`           // Authentication and authorization
+	Logging       LoggingConfig       `yaml:"logging" json:"logging"`             // Logging and output configuration
+	Cache         CacheConfig         `yaml:"cache" json:"cache"`                 // Performance caching
+	Metrics       MetricsConfig       `yaml:"metrics" json:"metrics"`             // Monitoring and metrics
+	Observability ObservabilityConfig `yaml:"observability" json:"observability"` // OpenTelemetry observability
 }
 
 type ServerConfig struct {
@@ -144,6 +145,21 @@ type MetricsConfig struct {
 	Port    int    `yaml:"port" json:"port"`
 }
 
+// ObservabilityConfig holds configuration for OpenTelemetry-based observability.
+type ObservabilityConfig struct {
+	ServiceName    string        `yaml:"service_name" json:"service_name"`
+	ServiceVersion string        `yaml:"service_version" json:"service_version"`
+	Tracing        TracingConfig `yaml:"tracing" json:"tracing"`
+}
+
+// TracingConfig holds configuration for distributed tracing.
+type TracingConfig struct {
+	Enabled      bool    `yaml:"enabled" json:"enabled"`
+	Exporter     string  `yaml:"exporter" json:"exporter"`
+	SampleRate   float64 `yaml:"sample_rate" json:"sample_rate"`
+	OTLPEndpoint string  `yaml:"otlp_endpoint" json:"otlp_endpoint"`
+}
+
 // NewDefaultConfig creates a configuration with production-ready defaults.
 //
 // Default Configuration Principles:
@@ -225,6 +241,15 @@ func NewDefaultConfig() *Config {
 			Path:    "/metrics",
 			Port:    9090,
 		},
+		Observability: ObservabilityConfig{
+			ServiceName:    "updater",
+			ServiceVersion: "1.0.0",
+			Tracing: TracingConfig{
+				Enabled:    false,
+				Exporter:   "stdout",
+				SampleRate: 1.0,
+			},
+		},
 	}
 }
 
@@ -251,6 +276,10 @@ func (c *Config) Validate() error {
 
 	if err := c.Metrics.Validate(); err != nil {
 		return fmt.Errorf("invalid metrics config: %w", err)
+	}
+
+	if err := c.Observability.Validate(); err != nil {
+		return fmt.Errorf("invalid observability config: %w", err)
 	}
 
 	return nil
@@ -426,6 +455,32 @@ func (mc *MetricsConfig) Validate() error {
 
 	if mc.Port <= 0 || mc.Port > 65535 {
 		return errors.New("metrics port must be between 1 and 65535")
+	}
+
+	return nil
+}
+
+func (oc *ObservabilityConfig) Validate() error {
+	if oc.Tracing.Enabled {
+		validExporters := []string{"stdout", "otlp"}
+		found := false
+		for _, ve := range validExporters {
+			if oc.Tracing.Exporter == ve {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return fmt.Errorf("invalid tracing exporter: %s (must be stdout or otlp)", oc.Tracing.Exporter)
+		}
+
+		if oc.Tracing.SampleRate < 0 || oc.Tracing.SampleRate > 1 {
+			return errors.New("tracing sample rate must be between 0 and 1")
+		}
+
+		if oc.Tracing.Exporter == "otlp" && oc.Tracing.OTLPEndpoint == "" {
+			return errors.New("OTLP endpoint is required when tracing exporter is otlp")
+		}
 	}
 
 	return nil
