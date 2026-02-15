@@ -72,6 +72,30 @@ func (m *MockUpdateService) RegisterRelease(ctx context.Context, req *models.Reg
 	return args.Get(0).(*models.RegisterReleaseResponse), args.Error(1)
 }
 
+func (m *MockUpdateService) CreateApplication(_ context.Context, _ *models.CreateApplicationRequest) (*models.CreateApplicationResponse, error) {
+	return nil, nil
+}
+
+func (m *MockUpdateService) GetApplication(_ context.Context, _ string) (*models.ApplicationInfoResponse, error) {
+	return nil, nil
+}
+
+func (m *MockUpdateService) ListApplications(_ context.Context, _, _ int) (*models.ListApplicationsResponse, error) {
+	return nil, nil
+}
+
+func (m *MockUpdateService) UpdateApplication(_ context.Context, _ string, _ *models.UpdateApplicationRequest) (*models.UpdateApplicationResponse, error) {
+	return nil, nil
+}
+
+func (m *MockUpdateService) DeleteApplication(_ context.Context, _ string) error {
+	return nil
+}
+
+func (m *MockUpdateService) DeleteRelease(_ context.Context, _, _, _, _ string) (*models.DeleteReleaseResponse, error) {
+	return nil, nil
+}
+
 func TestNewHandlers(t *testing.T) {
 	mockService := &MockUpdateService{}
 	handlers := NewHandlers(mockService)
