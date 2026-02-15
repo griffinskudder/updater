@@ -12,11 +12,32 @@ import (
 	"updater/internal/models"
 
 	"github.com/gorilla/mux"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 )
 
+// RouteOption configures optional route behavior.
+type RouteOption func(*mux.Router)
+
+// WithOTelMiddleware adds OpenTelemetry HTTP instrumentation middleware.
+func WithOTelMiddleware(serviceName string) RouteOption {
+	return func(r *mux.Router) {
+		r.Use(otelmux.Middleware(serviceName,
+			otelmux.WithFilter(func(r *http.Request) bool {
+				// Filter out health and metrics endpoints from tracing
+				return r.URL.Path != "/health" && r.URL.Path != "/api/v1/health" && r.URL.Path != "/metrics"
+			}),
+		))
+	}
+}
+
 // SetupRoutes configures the HTTP routes for the API
-func SetupRoutes(handlers *Handlers, config *models.Config) *mux.Router {
+func SetupRoutes(handlers *Handlers, config *models.Config, opts ...RouteOption) *mux.Router {
 	router := mux.NewRouter()
+
+	// Apply optional middleware (e.g., OpenTelemetry)
+	for _, opt := range opts {
+		opt(router)
+	}
 
 	// API prefix
 	api := router.PathPrefix("/api/v1").Subrouter()

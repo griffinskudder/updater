@@ -17,6 +17,35 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// mockStorage implements storage.Storage for handler tests
+type mockStorage struct {
+	pingErr error
+}
+
+func (m *mockStorage) Applications(_ context.Context) ([]*models.Application, error) {
+	return nil, nil
+}
+func (m *mockStorage) GetApplication(_ context.Context, _ string) (*models.Application, error) {
+	return nil, nil
+}
+func (m *mockStorage) SaveApplication(_ context.Context, _ *models.Application) error { return nil }
+func (m *mockStorage) Releases(_ context.Context, _ string) ([]*models.Release, error) {
+	return nil, nil
+}
+func (m *mockStorage) GetRelease(_ context.Context, _, _, _, _ string) (*models.Release, error) {
+	return nil, nil
+}
+func (m *mockStorage) SaveRelease(_ context.Context, _ *models.Release) error   { return nil }
+func (m *mockStorage) DeleteRelease(_ context.Context, _, _, _, _ string) error { return nil }
+func (m *mockStorage) GetLatestRelease(_ context.Context, _, _, _ string) (*models.Release, error) {
+	return nil, nil
+}
+func (m *mockStorage) GetReleasesAfterVersion(_ context.Context, _, _, _, _ string) ([]*models.Release, error) {
+	return nil, nil
+}
+func (m *mockStorage) Ping(_ context.Context) error { return m.pingErr }
+func (m *mockStorage) Close() error                 { return nil }
+
 // MockUpdateService implements the update.ServiceInterface for testing
 type MockUpdateService struct {
 	mock.Mock
@@ -48,6 +77,16 @@ func TestNewHandlers(t *testing.T) {
 
 	assert.NotNil(t, handlers)
 	assert.Equal(t, mockService, handlers.updateService)
+	assert.Nil(t, handlers.storage)
+}
+
+func TestNewHandlers_WithStorage(t *testing.T) {
+	mockService := &MockUpdateService{}
+	mockStore := &mockStorage{}
+	handlers := NewHandlers(mockService, WithStorage(mockStore))
+
+	assert.NotNil(t, handlers)
+	assert.Equal(t, mockStore, handlers.storage)
 }
 
 func TestHandlers_CheckForUpdates_Success(t *testing.T) {
@@ -434,6 +473,51 @@ func TestHandlers_HealthCheck(t *testing.T) {
 	assert.Equal(t, "healthy", response["status"])
 	assert.NotEmpty(t, response["timestamp"])
 	assert.Equal(t, "1.0.0", response["version"])
+}
+
+func TestHandlers_HealthCheck_WithStorage(t *testing.T) {
+	mockService := &MockUpdateService{}
+	store := &mockStorage{}
+	handlers := NewHandlers(mockService, WithStorage(store))
+
+	req := httptest.NewRequest(http.MethodGet, "/health", nil)
+	recorder := httptest.NewRecorder()
+
+	handlers.HealthCheck(recorder, req)
+
+	assert.Equal(t, http.StatusOK, recorder.Code)
+
+	var response map[string]interface{}
+	err := json.Unmarshal(recorder.Body.Bytes(), &response)
+	require.NoError(t, err)
+	assert.Equal(t, "healthy", response["status"])
+
+	components := response["components"].(map[string]interface{})
+	storageComp := components["storage"].(map[string]interface{})
+	assert.Equal(t, "healthy", storageComp["status"])
+}
+
+func TestHandlers_HealthCheck_StorageDegraded(t *testing.T) {
+	mockService := &MockUpdateService{}
+	store := &mockStorage{pingErr: fmt.Errorf("connection refused")}
+	handlers := NewHandlers(mockService, WithStorage(store))
+
+	req := httptest.NewRequest(http.MethodGet, "/health", nil)
+	recorder := httptest.NewRecorder()
+
+	handlers.HealthCheck(recorder, req)
+
+	assert.Equal(t, http.StatusOK, recorder.Code)
+
+	var response map[string]interface{}
+	err := json.Unmarshal(recorder.Body.Bytes(), &response)
+	require.NoError(t, err)
+	assert.Equal(t, "degraded", response["status"])
+
+	components := response["components"].(map[string]interface{})
+	storageComp := components["storage"].(map[string]interface{})
+	assert.Equal(t, "unhealthy", storageComp["status"])
+	assert.Contains(t, storageComp["message"], "connection refused")
 }
 
 func TestHandlers_HTTPMethodNotAllowed(t *testing.T) {

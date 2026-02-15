@@ -1,13 +1,16 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 	"updater/internal/models"
+	"updater/internal/storage"
 	"updater/internal/update"
 
 	"github.com/gorilla/mux"
@@ -16,12 +19,27 @@ import (
 // Handlers contains HTTP handlers for the updater API
 type Handlers struct {
 	updateService update.ServiceInterface
+	storage       storage.Storage
 }
 
 // NewHandlers creates a new handlers instance
-func NewHandlers(updateService update.ServiceInterface) *Handlers {
-	return &Handlers{
+func NewHandlers(updateService update.ServiceInterface, opts ...HandlersOption) *Handlers {
+	h := &Handlers{
 		updateService: updateService,
+	}
+	for _, opt := range opts {
+		opt(h)
+	}
+	return h
+}
+
+// HandlersOption configures optional Handlers dependencies.
+type HandlersOption func(*Handlers)
+
+// WithStorage sets the storage backend for health check verification.
+func WithStorage(s storage.Storage) HandlersOption {
+	return func(h *Handlers) {
+		h.storage = s
 	}
 }
 
@@ -223,8 +241,21 @@ func (h *Handlers) HealthCheck(w http.ResponseWriter, r *http.Request) {
 	response := models.NewHealthCheckResponse(models.StatusHealthy)
 	response.Version = "1.0.0" // This could be injected from build info
 
-	// Add basic health metrics
-	response.AddComponent("storage", models.StatusHealthy, "Storage is operational")
+	// Verify storage connectivity with a short timeout
+	storageStatus := models.StatusHealthy
+	storageMessage := "Storage is operational"
+	if h.storage != nil {
+		pingCtx, cancel := context.WithTimeout(r.Context(), 2*time.Second)
+		defer cancel()
+		if err := h.storage.Ping(pingCtx); err != nil {
+			storageStatus = models.StatusUnhealthy
+			storageMessage = "Storage ping failed: " + err.Error()
+			response.Status = models.StatusDegraded
+			slog.Warn("Storage health check failed", "error", err)
+		}
+	}
+
+	response.AddComponent("storage", storageStatus, storageMessage)
 	response.AddComponent("api", models.StatusHealthy, "API is operational")
 
 	// Get security context to check if user is authenticated

@@ -14,6 +14,7 @@ import (
 	"updater/internal/config"
 	"updater/internal/logger"
 	"updater/internal/models"
+	"updater/internal/observability"
 	"updater/internal/storage"
 	"updater/internal/update"
 )
@@ -41,6 +42,20 @@ func main() {
 	}
 	slog.SetDefault(log)
 
+	// Initialize observability (OpenTelemetry)
+	otelProvider, err := observability.Setup(cfg.Metrics, cfg.Observability)
+	if err != nil {
+		slog.Error("Failed to initialize observability", "error", err)
+		os.Exit(1)
+	}
+	defer func() {
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		if err := otelProvider.Shutdown(shutdownCtx); err != nil {
+			slog.Error("Failed to shutdown observability", "error", err)
+		}
+	}()
+
 	// Initialize storage
 	storageInstance, err := initializeStorage(cfg)
 	if err != nil {
@@ -49,14 +64,40 @@ func main() {
 	}
 	defer storageInstance.Close()
 
-	// Initialize update service
-	updateService := update.NewService(storageInstance)
+	// Wrap storage with instrumentation if metrics are enabled
+	var activeStorage storage.Storage = storageInstance
+	if cfg.Metrics.Enabled {
+		instrumented, err := observability.NewInstrumentedStorage(storageInstance)
+		if err != nil {
+			slog.Error("Failed to create instrumented storage", "error", err)
+			os.Exit(1)
+		}
+		activeStorage = instrumented
+	}
 
-	// Initialize HTTP handlers
-	handlers := api.NewHandlers(updateService)
+	// Initialize update service
+	updateService := update.NewService(activeStorage)
+
+	// Initialize HTTP handlers with storage for health checks
+	handlers := api.NewHandlers(updateService, api.WithStorage(activeStorage))
 
 	// Setup routes with middleware
-	router := api.SetupRoutes(handlers, cfg)
+	routeOpts := []api.RouteOption{}
+	if cfg.Observability.Tracing.Enabled {
+		routeOpts = append(routeOpts, api.WithOTelMiddleware(cfg.Observability.ServiceName))
+	}
+	router := api.SetupRoutes(handlers, cfg, routeOpts...)
+
+	// Start metrics server if enabled
+	var metricsServer *observability.MetricsServer
+	if cfg.Metrics.Enabled {
+		metricsServer = observability.NewMetricsServer(cfg.Metrics.Port, cfg.Metrics.Path, otelProvider)
+		go func() {
+			if err := metricsServer.Start(); err != nil && err != http.ErrServerClosed {
+				slog.Error("Metrics server failed", "error", err)
+			}
+		}()
+	}
 
 	// Create HTTP server
 	server := &http.Server{
@@ -100,6 +141,13 @@ func main() {
 	// Create a deadline to wait for shutdown
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
+
+	// Shutdown metrics server
+	if metricsServer != nil {
+		if err := metricsServer.Shutdown(ctx); err != nil {
+			slog.Error("Metrics server forced to shutdown", "error", err)
+		}
+	}
 
 	// Attempt graceful shutdown
 	if err := server.Shutdown(ctx); err != nil {
