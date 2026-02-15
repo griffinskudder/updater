@@ -36,6 +36,7 @@ theme:
 
 nav:
   - Home: index.md
+  - Use Cases: use-cases.md
   - Architecture: ARCHITECTURE.md
   - Security:
     - Overview: SECURITY.md
