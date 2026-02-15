@@ -26,10 +26,13 @@ Fully implemented HTTP API with production-ready features and comprehensive secu
 
 **Implemented Endpoints:**
 - `GET /api/v1/updates/{app_id}/check` - Check for updates (public)
+- `POST /api/v1/check` - Check for updates via JSON body (public)
 - `GET /api/v1/updates/{app_id}/latest` - Get latest version (public)
+- `GET /api/v1/latest` - Get latest version with query params (public)
 - `GET /api/v1/updates/{app_id}/releases` - List releases (protected: read permission)
 - `POST /api/v1/updates/{app_id}/register` - Register new release (protected: write permission)
 - `GET /health` - Health check (public with enhanced details for authenticated users)
+- `GET /api/v1/health` - Versioned health check alias (public)
 
 **Security Features:**
 - API key authentication with Bearer token format
@@ -69,33 +72,77 @@ Fully implemented business logic for version comparison and update determination
 - Release metadata management with validation
 - Structured error responses with proper HTTP status codes
 
-### 3. Storage Layer (`internal/storage/`)
-Abstraction for release metadata persistence and retrieval.
+### 3. Storage Layer (`internal/storage/`) ✅ **COMPLETE**
+Multi-provider persistence layer with a unified interface and factory-based provider creation.
 
-**Responsibilities:**
-- Release metadata storage interface
-- Configuration management
-- Caching for performance
-- Support for multiple backends (JSON, database, external APIs)
+**Core Components:**
+- **Interface** (`interface.go`): `Storage` interface with 9 data operations + `Ping()` + `Close()`
+- **Factory** (`factory.go`): Factory pattern for creating providers by type string
+- **Type Conversions** (`dbconvert.go`): Shared database-to-model conversion helpers
 
-### 4. Models (`internal/models/`)
-Data structures and domain objects.
+**Storage Providers:**
+- **JSON** (`json.go`): File-based storage using JSON, suitable for development and small deployments
+- **Memory** (`memory.go`): In-memory storage for testing and ephemeral use
+- **PostgreSQL** (`postgres.go`): Production database backend using sqlc-generated queries
+- **SQLite** (`sqlite.go`): Lightweight database backend using sqlc-generated queries
 
-**Responsibilities:**
-- Application metadata structures
-- Version information schemas
-- Update response formats
-- Configuration schemas
-- Validation rules
+**Database Layer (`sqlc/`):**
+- `schema/postgres/`, `schema/sqlite/`: Migration-friendly schemas (`001_initial.sql`, `002_add_indexes.sql`)
+- `queries/postgres/`, `queries/sqlite/`: Engine-specific SQL query definitions
+- `postgres/`, `sqlite/`: sqlc-generated type-safe Go code
 
-### 5. External Integration (`internal/external/`)
-Integration with external services and validation of external resources.
+**Key Patterns:**
+- `context.Context` on all operations for cancellation and timeout support
+- Copy-on-return to prevent callers from mutating cached data
+- `Ping()` method on all providers for health check integration
+- `Close()` for clean resource release (database connections, file handles)
 
-**Responsibilities:**
-- Download URL validation
-- External file metadata retrieval
-- CDN integration helpers
-- Checksum verification
+### 4. Models (`internal/models/`) ✅ **COMPLETE**
+Data structures, domain objects, and validation logic.
+
+**Core Files:**
+- **Application** (`application.go`): Application metadata, platform support, configuration
+- **Release** (`release.go`): Release metadata, checksum validation, filtering
+- **Request** (`request.go`): API request types with validation
+- **Response** (`response.go`): API response types with helper constructors
+- **Config** (`config.go`): Service configuration schemas with defaults and validation
+
+**Key Design Decisions:**
+- Version comparison uses `github.com/Masterminds/semver/v3` directly (no separate version model)
+- All models include comprehensive validation methods
+- Response types use `omitempty` to minimize payload size
+- Configuration provides `NewDefaultConfig()` with safe production defaults
+
+### 5. Observability (`internal/observability/`) ✅ **COMPLETE**
+OpenTelemetry-based instrumentation for metrics, tracing, and storage monitoring.
+
+**Core Components:**
+- **SDK Setup** (`observability.go`): OpenTelemetry TracerProvider and MeterProvider initialization
+- **Metrics Server** (`metrics.go`): Prometheus HTTP metrics server on a separate port
+- **Instrumented Storage** (`storage.go`): `InstrumentedStorage` wrapper that adds operation-level metrics and tracing to any `Storage` implementation
+
+**Exporters:**
+- Prometheus (pull-based metrics)
+- stdout (development/debugging)
+- OTLP gRPC (for collectors like Jaeger, Grafana Tempo)
+
+**Infrastructure:**
+- `docker-compose.observability.yml`: Local Prometheus + Grafana stack
+- `configs/dev-observability.yaml`: Development configuration for the observability stack
+- `docker/prometheus/prometheus.yml`: Prometheus scrape configuration
+- `docker/grafana/provisioning/datasources/datasources.yml`: Grafana auto-provisioning
+
+### 6. Logging (`internal/logger/`) ✅ **COMPLETE**
+Structured logging using Go's standard `log/slog` package.
+
+**Core Components:**
+- **Logger Setup** (`logger.go`): Configurable logger initialization with format, level, and output options
+
+**Features:**
+- JSON and text output formats
+- Configurable log levels (debug, info, warn, error)
+- File output with configurable permissions
+- Security audit events tagged with `"event", "security_audit"`
 
 ## API Design
 
@@ -103,12 +150,12 @@ Integration with external services and validation of external resources.
 
 #### Check for Updates
 ```
-GET /api/v1/updates/{app_id}/check?current_version=1.2.3&platform=windows&arch=amd64
+GET /api/v1/updates/{app_id}/check?current_version=1.2.3&platform=windows&architecture=amd64
 ```
 
 #### Get Latest Version Info
 ```
-GET /api/v1/updates/{app_id}/latest?platform=windows&arch=amd64
+GET /api/v1/updates/{app_id}/latest?platform=windows&architecture=amd64
 ```
 
 #### List All Releases
@@ -127,15 +174,16 @@ POST /api/v1/updates/{app_id}/register
 Parameters can be provided via query params or headers:
 - `current_version`: Current application version
 - `platform`: Target platform (windows, linux, darwin)
-- `arch`: Architecture (amd64, arm64, 386)
+- `architecture`: Architecture (amd64, arm64, 386)
 
 #### Update Check Response
 ```json
 {
   "update_available": true,
   "latest_version": "1.3.0",
+  "current_version": "1.2.3",
   "download_url": "https://releases.example.com/app/1.3.0/app-windows-amd64.exe",
-  "checksum": "sha256:abc123...",
+  "checksum": "abc123def456...",
   "checksum_type": "sha256",
   "file_size": 15728640,
   "release_notes": "Bug fixes and improvements",
@@ -150,60 +198,117 @@ Parameters can be provided via query params or headers:
 ```
 .
 ├── cmd/
-│   └── updater/               # Main application entry point
-│       ├── main.go
-│       ├── server.go
-│       └── config.go
+│   └── updater/
+│       └── updater.go                # Server initialization and entry point
 ├── internal/
-│   ├── api/                   # HTTP handlers and routing
+│   ├── api/                          # HTTP handlers, middleware, routing
 │   │   ├── handlers.go
+│   │   ├── handlers_test.go
 │   │   ├── middleware.go
 │   │   ├── routes.go
-│   │   └── validators.go
-│   ├── update/                # Core update logic
-│   │   ├── service.go
-│   │   ├── version.go
-│   │   └── comparator.go
-│   ├── storage/               # Data persistence
+│   │   └── security_test.go
+│   ├── config/                       # Configuration loading
+│   │   ├── config.go
+│   │   └── config_test.go
+│   ├── integration/                  # Integration tests
+│   │   └── integration_test.go
+│   ├── logger/                       # Structured logging (log/slog)
+│   │   ├── logger.go
+│   │   └── logger_test.go
+│   ├── models/                       # Data models and validation
+│   │   ├── application.go
+│   │   ├── application_test.go
+│   │   ├── config.go
+│   │   ├── config_test.go
+│   │   ├── release.go
+│   │   ├── release_test.go
+│   │   ├── request.go
+│   │   ├── request_test.go
+│   │   ├── response.go
+│   │   └── response_test.go
+│   ├── observability/                # OpenTelemetry instrumentation
+│   │   ├── metrics.go
+│   │   ├── metrics_test.go
+│   │   ├── observability.go
+│   │   ├── observability_test.go
+│   │   ├── storage.go
+│   │   └── storage_test.go
+│   ├── storage/                      # Multi-provider persistence
+│   │   ├── dbconvert.go
+│   │   ├── dbconvert_test.go
+│   │   ├── factory.go
+│   │   ├── factory_test.go
 │   │   ├── interface.go
 │   │   ├── json.go
-│   │   ├── database.go
-│   │   └── cache.go
-│   ├── models/                # Data structures
-│   │   ├── release.go
-│   │   ├── application.go
-│   │   ├── version.go
-│   │   └── config.go
-│   ├── external/              # External service integration
-│   │   ├── validator.go
-│   │   └── metadata.go
-│   ├── config/                # Configuration management
-│   │   ├── config.go
-│   │   └── loader.go
-│   └── middleware/            # HTTP middleware
-│       ├── auth.go
-│       ├── logging.go
-│       └── ratelimit.go
-├── pkg/
-│   ├── version/               # Version comparison utilities
-│   │   ├── semver.go
-│   │   └── custom.go
-│   └── client/                # Go client library for apps
-│       ├── client.go
-│       └── types.go
-├── docs/
-│   ├── api.md                 # API documentation
-│   ├── ARCHITECTURE.md        # This file
-│   └── deployment.md          # Deployment guide
-├── scripts/
-│   ├── build.sh               # Build scripts
-│   └── deploy.sh              # Deployment scripts
+│   │   ├── json_test.go
+│   │   ├── memory.go
+│   │   ├── memory_test.go
+│   │   ├── postgres.go
+│   │   ├── postgres_test.go
+│   │   ├── sqlite.go
+│   │   ├── sqlite_schema.sql
+│   │   ├── sqlite_test.go
+│   │   └── sqlc/
+│   │       ├── postgres/             # Generated PostgreSQL queries
+│   │       │   ├── applications.sql.go
+│   │       │   ├── db.go
+│   │       │   ├── models.go
+│   │       │   └── releases.sql.go
+│   │       ├── queries/              # SQL query definitions
+│   │       │   ├── postgres/
+│   │       │   │   ├── applications.sql
+│   │       │   │   └── releases.sql
+│   │       │   └── sqlite/
+│   │       │       ├── applications.sql
+│   │       │       └── releases.sql
+│   │       ├── schema/               # Database migrations
+│   │       │   ├── postgres/
+│   │       │   │   ├── 001_initial.sql
+│   │       │   │   └── 002_add_indexes.sql
+│   │       │   └── sqlite/
+│   │       │       ├── 001_initial.sql
+│   │       │       └── 002_add_indexes.sql
+│   │       └── sqlite/               # Generated SQLite queries
+│   │           ├── applications.sql.go
+│   │           ├── db.go
+│   │           ├── models.go
+│   │           └── releases.sql.go
+│   └── update/                       # Business logic
+│       ├── errors.go
+│       ├── interface.go
+│       ├── service.go
+│       └── service_test.go
 ├── configs/
-│   ├── config.yaml            # Default configuration
-│   └── releases.json          # Sample release metadata
-└── examples/
-    ├── client/                # Example client implementations
-    └── config/                # Example configurations
+│   ├── dev-observability.yaml        # Local observability stack config
+│   └── security-examples.yaml        # Security configuration examples
+├── data/
+│   └── releases.json                 # Default release metadata
+├── deployments/
+│   └── kubernetes/
+│       └── deployment.yaml           # Kubernetes manifest
+├── docker/
+│   ├── grafana/
+│   │   └── provisioning/
+│   │       └── datasources/
+│   │           └── datasources.yml
+│   ├── nginx/
+│   │   └── nginx.conf
+│   └── prometheus/
+│       └── prometheus.yml
+├── docs/                             # MkDocs documentation site
+├── examples/
+│   ├── config.yaml                   # Example application config
+│   └── releases.json                 # Example release data
+├── scripts/
+│   └── docker-build.sh               # Docker build script
+├── Dockerfile                        # Multi-stage container build
+├── Makefile                          # Build automation
+├── docker-compose.yml                # Application stack
+├── docker-compose.observability.yml  # Observability stack (Prometheus, Grafana)
+├── mkdocs.yml                        # Documentation site config
+├── sqlc.yaml                         # SQL code generation config
+├── go.mod
+└── go.sum
 ```
 
 ## Data Models
@@ -498,33 +603,126 @@ Content-Type: application/json
 ## Configuration Management
 
 ### Environment Variables
+
+Configuration is loaded from a YAML file (via `-config` CLI flag) and overridden by environment variables.
+
+**Server:**
 - `UPDATER_PORT`: Server port (default: 8080)
-- `UPDATER_CONFIG_PATH`: Path to configuration file
-- `UPDATER_STORAGE_TYPE`: Storage backend type (json, database)
-- `UPDATER_LOG_LEVEL`: Logging level (debug, info, warn, error)
+- `UPDATER_HOST`: Bind address (default: "")
+- `UPDATER_READ_TIMEOUT`: HTTP read timeout (default: 30s)
+- `UPDATER_WRITE_TIMEOUT`: HTTP write timeout (default: 30s)
+- `UPDATER_IDLE_TIMEOUT`: HTTP idle timeout (default: 120s)
+- `UPDATER_TLS_ENABLED`: Enable TLS (default: false)
+- `UPDATER_TLS_CERT_FILE`: Path to TLS certificate
+- `UPDATER_TLS_KEY_FILE`: Path to TLS private key
+
+**CORS:**
+- `UPDATER_CORS_ENABLED`: Enable CORS middleware (default: false)
+- `UPDATER_CORS_ALLOWED_ORIGINS`: Comma-separated allowed origins
+- `UPDATER_CORS_ALLOWED_METHODS`: Comma-separated allowed methods
+- `UPDATER_CORS_ALLOWED_HEADERS`: Comma-separated allowed headers
+- `UPDATER_CORS_MAX_AGE`: Preflight cache duration in seconds
+
+**Storage:**
+- `UPDATER_STORAGE_TYPE`: Storage backend (json, memory, postgres, sqlite)
+- `UPDATER_STORAGE_PATH`: File path for JSON storage
+- `UPDATER_DATABASE_DSN`: Database connection string
+- `UPDATER_DATABASE_DRIVER`: Database driver (postgres, sqlite)
+- `UPDATER_DATABASE_MAX_OPEN_CONNS`: Maximum open database connections
+- `UPDATER_DATABASE_MAX_IDLE_CONNS`: Maximum idle database connections
+
+**Security:**
+- `UPDATER_ENABLE_AUTH`: Enable API key authentication (default: false)
+- `UPDATER_JWT_SECRET`: JWT signing secret
+- `UPDATER_API_KEYS`: API keys (format: `key:name:perm1,perm2;key2:name2:perm`)
+- `UPDATER_RATE_LIMIT_ENABLED`: Enable rate limiting (default: false)
+- `UPDATER_RATE_LIMIT_RPM`: Requests per minute
+- `UPDATER_RATE_LIMIT_RPH`: Requests per hour
+- `UPDATER_RATE_LIMIT_BURST`: Burst size
+
+**Logging:**
+- `UPDATER_LOG_LEVEL`: Log level (debug, info, warn, error)
+- `UPDATER_LOG_FORMAT`: Output format (json, text)
+- `UPDATER_LOG_OUTPUT`: Output destination (stdout, stderr, file)
+- `UPDATER_LOG_FILE_PATH`: Log file path (when output is file)
+- `UPDATER_LOG_MAX_SIZE`: Max log file size in MB
+- `UPDATER_LOG_MAX_BACKUPS`: Max number of old log files
+- `UPDATER_LOG_MAX_AGE`: Max age of old log files in days
+- `UPDATER_LOG_COMPRESS`: Compress rotated log files
+
+**Cache:**
+- `UPDATER_CACHE_ENABLED`: Enable caching (default: false)
+- `UPDATER_CACHE_TYPE`: Cache type (memory, redis)
+- `UPDATER_CACHE_TTL`: Cache TTL duration
+- `UPDATER_REDIS_ADDR`: Redis address
+- `UPDATER_REDIS_PASSWORD`: Redis password
+- `UPDATER_REDIS_DB`: Redis database number
+- `UPDATER_REDIS_POOL_SIZE`: Redis connection pool size
+- `UPDATER_MEMORY_CACHE_MAX_SIZE`: Memory cache max entries
+- `UPDATER_MEMORY_CACHE_CLEANUP_INTERVAL`: Memory cache cleanup interval
+
+**Metrics:**
+- `UPDATER_METRICS_ENABLED`: Enable Prometheus metrics (default: false)
+- `UPDATER_METRICS_PATH`: Metrics endpoint path (default: /metrics)
+- `UPDATER_METRICS_PORT`: Metrics server port (default: 9090)
 
 ### Configuration File Structure
 ```yaml
 server:
   port: 8080
+  host: ""
   read_timeout: 30s
   write_timeout: 30s
+  idle_timeout: 120s
+  tls_enabled: false
+  tls_cert_file: ""
+  tls_key_file: ""
+  cors:
+    enabled: false
+    allowed_origins: ["*"]
+    allowed_methods: ["GET", "POST"]
+    allowed_headers: ["Authorization", "Content-Type"]
+    max_age: 86400
 
 storage:
   type: json
   path: ./data/releases.json
-  cache_ttl: 300s
+  database:
+    dsn: ""
+    driver: ""
+    max_open_conns: 25
+    max_idle_conns: 5
 
 security:
+  enable_auth: false
   api_keys:
     - key: "admin-key-123"
+      name: "Admin"
       permissions: ["read", "write"]
+      enabled: true
   rate_limit:
+    enabled: false
     requests_per_minute: 60
+    requests_per_hour: 1000
+    burst_size: 10
+  trusted_proxies:
+    - "10.0.0.0/8"
+    - "172.16.0.0/12"
+
+cache:
+  enabled: false
+  type: memory
+  ttl: 300s
+
+metrics:
+  enabled: false
+  path: /metrics
+  port: 9090
 
 logging:
   level: info
   format: json
+  output: stdout
 ```
 
 ## Performance Considerations
@@ -556,41 +754,46 @@ logging:
 - DynamoDB or similar for metadata storage
 - CloudFront for caching
 
+## Completed Enhancements
+
+The following features have been implemented since the initial architecture design:
+
+- **Prometheus metrics** -- `internal/observability/metrics.go`, exposed on a dedicated port
+- **Health check endpoints** -- `GET /health` and `GET /api/v1/health` with storage ping and auth-enhanced details
+- **Request tracing** -- OpenTelemetry integration via `internal/observability/observability.go`
+- **Audit logging** -- Security events logged in middleware with `"event", "security_audit"` tags
+- **PostgreSQL support** -- `internal/storage/postgres.go` with sqlc-generated queries
+- **SQLite support** -- `internal/storage/sqlite.go` with sqlc-generated queries
+
 ## Future Enhancements
 
-1. **Metrics & Monitoring**
-   - Prometheus metrics endpoint
-   - Health check endpoints
-   - Request tracing
-
-2. **Advanced Features**
+1. **Advanced Features**
    - Delta updates support
    - Rollback functionality
    - A/B testing for releases
 
-3. **Security Enhancements**
+2. **Security Enhancements**
    - Release signing and verification
    - OAuth2/JWT authentication
-   - Audit logging
 
-4. **Storage Backends**
-   - PostgreSQL support
+3. **Storage Backends**
    - Redis caching
    - S3-compatible object storage
 
 ## Testing Strategy
 
 ### Unit Tests
-- Core update logic validation
-- Version comparison algorithms
-- Configuration parsing
+- **Table-driven tests** with co-located `*_test.go` files alongside source
+- **Memory provider** (`memory.go`) used as a fast fake for storage tests
+- **Concurrency tests** to verify thread safety of shared state
+- Coverage across all packages: models, update logic, API handlers, storage providers, config, logger, observability
 
 ### Integration Tests
-- API endpoint functionality
-- Storage backend integration
-- External service validation
+- Dedicated `internal/integration/` package for cross-layer tests
+- API endpoint testing with full middleware stack
+- Storage backend integration with real providers
 
-### End-to-End Tests
-- Complete update check workflows
-- Client library integration
-- Performance benchmarking
+### Test Patterns
+- Consistent use of `t.Run()` subtests for grouped test cases
+- `t.Helper()` for shared assertion functions
+- `t.Parallel()` where test isolation permits

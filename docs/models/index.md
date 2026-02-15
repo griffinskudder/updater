@@ -55,11 +55,11 @@ The updater service models provide a comprehensive type system for managing soft
 
 ```mermaid
 graph TB
-    subgraph "API Layer (Planned)"
+    subgraph "API Layer (COMPLETE)"
         api[HTTP Handlers & Routing]
     end
 
-    subgraph "Business Logic (Planned)"
+    subgraph "Business Logic (COMPLETE)"
         logic[Update Determination & Version Comparison]
     end
 
@@ -73,7 +73,7 @@ graph TB
         config[Configuration Models]
     end
 
-    subgraph "Storage Layer (Planned)"
+    subgraph "Storage Layer (COMPLETE)"
         storage[Data Persistence & Retrieval]
     end
 
@@ -89,10 +89,9 @@ graph TB
     config --> storage
 
     classDef complete fill:#4caf50,stroke:#2e7d32,color:#fff
-    classDef planned fill:#ff9800,stroke:#f57c00,color:#fff
 
     class version,platform,release,apimodels,config complete
-    class api,logic,storage planned
+    class api,logic,storage complete
 ```
 
 ## Design Principles
@@ -125,15 +124,19 @@ graph TB
 
 | Component | Status | Documentation | Tests | Notes |
 |-----------|--------|---------------|-------|-------|
-| Version Models | Complete | Complete | Planned | Semantic versioning support |
-| Platform Models | Complete | Complete | Planned | Multi-platform support |
-| Release Models | Complete | Complete | Planned | Security & integrity |
-| API Models | Complete | Complete | Planned | Request/response contracts |
-| Config Models | Complete | Complete | Planned | Service configuration |
+| Version Models | Complete | Complete | Complete | Semantic versioning support |
+| Platform Models | Complete | Complete | Complete | Multi-platform support |
+| Release Models | Complete | Complete | Complete | Security & integrity |
+| API Models | Complete | Complete | Complete | Request/response contracts |
+| Config Models | Complete | Complete | Complete | Service configuration |
 
 ## Related Documentation
 
 - [Architecture Overview](../ARCHITECTURE.md) - Complete system design and API specification
+- [Storage Providers](../storage.md) - Storage backend implementations and configuration
+- [Security](../SECURITY.md) - Security architecture and threat mitigation
+- [Observability](../observability.md) - Metrics, tracing, and monitoring
+- [Logging](../logging.md) - Structured logging configuration
 
 ## Development Workflow
 
