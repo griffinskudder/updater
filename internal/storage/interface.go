@@ -36,6 +36,9 @@ type Storage interface {
 	// GetReleasesAfterVersion returns all releases after a given version for a specific platform/arch
 	GetReleasesAfterVersion(ctx context.Context, appID, currentVersion, platform, arch string) ([]*models.Release, error)
 
+	// Ping verifies the storage backend is reachable and operational
+	Ping(ctx context.Context) error
+
 	// Close closes the storage connection and cleans up resources
 	Close() error
 }

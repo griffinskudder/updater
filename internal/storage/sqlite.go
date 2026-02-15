@@ -304,6 +304,11 @@ func (ss *SQLiteStorage) GetReleasesAfterVersion(ctx context.Context, appID, cur
 	return newerReleases, nil
 }
 
+// Ping verifies the storage backend is reachable and operational.
+func (ss *SQLiteStorage) Ping(ctx context.Context) error {
+	return ss.db.PingContext(ctx)
+}
+
 // Close closes the storage connection.
 func (ss *SQLiteStorage) Close() error {
 	return ss.db.Close()

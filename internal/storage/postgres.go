@@ -277,6 +277,11 @@ func (ps *PostgresStorage) GetReleasesAfterVersion(ctx context.Context, appID, c
 	return newerReleases, nil
 }
 
+// Ping verifies the storage backend is reachable and operational.
+func (ps *PostgresStorage) Ping(ctx context.Context) error {
+	return ps.pool.Ping(ctx)
+}
+
 // Close closes the storage connection.
 func (ps *PostgresStorage) Close() error {
 	ps.pool.Close()

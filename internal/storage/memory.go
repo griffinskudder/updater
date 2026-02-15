@@ -247,6 +247,11 @@ func (m *MemoryStorage) GetReleasesAfterVersion(ctx context.Context, appID, curr
 	return newerReleases, nil
 }
 
+// Ping verifies the storage backend is reachable and operational.
+func (m *MemoryStorage) Ping(_ context.Context) error {
+	return nil
+}
+
 // Close closes the storage connection and cleans up resources
 func (m *MemoryStorage) Close() error {
 	m.mu.Lock()

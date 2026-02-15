@@ -378,6 +378,11 @@ func (j *JSONStorage) GetReleasesAfterVersion(ctx context.Context, appID, curren
 	return newerReleases, nil
 }
 
+// Ping verifies the storage backend is reachable and operational.
+func (j *JSONStorage) Ping(_ context.Context) error {
+	return nil
+}
+
 // Close closes the storage connection and cleans up resources
 func (j *JSONStorage) Close() error {
 	j.mu.Lock()

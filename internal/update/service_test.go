@@ -135,6 +135,10 @@ func (m *MockStorage) GetReleasesAfterVersion(ctx context.Context, appID, curren
 	return newerReleases, nil
 }
 
+func (m *MockStorage) Ping(_ context.Context) error {
+	return nil
+}
+
 func (m *MockStorage) Close() error {
 	return nil
 }
