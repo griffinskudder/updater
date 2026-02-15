@@ -6,7 +6,7 @@ This file provides guidance to Claude Code when working with this repository.
 
 Go-based software update service ("updater") queried by desktop applications to check for and download updates, with downloads hosted externally.
 
-**Go version**: 1.26.0
+**Go version**: 1.25.0
 
 ## Project Structure
 
@@ -24,9 +24,9 @@ internal/
 configs/              - Configuration files
 data/                 - Data directory (releases.json)
 deployments/          - Kubernetes deployment manifests
-docker/               - Nginx configuration
+docker/               - Nginx, Prometheus, Grafana configuration
 docs/                 - MkDocs documentation site
-examples/             - Security configuration examples
+examples/             - Example configuration and release data
 scripts/              - Build scripts (docker-build.sh)
 ```
 
@@ -49,13 +49,22 @@ make sqlc-vet       # Validate SQL schemas and queries
 make help           # Show all commands
 ```
 
+Docker and observability:
+
+```bash
+make docker-build     # Build secure Docker image
+make docker-dev       # Start dev environment with Docker Compose
+make docker-obs-up    # Start full observability stack (Jaeger, Prometheus, Grafana)
+make docker-obs-down  # Stop observability stack
+```
+
 Direct Go equivalents: `go build ./cmd/updater`, `go test ./...`, `go fmt ./...`, `go vet ./...`
 
 ## Documentation
 
 MkDocs with Material theme, Docker-based (no Python/pip needed). See `mkdocs.yml` for nav structure.
 
-Key docs: `docs/ARCHITECTURE.md` (design), `docs/models/index.md` (model layer), `docs/storage.md` (storage providers), `docs/logging.md` (structured logging), `docs/SECURITY.md` (security overview).
+Key docs: `docs/ARCHITECTURE.md` (design), `docs/models/index.md` (model layer), `docs/storage.md` (storage providers), `docs/logging.md` (structured logging), `docs/SECURITY.md` (security overview), `docs/observability.md` (metrics & tracing).
 
 ## Architecture
 
@@ -69,6 +78,7 @@ Layered architecture, all layers complete:
 | Storage (multi-provider persistence) | `internal/storage/` | Complete |
 | Configuration | `internal/config/`, `internal/models/config.go` | Complete |
 | Logging | `internal/logger/` | Complete |
+| Observability (metrics, tracing) | `internal/observability/` | Complete |
 | Containerization | `Dockerfile`, `docker-compose.yml` | Complete |
 
 ### Key Patterns
@@ -95,5 +105,11 @@ See `docs/ARCHITECTURE.md` for full design details and rationales.
 - NEVER: Link to files outside the docs directory in documentation inside the docs directory.
 - ALWAYS: Generate code after modifying sql files.
 - NEVER: Use CGO. CGO IS NOT GO.
-- ALWAYS: Ensure all tests are passing before finalising the request.
+- ALWAYS: Ensure all tests are passing before finalising the request. This doesn't include docs changes.
 - ALWAYS: Use context7 before using library code.
+
+## Gotchas
+
+- **Makefile uses PowerShell**: `SHELL` is set to PowerShell on Windows. Clean/path commands use PowerShell syntax.
+- **Config loading**: Use `-config path/to/config.yaml` CLI flag. Environment variables override file values.
+- **`make docs-serve`/`docs-build` require Docker**: MkDocs runs in a container, not locally installed.
