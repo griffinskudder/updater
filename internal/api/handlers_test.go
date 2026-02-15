@@ -29,6 +29,7 @@ func (m *mockStorage) GetApplication(_ context.Context, _ string) (*models.Appli
 	return nil, nil
 }
 func (m *mockStorage) SaveApplication(_ context.Context, _ *models.Application) error { return nil }
+func (m *mockStorage) DeleteApplication(_ context.Context, _ string) error            { return nil }
 func (m *mockStorage) Releases(_ context.Context, _ string) ([]*models.Release, error) {
 	return nil, nil
 }

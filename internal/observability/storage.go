@@ -104,6 +104,16 @@ func (s *InstrumentedStorage) SaveApplication(ctx context.Context, app *models.A
 	return err
 }
 
+func (s *InstrumentedStorage) DeleteApplication(ctx context.Context, appID string) error {
+	ctx, span := s.startSpan(ctx, "DeleteApplication",
+		attribute.String("app_id", appID),
+	)
+	start := time.Now()
+	err := s.inner.DeleteApplication(ctx, appID)
+	s.record(ctx, span, "DeleteApplication", start, err)
+	return err
+}
+
 func (s *InstrumentedStorage) Releases(ctx context.Context, appID string) ([]*models.Release, error) {
 	ctx, span := s.startSpan(ctx, "Releases", attribute.String("app_id", appID))
 	start := time.Now()

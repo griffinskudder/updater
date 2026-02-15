@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 	"updater/internal/models"
@@ -184,6 +185,70 @@ func TestMemoryStorage(t *testing.T) {
 			t.Error("Expected error for deleting non-existent release")
 		}
 	})
+}
+
+func TestMemoryStorage_DeleteApplication(t *testing.T) {
+	ctx := context.Background()
+
+	tests := []struct {
+		name      string
+		setup     func(s *MemoryStorage)
+		appID     string
+		wantErr   bool
+		errSubstr string
+	}{
+		{
+			name: "delete existing application",
+			setup: func(s *MemoryStorage) {
+				s.SaveApplication(ctx, &models.Application{
+					ID:   "app-to-delete",
+					Name: "Delete Me",
+				})
+			},
+			appID:   "app-to-delete",
+			wantErr: false,
+		},
+		{
+			name:      "delete non-existent application",
+			setup:     func(s *MemoryStorage) {},
+			appID:     "non-existent",
+			wantErr:   true,
+			errSubstr: "not found",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			storage, err := NewMemoryStorage(Config{})
+			if err != nil {
+				t.Fatalf("Failed to create memory storage: %v", err)
+			}
+			defer storage.Close()
+
+			tt.setup(storage)
+
+			err = storage.DeleteApplication(ctx, tt.appID)
+			if tt.wantErr {
+				if err == nil {
+					t.Error("expected error, got nil")
+				} else if tt.errSubstr != "" && !strings.Contains(err.Error(), tt.errSubstr) {
+					t.Errorf("expected error containing %q, got %q", tt.errSubstr, err.Error())
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+				return
+			}
+
+			// Verify application is gone
+			_, err = storage.GetApplication(ctx, tt.appID)
+			if err == nil {
+				t.Error("expected error when getting deleted application")
+			}
+		})
+	}
 }
 
 func TestMemoryStorageConcurrency(t *testing.T) {

@@ -61,3 +61,19 @@ func NewInternalError(message string, err error) *ServiceError {
 		Err:        err,
 	}
 }
+
+func NewConflictError(message string) *ServiceError {
+	return &ServiceError{
+		Code:       models.ErrorCodeConflict,
+		Message:    message,
+		StatusCode: http.StatusConflict,
+	}
+}
+
+func NewNotFoundError(message string) *ServiceError {
+	return &ServiceError{
+		Code:       models.ErrorCodeNotFound,
+		Message:    message,
+		StatusCode: http.StatusNotFound,
+	}
+}

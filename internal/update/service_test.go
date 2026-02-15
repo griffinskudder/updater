@@ -45,6 +45,14 @@ func (m *MockStorage) SaveApplication(ctx context.Context, app *models.Applicati
 	return nil
 }
 
+func (m *MockStorage) DeleteApplication(ctx context.Context, appID string) error {
+	if _, exists := m.applications[appID]; !exists {
+		return fmt.Errorf("application %s not found", appID)
+	}
+	delete(m.applications, appID)
+	return nil
+}
+
 func (m *MockStorage) Releases(ctx context.Context, appID string) ([]*models.Release, error) {
 	releases, exists := m.releases[appID]
 	if !exists {

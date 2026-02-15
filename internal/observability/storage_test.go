@@ -85,6 +85,37 @@ func TestInstrumentedStorage_ApplicationOperations(t *testing.T) {
 	assert.Len(t, apps, 1)
 }
 
+func TestInstrumentedStorage_DeleteApplication(t *testing.T) {
+	_ = setupTestProvider(t)
+	inner := setupMemoryStorage(t)
+
+	instrumented, err := NewInstrumentedStorage(inner)
+	require.NoError(t, err)
+
+	ctx := context.Background()
+
+	// Save an application first
+	app := &models.Application{
+		ID:   "del-app",
+		Name: "Delete App",
+	}
+	err = instrumented.SaveApplication(ctx, app)
+	require.NoError(t, err)
+
+	// Delete it
+	err = instrumented.DeleteApplication(ctx, "del-app")
+	assert.NoError(t, err)
+
+	// Verify it's gone
+	_, err = instrumented.GetApplication(ctx, "del-app")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "not found")
+
+	// Delete non-existent should error
+	err = instrumented.DeleteApplication(ctx, "non-existent")
+	assert.Error(t, err)
+}
+
 func TestInstrumentedStorage_ReleaseOperations(t *testing.T) {
 	_ = setupTestProvider(t)
 	inner := setupMemoryStorage(t)

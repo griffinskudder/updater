@@ -69,6 +69,19 @@ func (m *MemoryStorage) SaveApplication(ctx context.Context, app *models.Applica
 	return nil
 }
 
+// DeleteApplication removes an application by its ID
+func (m *MemoryStorage) DeleteApplication(ctx context.Context, appID string) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	if _, exists := m.applications[appID]; !exists {
+		return fmt.Errorf("application %s not found", appID)
+	}
+
+	delete(m.applications, appID)
+	return nil
+}
+
 // Releases returns all releases for a given application
 func (m *MemoryStorage) Releases(ctx context.Context, appID string) ([]*models.Release, error) {
 	m.mu.RLock()
