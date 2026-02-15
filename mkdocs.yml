@@ -41,6 +41,7 @@ nav:
   - Security:
     - Overview: SECURITY.md
     - Deployments: DEPLOYMENT_SECURITY.md
+  - Rate Limiting: rate-limiting.md
   - Logging: logging.md
   - Storage: storage.md
   - Observability: observability.md

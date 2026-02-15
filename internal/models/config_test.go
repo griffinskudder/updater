@@ -38,8 +38,10 @@ func TestNewDefaultConfig(t *testing.T) {
 	assert.Empty(t, config.Security.APIKeys)
 	assert.True(t, config.Security.RateLimit.Enabled)
 	assert.Equal(t, 60, config.Security.RateLimit.RequestsPerMinute)
-	assert.Equal(t, 1000, config.Security.RateLimit.RequestsPerHour)
 	assert.Equal(t, 10, config.Security.RateLimit.BurstSize)
+	assert.Equal(t, 120, config.Security.RateLimit.AuthenticatedRequestsPerMinute)
+	assert.Equal(t, 20, config.Security.RateLimit.AuthenticatedBurstSize)
+	assert.Equal(t, 5*time.Minute, config.Security.RateLimit.CleanupInterval)
 	assert.False(t, config.Security.EnableAuth)
 
 	// Test logging defaults
@@ -356,10 +358,11 @@ func TestSecurityConfig_Validate(t *testing.T) {
 			name: "valid config with rate limiting",
 			config: SecurityConfig{
 				RateLimit: RateLimitConfig{
-					Enabled:           true,
-					RequestsPerMinute: 60,
-					RequestsPerHour:   1000,
-					BurstSize:         10,
+					Enabled:                        true,
+					RequestsPerMinute:              60,
+					BurstSize:                      10,
+					AuthenticatedRequestsPerMinute: 120,
+					AuthenticatedBurstSize:         20,
 				},
 			},
 			expectError: false,
@@ -391,17 +394,6 @@ func TestSecurityConfig_Validate(t *testing.T) {
 			errorMsg:    "requests per minute cannot be negative",
 		},
 		{
-			name: "negative requests per hour",
-			config: SecurityConfig{
-				RateLimit: RateLimitConfig{
-					Enabled:         true,
-					RequestsPerHour: -1,
-				},
-			},
-			expectError: true,
-			errorMsg:    "requests per hour cannot be negative",
-		},
-		{
 			name: "negative burst size",
 			config: SecurityConfig{
 				RateLimit: RateLimitConfig{
@@ -411,6 +403,28 @@ func TestSecurityConfig_Validate(t *testing.T) {
 			},
 			expectError: true,
 			errorMsg:    "burst size cannot be negative",
+		},
+		{
+			name: "negative authenticated requests per minute",
+			config: SecurityConfig{
+				RateLimit: RateLimitConfig{
+					Enabled:                        true,
+					AuthenticatedRequestsPerMinute: -1,
+				},
+			},
+			expectError: true,
+			errorMsg:    "authenticated requests per minute cannot be negative",
+		},
+		{
+			name: "negative authenticated burst size",
+			config: SecurityConfig{
+				RateLimit: RateLimitConfig{
+					Enabled:                true,
+					AuthenticatedBurstSize: -1,
+				},
+			},
+			expectError: true,
+			errorMsg:    "authenticated burst size cannot be negative",
 		},
 		{
 			name: "API key without key",
@@ -896,17 +910,19 @@ func TestDatabaseConfig_Structure(t *testing.T) {
 
 func TestRateLimitConfig_Structure(t *testing.T) {
 	rateLimitConfig := RateLimitConfig{
-		Enabled:           true,
-		RequestsPerMinute: 120,
-		RequestsPerHour:   5000,
-		BurstSize:         20,
-		CleanupInterval:   10 * time.Minute,
+		Enabled:                        true,
+		RequestsPerMinute:              120,
+		BurstSize:                      20,
+		AuthenticatedRequestsPerMinute: 240,
+		AuthenticatedBurstSize:         40,
+		CleanupInterval:                10 * time.Minute,
 	}
 
 	assert.True(t, rateLimitConfig.Enabled)
 	assert.Equal(t, 120, rateLimitConfig.RequestsPerMinute)
-	assert.Equal(t, 5000, rateLimitConfig.RequestsPerHour)
 	assert.Equal(t, 20, rateLimitConfig.BurstSize)
+	assert.Equal(t, 240, rateLimitConfig.AuthenticatedRequestsPerMinute)
+	assert.Equal(t, 40, rateLimitConfig.AuthenticatedBurstSize)
 	assert.Equal(t, 10*time.Minute, rateLimitConfig.CleanupInterval)
 }
 

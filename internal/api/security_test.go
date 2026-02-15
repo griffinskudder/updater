@@ -10,7 +10,9 @@ import (
 	"net/url"
 	"strings"
 	"testing"
+	"time"
 	"updater/internal/models"
+	"updater/internal/ratelimit"
 	"updater/internal/update"
 
 	"github.com/stretchr/testify/assert"
@@ -691,10 +693,12 @@ func TestSecurityVulnerabilities(t *testing.T) {
 func TestRateLimiting(t *testing.T) {
 	config := &models.Config{
 		Security: models.SecurityConfig{
-			EnableAuth: false, // Disable auth for rate limit testing
+			EnableAuth: false,
 			RateLimit: models.RateLimitConfig{
 				Enabled:           true,
-				RequestsPerMinute: 5, // Very low limit for testing
+				RequestsPerMinute: 5,
+				BurstSize:         5,
+				CleanupInterval:   5 * time.Minute,
 			},
 		},
 		Server: models.ServerConfig{
@@ -705,24 +709,29 @@ func TestRateLimiting(t *testing.T) {
 	}
 
 	mockUpdateService := &MockUpdateService{}
-
-	// Set up mock expectations for rate limiting tests
 	mockUpdateService.On("CheckForUpdate", mock.Anything, mock.Anything).
 		Return((*models.UpdateCheckResponse)(nil), update.NewApplicationNotFoundError("test")).Maybe()
 
 	mockHandlers := NewHandlers(mockUpdateService)
-	router := SetupRoutes(mockHandlers, config)
 
-	// Simulate multiple requests from the same IP
+	limiter := ratelimit.NewMemoryLimiter(
+		config.Security.RateLimit.RequestsPerMinute,
+		config.Security.RateLimit.BurstSize,
+		config.Security.RateLimit.CleanupInterval,
+	)
+	defer limiter.Close()
+
+	router := SetupRoutes(mockHandlers, config,
+		WithRateLimiter(ratelimit.Middleware(limiter, limiter)),
+	)
+
 	clientIP := "192.168.1.100"
 
 	var rateLimitHit bool
 	for i := 0; i < 10; i++ {
 		req := httptest.NewRequest("GET", "/api/v1/updates/test/check", nil)
 		req.RemoteAddr = clientIP + ":12345"
-		req.Header.Set("X-Forwarded-For", clientIP)
 		rr := httptest.NewRecorder()
-
 		router.ServeHTTP(rr, req)
 
 		if rr.Code == http.StatusTooManyRequests {

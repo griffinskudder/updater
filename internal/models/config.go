@@ -101,11 +101,12 @@ type APIKey struct {
 }
 
 type RateLimitConfig struct {
-	Enabled           bool          `yaml:"enabled" json:"enabled"`
-	RequestsPerMinute int           `yaml:"requests_per_minute" json:"requests_per_minute"`
-	RequestsPerHour   int           `yaml:"requests_per_hour" json:"requests_per_hour"`
-	BurstSize         int           `yaml:"burst_size" json:"burst_size"`
-	CleanupInterval   time.Duration `yaml:"cleanup_interval" json:"cleanup_interval"`
+	Enabled                        bool          `yaml:"enabled" json:"enabled"`
+	RequestsPerMinute              int           `yaml:"requests_per_minute" json:"requests_per_minute"`
+	BurstSize                      int           `yaml:"burst_size" json:"burst_size"`
+	AuthenticatedRequestsPerMinute int           `yaml:"authenticated_requests_per_minute" json:"authenticated_requests_per_minute"`
+	AuthenticatedBurstSize         int           `yaml:"authenticated_burst_size" json:"authenticated_burst_size"`
+	CleanupInterval                time.Duration `yaml:"cleanup_interval" json:"cleanup_interval"`
 }
 
 type LoggingConfig struct {
@@ -209,11 +210,12 @@ func NewDefaultConfig() *Config {
 		Security: SecurityConfig{
 			APIKeys: []APIKey{},
 			RateLimit: RateLimitConfig{
-				Enabled:           true,
-				RequestsPerMinute: 60,
-				RequestsPerHour:   1000,
-				BurstSize:         10,
-				CleanupInterval:   5 * time.Minute,
+				Enabled:                        true,
+				RequestsPerMinute:              60,
+				BurstSize:                      10,
+				AuthenticatedRequestsPerMinute: 120,
+				AuthenticatedBurstSize:         20,
+				CleanupInterval:                5 * time.Minute,
 			},
 			EnableAuth:     false,
 			TrustedProxies: []string{},
@@ -352,11 +354,14 @@ func (sec *SecurityConfig) Validate() error {
 		if sec.RateLimit.RequestsPerMinute < 0 {
 			return errors.New("requests per minute cannot be negative")
 		}
-		if sec.RateLimit.RequestsPerHour < 0 {
-			return errors.New("requests per hour cannot be negative")
-		}
 		if sec.RateLimit.BurstSize < 0 {
 			return errors.New("burst size cannot be negative")
+		}
+		if sec.RateLimit.AuthenticatedRequestsPerMinute < 0 {
+			return errors.New("authenticated requests per minute cannot be negative")
+		}
+		if sec.RateLimit.AuthenticatedBurstSize < 0 {
+			return errors.New("authenticated burst size cannot be negative")
 		}
 	}
 
