@@ -588,7 +588,6 @@ security:
   rate_limit:
     enabled: true
     requests_per_minute: 120
-    requests_per_hour: 2000
 
 logging:
   level: "debug"
@@ -623,7 +622,6 @@ metrics:
 	assert.False(t, cfg.Security.EnableAuth)
 	assert.True(t, cfg.Security.RateLimit.Enabled)
 	assert.Equal(t, 120, cfg.Security.RateLimit.RequestsPerMinute)
-	assert.Equal(t, 2000, cfg.Security.RateLimit.RequestsPerHour)
 
 	assert.Equal(t, "debug", cfg.Logging.Level)
 	assert.Equal(t, "text", cfg.Logging.Format)

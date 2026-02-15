@@ -170,12 +170,6 @@ func loadFromEnvironment(config *models.Config) {
 		}
 	}
 
-	if rph := os.Getenv("UPDATER_RATE_LIMIT_RPH"); rph != "" {
-		if r, err := strconv.Atoi(rph); err == nil {
-			config.Security.RateLimit.RequestsPerHour = r
-		}
-	}
-
 	if burst := os.Getenv("UPDATER_RATE_LIMIT_BURST"); burst != "" {
 		if b, err := strconv.Atoi(burst); err == nil {
 			config.Security.RateLimit.BurstSize = b

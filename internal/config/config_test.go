@@ -45,7 +45,6 @@ security:
   rate_limit:
     enabled: true
     requests_per_minute: 100
-    requests_per_hour: 1000
     burst_size: 10
     cleanup_interval: 300s
 
@@ -109,7 +108,6 @@ metrics:
 	// Verify rate limiting config
 	assert.True(t, config.Security.RateLimit.Enabled)
 	assert.Equal(t, 100, config.Security.RateLimit.RequestsPerMinute)
-	assert.Equal(t, 1000, config.Security.RateLimit.RequestsPerHour)
 	assert.Equal(t, 10, config.Security.RateLimit.BurstSize)
 	assert.Equal(t, 300*time.Second, config.Security.RateLimit.CleanupInterval)
 
@@ -175,7 +173,6 @@ storage:
 	// Rate limiting defaults
 	assert.True(t, config.Security.RateLimit.Enabled)                // Default
 	assert.Equal(t, 60, config.Security.RateLimit.RequestsPerMinute) // Default
-	assert.Equal(t, 1000, config.Security.RateLimit.RequestsPerHour) // Default
 
 	// Logging defaults
 	assert.Equal(t, "info", config.Logging.Level)    // Default
