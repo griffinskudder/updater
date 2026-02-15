@@ -86,13 +86,13 @@ func (h *Handlers) ListApplications(w http.ResponseWriter, r *http.Request) {
 	offset := 0
 
 	if limitParam := r.URL.Query().Get("limit"); limitParam != "" {
-		if parsed, err := strconv.Atoi(limitParam); err == nil {
+		if parsed, err := strconv.Atoi(limitParam); err == nil && parsed > 0 {
 			limit = parsed
 		}
 	}
 
 	if offsetParam := r.URL.Query().Get("offset"); offsetParam != "" {
-		if parsed, err := strconv.Atoi(offsetParam); err == nil {
+		if parsed, err := strconv.Atoi(offsetParam); err == nil && parsed >= 0 {
 			offset = parsed
 		}
 	}

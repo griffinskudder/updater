@@ -530,7 +530,7 @@ Authorization: Bearer <api-key>
 
 ### Delete Application
 
-Permanently delete an application and all associated data.
+Permanently delete an application. The application must have no existing releases; if releases exist, the request returns `409 Conflict`.
 
 **Requires**: `admin` permission.
 
@@ -556,6 +556,7 @@ No body. A `204 No Content` status indicates success.
 | 401 | `UNAUTHORIZED` | Missing or invalid API key |
 | 403 | `FORBIDDEN` | Insufficient permissions (requires admin) |
 | 404 | `NOT_FOUND` | Application not found |
+| 409 | `CONFLICT` | Application has existing releases |
 
 ---
 
