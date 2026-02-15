@@ -7,8 +7,6 @@ import (
 	"log/slog"
 	"net/http"
 	"strings"
-	"sync"
-	"time"
 	"updater/internal/models"
 
 	"github.com/gorilla/mux"
@@ -70,11 +68,6 @@ func SetupRoutes(handlers *Handlers, config *models.Config, opts ...RouteOption)
 
 	router.Use(loggingMiddleware)
 	router.Use(recoveryMiddleware)
-
-	// Add rate limiting if enabled
-	if config.Security.RateLimit.Enabled {
-		router.Use(rateLimitMiddleware(config.Security.RateLimit))
-	}
 
 	// Add method not allowed handler
 	router.MethodNotAllowedHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -237,35 +230,10 @@ func authMiddleware(securityConfig models.SecurityConfig) mux.MiddlewareFunc {
 	}
 }
 
-// rateLimitMiddleware implements simple in-memory rate limiting
-func rateLimitMiddleware(rateLimitConfig models.RateLimitConfig) mux.MiddlewareFunc {
-	// Simple in-memory rate limiter - in production use Redis or similar
-	limiter := make(map[string]time.Time)
-	var mu sync.Mutex
-
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// Use IP as identifier
-			clientIP := getClientIP(r)
-
-			mu.Lock()
-			lastRequest, exists := limiter[clientIP]
-			now := time.Now()
-
-			if exists && now.Sub(lastRequest) < time.Minute/time.Duration(rateLimitConfig.RequestsPerMinute) {
-				mu.Unlock()
-				w.Header().Set("Content-Type", "application/json")
-				w.WriteHeader(http.StatusTooManyRequests)
-				errorResp := models.NewErrorResponse("Rate limit exceeded", "RATE_LIMIT_EXCEEDED")
-				json.NewEncoder(w).Encode(errorResp)
-				return
-			}
-
-			limiter[clientIP] = now
-			mu.Unlock()
-
-			next.ServeHTTP(w, r)
-		})
+// WithRateLimiter adds rate limiting middleware to the router.
+func WithRateLimiter(middleware func(http.Handler) http.Handler) RouteOption {
+	return func(r *mux.Router) {
+		r.Use(middleware)
 	}
 }
 
