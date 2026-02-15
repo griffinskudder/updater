@@ -42,7 +42,7 @@ func TestUpdateCheckRequest_Validate(t *testing.T) {
 				Architecture:  "amd64",
 			},
 			expectError: true,
-			errorMsg:    "current_version is required",
+			errorMsg:    "version is required",
 		},
 		{
 			name: "invalid current version format",
@@ -53,7 +53,7 @@ func TestUpdateCheckRequest_Validate(t *testing.T) {
 				Architecture:   "amd64",
 			},
 			expectError: true,
-			errorMsg:    "invalid current_version format",
+			errorMsg:    "invalid version format",
 		},
 		{
 			name: "empty platform",

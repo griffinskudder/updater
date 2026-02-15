@@ -13,6 +13,8 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+
+	"github.com/Masterminds/semver/v3"
 )
 
 // Platform and Architecture Constants
@@ -170,20 +172,20 @@ func (ac *ApplicationConfig) Validate() error {
 	}
 
 	if ac.MinVersion != "" {
-		if _, err := ParseVersion(ac.MinVersion); err != nil {
+		if _, err := semver.NewVersion(ac.MinVersion); err != nil {
 			return fmt.Errorf("invalid min version: %w", err)
 		}
 	}
 
 	if ac.MaxVersion != "" {
-		if _, err := ParseVersion(ac.MaxVersion); err != nil {
+		if _, err := semver.NewVersion(ac.MaxVersion); err != nil {
 			return fmt.Errorf("invalid max version: %w", err)
 		}
 	}
 
 	if ac.MinVersion != "" && ac.MaxVersion != "" {
-		minVer, _ := ParseVersion(ac.MinVersion)
-		maxVer, _ := ParseVersion(ac.MaxVersion)
+		minVer, _ := semver.NewVersion(ac.MinVersion)
+		maxVer, _ := semver.NewVersion(ac.MaxVersion)
 		if minVer.GreaterThan(maxVer) {
 			return errors.New("min version cannot be greater than max version")
 		}

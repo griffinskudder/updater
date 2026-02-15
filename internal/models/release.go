@@ -17,6 +17,8 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/Masterminds/semver/v3"
 )
 
 // Checksum Algorithm Constants
@@ -143,7 +145,7 @@ func (r *Release) Validate() error {
 		return errors.New("version cannot be empty")
 	}
 
-	if _, err := ParseVersion(r.Version); err != nil {
+	if _, err := semver.NewVersion(r.Version); err != nil {
 		return fmt.Errorf("invalid version format: %w", err)
 	}
 
@@ -176,7 +178,7 @@ func (r *Release) Validate() error {
 	}
 
 	if r.MinimumVersion != "" {
-		if _, err := ParseVersion(r.MinimumVersion); err != nil {
+		if _, err := semver.NewVersion(r.MinimumVersion); err != nil {
 			return fmt.Errorf("invalid minimum version: %w", err)
 		}
 	}
@@ -209,12 +211,12 @@ func (r *Release) GetPlatformInfo() PlatformInfo {
 }
 
 func (r *Release) IsNewerThan(other *Release) (bool, error) {
-	thisVersion, err := ParseVersion(r.Version)
+	thisVersion, err := semver.NewVersion(r.Version)
 	if err != nil {
 		return false, fmt.Errorf("invalid version in this release: %w", err)
 	}
 
-	otherVersion, err := ParseVersion(other.Version)
+	otherVersion, err := semver.NewVersion(other.Version)
 	if err != nil {
 		return false, fmt.Errorf("invalid version in other release: %w", err)
 	}
@@ -232,17 +234,17 @@ func (r *Release) MeetsMinimumVersion(currentVersion string) (bool, error) {
 		return true, nil
 	}
 
-	current, err := ParseVersion(currentVersion)
+	current, err := semver.NewVersion(currentVersion)
 	if err != nil {
 		return false, fmt.Errorf("invalid current version: %w", err)
 	}
 
-	minimum, err := ParseVersion(r.MinimumVersion)
+	minimum, err := semver.NewVersion(r.MinimumVersion)
 	if err != nil {
 		return false, fmt.Errorf("invalid minimum version: %w", err)
 	}
 
-	return current.GreaterThanOrEqual(minimum), nil
+	return current.GreaterThan(minimum) || current.Equal(minimum), nil
 }
 
 func (r *Release) GenerateChecksum(data []byte) string {

@@ -13,6 +13,8 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+
+	"github.com/Masterminds/semver/v3"
 )
 
 // UpdateCheckRequest represents a request to check for available updates.
@@ -116,72 +118,28 @@ type HealthCheckRequest struct {
 }
 
 func (r *UpdateCheckRequest) Validate() error {
-	if r.ApplicationID == "" {
-		return errors.New("application_id is required")
+	if err := validateRequiredFields(r.ApplicationID, r.Platform, r.Architecture); err != nil {
+		return err
 	}
 
-	if r.CurrentVersion == "" {
-		return errors.New("current_version is required")
-	}
-
-	if _, err := ParseVersion(r.CurrentVersion); err != nil {
-		return fmt.Errorf("invalid current_version format: %w", err)
-	}
-
-	if r.Platform == "" {
-		return errors.New("platform is required")
-	}
-
-	if !isValidPlatform(r.Platform) {
-		return fmt.Errorf("invalid platform: %s", r.Platform)
-	}
-
-	if r.Architecture == "" {
-		return errors.New("architecture is required")
-	}
-
-	if !isValidArchitecture(r.Architecture) {
-		return fmt.Errorf("invalid architecture: %s", r.Architecture)
+	if err := validateVersion(r.CurrentVersion); err != nil {
+		return fmt.Errorf("invalid current_version: %w", err)
 	}
 
 	return nil
 }
 
 func (r *UpdateCheckRequest) Normalize() {
-	r.Platform = NormalizePlatform(r.Platform)
-	r.Architecture = NormalizeArchitecture(r.Architecture)
-	r.ApplicationID = strings.TrimSpace(r.ApplicationID)
+	normalizeCommonFields(&r.ApplicationID, &r.Platform, &r.Architecture)
 	r.CurrentVersion = strings.TrimSpace(r.CurrentVersion)
 }
 
 func (r *LatestVersionRequest) Validate() error {
-	if r.ApplicationID == "" {
-		return errors.New("application_id is required")
-	}
-
-	if r.Platform == "" {
-		return errors.New("platform is required")
-	}
-
-	if !isValidPlatform(r.Platform) {
-		return fmt.Errorf("invalid platform: %s", r.Platform)
-	}
-
-	if r.Architecture == "" {
-		return errors.New("architecture is required")
-	}
-
-	if !isValidArchitecture(r.Architecture) {
-		return fmt.Errorf("invalid architecture: %s", r.Architecture)
-	}
-
-	return nil
+	return validateRequiredFields(r.ApplicationID, r.Platform, r.Architecture)
 }
 
 func (r *LatestVersionRequest) Normalize() {
-	r.Platform = NormalizePlatform(r.Platform)
-	r.Architecture = NormalizeArchitecture(r.Architecture)
-	r.ApplicationID = strings.TrimSpace(r.ApplicationID)
+	normalizeCommonFields(&r.ApplicationID, &r.Platform, &r.Architecture)
 }
 
 func (r *ListReleasesRequest) Validate() error {
@@ -198,7 +156,7 @@ func (r *ListReleasesRequest) Validate() error {
 	}
 
 	if r.Version != "" {
-		if _, err := ParseVersion(r.Version); err != nil {
+		if _, err := semver.NewVersion(r.Version); err != nil {
 			return fmt.Errorf("invalid version format: %w", err)
 		}
 	}
@@ -259,32 +217,12 @@ func (r *ListReleasesRequest) Normalize() {
 }
 
 func (r *RegisterReleaseRequest) Validate() error {
-	if r.ApplicationID == "" {
-		return errors.New("application_id is required")
+	if err := validateRequiredFields(r.ApplicationID, r.Platform, r.Architecture); err != nil {
+		return err
 	}
 
-	if r.Version == "" {
-		return errors.New("version is required")
-	}
-
-	if _, err := ParseVersion(r.Version); err != nil {
-		return fmt.Errorf("invalid version format: %w", err)
-	}
-
-	if r.Platform == "" {
-		return errors.New("platform is required")
-	}
-
-	if !isValidPlatform(r.Platform) {
-		return fmt.Errorf("invalid platform: %s", r.Platform)
-	}
-
-	if r.Architecture == "" {
-		return errors.New("architecture is required")
-	}
-
-	if !isValidArchitecture(r.Architecture) {
-		return fmt.Errorf("invalid architecture: %s", r.Architecture)
+	if err := validateVersion(r.Version); err != nil {
+		return fmt.Errorf("invalid version: %w", err)
 	}
 
 	if r.DownloadURL == "" {
@@ -308,7 +246,7 @@ func (r *RegisterReleaseRequest) Validate() error {
 	}
 
 	if r.MinimumVersion != "" {
-		if _, err := ParseVersion(r.MinimumVersion); err != nil {
+		if _, err := semver.NewVersion(r.MinimumVersion); err != nil {
 			return fmt.Errorf("invalid minimum_version format: %w", err)
 		}
 	}
@@ -317,10 +255,8 @@ func (r *RegisterReleaseRequest) Validate() error {
 }
 
 func (r *RegisterReleaseRequest) Normalize() {
-	r.Platform = NormalizePlatform(r.Platform)
-	r.Architecture = NormalizeArchitecture(r.Architecture)
+	normalizeCommonFields(&r.ApplicationID, &r.Platform, &r.Architecture)
 	r.ChecksumType = strings.ToLower(r.ChecksumType)
-	r.ApplicationID = strings.TrimSpace(r.ApplicationID)
 	r.Version = strings.TrimSpace(r.Version)
 	r.DownloadURL = strings.TrimSpace(r.DownloadURL)
 	r.Checksum = strings.TrimSpace(strings.ToLower(r.Checksum))
@@ -403,5 +339,56 @@ func (r *UpdateApplicationRequest) Normalize() {
 		for i, platform := range r.Platforms {
 			r.Platforms[i] = NormalizePlatform(platform)
 		}
+	}
+}
+
+// validateRequiredFields validates common required fields across request types
+func validateRequiredFields(appID, platform, architecture string) error {
+	if appID == "" {
+		return errors.New("application_id is required")
+	}
+
+	if platform == "" {
+		return errors.New("platform is required")
+	}
+
+	if !isValidPlatform(platform) {
+		return fmt.Errorf("invalid platform: %s", platform)
+	}
+
+	if architecture == "" {
+		return errors.New("architecture is required")
+	}
+
+	if !isValidArchitecture(architecture) {
+		return fmt.Errorf("invalid architecture: %s", architecture)
+	}
+
+	return nil
+}
+
+// validateVersion validates a semantic version string using semver library
+func validateVersion(version string) error {
+	if version == "" {
+		return errors.New("version is required")
+	}
+
+	if _, err := semver.NewVersion(version); err != nil {
+		return fmt.Errorf("invalid version format: %w", err)
+	}
+
+	return nil
+}
+
+// normalizeCommonFields normalizes common fields across request types
+func normalizeCommonFields(appID, platform, arch *string) {
+	if appID != nil {
+		*appID = strings.TrimSpace(*appID)
+	}
+	if platform != nil {
+		*platform = NormalizePlatform(*platform)
+	}
+	if arch != nil {
+		*arch = NormalizeArchitecture(*arch)
 	}
 }
