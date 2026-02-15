@@ -3,7 +3,7 @@ package api
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
@@ -173,16 +173,19 @@ func (h *Handlers) RegisterRelease(w http.ResponseWriter, r *http.Request) {
 	securityContext := GetSecurityContext(r)
 
 	// Log the admin operation attempt
-	fmt.Printf("SECURITY: Release registration attempt for app %s by API key: %s, IP: %s\n",
-		appID,
-		getAPIKeyName(securityContext),
-		getClientIP(r))
+	slog.Warn("Release registration attempt",
+		"event", "security_audit",
+		"app_id", appID,
+		"api_key", getAPIKeyName(securityContext),
+		"client_ip", getClientIP(r))
 
 	// Parse request body
 	var req models.RegisterReleaseRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		fmt.Printf("SECURITY: Invalid JSON in release registration for app %s by %s\n",
-			appID, getAPIKeyName(securityContext))
+		slog.Warn("Invalid JSON in release registration",
+			"event", "security_audit",
+			"app_id", appID,
+			"api_key", getAPIKeyName(securityContext))
 		h.writeErrorResponse(w, http.StatusBadRequest, models.ErrorCodeInvalidRequest, "Invalid JSON body")
 		return
 	}
@@ -193,15 +196,22 @@ func (h *Handlers) RegisterRelease(w http.ResponseWriter, r *http.Request) {
 	// Register release
 	response, err := h.updateService.RegisterRelease(r.Context(), &req)
 	if err != nil {
-		fmt.Printf("SECURITY: Release registration failed for app %s, version %s by %s: %s\n",
-			appID, req.Version, getAPIKeyName(securityContext), err.Error())
+		slog.Warn("Release registration failed",
+			"event", "security_audit",
+			"app_id", appID,
+			"version", req.Version,
+			"api_key", getAPIKeyName(securityContext),
+			"error", err.Error())
 		h.writeServiceErrorResponse(w, err)
 		return
 	}
 
 	// Log successful registration
-	fmt.Printf("SECURITY: Release registration successful for app %s, version %s by %s\n",
-		appID, req.Version, getAPIKeyName(securityContext))
+	slog.Info("Release registered successfully",
+		"event", "security_audit",
+		"app_id", appID,
+		"version", req.Version,
+		"api_key", getAPIKeyName(securityContext))
 
 	h.writeJSONResponse(w, http.StatusCreated, response)
 }
@@ -250,7 +260,7 @@ func (h *Handlers) writeJSONResponse(w http.ResponseWriter, statusCode int, data
 	if err := json.NewEncoder(w).Encode(data); err != nil {
 		// If we can't encode the response, log it but don't try to send another response
 		// as headers have already been written
-		fmt.Printf("Error encoding JSON response: %v\n", err)
+		slog.Error("Failed to encode JSON response", "error", err)
 	}
 }
 

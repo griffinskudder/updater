@@ -4,7 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -12,15 +12,13 @@ import (
 	"time"
 	"updater/internal/api"
 	"updater/internal/config"
+	"updater/internal/logger"
 	"updater/internal/models"
 	"updater/internal/storage"
 	"updater/internal/update"
 )
 
-var (
-	configFile = flag.String("config", "", "Path to configuration file")
-	version    = "1.0.0" // This would typically be set by build flags
-)
+var configFile = flag.String("config", "", "Path to configuration file")
 
 func main() {
 	flag.Parse()
@@ -28,13 +26,26 @@ func main() {
 	// Load configuration
 	cfg, err := config.Load(*configFile)
 	if err != nil {
-		log.Fatalf("Failed to load configuration: %v", err)
+		slog.Error("Failed to load configuration", "error", err)
+		os.Exit(1)
 	}
+
+	// Initialize structured logging
+	log, closer, err := logger.Setup(cfg.Logging)
+	if err != nil {
+		slog.Error("Failed to initialize logger", "error", err)
+		os.Exit(1)
+	}
+	if closer != nil {
+		defer closer.Close()
+	}
+	slog.SetDefault(log)
 
 	// Initialize storage
 	storageInstance, err := initializeStorage(cfg)
 	if err != nil {
-		log.Fatalf("Failed to initialize storage: %v", err)
+		slog.Error("Failed to initialize storage", "error", err)
+		os.Exit(1)
 	}
 	defer storageInstance.Close()
 
@@ -58,22 +69,24 @@ func main() {
 
 	// Start server in a goroutine
 	go func() {
-		log.Printf("Starting server on %s", server.Addr)
+		slog.Info("Starting server", "addr", server.Addr)
 
 		var err error
 		if cfg.Server.TLSEnabled {
 			if cfg.Server.TLSCertFile == "" || cfg.Server.TLSKeyFile == "" {
-				log.Fatal("TLS is enabled but cert file or key file is not specified")
+				slog.Error("TLS is enabled but cert file or key file is not specified")
+				os.Exit(1)
 			}
-			log.Printf("Starting HTTPS server with TLS")
+			slog.Info("Starting HTTPS server with TLS")
 			err = server.ListenAndServeTLS(cfg.Server.TLSCertFile, cfg.Server.TLSKeyFile)
 		} else {
-			log.Printf("Starting HTTP server")
+			slog.Info("Starting HTTP server")
 			err = server.ListenAndServe()
 		}
 
 		if err != nil && err != http.ErrServerClosed {
-			log.Fatalf("Server failed to start: %v", err)
+			slog.Error("Server failed to start", "error", err)
+			os.Exit(1)
 		}
 	}()
 
@@ -82,7 +95,7 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	log.Println("Shutting down server...")
+	slog.Info("Shutting down server")
 
 	// Create a deadline to wait for shutdown
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -90,29 +103,31 @@ func main() {
 
 	// Attempt graceful shutdown
 	if err := server.Shutdown(ctx); err != nil {
-		log.Printf("Server forced to shutdown: %v", err)
+		slog.Error("Server forced to shutdown", "error", err)
 	}
 
-	log.Println("Server shutdown complete")
+	slog.Info("Server shutdown complete")
 }
 
 // initializeStorage creates and returns a storage instance based on configuration
 func initializeStorage(cfg *models.Config) (storage.Storage, error) {
 	storageConfig := storage.Config{
-		Type:     cfg.Storage.Type,
-		Path:     cfg.Storage.Path,
-		CacheTTL: "5m", // Default cache TTL
+		Type:             cfg.Storage.Type,
+		Path:             cfg.Storage.Path,
+		ConnectionString: cfg.Storage.Database.DSN,
+		CacheTTL:         cfg.Cache.TTL.String(),
 	}
 
 	switch cfg.Storage.Type {
 	case "json":
 		return storage.NewJSONStorage(storageConfig)
+	case "memory":
+		return storage.NewMemoryStorage(storageConfig)
+	case "postgres":
+		return storage.NewPostgresStorage(storageConfig)
+	case "sqlite":
+		return storage.NewSQLiteStorage(storageConfig)
 	default:
 		return nil, fmt.Errorf("unsupported storage type: %s", cfg.Storage.Type)
 	}
-}
-
-// printVersion prints version information
-func printVersion() {
-	fmt.Printf("Updater Service v%s\n", version)
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strings"
 	"sync"
@@ -24,9 +25,9 @@ func SetupRoutes(handlers *Handlers, config *models.Config) *mux.Router {
 	publicAPI := api.PathPrefix("").Subrouter()
 	publicAPI.HandleFunc("/updates/{app_id}/check", handlers.CheckForUpdates).Methods("GET")
 	publicAPI.HandleFunc("/updates/{app_id}/latest", handlers.GetLatestVersion).Methods("GET")
-	publicAPI.HandleFunc("/check", handlers.CheckForUpdates).Methods("POST")  // POST version with JSON body
+	publicAPI.HandleFunc("/check", handlers.CheckForUpdates).Methods("POST")                         // POST version with JSON body
 	publicAPI.HandleFunc("/check", methodNotAllowedHandler).Methods("GET", "PUT", "DELETE", "PATCH") // Explicitly handle other methods
-	publicAPI.HandleFunc("/latest", handlers.GetLatestVersion).Methods("GET")  // GET version for compatibility
+	publicAPI.HandleFunc("/latest", handlers.GetLatestVersion).Methods("GET")                        // GET version for compatibility
 
 	// Health check endpoint (public with optional enhanced details for authenticated users)
 	router.HandleFunc("/health", handlers.HealthCheck).Methods("GET")
@@ -133,8 +134,10 @@ func corsMiddleware(corsConfig models.CORSConfig) mux.MiddlewareFunc {
 // loggingMiddleware logs HTTP requests
 func loggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Simple request logging - in production this would use proper logging
-		fmt.Printf("%s %s %s\n", r.Method, r.URL.Path, r.RemoteAddr)
+		slog.Info("HTTP request",
+			"method", r.Method,
+			"path", r.URL.Path,
+			"remote_addr", r.RemoteAddr)
 		next.ServeHTTP(w, r)
 	})
 }
@@ -144,7 +147,7 @@ func recoveryMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if err := recover(); err != nil {
-				fmt.Printf("Panic recovered: %v\n", err)
+				slog.Error("Panic recovered", "error", err, "path", r.URL.Path)
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusInternalServerError)
 
@@ -259,4 +262,3 @@ func contains(slice []string, item string) bool {
 func joinStrings(slice []string, separator string) string {
 	return strings.Join(slice, separator)
 }
-
