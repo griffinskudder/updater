@@ -44,6 +44,7 @@ nav:
   - Logging: logging.md
   - Storage: storage.md
   - Observability: observability.md
+  - Makefile: makefile.md
   - Models:
     - Overview: models/index.md
     - Version Models: models/version-models.md
