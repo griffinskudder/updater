@@ -68,48 +68,9 @@ func (s *Service) CheckForUpdate(ctx context.Context, req *models.UpdateCheckReq
 	if latestVersion.GreaterThan(currentVersion) {
 		// Check pre-release handling
 		if !req.AllowPrerelease && latestVersion.Prerelease() != "" {
-			// Look for the latest non-prerelease version
-			releases, err := s.storage.Releases(ctx, req.ApplicationID)
+			latestStable, err := s.findLatestStableRelease(ctx, req.ApplicationID, req.Platform, req.Architecture, req.CurrentVersion)
 			if err != nil {
-				return nil, NewInternalError("failed to get releases", err)
-			}
-
-			var latestStable *models.Release
-			for _, release := range releases {
-				if release.Platform != req.Platform || release.Architecture != req.Architecture {
-					continue
-				}
-
-				releaseVer, err := semver.NewVersion(release.Version)
-				if err != nil {
-					continue
-				}
-
-				// Skip pre-release versions
-				if releaseVer.Prerelease() != "" {
-					continue
-				}
-
-				// Skip if not newer than current
-				if !releaseVer.GreaterThan(currentVersion) {
-					continue
-				}
-
-				// Check if this is the latest stable version we've seen
-				if latestStable == nil {
-					latestStable = release
-					continue
-				}
-
-				stableVer, err := semver.NewVersion(latestStable.Version)
-				if err != nil {
-					latestStable = release
-					continue
-				}
-
-				if releaseVer.GreaterThan(stableVer) {
-					latestStable = release
-				}
+				return nil, NewInternalError("failed to find stable release", err)
 			}
 
 			if latestStable != nil {
@@ -184,43 +145,9 @@ func (s *Service) GetLatestVersion(ctx context.Context, req *models.LatestVersio
 		}
 
 		if latestVersion.Prerelease() != "" {
-			// Look for the latest non-prerelease version
-			releases, err := s.storage.Releases(ctx, req.ApplicationID)
+			latestStable, err := s.findLatestStableRelease(ctx, req.ApplicationID, req.Platform, req.Architecture, "")
 			if err != nil {
-				return nil, NewInternalError("failed to get releases", err)
-			}
-
-			var latestStable *models.Release
-			for _, release := range releases {
-				if release.Platform != req.Platform || release.Architecture != req.Architecture {
-					continue
-				}
-
-				releaseVer, err := semver.NewVersion(release.Version)
-				if err != nil {
-					continue
-				}
-
-				// Skip pre-release versions
-				if releaseVer.Prerelease() != "" {
-					continue
-				}
-
-				// Check if this is the latest stable version we've seen
-				if latestStable == nil {
-					latestStable = release
-					continue
-				}
-
-				stableVer, err := semver.NewVersion(latestStable.Version)
-				if err != nil {
-					latestStable = release
-					continue
-				}
-
-				if releaseVer.GreaterThan(stableVer) {
-					latestStable = release
-				}
+				return nil, NewInternalError("failed to find stable release", err)
 			}
 
 			if latestStable != nil {
@@ -426,4 +353,61 @@ func (s *Service) sortReleases(releases []*models.Release, sortBy, sortOrder str
 			}
 		}
 	}
+}
+
+// findLatestStableRelease finds the latest non-prerelease version that's newer than the current version
+// for the specified platform and architecture. Returns nil if no suitable stable release is found.
+func (s *Service) findLatestStableRelease(ctx context.Context, appID, platform, arch, currentVersion string) (*models.Release, error) {
+	releases, err := s.storage.Releases(ctx, appID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get releases: %w", err)
+	}
+
+	var currentVer *semver.Version
+	if currentVersion != "" {
+		currentVer, err = semver.NewVersion(currentVersion)
+		if err != nil {
+			return nil, fmt.Errorf("invalid current version: %w", err)
+		}
+	}
+
+	var latestStable *models.Release
+	for _, release := range releases {
+		if release.Platform != platform || release.Architecture != arch {
+			continue
+		}
+
+		releaseVer, err := semver.NewVersion(release.Version)
+		if err != nil {
+			continue
+		}
+
+		// Skip pre-release versions
+		if releaseVer.Prerelease() != "" {
+			continue
+		}
+
+		// Skip if not newer than current version
+		if currentVer != nil && !releaseVer.GreaterThan(currentVer) {
+			continue
+		}
+
+		// Check if this is the latest stable version we've seen
+		if latestStable == nil {
+			latestStable = release
+			continue
+		}
+
+		stableVer, err := semver.NewVersion(latestStable.Version)
+		if err != nil {
+			latestStable = release
+			continue
+		}
+
+		if releaseVer.GreaterThan(stableVer) {
+			latestStable = release
+		}
+	}
+
+	return latestStable, nil
 }
