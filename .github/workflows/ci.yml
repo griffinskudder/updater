@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check formatting
+        run: make fmt-check
+
+      - name: Vet
+        run: make vet
+
+      - name: Test
+        run: make test
+
+      - name: Coverage
+        run: |
+          COVERAGE=$(make cover | awk '/^total/ {gsub(/%/, "", $3); print $3}')
+          THRESHOLD=$(cat .github/coverage-threshold)
+          echo "Coverage:  ${COVERAGE}%"
+          echo "Threshold: ${THRESHOLD}%"
+          awk "BEGIN {
+            if (${COVERAGE} + 0 < ${THRESHOLD} + 0) {
+              print \"FAIL: coverage \" ${COVERAGE} \"% is below threshold \" ${THRESHOLD} \"%\"
+              exit 1
+            }
+            print \"PASS: coverage \" ${COVERAGE} \"% meets threshold \" ${THRESHOLD} \"%\"
+          }"
+
+      - name: Validate OpenAPI spec
+        run: make openapi-validate
+
+  security:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.0'
+
+      - name: Install gosec
+        run: go install github.com/securego/gosec/v2/cmd/gosec@latest
+
+      - name: Generate SARIF report
+        run: gosec -no-fail -fmt sarif -out gosec.sarif ./...
+
+      - name: Upload to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: gosec.sarif
+
+      - name: Enforce security threshold
+        run: gosec -severity high -confidence medium ./...
