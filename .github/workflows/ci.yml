@@ -18,9 +18,6 @@ jobs:
       - name: Vet
         run: make vet
 
-      - name: Test
-        run: make test
-
       - name: Coverage
         run: |
           set -euo pipefail
@@ -48,7 +45,7 @@ jobs:
 
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.25.0'
+          go-version-file: 'go.mod'
 
       - name: Install gosec
         run: go install github.com/securego/gosec/v2/cmd/gosec@latest
