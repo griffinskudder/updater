@@ -1,7 +1,7 @@
 site_name: Updater Service Documentation
 site_description: Documentation for the Go-based software update service
 site_author: Updater Service Team
-site_url: ""
+site_url: https://griffinskudder.github.io/updater/
 
 repo_name: updater
 repo_url: https://github.com/griffinskudder/updater
