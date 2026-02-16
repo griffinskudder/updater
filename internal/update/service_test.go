@@ -1105,7 +1105,7 @@ func TestSortReleases(t *testing.T) {
 			wantVersions: []string{"3.0.0", "2.0.0", "1.0.0"},
 		},
 		{
-			name: "descending with equal versions preserves strict weak ordering",
+			name: "version descending with equal versions",
 			releases: func() []*models.Release {
 				r1 := createTestReleaseForUpdate("app", "1.0.0", "windows", "amd64")
 				r2 := createTestReleaseForUpdate("app", "2.0.0", "linux", "amd64")
@@ -1145,6 +1145,37 @@ func TestSortReleases(t *testing.T) {
 			sortBy:       "release_date",
 			sortOrder:    "desc",
 			wantVersions: []string{"3.0.0", "1.0.0", "2.0.0"},
+		},
+		{
+			name:         "empty slice is unchanged",
+			releases:     []*models.Release{},
+			sortBy:       "version",
+			sortOrder:    "asc",
+			wantVersions: []string{},
+		},
+		{
+			name: "single element is unchanged",
+			releases: func() []*models.Release {
+				return []*models.Release{createTestReleaseForUpdate("app", "1.0.0", "windows", "amd64")}
+			}(),
+			sortBy:       "version",
+			sortOrder:    "asc",
+			wantVersions: []string{"1.0.0"},
+		},
+		{
+			name: "unknown sortBy defaults to release_date ascending",
+			releases: func() []*models.Release {
+				r1 := createTestReleaseForUpdate("app", "1.0.0", "windows", "amd64")
+				r1.ReleaseDate = t2
+				r2 := createTestReleaseForUpdate("app", "2.0.0", "windows", "amd64")
+				r2.ReleaseDate = t1
+				r3 := createTestReleaseForUpdate("app", "3.0.0", "windows", "amd64")
+				r3.ReleaseDate = t3
+				return []*models.Release{r1, r2, r3}
+			}(),
+			sortBy:       "unknown_field",
+			sortOrder:    "asc",
+			wantVersions: []string{"2.0.0", "1.0.0", "3.0.0"},
 		},
 	}
 
