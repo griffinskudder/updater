@@ -76,6 +76,11 @@ func main() {
 		activeStorage = instrumented
 	}
 
+	if err := seedBootstrapKey(context.Background(), activeStorage, cfg); err != nil {
+		slog.Error("Failed to seed bootstrap key", "error", err)
+		os.Exit(1)
+	}
+
 	// Initialize update service
 	updateService := update.NewService(activeStorage)
 
@@ -213,4 +218,24 @@ func initializeStorage(cfg *models.Config) (storage.Storage, error) {
 	default:
 		return nil, fmt.Errorf("unsupported storage type: %s", cfg.Storage.Type)
 	}
+}
+
+// seedBootstrapKey inserts the configured bootstrap key into storage if it
+// does not already exist. It is a no-op when BootstrapKey is empty.
+func seedBootstrapKey(ctx context.Context, store storage.Storage, cfg *models.Config) error {
+	raw := cfg.Security.BootstrapKey
+	if raw == "" {
+		return nil
+	}
+	hash := models.HashAPIKey(raw)
+	if _, err := store.GetAPIKeyByHash(ctx, hash); err == nil {
+		// Already seeded - idempotent.
+		return nil
+	}
+	key := models.NewAPIKey(models.NewKeyID(), "bootstrap", raw, []string{"admin"})
+	if err := store.CreateAPIKey(ctx, key); err != nil {
+		return fmt.Errorf("seed bootstrap key: %w", err)
+	}
+	slog.Info("bootstrap API key seeded", "id", key.ID, "prefix", key.Prefix)
+	return nil
 }
