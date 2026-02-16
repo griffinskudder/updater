@@ -37,7 +37,7 @@ jobs:
         run: make openapi-validate
 
       - name: Integration tests
-        run: make test
+        run: make integration-test
 
   security:
     runs-on: ubuntu-latest

@@ -344,7 +344,7 @@ func (s *Service) sortReleases(releases []*models.Release, sortBy, sortOrder str
 	if sortOrder == "desc" {
 		originalLess := less
 		less = func(i, j int) bool {
-			return !originalLess(i, j)
+			return originalLess(j, i)
 		}
 	}
 
