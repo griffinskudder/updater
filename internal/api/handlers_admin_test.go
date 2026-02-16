@@ -297,6 +297,27 @@ func TestAdminDeleteRelease_Success_ReturnsOK(t *testing.T) {
 	svc.AssertExpectations(t)
 }
 
+// addFlash
+
+func TestAddFlash_EncodesSpecialCharacters(t *testing.T) {
+	// A message containing URL-significant characters must not inject extra params.
+	result := addFlash("/admin/apps", "error: path=foo&admin=true", "error")
+	u, err := url.Parse(result)
+	require.NoError(t, err)
+	assert.Equal(t, "error: path=foo&admin=true", u.Query().Get("flash"),
+		"flash message must be fully decoded back to the original string")
+	assert.Equal(t, "error", u.Query().Get("flash_type"))
+	assert.Len(t, u.Query(), 2, "must have exactly 2 query params — no injection")
+}
+
+func TestAddFlash_WithExistingQueryString(t *testing.T) {
+	result := addFlash("/admin/apps?page=2", "saved", "success")
+	u, err := url.Parse(result)
+	require.NoError(t, err)
+	assert.Equal(t, "saved", u.Query().Get("flash"))
+	assert.Equal(t, "2", u.Query().Get("page"), "existing query params must be preserved")
+}
+
 // Routes
 
 func TestAdminRoutes_LoginPublic(t *testing.T) {

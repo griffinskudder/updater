@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"strings"
 	"updater/internal/models"
 
@@ -112,12 +113,17 @@ func flashFromQuery(r *http.Request) *adminFlashData {
 }
 
 // addFlash appends flash query params to a redirect URL.
+// msg and flashType are URL-encoded so special characters cannot inject extra parameters.
 func addFlash(base, msg, flashType string) string {
-	sep := "?"
-	if strings.Contains(base, "?") {
-		sep = "&"
+	u, err := url.Parse(base)
+	if err != nil {
+		return base
 	}
-	return base + sep + "flash=" + msg + "&flash_type=" + flashType
+	q := u.Query()
+	q.Set("flash", msg)
+	q.Set("flash_type", flashType)
+	u.RawQuery = q.Encode()
+	return u.String()
 }
 
 // adminPathVar extracts a named path variable from the request using gorilla/mux.
