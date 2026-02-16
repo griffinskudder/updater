@@ -36,6 +36,7 @@ theme:
 
 nav:
   - Home: index.md
+  - Roadmap: ROADMAP.md
   - Use Cases: use-cases.md
   - API:
     - Reference: api.md
