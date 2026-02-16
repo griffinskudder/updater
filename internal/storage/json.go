@@ -79,38 +79,44 @@ func (j *JSONStorage) ensureFileExists() error {
 	return nil
 }
 
-// loadData loads data from the JSON file with caching
+// loadData loads data from the JSON file with caching.
+// It uses double-checked locking: a fast read-lock path for cache hits,
+// and a write-lock slow path with re-validation to prevent TOCTOU races.
 func (j *JSONStorage) loadData() error {
+	// Fast path: cache is still valid.
 	j.mu.RLock()
-	// Check if cache is still valid
 	if j.data != nil && time.Now().Before(j.cacheExpiry) {
 		j.mu.RUnlock()
 		return nil
 	}
 	j.mu.RUnlock()
 
-	// Get file modification time
+	// Slow path: acquire write lock and re-validate before doing any I/O.
+	j.mu.Lock()
+	defer j.mu.Unlock()
+
+	// Another goroutine may have loaded while we waited for the write lock.
+	if j.data != nil && time.Now().Before(j.cacheExpiry) {
+		return nil
+	}
+
+	// Stat and all subsequent reads are done under the write lock.
 	info, err := os.Stat(j.filePath)
 	if err != nil {
 		return fmt.Errorf("failed to stat file: %w", err)
 	}
 
-	j.mu.Lock()
-	defer j.mu.Unlock()
-
-	// Check if file has been modified since last load
+	// If the file hasn't changed, extend the cache and return.
 	if j.data != nil && !info.ModTime().After(j.lastModified) {
 		j.cacheExpiry = time.Now().Add(j.cacheTTL)
 		return nil
 	}
 
-	// Read file
 	fileData, err := os.ReadFile(j.filePath)
 	if err != nil {
 		return fmt.Errorf("failed to read file: %w", err)
 	}
 
-	// Parse JSON
 	var data JSONData
 	if err := json.Unmarshal(fileData, &data); err != nil {
 		return fmt.Errorf("failed to unmarshal JSON: %w", err)
@@ -119,7 +125,6 @@ func (j *JSONStorage) loadData() error {
 	j.data = &data
 	j.lastModified = info.ModTime()
 	j.cacheExpiry = time.Now().Add(j.cacheTTL)
-
 	return nil
 }
 
