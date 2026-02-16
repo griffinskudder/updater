@@ -26,4 +26,4 @@ clean: ## Clean build artifacts
 tidy: ## Tidy dependencies
 	$(GO_DOCKER) go mod tidy
 
-check: fmt vet test ## Run format, vet, and test
+check: fmt-check vet test ## Run format check, vet, and test
