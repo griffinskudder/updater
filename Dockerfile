@@ -4,7 +4,7 @@
 # =============================================================================
 # Build Stage
 # =============================================================================
-FROM golang:1.26-alpine AS builder
+FROM golang:1.25-alpine AS builder
 
 # Security: Create non-root user for build process
 RUN adduser -D -s /bin/sh -u 1001 appuser
