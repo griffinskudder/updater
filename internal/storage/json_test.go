@@ -3,8 +3,10 @@ package storage
 import (
 	"context"
 	"fmt"
+	"os"
 	"path/filepath"
 	"sync"
+	"runtime"
 	"testing"
 	"time"
 	"updater/internal/models"
@@ -33,6 +35,30 @@ func TestNewJSONStorage(t *testing.T) {
 
 	// Check that cache TTL was set correctly
 	assert.Equal(t, time.Minute, storage.cacheTTL)
+}
+
+func TestNewJSONStorage_FilePermissions(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("permission bits are not enforced on Windows")
+	}
+	tempDir := t.TempDir()
+	filePath := filepath.Join(tempDir, "subdir", "test.json")
+
+	storage, err := NewJSONStorage(Config{Type: "json", Path: filePath})
+	require.NoError(t, err)
+	defer storage.Close()
+
+	// Directory must be traversable by owner only.
+	dirInfo, err := os.Stat(filepath.Dir(filePath))
+	require.NoError(t, err)
+	assert.Equal(t, os.FileMode(0700), dirInfo.Mode().Perm(),
+		"directory should be 0700 (owner rwx only)")
+
+	// Data file must be readable/writable by owner only.
+	fileInfo, err := os.Stat(filePath)
+	require.NoError(t, err)
+	assert.Equal(t, os.FileMode(0600), fileInfo.Mode().Perm(),
+		"data file should be 0600 (owner rw only)")
 }
 
 func TestNewJSONStorage_InvalidPath(t *testing.T) {

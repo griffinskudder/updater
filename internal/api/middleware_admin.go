@@ -23,10 +23,13 @@ func adminSessionMiddleware(cfg models.SecurityConfig) mux.MiddlewareFunc {
 			if err != nil || !isValidAdminKey(cookie.Value, cfg) {
 				// Clear any stale cookie.
 				http.SetCookie(w, &http.Cookie{
-					Name:   "admin_session",
-					Value:  "",
-					Path:   "/admin",
-					MaxAge: -1,
+					Name:     "admin_session",
+					Value:    "",
+					Path:     "/admin",
+					MaxAge:   -1,
+					HttpOnly: true,
+					Secure:   true,
+					SameSite: http.SameSiteStrictMode,
 				})
 				http.Redirect(w, r, "/admin/login", http.StatusSeeOther)
 				return
