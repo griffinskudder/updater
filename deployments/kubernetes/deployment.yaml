@@ -32,7 +32,7 @@ spec:
 
       containers:
       - name: updater
-        image: your-registry/updater:latest
+        image: ghcr.io/griffinskudder/updater:latest
         imagePullPolicy: Always
 
         # Security Context for Container

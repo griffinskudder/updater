@@ -1,10 +1,10 @@
 site_name: Updater Service Documentation
 site_description: Documentation for the Go-based software update service
 site_author: Updater Service Team
-site_url: https://your-domain.com/docs
+site_url: ""
 
 repo_name: updater
-repo_url: https://github.com/your-org/updater
+repo_url: https://github.com/griffinskudder/updater
 edit_uri: edit/main/docs/
 
 theme:
@@ -106,7 +106,7 @@ plugins:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/your-org/updater
+      link: https://github.com/griffinskudder/updater
   version:
     provider: mike
     default: latest
@@ -114,7 +114,7 @@ extra:
 extra_css:
   - assets/extra.css
 
-copyright: Copyright &copy; 2024 Updater Service Team
+copyright: Copyright &copy; 2026 Griffin Skudder
 
 docs_dir: docs
 site_dir: site

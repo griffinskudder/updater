@@ -94,8 +94,8 @@ LABEL \
     org.opencontainers.image.vendor="Your Company" \
     org.opencontainers.image.version="1.0.0" \
     org.opencontainers.image.created="2024-01-01T00:00:00Z" \
-    org.opencontainers.image.source="https://github.com/yourorg/updater" \
-    org.opencontainers.image.licenses="MIT" \
+    org.opencontainers.image.source="https://github.com/griffinskudder/updater" \
+    org.opencontainers.image.licenses="Apache-2.0" \
     security.scan.enabled="true" \
     security.nonroot="true" \
     security.readonly="true"
