@@ -66,6 +66,7 @@ nav:
     - Rate Limiter Implementation: plans/2026-02-15-rate-limiter-implementation.md
     - Admin Frontend: plans/2026-02-16-admin-frontend.md
     - GitHub CI Design: plans/2026-02-16-github-ci-design.md
+    - GitHub CI Implementation: plans/2026-02-16-github-ci-implementation.md
 
 markdown_extensions:
   - toc:
