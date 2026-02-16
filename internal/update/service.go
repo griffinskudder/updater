@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sort"
 	"time"
 	"updater/internal/models"
 	"updater/internal/storage"
@@ -348,13 +349,7 @@ func (s *Service) sortReleases(releases []*models.Release, sortBy, sortOrder str
 	}
 
 	// Sort the releases
-	for i := 0; i < len(releases)-1; i++ {
-		for j := 0; j < len(releases)-i-1; j++ {
-			if less(j+1, j) {
-				releases[j], releases[j+1] = releases[j+1], releases[j]
-			}
-		}
-	}
+	sort.Slice(releases, less)
 }
 
 // findLatestStableRelease finds the latest non-prerelease version that's newer than the current version
