@@ -31,12 +31,14 @@ func NewAPIKey(id, name, rawKey string, permissions []string) *APIKey {
 	if len(prefix) > 8 {
 		prefix = prefix[:8]
 	}
+	perms := make([]string, len(permissions))
+	copy(perms, permissions)
 	return &APIKey{
 		ID:          id,
 		Name:        name,
 		KeyHash:     HashAPIKey(rawKey),
 		Prefix:      prefix,
-		Permissions: permissions,
+		Permissions: perms,
 		Enabled:     true,
 		CreatedAt:   now,
 		UpdatedAt:   now,
@@ -65,7 +67,7 @@ func NewKeyID() string {
 
 // HasPermission returns true when the key is enabled and possesses the required permission.
 func (ak *APIKey) HasPermission(required string) bool {
-	if !ak.Enabled {
+	if ak == nil || !ak.Enabled {
 		return false
 	}
 	for _, p := range ak.Permissions {

@@ -342,6 +342,10 @@ func (stc *StorageConfig) Validate() error {
 }
 
 func (sec *SecurityConfig) Validate() error {
+	if sec.EnableAuth && sec.BootstrapKey == "" {
+		return errors.New("bootstrap key is required when auth is enabled")
+	}
+
 	if sec.RateLimit.Enabled {
 		if sec.RateLimit.RequestsPerMinute < 0 {
 			return errors.New("requests per minute cannot be negative")

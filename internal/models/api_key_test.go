@@ -60,4 +60,8 @@ func TestNewAPIKey(t *testing.T) {
 	assert.Equal(t, models.HashAPIKey(raw), key.KeyHash)
 	assert.Equal(t, raw[:8], key.Prefix)
 	assert.True(t, key.Enabled)
+
+	// short key: prefix equals the key itself when len <= 8
+	shortKey := models.NewAPIKey("id2", "short", "upd_ab", []string{})
+	assert.Equal(t, "upd_ab", shortKey.Prefix)
 }
