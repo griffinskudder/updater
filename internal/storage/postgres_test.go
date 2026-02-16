@@ -310,3 +310,82 @@ func TestPostgresStorage_DeleteApplication(t *testing.T) {
 		})
 	}
 }
+
+func TestPostgresStorage_APIKeyCRUD(t *testing.T) {
+	s := newPostgresTestStorage(t)
+	ctx := context.Background()
+
+	raw, err := models.GenerateAPIKey()
+	if err != nil {
+		t.Fatalf("GenerateAPIKey failed: %v", err)
+	}
+	key := models.NewAPIKey(models.NewKeyID(), "ci", raw, []string{"write"})
+
+	if err := s.CreateAPIKey(ctx, key); err != nil {
+		t.Fatalf("CreateAPIKey failed: %v", err)
+	}
+
+	got, err := s.GetAPIKeyByHash(ctx, key.KeyHash)
+	if err != nil {
+		t.Fatalf("GetAPIKeyByHash failed: %v", err)
+	}
+	if got.ID != key.ID {
+		t.Errorf("expected ID %q, got %q", key.ID, got.ID)
+	}
+	if len(got.Permissions) != 1 || got.Permissions[0] != "write" {
+		t.Errorf("expected permissions [write], got %v", got.Permissions)
+	}
+
+	keys, err := s.ListAPIKeys(ctx)
+	if err != nil {
+		t.Fatalf("ListAPIKeys failed: %v", err)
+	}
+	found := false
+	for _, k := range keys {
+		if k.ID == key.ID {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Error("expected to find key in ListAPIKeys result")
+	}
+
+	key.Name = "ci-v2"
+	if err := s.UpdateAPIKey(ctx, key); err != nil {
+		t.Fatalf("UpdateAPIKey failed: %v", err)
+	}
+
+	if err := s.DeleteAPIKey(ctx, key.ID); err != nil {
+		t.Fatalf("DeleteAPIKey failed: %v", err)
+	}
+	_, err = s.GetAPIKeyByHash(ctx, key.KeyHash)
+	if err == nil {
+		t.Error("expected ErrNotFound after deletion, got nil")
+	}
+}
+
+func TestPostgresStorage_GetAPIKeyByHash_NotFound(t *testing.T) {
+	s := newPostgresTestStorage(t)
+	_, err := s.GetAPIKeyByHash(context.Background(), "nonexistent")
+	if err == nil {
+		t.Error("expected ErrNotFound, got nil")
+	}
+}
+
+func TestPostgresStorage_UpdateAPIKey_NotFound(t *testing.T) {
+	s := newPostgresTestStorage(t)
+	key := &models.APIKey{ID: "missing", Name: "x", Permissions: []string{"read"}}
+	err := s.UpdateAPIKey(context.Background(), key)
+	if err == nil {
+		t.Error("expected ErrNotFound, got nil")
+	}
+}
+
+func TestPostgresStorage_DeleteAPIKey_NotFound(t *testing.T) {
+	s := newPostgresTestStorage(t)
+	err := s.DeleteAPIKey(context.Background(), "missing")
+	if err == nil {
+		t.Error("expected ErrNotFound, got nil")
+	}
+}
