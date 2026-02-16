@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"html/template"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -18,8 +19,10 @@ import (
 
 // Handlers contains HTTP handlers for the updater API
 type Handlers struct {
-	updateService update.ServiceInterface
-	storage       storage.Storage
+	updateService  update.ServiceInterface
+	storage        storage.Storage
+	adminTmpl      *template.Template
+	securityConfig models.SecurityConfig
 }
 
 // NewHandlers creates a new handlers instance
@@ -41,6 +44,16 @@ func WithStorage(s storage.Storage) HandlersOption {
 	return func(h *Handlers) {
 		h.storage = s
 	}
+}
+
+// WithAdminTemplates sets the parsed admin template set.
+func WithAdminTemplates(tmpl *template.Template) HandlersOption {
+	return func(h *Handlers) { h.adminTmpl = tmpl }
+}
+
+// WithSecurityConfig stores the security config for admin session validation.
+func WithSecurityConfig(cfg models.SecurityConfig) HandlersOption {
+	return func(h *Handlers) { h.securityConfig = cfg }
 }
 
 // CheckForUpdates handles update check requests

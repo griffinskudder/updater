@@ -1,10 +1,11 @@
-package api
+﻿package api
 
 import (
 	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -103,6 +104,18 @@ func TestNewHandlers(t *testing.T) {
 	assert.NotNil(t, handlers)
 	assert.Equal(t, mockService, handlers.updateService)
 	assert.Nil(t, handlers.storage)
+}
+
+func TestNewHandlers_WithAdminTemplates(t *testing.T) {
+	tmpl := template.Must(template.New("test").Parse(`{{define "test"}}ok{{end}}`))
+	h := NewHandlers(&MockUpdateService{}, WithAdminTemplates(tmpl))
+	assert.NotNil(t, h.adminTmpl)
+}
+
+func TestNewHandlers_WithSecurityConfig(t *testing.T) {
+	cfg := models.SecurityConfig{EnableAuth: true}
+	h := NewHandlers(&MockUpdateService{}, WithSecurityConfig(cfg))
+	assert.True(t, h.securityConfig.EnableAuth)
 }
 
 func TestNewHandlers_WithStorage(t *testing.T) {
