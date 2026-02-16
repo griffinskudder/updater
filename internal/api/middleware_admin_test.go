@@ -35,6 +35,14 @@ func TestAdminMiddleware_NoCookie_Redirects(t *testing.T) {
 	mw(http.HandlerFunc(okHandler)).ServeHTTP(rec, makeAdminReq("/admin/applications", ""))
 	assert.Equal(t, http.StatusSeeOther, rec.Code)
 	assert.Equal(t, "/admin/login", rec.Header().Get("Location"))
+	for _, c := range rec.Result().Cookies() {
+		if c.Name == "admin_session" {
+			assert.Equal(t, -1, c.MaxAge)
+			assert.True(t, c.HttpOnly, "clearing cookie must be HttpOnly")
+			assert.True(t, c.Secure, "clearing cookie must carry Secure flag")
+			assert.Equal(t, http.SameSiteStrictMode, c.SameSite, "clearing cookie must be SameSite=Strict")
+		}
+	}
 }
 
 func TestAdminMiddleware_InvalidKey_Redirects(t *testing.T) {
@@ -42,6 +50,14 @@ func TestAdminMiddleware_InvalidKey_Redirects(t *testing.T) {
 	rec := httptest.NewRecorder()
 	mw(http.HandlerFunc(okHandler)).ServeHTTP(rec, makeAdminReq("/admin/applications", "wrong"))
 	assert.Equal(t, http.StatusSeeOther, rec.Code)
+	for _, c := range rec.Result().Cookies() {
+		if c.Name == "admin_session" {
+			assert.Equal(t, -1, c.MaxAge)
+			assert.True(t, c.HttpOnly, "clearing cookie must be HttpOnly")
+			assert.True(t, c.Secure, "clearing cookie must carry Secure flag")
+			assert.Equal(t, http.SameSiteStrictMode, c.SameSite, "clearing cookie must be SameSite=Strict")
+		}
+	}
 }
 
 func TestAdminMiddleware_ValidKey_Passes(t *testing.T) {
