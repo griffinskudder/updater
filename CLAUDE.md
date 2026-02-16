@@ -23,6 +23,7 @@ internal/
   storage/            - Storage providers (JSON, memory, PostgreSQL, SQLite)
     sqlc/             - Generated type-safe database code (postgres/, sqlite/)
   update/             - Business logic: version comparison, release management, errors
+  observability/      - Metrics (Prometheus) and distributed tracing (OpenTelemetry)
 make/                 - Split Makefile targets (go.mk, docs.mk, docker.mk, db.mk)
 configs/              - Configuration files
 data/                 - Data directory (releases.json)
@@ -42,6 +43,8 @@ All targets run inside Docker containers. Only Docker is required locally. Targe
 make build            # Build to bin/updater (Docker)
 make run              # Run the application (Docker)
 make test             # Run tests (Docker)
+make integration-test # Run integration tests with -tags integration (Docker)
+make security         # Run gosec security scanner (high severity, medium confidence)
 make fmt              # Format code (Docker)
 make vet              # Vet code (Docker)
 make clean            # Remove build artifacts (bin/)
@@ -80,16 +83,16 @@ Key docs: `docs/ARCHITECTURE.md` (design), `docs/models/index.md` (model layer),
 
 Layered architecture, all layers complete:
 
-| Layer | Location | Status |
-|-------|----------|--------|
-| API (HTTP handlers, middleware) | `internal/api/` | Complete |
-| Business Logic (version comparison) | `internal/update/` | Complete |
-| Models (data structures, validation) | `internal/models/` | Complete |
-| Storage (multi-provider persistence) | `internal/storage/` | Complete |
-| Configuration | `internal/config/`, `internal/models/config.go` | Complete |
-| Logging | `internal/logger/` | Complete |
-| Observability (metrics, tracing) | `internal/observability/` | Complete |
-| Containerization | `Dockerfile`, `docker-compose.yml` | Complete |
+| Layer | Location |
+|-------|----------|
+| API (HTTP handlers, middleware) | `internal/api/` |
+| Business Logic (version comparison) | `internal/update/` |
+| Models (data structures, validation) | `internal/models/` |
+| Storage (multi-provider persistence) | `internal/storage/` |
+| Configuration | `internal/config/`, `internal/models/config.go` |
+| Logging | `internal/logger/` |
+| Observability (metrics, tracing) | `internal/observability/` |
+| Containerization | `Dockerfile`, `docker-compose.yml` |
 
 ### Key Patterns
 
