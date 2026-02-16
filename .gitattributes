@@ -1,0 +1,37 @@
+# Normalise line endings to LF for all text files
+* text=auto eol=lf
+
+# Go source
+*.go text eol=lf
+
+# Makefiles MUST use LF — CRLF breaks tab-indented recipes
+Makefile text eol=lf
+*.mk text eol=lf
+
+# Config and data
+*.yaml text eol=lf
+*.yml text eol=lf
+*.json text eol=lf
+*.toml text eol=lf
+*.sql text eol=lf
+
+# Docs
+*.md text eol=lf
+
+# Shell scripts
+*.sh text eol=lf
+
+# Docker
+Dockerfile text eol=lf
+*.dockerfile text eol=lf
+
+# Binary files — no line ending conversion
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
