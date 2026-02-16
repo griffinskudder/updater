@@ -197,3 +197,43 @@ func (s *InstrumentedStorage) Ping(ctx context.Context) error {
 func (s *InstrumentedStorage) Close() error {
 	return s.inner.Close()
 }
+
+func (s *InstrumentedStorage) CreateAPIKey(ctx context.Context, key *models.APIKey) error {
+	ctx, span := s.startSpan(ctx, "CreateAPIKey", attribute.String("key_id", key.ID))
+	start := time.Now()
+	err := s.inner.CreateAPIKey(ctx, key)
+	s.record(ctx, span, "CreateAPIKey", start, err)
+	return err
+}
+
+func (s *InstrumentedStorage) GetAPIKeyByHash(ctx context.Context, hash string) (*models.APIKey, error) {
+	ctx, span := s.startSpan(ctx, "GetAPIKeyByHash")
+	start := time.Now()
+	result, err := s.inner.GetAPIKeyByHash(ctx, hash)
+	s.record(ctx, span, "GetAPIKeyByHash", start, err)
+	return result, err
+}
+
+func (s *InstrumentedStorage) ListAPIKeys(ctx context.Context) ([]*models.APIKey, error) {
+	ctx, span := s.startSpan(ctx, "ListAPIKeys")
+	start := time.Now()
+	result, err := s.inner.ListAPIKeys(ctx)
+	s.record(ctx, span, "ListAPIKeys", start, err)
+	return result, err
+}
+
+func (s *InstrumentedStorage) UpdateAPIKey(ctx context.Context, key *models.APIKey) error {
+	ctx, span := s.startSpan(ctx, "UpdateAPIKey", attribute.String("key_id", key.ID))
+	start := time.Now()
+	err := s.inner.UpdateAPIKey(ctx, key)
+	s.record(ctx, span, "UpdateAPIKey", start, err)
+	return err
+}
+
+func (s *InstrumentedStorage) DeleteAPIKey(ctx context.Context, keyID string) error {
+	ctx, span := s.startSpan(ctx, "DeleteAPIKey", attribute.String("key_id", keyID))
+	start := time.Now()
+	err := s.inner.DeleteAPIKey(ctx, keyID)
+	s.record(ctx, span, "DeleteAPIKey", start, err)
+	return err
+}
