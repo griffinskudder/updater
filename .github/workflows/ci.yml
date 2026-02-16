@@ -36,6 +36,9 @@ jobs:
       - name: Validate OpenAPI spec
         run: make openapi-validate
 
+      - name: Integration tests
+        run: make integration-test
+
   security:
     runs-on: ubuntu-latest
     permissions:

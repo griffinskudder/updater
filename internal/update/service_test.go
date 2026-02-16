@@ -1066,6 +1066,131 @@ func TestService_DeleteRelease(t *testing.T) {
 	}
 }
 
+func TestSortReleases(t *testing.T) {
+	service := NewService(nil)
+
+	t1 := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
+	t2 := time.Date(2025, 6, 1, 0, 0, 0, 0, time.UTC)
+	t3 := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	tests := []struct {
+		name         string
+		releases     []*models.Release
+		sortBy       string
+		sortOrder    string
+		wantVersions []string
+	}{
+		{
+			name: "version ascending",
+			releases: func() []*models.Release {
+				r1 := createTestReleaseForUpdate("app", "2.0.0", "windows", "amd64")
+				r2 := createTestReleaseForUpdate("app", "1.0.0", "windows", "amd64")
+				r3 := createTestReleaseForUpdate("app", "3.0.0", "windows", "amd64")
+				return []*models.Release{r1, r2, r3}
+			}(),
+			sortBy:       "version",
+			sortOrder:    "asc",
+			wantVersions: []string{"1.0.0", "2.0.0", "3.0.0"},
+		},
+		{
+			name: "version descending",
+			releases: func() []*models.Release {
+				r1 := createTestReleaseForUpdate("app", "1.0.0", "windows", "amd64")
+				r2 := createTestReleaseForUpdate("app", "3.0.0", "windows", "amd64")
+				r3 := createTestReleaseForUpdate("app", "2.0.0", "windows", "amd64")
+				return []*models.Release{r1, r2, r3}
+			}(),
+			sortBy:       "version",
+			sortOrder:    "desc",
+			wantVersions: []string{"3.0.0", "2.0.0", "1.0.0"},
+		},
+		{
+			name: "version descending with equal versions",
+			releases: func() []*models.Release {
+				r1 := createTestReleaseForUpdate("app", "1.0.0", "windows", "amd64")
+				r2 := createTestReleaseForUpdate("app", "2.0.0", "linux", "amd64")
+				r3 := createTestReleaseForUpdate("app", "1.0.0", "darwin", "amd64")
+				return []*models.Release{r1, r2, r3}
+			}(),
+			sortBy:       "version",
+			sortOrder:    "desc",
+			wantVersions: []string{"2.0.0", "1.0.0", "1.0.0"},
+		},
+		{
+			name: "release_date ascending",
+			releases: func() []*models.Release {
+				r1 := createTestReleaseForUpdate("app", "1.0.0", "windows", "amd64")
+				r1.ReleaseDate = t2
+				r2 := createTestReleaseForUpdate("app", "2.0.0", "windows", "amd64")
+				r2.ReleaseDate = t1
+				r3 := createTestReleaseForUpdate("app", "3.0.0", "windows", "amd64")
+				r3.ReleaseDate = t3
+				return []*models.Release{r1, r2, r3}
+			}(),
+			sortBy:       "release_date",
+			sortOrder:    "asc",
+			wantVersions: []string{"2.0.0", "1.0.0", "3.0.0"},
+		},
+		{
+			name: "release_date descending",
+			releases: func() []*models.Release {
+				r1 := createTestReleaseForUpdate("app", "1.0.0", "windows", "amd64")
+				r1.ReleaseDate = t2
+				r2 := createTestReleaseForUpdate("app", "2.0.0", "windows", "amd64")
+				r2.ReleaseDate = t1
+				r3 := createTestReleaseForUpdate("app", "3.0.0", "windows", "amd64")
+				r3.ReleaseDate = t3
+				return []*models.Release{r1, r2, r3}
+			}(),
+			sortBy:       "release_date",
+			sortOrder:    "desc",
+			wantVersions: []string{"3.0.0", "1.0.0", "2.0.0"},
+		},
+		{
+			name:         "empty slice is unchanged",
+			releases:     []*models.Release{},
+			sortBy:       "version",
+			sortOrder:    "asc",
+			wantVersions: []string{},
+		},
+		{
+			name: "single element is unchanged",
+			releases: func() []*models.Release {
+				return []*models.Release{createTestReleaseForUpdate("app", "1.0.0", "windows", "amd64")}
+			}(),
+			sortBy:       "version",
+			sortOrder:    "asc",
+			wantVersions: []string{"1.0.0"},
+		},
+		{
+			name: "unknown sortBy defaults to release_date ascending",
+			releases: func() []*models.Release {
+				r1 := createTestReleaseForUpdate("app", "1.0.0", "windows", "amd64")
+				r1.ReleaseDate = t2
+				r2 := createTestReleaseForUpdate("app", "2.0.0", "windows", "amd64")
+				r2.ReleaseDate = t1
+				r3 := createTestReleaseForUpdate("app", "3.0.0", "windows", "amd64")
+				r3.ReleaseDate = t3
+				return []*models.Release{r1, r2, r3}
+			}(),
+			sortBy:       "unknown_field",
+			sortOrder:    "asc",
+			wantVersions: []string{"2.0.0", "1.0.0", "3.0.0"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			service.sortReleases(tt.releases, tt.sortBy, tt.sortOrder)
+			gotVersions := make([]string, len(tt.releases))
+			for i, r := range tt.releases {
+				gotVersions[i] = r.Version
+			}
+			assert.Equal(t, tt.wantVersions, gotVersions)
+		})
+	}
+}
+
 // Helper functions
 
 func createTestReleaseForUpdate(appID, version, platform, arch string) *models.Release {
