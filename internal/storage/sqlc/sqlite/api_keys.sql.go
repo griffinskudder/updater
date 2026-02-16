@@ -39,14 +39,17 @@ func (q *Queries) CreateAPIKey(ctx context.Context, arg CreateAPIKeyParams) erro
 	return err
 }
 
-const deleteAPIKey = `-- name: DeleteAPIKey :exec
+const deleteAPIKey = `-- name: DeleteAPIKey :execrows
 DELETE FROM api_keys
 WHERE id = ?
 `
 
-func (q *Queries) DeleteAPIKey(ctx context.Context, id string) error {
-	_, err := q.db.ExecContext(ctx, deleteAPIKey, id)
-	return err
+func (q *Queries) DeleteAPIKey(ctx context.Context, id string) (int64, error) {
+	result, err := q.db.ExecContext(ctx, deleteAPIKey, id)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
 }
 
 const getAPIKeyByHash = `-- name: GetAPIKeyByHash :one
@@ -109,7 +112,7 @@ func (q *Queries) ListAPIKeys(ctx context.Context) ([]ApiKey, error) {
 	return items, nil
 }
 
-const updateAPIKey = `-- name: UpdateAPIKey :exec
+const updateAPIKey = `-- name: UpdateAPIKey :execrows
 UPDATE api_keys
 SET name = ?, permissions = ?, enabled = ?, updated_at = ?
 WHERE id = ?
@@ -123,13 +126,16 @@ type UpdateAPIKeyParams struct {
 	ID          string `json:"id"`
 }
 
-func (q *Queries) UpdateAPIKey(ctx context.Context, arg UpdateAPIKeyParams) error {
-	_, err := q.db.ExecContext(ctx, updateAPIKey,
+func (q *Queries) UpdateAPIKey(ctx context.Context, arg UpdateAPIKeyParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, updateAPIKey,
 		arg.Name,
 		arg.Permissions,
 		arg.Enabled,
 		arg.UpdatedAt,
 		arg.ID,
 	)
-	return err
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
 }

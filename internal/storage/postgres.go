@@ -488,12 +488,37 @@ func (ps *PostgresStorage) ListAPIKeys(ctx context.Context) ([]*models.APIKey, e
 	return nil, ErrNotFound
 }
 
-// UpdateAPIKey is not implemented for PostgresStorage.
+// UpdateAPIKey updates an existing API key's mutable fields.
 func (ps *PostgresStorage) UpdateAPIKey(ctx context.Context, key *models.APIKey) error {
-	return ErrNotFound
+	permsJSON, err := marshalPermissions(key.Permissions)
+	if err != nil {
+		return fmt.Errorf("marshal permissions: %w", err)
+	}
+
+	rows, err := ps.queries.UpdateAPIKey(ctx, sqlcpg.UpdateAPIKeyParams{
+		ID:          key.ID,
+		Name:        key.Name,
+		Permissions: []byte(permsJSON),
+		Enabled:     key.Enabled,
+		UpdatedAt:   timeToPgTimestamptz(time.Now().UTC()),
+	})
+	if err != nil {
+		return fmt.Errorf("update api key: %w", err)
+	}
+	if rows == 0 {
+		return ErrNotFound
+	}
+	return nil
 }
 
-// DeleteAPIKey is not implemented for PostgresStorage.
+// DeleteAPIKey removes an API key by its ID.
 func (ps *PostgresStorage) DeleteAPIKey(ctx context.Context, id string) error {
-	return ErrNotFound
+	rows, err := ps.queries.DeleteAPIKey(ctx, id)
+	if err != nil {
+		return fmt.Errorf("delete api key: %w", err)
+	}
+	if rows == 0 {
+		return ErrNotFound
+	}
+	return nil
 }

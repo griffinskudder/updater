@@ -573,22 +573,30 @@ func (ss *SQLiteStorage) UpdateAPIKey(ctx context.Context, key *models.APIKey) e
 		enabled = 1
 	}
 
-	if err := ss.queries.UpdateAPIKey(ctx, sqlcite.UpdateAPIKeyParams{
+	rows, err := ss.queries.UpdateAPIKey(ctx, sqlcite.UpdateAPIKeyParams{
 		Name:        key.Name,
 		Permissions: perms,
 		Enabled:     enabled,
 		UpdatedAt:   time.Now().UTC().Format(time.RFC3339),
 		ID:          key.ID,
-	}); err != nil {
-		return fmt.Errorf("failed to update api key: %w", err)
+	})
+	if err != nil {
+		return fmt.Errorf("update api key: %w", err)
+	}
+	if rows == 0 {
+		return ErrNotFound
 	}
 	return nil
 }
 
 // DeleteAPIKey removes an API key by its ID.
 func (ss *SQLiteStorage) DeleteAPIKey(ctx context.Context, id string) error {
-	if err := ss.queries.DeleteAPIKey(ctx, id); err != nil {
-		return fmt.Errorf("failed to delete api key %s: %w", id, err)
+	rows, err := ss.queries.DeleteAPIKey(ctx, id)
+	if err != nil {
+		return fmt.Errorf("delete api key: %w", err)
+	}
+	if rows == 0 {
+		return ErrNotFound
 	}
 	return nil
 }

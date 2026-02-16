@@ -12,11 +12,11 @@ SELECT id, name, key_hash, prefix, permissions, enabled, created_at, updated_at
 FROM api_keys
 ORDER BY created_at;
 
--- name: UpdateAPIKey :exec
+-- name: UpdateAPIKey :execrows
 UPDATE api_keys
 SET name = ?, permissions = ?, enabled = ?, updated_at = ?
 WHERE id = ?;
 
--- name: DeleteAPIKey :exec
+-- name: DeleteAPIKey :execrows
 DELETE FROM api_keys
 WHERE id = ?;

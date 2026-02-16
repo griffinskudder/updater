@@ -518,3 +518,16 @@ func TestSQLiteStorage_GetAPIKeyByHash_NotFound(t *testing.T) {
 	_, err := s.GetAPIKeyByHash(context.Background(), "nonexistent")
 	assert.ErrorIs(t, err, ErrNotFound)
 }
+
+func TestSQLiteStorage_UpdateAPIKey_NotFound(t *testing.T) {
+	s := newSQLiteTestStorage(t)
+	key := &models.APIKey{ID: "missing", Name: "x", Permissions: []string{"read"}}
+	err := s.UpdateAPIKey(context.Background(), key)
+	assert.ErrorIs(t, err, ErrNotFound)
+}
+
+func TestSQLiteStorage_DeleteAPIKey_NotFound(t *testing.T) {
+	s := newSQLiteTestStorage(t)
+	err := s.DeleteAPIKey(context.Background(), "missing")
+	assert.ErrorIs(t, err, ErrNotFound)
+}
