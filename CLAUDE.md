@@ -14,10 +14,12 @@ Go-based software update service ("updater") queried by desktop applications to 
 cmd/updater/          - Main application entry point (server initialization)
 internal/
   api/                - HTTP handlers, middleware, routing
+    openapi/          - OpenAPI 3.0.3 specification (openapi.yaml)
   config/             - Configuration loading and validation
   integration/        - Integration tests
   logger/             - Structured logging (log/slog)
   models/             - Data models: application, release, request, response, config
+  ratelimit/          - Rate limiting (token bucket, HTTP middleware, in-memory backend)
   storage/            - Storage providers (JSON, memory, PostgreSQL, SQLite)
     sqlc/             - Generated type-safe database code (postgres/, sqlite/)
   update/             - Business logic: version comparison, release management, errors
@@ -28,6 +30,7 @@ deployments/          - Kubernetes deployment manifests
 docker/               - Nginx, Prometheus, Grafana configuration
 docs/                 - MkDocs documentation site
 examples/             - Example configuration and release data
+pkg/                  - Public packages (currently empty placeholder)
 scripts/              - Build scripts (docker-build.sh)
 ```
 
@@ -36,25 +39,33 @@ scripts/              - Build scripts (docker-build.sh)
 All targets run inside Docker containers. Only Docker is required locally. Targets are split across `make/*.mk` files and auto-discovered by the root Makefile. Run `make help` to see all available targets.
 
 ```bash
-make build          # Build to bin/updater (Docker)
-make run            # Run the application (Docker)
-make test           # Run tests (Docker)
-make fmt            # Format code (Docker)
-make vet            # Vet code (Docker)
-make check          # Format + vet + test (Docker)
-make docs-serve     # MkDocs dev server (http://localhost:8000)
-make docs-build     # Build docs site
-make docs-clean     # Clean docs artifacts
-make sqlc-generate  # Generate Go code from SQL schemas (Docker)
-make sqlc-vet       # Validate SQL schemas and queries (Docker)
-make help           # Show all commands
+make build            # Build to bin/updater (Docker)
+make run              # Run the application (Docker)
+make test             # Run tests (Docker)
+make fmt              # Format code (Docker)
+make vet              # Vet code (Docker)
+make clean            # Remove build artifacts (bin/)
+make tidy             # Tidy go.mod dependencies (Docker)
+make check            # Format + vet + test (Docker)
+make docs-serve       # MkDocs dev server (http://localhost:8000)
+make docs-build       # Build docs site (runs openapi-validate first)
+make docs-clean       # Clean docs artifacts
+make openapi-validate # Validate OpenAPI spec with Redocly CLI (Docker)
+make sqlc-generate    # Generate Go code from SQL schemas (Docker)
+make sqlc-vet         # Validate SQL schemas and queries (Docker)
+make help             # Show all commands
 ```
 
 Docker and observability:
 
 ```bash
 make docker-build     # Build secure Docker image
+make docker-scan      # Scan Docker image for vulnerabilities
+make docker-run       # Run container with security defaults (read-only, no caps)
 make docker-dev       # Start dev environment with Docker Compose
+make docker-prod      # Run container with production config (local testing)
+make docker-clean     # Prune Docker artifacts
+make docker-push      # Build and push image to registry
 make docker-obs-up    # Start full observability stack (Jaeger, Prometheus, Grafana)
 make docker-obs-down  # Stop observability stack
 ```
@@ -85,6 +96,7 @@ Layered architecture, all layers complete:
 - **Storage**: Factory pattern (`storage/factory.go`), interface with `context.Context` support, copy-on-return
 - **Database**: sqlc-generated queries, engine-specific schemas (`postgres/`, `sqlite/`), migration-friendly naming (`001_initial.sql`)
 - **API**: Middleware chain (CORS -> Auth -> Permissions -> Handler), API key auth with role-based permissions
+- **Rate Limiting**: Token bucket algorithm (`internal/ratelimit/`), two-tier limits (anonymous vs authenticated), middleware sets standard `X-RateLimit-*` headers
 - **Errors**: `ServiceError` type in `internal/update/errors.go` maps to HTTP status codes
 - **Logging**: `log/slog` with JSON/text formats, security audit events tagged `"event", "security_audit"`
 - **Testing**: Table-driven, co-located `*_test.go`, memory provider as fast fake, concurrency tests
@@ -106,9 +118,11 @@ See `docs/ARCHITECTURE.md` for full design details and rationales.
 - NEVER: Use CGO. CGO IS NOT GO.
 - ALWAYS: Ensure all tests are passing before finalising the request. This doesn't include docs changes.
 - ALWAYS: Use context7 before using library code.
+- ALWAYS: Update the openapi file when updating the API. This is a manual process, but it is important to keep the openapi file up to date.
 
 ## Gotchas
 
 - **Docker is the only local requirement**: All Make targets run inside Docker containers. No local Go, sqlc, or Python needed.
 - **Makefile requires POSIX shell**: On Windows, GNU Make + Git for Windows (which provides `sh`) are needed. All Makefile commands use POSIX syntax.
 - **Config loading**: Use `-config path/to/config.yaml` CLI flag. Environment variables override file values.
+- **`docs-build` validates OpenAPI**: `make docs-build` runs `make openapi-validate` (Redocly CLI via Docker) before building the MkDocs site. A broken OpenAPI spec will fail the doc build.
