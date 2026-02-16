@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"path/filepath"
+	"sync"
 	"testing"
 	"time"
 	"updater/internal/models"
@@ -462,6 +463,36 @@ func TestJSONStorage_ConcurrentAccess(t *testing.T) {
 	apps, err := storage.Applications(ctx)
 	require.NoError(t, err)
 	assert.Len(t, apps, numGoroutines)
+}
+
+func TestJSONStorage_ConcurrentLoad(t *testing.T) {
+	storage := setupTestStorage(t)
+	defer storage.Close()
+
+	// Expire the cache so all goroutines hit the slow path.
+	storage.mu.Lock()
+	storage.cacheExpiry = time.Time{}
+	storage.mu.Unlock()
+
+	const n = 20
+	errs := make(chan error, n)
+	var wg sync.WaitGroup
+	wg.Add(n)
+	for i := 0; i < n; i++ {
+		go func() {
+			defer wg.Done()
+			errs <- storage.loadData()
+		}()
+	}
+	wg.Wait()
+	close(errs)
+
+	for err := range errs {
+		assert.NoError(t, err)
+	}
+	storage.mu.RLock()
+	assert.NotNil(t, storage.data)
+	storage.mu.RUnlock()
 }
 
 // Helper functions
