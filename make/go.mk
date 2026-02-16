@@ -1,6 +1,6 @@
 ##@ Go Development
 
-.PHONY: build run test cover fmt fmt-check vet clean tidy check
+.PHONY: build run test cover fmt fmt-check vet clean tidy check security
 
 build: ## Build the application to bin/updater
 	$(GO_DOCKER) go build -o $(BIN_DIR)/$(APP_NAME) ./cmd/$(APP_NAME)
@@ -30,3 +30,10 @@ tidy: ## Tidy dependencies
 	$(GO_DOCKER) go mod tidy
 
 check: fmt-check vet test ## Run format check, vet, and test
+
+security: ## Run gosec security scanner
+	docker run --rm \
+		-v "$(CURDIR):/app" \
+		-w /app \
+		securego/gosec:latest \
+		-severity high -confidence medium ./...
