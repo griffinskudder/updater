@@ -481,27 +481,114 @@ func stringToNullString(s string) sql.NullString {
 	return sql.NullString{String: s, Valid: true}
 }
 
-// CreateAPIKey is not implemented for SQLiteStorage.
+// sqliteAPIKeyToModel converts a sqlcite.ApiKey row to a *models.APIKey.
+func sqliteAPIKeyToModel(row sqlcite.ApiKey) (*models.APIKey, error) {
+	perms, err := unmarshalPermissions(row.Permissions)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal permissions for key %s: %w", row.ID, err)
+	}
+
+	createdAt, _ := time.Parse(time.RFC3339, row.CreatedAt)
+	updatedAt, _ := time.Parse(time.RFC3339, row.UpdatedAt)
+
+	return &models.APIKey{
+		ID:          row.ID,
+		Name:        row.Name,
+		KeyHash:     row.KeyHash,
+		Prefix:      row.Prefix,
+		Permissions: perms,
+		Enabled:     row.Enabled != 0,
+		CreatedAt:   createdAt,
+		UpdatedAt:   updatedAt,
+	}, nil
+}
+
+// CreateAPIKey persists a new API key.
 func (ss *SQLiteStorage) CreateAPIKey(ctx context.Context, key *models.APIKey) error {
-	return ErrNotFound
+	perms, err := marshalPermissions(key.Permissions)
+	if err != nil {
+		return fmt.Errorf("failed to marshal permissions: %w", err)
+	}
+
+	var enabled int64
+	if key.Enabled {
+		enabled = 1
+	}
+
+	now := time.Now().UTC().Format(time.RFC3339)
+	if err := ss.queries.CreateAPIKey(ctx, sqlcite.CreateAPIKeyParams{
+		ID:          key.ID,
+		Name:        key.Name,
+		KeyHash:     key.KeyHash,
+		Prefix:      key.Prefix,
+		Permissions: perms,
+		Enabled:     enabled,
+		CreatedAt:   now,
+		UpdatedAt:   now,
+	}); err != nil {
+		return fmt.Errorf("failed to create api key: %w", err)
+	}
+	return nil
 }
 
-// GetAPIKeyByHash is not implemented for SQLiteStorage.
+// GetAPIKeyByHash retrieves an API key by its SHA-256 hash.
 func (ss *SQLiteStorage) GetAPIKeyByHash(ctx context.Context, hash string) (*models.APIKey, error) {
-	return nil, ErrNotFound
+	row, err := ss.queries.GetAPIKeyByHash(ctx, hash)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrNotFound
+		}
+		return nil, fmt.Errorf("failed to get api key: %w", err)
+	}
+	return sqliteAPIKeyToModel(row)
 }
 
-// ListAPIKeys is not implemented for SQLiteStorage.
+// ListAPIKeys returns all stored API keys.
 func (ss *SQLiteStorage) ListAPIKeys(ctx context.Context) ([]*models.APIKey, error) {
-	return nil, ErrNotFound
+	rows, err := ss.queries.ListAPIKeys(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list api keys: %w", err)
+	}
+
+	keys := make([]*models.APIKey, 0, len(rows))
+	for _, row := range rows {
+		key, err := sqliteAPIKeyToModel(row)
+		if err != nil {
+			return nil, fmt.Errorf("failed to convert api key %s: %w", row.ID, err)
+		}
+		keys = append(keys, key)
+	}
+	return keys, nil
 }
 
-// UpdateAPIKey is not implemented for SQLiteStorage.
+// UpdateAPIKey updates an existing API key's mutable fields.
 func (ss *SQLiteStorage) UpdateAPIKey(ctx context.Context, key *models.APIKey) error {
-	return ErrNotFound
+	perms, err := marshalPermissions(key.Permissions)
+	if err != nil {
+		return fmt.Errorf("failed to marshal permissions: %w", err)
+	}
+
+	var enabled int64
+	if key.Enabled {
+		enabled = 1
+	}
+
+	if err := ss.queries.UpdateAPIKey(ctx, sqlcite.UpdateAPIKeyParams{
+		Name:        key.Name,
+		Permissions: perms,
+		Enabled:     enabled,
+		UpdatedAt:   time.Now().UTC().Format(time.RFC3339),
+		ID:          key.ID,
+	}); err != nil {
+		return fmt.Errorf("failed to update api key: %w", err)
+	}
+	return nil
 }
 
-// DeleteAPIKey is not implemented for SQLiteStorage.
+// DeleteAPIKey removes an API key by its ID.
 func (ss *SQLiteStorage) DeleteAPIKey(ctx context.Context, id string) error {
-	return ErrNotFound
+	if err := ss.queries.DeleteAPIKey(ctx, id); err != nil {
+		return fmt.Errorf("failed to delete api key %s: %w", id, err)
+	}
+	return nil
 }

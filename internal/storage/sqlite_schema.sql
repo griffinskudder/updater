@@ -40,3 +40,16 @@ CREATE INDEX IF NOT EXISTS idx_releases_required ON releases(required);
 
 -- Note: CREATE TRIGGER IF NOT EXISTS is not supported in SQLite.
 -- The trigger is created only if it doesn't already exist using a workaround.
+
+CREATE TABLE IF NOT EXISTS api_keys (
+    id          TEXT NOT NULL PRIMARY KEY,
+    name        TEXT NOT NULL,
+    key_hash    TEXT NOT NULL UNIQUE,
+    prefix      TEXT NOT NULL,
+    permissions TEXT NOT NULL DEFAULT '[]',
+    enabled     INTEGER NOT NULL DEFAULT 1,
+    created_at  TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at  TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_api_keys_hash ON api_keys(key_hash);
