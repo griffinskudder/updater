@@ -4,7 +4,7 @@
 # =============================================================================
 # Build Stage
 # =============================================================================
-FROM golang:1.26-alpine AS builder
+FROM golang:1.25-alpine AS builder
 
 # Security: Create non-root user for build process
 RUN adduser -D -s /bin/sh -u 1001 appuser
@@ -57,7 +57,8 @@ RUN CGO_ENABLED=0 \
     ./cmd/healthcheck
 
 # Verify the binary
-RUN ldd updater 2>&1 | grep -q "not a dynamic executable" || echo "Binary is statically linked"
+RUN ldd updater 2>&1 | grep -q "not a dynamic executable" || \
+  (echo "FAILED: binary is not statically linked" && exit 1)
 
 # =============================================================================
 # Runtime Stage - Distroless (OS-less)
