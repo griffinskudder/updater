@@ -102,5 +102,7 @@ LABEL \
 # Security: Use exec form for better signal handling
 ENTRYPOINT ["/usr/local/bin/updater"]
 
-# Default command (can be overridden)
-CMD []
+# Default command: load config from the standard container path.
+# Both docker-compose.yml and docker-compose.observability.yml mount their
+# respective config files to /app/config.yaml.
+CMD ["-config", "/app/config.yaml"]
