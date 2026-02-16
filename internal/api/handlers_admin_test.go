@@ -79,6 +79,8 @@ func TestAdminLogin_POST_ValidKey_Redirects(t *testing.T) {
 		if c.Name == "admin_session" {
 			assert.Equal(t, "admin-key", c.Value)
 			assert.True(t, c.HttpOnly)
+			assert.True(t, c.Secure, "login cookie must carry Secure flag")
+			assert.Equal(t, http.SameSiteStrictMode, c.SameSite, "login cookie must be SameSite=Strict")
 			found = true
 		}
 	}
@@ -108,6 +110,9 @@ func TestAdminLogout_ClearsCookieAndRedirects(t *testing.T) {
 	for _, c := range rec.Result().Cookies() {
 		if c.Name == "admin_session" {
 			assert.Equal(t, -1, c.MaxAge)
+			assert.True(t, c.HttpOnly, "logout cookie must be HttpOnly")
+			assert.True(t, c.Secure, "logout cookie must carry Secure flag")
+			assert.Equal(t, http.SameSiteStrictMode, c.SameSite, "logout cookie must be SameSite=Strict")
 		}
 	}
 }
@@ -290,6 +295,29 @@ func TestAdminDeleteRelease_Success_ReturnsOK(t *testing.T) {
 	rec := serveWithVars(h.AdminDeleteRelease, vars, req)
 	assert.Equal(t, http.StatusOK, rec.Code)
 	svc.AssertExpectations(t)
+}
+
+// addFlash
+
+func TestAddFlash_EncodesSpecialCharacters(t *testing.T) {
+	// A message containing URL-significant characters must not inject extra params.
+	result := addFlash("/admin/apps", "error: path=foo&admin=true", "error")
+	u, err := url.Parse(result)
+	require.NoError(t, err)
+	assert.Equal(t, "error: path=foo&admin=true", u.Query().Get("flash"),
+		"flash message must be fully decoded back to the original string")
+	assert.Equal(t, "error", u.Query().Get("flash_type"))
+	assert.Len(t, u.Query(), 2, "must have exactly 2 query params — no injection")
+}
+
+func TestAddFlash_WithExistingQueryString(t *testing.T) {
+	result := addFlash("/admin/apps?page=2", "saved", "success")
+	u, err := url.Parse(result)
+	require.NoError(t, err)
+	assert.Equal(t, "saved", u.Query().Get("flash"))
+	assert.Equal(t, "2", u.Query().Get("page"), "existing query params must be preserved")
+	assert.Equal(t, "success", u.Query().Get("flash_type"))
+	assert.Len(t, u.Query(), 3, "must have flash, flash_type, and page — no more")
 }
 
 // Routes

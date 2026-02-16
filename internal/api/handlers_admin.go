@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"strings"
 	"updater/internal/models"
 
@@ -112,12 +113,17 @@ func flashFromQuery(r *http.Request) *adminFlashData {
 }
 
 // addFlash appends flash query params to a redirect URL.
+// msg and flashType are URL-encoded so special characters cannot inject extra parameters.
 func addFlash(base, msg, flashType string) string {
-	sep := "?"
-	if strings.Contains(base, "?") {
-		sep = "&"
+	u, err := url.Parse(base)
+	if err != nil {
+		return base
 	}
-	return base + sep + "flash=" + msg + "&flash_type=" + flashType
+	q := u.Query()
+	q.Set("flash", msg)
+	q.Set("flash_type", flashType)
+	u.RawQuery = q.Encode()
+	return u.String()
 }
 
 // adminPathVar extracts a named path variable from the request using gorilla/mux.
@@ -148,6 +154,7 @@ func (h *Handlers) AdminLogin(w http.ResponseWriter, r *http.Request) {
 		Value:    key,
 		Path:     "/admin",
 		HttpOnly: true,
+		Secure:   true,
 		SameSite: http.SameSiteStrictMode,
 	})
 	http.Redirect(w, r, "/admin/applications", http.StatusSeeOther)
@@ -156,10 +163,13 @@ func (h *Handlers) AdminLogin(w http.ResponseWriter, r *http.Request) {
 // AdminLogout clears the session cookie and redirects to login.
 func (h *Handlers) AdminLogout(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
-		Name:   "admin_session",
-		Value:  "",
-		Path:   "/admin",
-		MaxAge: -1,
+		Name:     "admin_session",
+		Value:    "",
+		Path:     "/admin",
+		MaxAge:   -1,
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteStrictMode,
 	})
 	http.Redirect(w, r, "/admin/login", http.StatusSeeOther)
 }
