@@ -73,28 +73,49 @@ func (m *MockUpdateService) RegisterRelease(ctx context.Context, req *models.Reg
 	return args.Get(0).(*models.RegisterReleaseResponse), args.Error(1)
 }
 
-func (m *MockUpdateService) CreateApplication(_ context.Context, _ *models.CreateApplicationRequest) (*models.CreateApplicationResponse, error) {
-	return nil, nil
+func (m *MockUpdateService) CreateApplication(ctx context.Context, req *models.CreateApplicationRequest) (*models.CreateApplicationResponse, error) {
+	args := m.Called(ctx, req)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*models.CreateApplicationResponse), args.Error(1)
 }
 
-func (m *MockUpdateService) GetApplication(_ context.Context, _ string) (*models.ApplicationInfoResponse, error) {
-	return nil, nil
+func (m *MockUpdateService) GetApplication(ctx context.Context, id string) (*models.ApplicationInfoResponse, error) {
+	args := m.Called(ctx, id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*models.ApplicationInfoResponse), args.Error(1)
 }
 
-func (m *MockUpdateService) ListApplications(_ context.Context, _, _ int) (*models.ListApplicationsResponse, error) {
-	return nil, nil
+func (m *MockUpdateService) ListApplications(ctx context.Context, limit, offset int) (*models.ListApplicationsResponse, error) {
+	args := m.Called(ctx, limit, offset)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*models.ListApplicationsResponse), args.Error(1)
 }
 
-func (m *MockUpdateService) UpdateApplication(_ context.Context, _ string, _ *models.UpdateApplicationRequest) (*models.UpdateApplicationResponse, error) {
-	return nil, nil
+func (m *MockUpdateService) UpdateApplication(ctx context.Context, id string, req *models.UpdateApplicationRequest) (*models.UpdateApplicationResponse, error) {
+	args := m.Called(ctx, id, req)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*models.UpdateApplicationResponse), args.Error(1)
 }
 
-func (m *MockUpdateService) DeleteApplication(_ context.Context, _ string) error {
-	return nil
+func (m *MockUpdateService) DeleteApplication(ctx context.Context, id string) error {
+	args := m.Called(ctx, id)
+	return args.Error(0)
 }
 
-func (m *MockUpdateService) DeleteRelease(_ context.Context, _, _, _, _ string) (*models.DeleteReleaseResponse, error) {
-	return nil, nil
+func (m *MockUpdateService) DeleteRelease(ctx context.Context, appID, version, platform, arch string) (*models.DeleteReleaseResponse, error) {
+	args := m.Called(ctx, appID, version, platform, arch)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*models.DeleteReleaseResponse), args.Error(1)
 }
 
 func TestNewHandlers(t *testing.T) {

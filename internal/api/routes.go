@@ -56,6 +56,27 @@ func SetupRoutes(handlers *Handlers, config *models.Config, opts ...RouteOption)
 	api.HandleFunc("/openapi.yaml", handlers.ServeOpenAPISpec).Methods("GET")
 	api.HandleFunc("/docs", handlers.ServeSwaggerUI).Methods("GET")
 
+	// Admin UI — cookie-authenticated; middleware skips /login and /logout internally.
+	adminRouter := router.PathPrefix("/admin").Subrouter()
+	adminRouter.Use(adminSessionMiddleware(config.Security))
+	adminRouter.HandleFunc("/login", handlers.AdminLogin).Methods("GET", "POST")
+	adminRouter.HandleFunc("/logout", handlers.AdminLogout).Methods("POST")
+	adminRouter.HandleFunc("", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/admin/applications", http.StatusSeeOther)
+	}).Methods("GET")
+	adminRouter.HandleFunc("/health", handlers.AdminHealth).Methods("GET")
+	adminRouter.HandleFunc("/applications", handlers.AdminListApplications).Methods("GET")
+	adminRouter.HandleFunc("/applications/new", handlers.AdminNewApplicationForm).Methods("GET")
+	adminRouter.HandleFunc("/applications", handlers.AdminCreateApplication).Methods("POST")
+	adminRouter.HandleFunc("/applications/{app_id}", handlers.AdminGetApplication).Methods("GET")
+	adminRouter.HandleFunc("/applications/{app_id}/edit", handlers.AdminEditApplicationForm).Methods("GET")
+	adminRouter.HandleFunc("/applications/{app_id}/edit", handlers.AdminUpdateApplication).Methods("POST")
+	adminRouter.HandleFunc("/applications/{app_id}", handlers.AdminDeleteApplication).Methods("DELETE")
+	adminRouter.HandleFunc("/applications/{app_id}/releases/new", handlers.AdminNewReleaseForm).Methods("GET")
+	adminRouter.HandleFunc("/applications/{app_id}/releases", handlers.AdminCreateRelease).Methods("POST")
+	adminRouter.HandleFunc("/applications/{app_id}/releases/{version}/{platform}/{arch}",
+		handlers.AdminDeleteRelease).Methods("DELETE")
+
 	// Health check endpoint (public with optional enhanced details for authenticated users)
 	router.HandleFunc("/health", handlers.HealthCheck).Methods("GET")
 	router.HandleFunc("/api/v1/health", handlers.HealthCheck).Methods("GET")
