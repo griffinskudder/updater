@@ -86,18 +86,11 @@ type DatabaseConfig struct {
 }
 
 type SecurityConfig struct {
-	APIKeys        []APIKey        `yaml:"api_keys" json:"api_keys"`
+	BootstrapKey   string          `yaml:"bootstrap_key" json:"bootstrap_key"`
 	RateLimit      RateLimitConfig `yaml:"rate_limit" json:"rate_limit"`
 	JWTSecret      string          `yaml:"jwt_secret" json:"jwt_secret"`
 	EnableAuth     bool            `yaml:"enable_auth" json:"enable_auth"`
 	TrustedProxies []string        `yaml:"trusted_proxies" json:"trusted_proxies"`
-}
-
-type APIKey struct {
-	Key         string   `yaml:"key" json:"key"`
-	Name        string   `yaml:"name" json:"name"`
-	Permissions []string `yaml:"permissions" json:"permissions"`
-	Enabled     bool     `yaml:"enabled" json:"enabled"`
 }
 
 type RateLimitConfig struct {
@@ -208,7 +201,6 @@ func NewDefaultConfig() *Config {
 			Options: make(map[string]string),
 		},
 		Security: SecurityConfig{
-			APIKeys: []APIKey{},
 			RateLimit: RateLimitConfig{
 				Enabled:                        true,
 				RequestsPerMinute:              60,
@@ -365,15 +357,6 @@ func (sec *SecurityConfig) Validate() error {
 		}
 	}
 
-	for _, apiKey := range sec.APIKeys {
-		if apiKey.Key == "" {
-			return errors.New("API key cannot be empty")
-		}
-		if apiKey.Name == "" {
-			return errors.New("API key name cannot be empty")
-		}
-	}
-
 	return nil
 }
 
@@ -491,14 +474,3 @@ func (oc *ObservabilityConfig) Validate() error {
 	return nil
 }
 
-func (ak *APIKey) HasPermission(permission string) bool {
-	if !ak.Enabled {
-		return false
-	}
-	for _, p := range ak.Permissions {
-		if p == permission || p == "*" {
-			return true
-		}
-	}
-	return false
-}
