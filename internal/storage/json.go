@@ -63,7 +63,7 @@ func NewJSONStorage(config Config) (*JSONStorage, error) {
 func (j *JSONStorage) ensureFileExists() error {
 	if _, err := os.Stat(j.filePath); os.IsNotExist(err) {
 		// Create directory if it doesn't exist
-		if err := os.MkdirAll(filepath.Dir(j.filePath), 0644); err != nil {
+		if err := os.MkdirAll(filepath.Dir(j.filePath), 0700); err != nil {
 			return fmt.Errorf("failed to create directory: %w", err)
 		}
 
@@ -132,7 +132,7 @@ func (j *JSONStorage) saveData(data *JSONData) error {
 		return fmt.Errorf("failed to marshal JSON: %w", err)
 	}
 
-	if err := os.WriteFile(j.filePath, fileData, 0644); err != nil {
+	if err := os.WriteFile(j.filePath, fileData, 0600); err != nil {
 		return fmt.Errorf("failed to write file: %w", err)
 	}
 
