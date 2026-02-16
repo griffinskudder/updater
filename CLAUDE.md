@@ -115,7 +115,7 @@ See `docs/ARCHITECTURE.md` for full design details and rationales.
 - NEVER: Use emojis.
 - NEVER: Link to files outside the docs directory in documentation inside the docs directory.
 - ALWAYS: Generate code after modifying sql files.
-- NEVER: Use CGO. CGO IS NOT GO.
+- NEVER: Use CGO. CGO IS NOT GO. EXCEPTION: Race detector requires CGO, but it is only used in tests and CI.
 - ALWAYS: Ensure all tests are passing before finalising the request. This doesn't include docs changes.
 - ALWAYS: Use context7 before using library code.
 - ALWAYS: Update the openapi file when updating the API. This is a manual process, but it is important to keep the openapi file up to date.
