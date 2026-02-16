@@ -44,6 +44,22 @@ type Storage interface {
 
 	// Close closes the storage connection and cleans up resources
 	Close() error
+
+	// CreateAPIKey stores a new API key.
+	CreateAPIKey(ctx context.Context, key *models.APIKey) error
+
+	// GetAPIKeyByHash retrieves an API key by its SHA-256 hash.
+	// Returns storage.ErrNotFound if no matching key exists.
+	GetAPIKeyByHash(ctx context.Context, hash string) (*models.APIKey, error)
+
+	// ListAPIKeys returns all API keys (both enabled and disabled).
+	ListAPIKeys(ctx context.Context) ([]*models.APIKey, error)
+
+	// UpdateAPIKey replaces the mutable fields of an existing API key.
+	UpdateAPIKey(ctx context.Context, key *models.APIKey) error
+
+	// DeleteAPIKey permanently removes an API key by ID.
+	DeleteAPIKey(ctx context.Context, id string) error
 }
 
 // Config holds configuration for storage backends
