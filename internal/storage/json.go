@@ -29,6 +29,7 @@ type JSONStorage struct {
 type JSONData struct {
 	Applications []*models.Application `json:"applications"`
 	Releases     []*models.Release     `json:"releases"`
+	APIKeys      []*models.APIKey      `json:"api_keys"`
 	LastUpdated  time.Time             `json:"last_updated"`
 }
 
@@ -71,6 +72,7 @@ func (j *JSONStorage) ensureFileExists() error {
 		emptyData := &JSONData{
 			Applications: []*models.Application{},
 			Releases:     []*models.Release{},
+			APIKeys:      []*models.APIKey{},
 			LastUpdated:  time.Now(),
 		}
 
@@ -419,27 +421,90 @@ func (j *JSONStorage) Close() error {
 	return nil
 }
 
-// CreateAPIKey is not implemented for JSONStorage.
+// CreateAPIKey stores a new API key in the JSON file.
 func (j *JSONStorage) CreateAPIKey(ctx context.Context, key *models.APIKey) error {
-	return ErrNotFound
+	if err := j.loadData(); err != nil {
+		return err
+	}
+	j.mu.Lock()
+	defer j.mu.Unlock()
+	c := *key
+	perms := make([]string, len(key.Permissions))
+	copy(perms, key.Permissions)
+	c.Permissions = perms
+	j.data.APIKeys = append(j.data.APIKeys, &c)
+	return j.saveData(j.data)
 }
 
-// GetAPIKeyByHash is not implemented for JSONStorage.
+// GetAPIKeyByHash retrieves an API key by its SHA-256 hash.
 func (j *JSONStorage) GetAPIKeyByHash(ctx context.Context, hash string) (*models.APIKey, error) {
+	if err := j.loadData(); err != nil {
+		return nil, err
+	}
+	j.mu.RLock()
+	defer j.mu.RUnlock()
+	for _, k := range j.data.APIKeys {
+		if k.KeyHash == hash {
+			c := *k
+			perms := make([]string, len(k.Permissions))
+			copy(perms, k.Permissions)
+			c.Permissions = perms
+			return &c, nil
+		}
+	}
 	return nil, ErrNotFound
 }
 
-// ListAPIKeys is not implemented for JSONStorage.
+// ListAPIKeys returns all stored API keys.
 func (j *JSONStorage) ListAPIKeys(ctx context.Context) ([]*models.APIKey, error) {
-	return nil, ErrNotFound
+	if err := j.loadData(); err != nil {
+		return nil, err
+	}
+	j.mu.RLock()
+	defer j.mu.RUnlock()
+	out := make([]*models.APIKey, len(j.data.APIKeys))
+	for i, k := range j.data.APIKeys {
+		c := *k
+		perms := make([]string, len(k.Permissions))
+		copy(perms, k.Permissions)
+		c.Permissions = perms
+		out[i] = &c
+	}
+	return out, nil
 }
 
-// UpdateAPIKey is not implemented for JSONStorage.
+// UpdateAPIKey replaces a stored API key matched by ID.
 func (j *JSONStorage) UpdateAPIKey(ctx context.Context, key *models.APIKey) error {
+	if err := j.loadData(); err != nil {
+		return err
+	}
+	j.mu.Lock()
+	defer j.mu.Unlock()
+	for i, k := range j.data.APIKeys {
+		if k.ID == key.ID {
+			c := *key
+			perms := make([]string, len(key.Permissions))
+			copy(perms, key.Permissions)
+			c.Permissions = perms
+			j.data.APIKeys[i] = &c
+			return j.saveData(j.data)
+		}
+	}
 	return ErrNotFound
 }
 
-// DeleteAPIKey is not implemented for JSONStorage.
+// DeleteAPIKey removes a stored API key by ID.
 func (j *JSONStorage) DeleteAPIKey(ctx context.Context, id string) error {
+	if err := j.loadData(); err != nil {
+		return err
+	}
+	j.mu.Lock()
+	defer j.mu.Unlock()
+	for i, k := range j.data.APIKeys {
+		if k.ID == id {
+			j.data.APIKeys = append(j.data.APIKeys[:i], j.data.APIKeys[i+1:]...)
+			return j.saveData(j.data)
+		}
+	}
 	return ErrNotFound
 }

@@ -561,3 +561,43 @@ func createTestRelease(appID, version, platform, arch string) *models.Release {
 
 	return release
 }
+
+func TestJSONStorage_APIKeyCRUD(t *testing.T) {
+	dir := t.TempDir()
+	s, err := NewJSONStorage(Config{Path: filepath.Join(dir, "data.json")})
+	require.NoError(t, err)
+	ctx := context.Background()
+
+	raw, err := models.GenerateAPIKey()
+	require.NoError(t, err)
+	key := models.NewAPIKey(models.NewKeyID(), "ci", raw, []string{"write"})
+
+	require.NoError(t, s.CreateAPIKey(ctx, key))
+
+	got, err := s.GetAPIKeyByHash(ctx, key.KeyHash)
+	require.NoError(t, err)
+	assert.Equal(t, "ci", got.Name)
+	assert.Equal(t, []string{"write"}, got.Permissions)
+
+	keys, err := s.ListAPIKeys(ctx)
+	require.NoError(t, err)
+	assert.Len(t, keys, 1)
+
+	key.Name = "ci-updated"
+	require.NoError(t, s.UpdateAPIKey(ctx, key))
+	got, err = s.GetAPIKeyByHash(ctx, key.KeyHash)
+	require.NoError(t, err)
+	assert.Equal(t, "ci-updated", got.Name)
+
+	require.NoError(t, s.DeleteAPIKey(ctx, key.ID))
+	_, err = s.GetAPIKeyByHash(ctx, key.KeyHash)
+	assert.ErrorIs(t, err, ErrNotFound)
+}
+
+func TestJSONStorage_GetAPIKeyByHash_NotFound(t *testing.T) {
+	dir := t.TempDir()
+	s, err := NewJSONStorage(Config{Path: filepath.Join(dir, "data.json")})
+	require.NoError(t, err)
+	_, err = s.GetAPIKeyByHash(context.Background(), "nonexistent")
+	assert.ErrorIs(t, err, ErrNotFound)
+}
