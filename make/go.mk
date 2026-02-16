@@ -1,6 +1,6 @@
 ##@ Go Development
 
-.PHONY: build run test integration-test cover fmt fmt-check vet clean tidy check security
+.PHONY: build run test integration-test cover fmt fmt-check vet clean tidy check security secrets
 
 build: ## Build the application to bin/updater
 	$(GO_DOCKER) go build -o $(BIN_DIR)/$(APP_NAME) ./cmd/$(APP_NAME)
@@ -40,3 +40,9 @@ security: ## Run gosec security scanner
 		-w /app \
 		securego/gosec:latest \
 		-severity high -confidence medium ./...
+
+secrets: ## Scan for committed secrets with gitleaks
+	docker run --rm \
+		-v "$(CURDIR):/repo" \
+		zricethezav/gitleaks:latest \
+		detect --source /repo --config /repo/.gitleaks.toml

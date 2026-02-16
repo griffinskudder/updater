@@ -56,6 +56,11 @@ jobs:
       - name: Enforce security threshold
         run: gosec -severity high -confidence medium ./...
 
+      - name: Scan for secrets
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   race:
     runs-on: ubuntu-latest
     permissions:

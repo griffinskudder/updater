@@ -1,0 +1,6 @@
+[allowlist]
+description = "False positives: documentation curl examples and unit test fixtures"
+commits = [
+    "bb48a369e13ba5a4764d99032f769eae6335b0ff",
+    "1693e1be09326f4a4386dc200b2ed91588268c30",
+]

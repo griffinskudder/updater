@@ -45,6 +45,7 @@ make run              # Run the application (Docker)
 make test             # Run tests (Docker)
 make integration-test # Run integration tests with -tags integration (Docker)
 make security         # Run gosec security scanner (high severity, medium confidence)
+make secrets          # Scan git history for committed secrets with gitleaks
 make fmt              # Format code (Docker)
 make vet              # Vet code (Docker)
 make clean            # Remove build artifacts (bin/)
