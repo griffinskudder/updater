@@ -316,6 +316,8 @@ func TestAddFlash_WithExistingQueryString(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "saved", u.Query().Get("flash"))
 	assert.Equal(t, "2", u.Query().Get("page"), "existing query params must be preserved")
+	assert.Equal(t, "success", u.Query().Get("flash_type"))
+	assert.Len(t, u.Query(), 3, "must have flash, flash_type, and page — no more")
 }
 
 // Routes
