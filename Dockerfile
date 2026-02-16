@@ -19,6 +19,8 @@ RUN apk add --no-cache \
 # Set working directory
 WORKDIR /build
 
+RUN mkdir -p /app/data && chown appuser:appuser /app/data
+
 # Security: Change ownership of build directory
 RUN chown appuser:appuser /build
 USER appuser
@@ -44,6 +46,16 @@ RUN CGO_ENABLED=0 \
     -o updater \
     ./cmd/updater
 
+# Build the health check binary (used by Docker Compose / distroless HEALTHCHECK)
+RUN CGO_ENABLED=0 \
+    GOOS=linux \
+    GOARCH=amd64 \
+    go build \
+    -a \
+    -ldflags='-w -s -extldflags "-static"' \
+    -o healthcheck \
+    ./cmd/healthcheck
+
 # Verify the binary
 RUN ldd updater 2>&1 | grep -q "not a dynamic executable" || echo "Binary is statically linked"
 
@@ -62,8 +74,11 @@ USER 65532:65532
 COPY --from=builder --chown=65532:65532 /usr/share/zoneinfo /usr/share/zoneinfo
 COPY --from=builder --chown=65532:65532 /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
-# Copy the statically linked binary
+# Copy the statically linked binary and health check helper
 COPY --from=builder --chown=65532:65532 /build/updater /usr/local/bin/updater
+COPY --from=builder --chown=65532:65532 /build/healthcheck /usr/local/bin/healthcheck
+
+COPY --from=builder --chown=65532:65532 /app /app
 
 # Set working directory
 WORKDIR /app
@@ -83,10 +98,6 @@ LABEL \
     security.scan.enabled="true" \
     security.nonroot="true" \
     security.readonly="true"
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD ["/usr/local/bin/updater", "-health-check"] || exit 1
 
 # Security: Use exec form for better signal handling
 ENTRYPOINT ["/usr/local/bin/updater"]

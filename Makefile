@@ -6,12 +6,6 @@
 # Prevent MSYS/Git Bash path conversion (Windows)
 export MSYS_NO_PATHCONV := 1
 
-# Guard: require Docker
-DOCKER := $(shell command -v docker 2>/dev/null)
-ifndef DOCKER
-    $(error Docker is required but not found. Install Docker to use this Makefile)
-endif
-
 # Shared variables
 APP_NAME   := updater
 BIN_DIR    := bin

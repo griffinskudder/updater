@@ -48,7 +48,7 @@ docker-prod: ## Run with production configuration (for testing)
 
 docker-obs-up: ## Start observability stack
 	@echo "Starting observability stack..."
-	docker compose -f docker-compose.yml -f docker-compose.observability.yml up -d
+	docker compose -f docker-compose.yml -f docker-compose.observability.yml up -d --build
 	@echo "Services:"
 	@echo "  Updater:    http://localhost:8080"
 	@echo "  Metrics:    http://localhost:9090/metrics"
