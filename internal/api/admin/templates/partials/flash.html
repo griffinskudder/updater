@@ -1,0 +1,7 @@
+{{define "flash"}}
+<div class="rounded px-4 py-3 mb-4
+  {{if eq .Type "success"}}bg-green-100 text-green-800 border border-green-300
+  {{else}}bg-red-100 text-red-800 border border-red-300{{end}}">
+  {{.Message}}
+</div>
+{{end}}

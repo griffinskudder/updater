@@ -1,0 +1,211 @@
+{{define "application"}}
+<!DOCTYPE html>
+<html lang="en">
+<head><title>{{.Application.Name}} - Updater Admin</title>{{template "head" .}}</head>
+<body class="bg-gray-50">
+{{template "nav" .}}
+<main class="max-w-6xl mx-auto p-6">
+  <div class="flex items-center justify-between mb-4">
+    <div>
+      <a href="/admin/applications" class="text-blue-600 hover:underline text-sm">← Applications</a>
+      <h1 class="text-2xl font-bold mt-1">{{.Application.Name}}</h1>
+      <p class="text-gray-500 text-sm">{{.Application.ID}}</p>
+    </div>
+    <div class="flex gap-2">
+      <a href="/admin/applications/{{.Application.ID}}/edit"
+         class="border px-4 py-2 rounded hover:bg-gray-50">Edit</a>
+      <button
+        hx-delete="/admin/applications/{{.Application.ID}}"
+        hx-confirm="Delete {{.Application.Name}}? All releases must be removed first."
+        hx-target="body"
+        hx-push-url="/admin/applications"
+        class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+        Delete
+      </button>
+    </div>
+  </div>
+
+  {{if .Flash}}{{template "flash" .Flash}}{{end}}
+
+  {{if .Application.Description}}
+  <p class="text-gray-600 mb-6">{{.Application.Description}}</p>
+  {{end}}
+
+  {{if .Application.Stats}}
+  <div class="grid grid-cols-3 gap-4 mb-6">
+    <div class="bg-white rounded shadow p-4">
+      <p class="text-gray-500 text-sm">Total Releases</p>
+      <p class="text-2xl font-bold">{{.Application.Stats.TotalReleases}}</p>
+    </div>
+    <div class="bg-white rounded shadow p-4">
+      <p class="text-gray-500 text-sm">Latest Version</p>
+      <p class="text-2xl font-bold">{{.Application.Stats.LatestVersion}}</p>
+    </div>
+    <div class="bg-white rounded shadow p-4">
+      <p class="text-gray-500 text-sm">Platforms</p>
+      <p class="text-2xl font-bold">{{.Application.Stats.PlatformCount}}</p>
+    </div>
+  </div>
+  {{end}}
+
+  <div class="flex items-center justify-between mb-3">
+    <h2 class="text-xl font-semibold">Releases</h2>
+    <a href="/admin/applications/{{.Application.ID}}/releases/new"
+       class="bg-green-600 text-white px-4 py-2 rounded text-sm hover:bg-green-700">
+      Register Release
+    </a>
+  </div>
+
+  <div class="bg-white rounded shadow overflow-hidden">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-100 text-left">
+        <tr>
+          <th class="px-4 py-3">Version</th>
+          <th class="px-4 py-3">Platform</th>
+          <th class="px-4 py-3">Arch</th>
+          <th class="px-4 py-3">Required</th>
+          <th class="px-4 py-3">Released</th>
+          <th class="px-4 py-3"></th>
+        </tr>
+      </thead>
+      <tbody id="release-list" class="divide-y">
+        {{range .Releases.Releases}}
+          {{template "release-row" .}}
+        {{else}}
+        <tr><td colspan="6" class="px-4 py-6 text-center text-gray-400">No releases yet.</td></tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+</main>
+</body>
+</html>
+{{end}}
+
+{{define "edit-application-form"}}
+<!DOCTYPE html>
+<html lang="en">
+<head><title>Edit {{.Application.Name}} - Updater Admin</title>{{template "head" .}}</head>
+<body class="bg-gray-50">
+{{template "nav" .}}
+<main class="max-w-2xl mx-auto p-6">
+  <a href="/admin/applications/{{.Application.ID}}" class="text-blue-600 hover:underline text-sm">
+    ← {{.Application.Name}}
+  </a>
+  <h1 class="text-2xl font-bold mt-2 mb-6">Edit Application</h1>
+  {{if .Error}}<p class="text-red-600 mb-4">{{.Error}}</p>{{end}}
+  <form method="POST" action="/admin/applications/{{.Application.ID}}/edit"
+        class="bg-white rounded shadow p-6 space-y-4">
+    <div>
+      <label class="block font-medium mb-1">Name <span class="text-red-500">*</span></label>
+      <input type="text" name="name" value="{{.Application.Name}}"
+             class="w-full border rounded px-3 py-2" required>
+    </div>
+    <div>
+      <label class="block font-medium mb-1">Description</label>
+      <input type="text" name="description" value="{{.Application.Description}}"
+             class="w-full border rounded px-3 py-2">
+    </div>
+    <div>
+      <label class="block font-medium mb-1">Platforms <span class="text-red-500">*</span></label>
+      <div class="flex gap-4 flex-wrap">
+        {{range $p := .Platforms}}
+        <label class="flex items-center gap-1">
+          <input type="checkbox" name="platforms" value="{{$p}}"
+                 {{if hasPlatform $.Application.Platforms $p}}checked{{end}}> {{$p}}
+        </label>
+        {{end}}
+      </div>
+    </div>
+    <div class="flex gap-3">
+      <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
+        Save
+      </button>
+      <a href="/admin/applications/{{.Application.ID}}"
+         class="px-6 py-2 border rounded hover:bg-gray-50">Cancel</a>
+    </div>
+  </form>
+</main>
+</body>
+</html>
+{{end}}
+
+{{define "new-release-form"}}
+<!DOCTYPE html>
+<html lang="en">
+<head><title>New Release - Updater Admin</title>{{template "head" .}}</head>
+<body class="bg-gray-50">
+{{template "nav" .}}
+<main class="max-w-2xl mx-auto p-6">
+  <a href="/admin/applications/{{.AppID}}" class="text-blue-600 hover:underline text-sm">
+    ← Back to application
+  </a>
+  <h1 class="text-2xl font-bold mt-2 mb-6">Register Release for {{.AppID}}</h1>
+  {{if .Error}}<p class="text-red-600 mb-4">{{.Error}}</p>{{end}}
+  <form method="POST" action="/admin/applications/{{.AppID}}/releases"
+        class="bg-white rounded shadow p-6 space-y-4">
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="block font-medium mb-1">Version <span class="text-red-500">*</span></label>
+        <input type="text" name="version" class="w-full border rounded px-3 py-2"
+               placeholder="1.0.0" required>
+      </div>
+      <div>
+        <label class="block font-medium mb-1">Platform <span class="text-red-500">*</span></label>
+        <select name="platform" class="w-full border rounded px-3 py-2" required>
+          <option value="">Select...</option>
+          {{range .Platforms}}<option>{{.}}</option>{{end}}
+        </select>
+      </div>
+      <div>
+        <label class="block font-medium mb-1">Architecture <span class="text-red-500">*</span></label>
+        <select name="architecture" class="w-full border rounded px-3 py-2" required>
+          <option value="">Select...</option>
+          {{range .Architectures}}<option>{{.}}</option>{{end}}
+        </select>
+      </div>
+      <div>
+        <label class="block font-medium mb-1">File Size (bytes)</label>
+        <input type="number" name="file_size" class="w-full border rounded px-3 py-2" min="0">
+      </div>
+    </div>
+    <div>
+      <label class="block font-medium mb-1">Download URL <span class="text-red-500">*</span></label>
+      <input type="url" name="download_url" class="w-full border rounded px-3 py-2" required>
+    </div>
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="block font-medium mb-1">Checksum <span class="text-red-500">*</span></label>
+        <input type="text" name="checksum" class="w-full border rounded px-3 py-2" required>
+      </div>
+      <div>
+        <label class="block font-medium mb-1">Checksum Type <span class="text-red-500">*</span></label>
+        <select name="checksum_type" class="w-full border rounded px-3 py-2" required>
+          <option>sha256</option><option>sha1</option><option>md5</option>
+        </select>
+      </div>
+    </div>
+    <div>
+      <label class="block font-medium mb-1">Release Notes</label>
+      <textarea name="release_notes" rows="3" class="w-full border rounded px-3 py-2"></textarea>
+    </div>
+    <div>
+      <label class="block font-medium mb-1">Minimum Version</label>
+      <input type="text" name="minimum_version" class="w-full border rounded px-3 py-2"
+             placeholder="1.0.0">
+    </div>
+    <label class="flex items-center gap-2">
+      <input type="checkbox" name="required"> Mark as required update
+    </label>
+    <div class="flex gap-3">
+      <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">
+        Register
+      </button>
+      <a href="/admin/applications/{{.AppID}}"
+         class="px-6 py-2 border rounded hover:bg-gray-50">Cancel</a>
+    </div>
+  </form>
+</main>
+</body>
+</html>
+{{end}}

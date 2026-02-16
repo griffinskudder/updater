@@ -1,0 +1,18 @@
+{{define "head"}}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://unpkg.com/htmx.org@2/dist/htmx.min.js" defer></script>
+<script src="https://cdn.tailwindcss.com"></script>
+{{end}}
+
+{{define "nav"}}
+<nav class="bg-gray-900 text-white px-6 py-3 flex items-center gap-6">
+  <span class="font-bold text-lg">Updater Admin</span>
+  <a href="/admin/applications" class="hover:underline">Applications</a>
+  <a href="/admin/health" class="hover:underline">Health</a>
+  <a href="/api/v1/docs" target="_blank" class="hover:underline">API Docs</a>
+  <form method="POST" action="/admin/logout" class="ml-auto">
+    <button type="submit" class="text-sm hover:underline">Log out</button>
+  </form>
+</nav>
+{{end}}

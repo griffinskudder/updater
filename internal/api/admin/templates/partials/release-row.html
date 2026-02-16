@@ -1,0 +1,19 @@
+{{define "release-row"}}
+<tr id="rel-{{.ID}}" class="hover:bg-gray-50">
+  <td class="px-4 py-3 font-mono">{{.Version}}</td>
+  <td class="px-4 py-3">{{.Platform}}</td>
+  <td class="px-4 py-3">{{.Architecture}}</td>
+  <td class="px-4 py-3">{{if .Required}}<span class="text-red-600 font-medium">Yes</span>{{else}}No{{end}}</td>
+  <td class="px-4 py-3 text-gray-500 text-sm">{{.ReleaseDate}}</td>
+  <td class="px-4 py-3 text-right">
+    <button
+      hx-delete="/admin/applications/{{.ApplicationID}}/releases/{{.Version}}/{{.Platform}}/{{.Architecture}}"
+      hx-confirm="Delete release {{.Version}} ({{.Platform}}/{{.Architecture}})?"
+      hx-target="closest tr"
+      hx-swap="delete"
+      class="text-red-600 hover:underline text-sm">
+      Delete
+    </button>
+  </td>
+</tr>
+{{end}}

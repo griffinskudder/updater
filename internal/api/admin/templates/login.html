@@ -1,0 +1,24 @@
+{{define "login"}}
+<!DOCTYPE html>
+<html lang="en">
+<head><title>Login - Updater Admin</title>{{template "head" .}}</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+  <div class="bg-white p-8 rounded shadow w-96">
+    <h1 class="text-2xl font-bold mb-6">Admin Login</h1>
+    {{if .Error}}
+    <p class="text-red-600 mb-4">{{.Error}}</p>
+    {{end}}
+    <form method="POST" action="/admin/login">
+      <label class="block mb-2 font-medium">API Key</label>
+      <input type="password" name="api_key"
+             class="w-full border rounded px-3 py-2 mb-4 focus:outline-none focus:ring"
+             placeholder="Enter your admin API key" autofocus>
+      <button type="submit"
+              class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
+        Sign in
+      </button>
+    </form>
+  </div>
+</body>
+</html>
+{{end}}

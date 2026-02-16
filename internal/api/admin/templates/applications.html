@@ -1,0 +1,95 @@
+{{define "applications"}}
+<!DOCTYPE html>
+<html lang="en">
+<head><title>Applications - Updater Admin</title>{{template "head" .}}</head>
+<body class="bg-gray-50">
+{{template "nav" .}}
+<main class="max-w-6xl mx-auto p-6">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold">Applications</h1>
+    <a href="/admin/applications/new"
+       class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+      New Application
+    </a>
+  </div>
+
+  {{if .Flash}}{{template "flash" .Flash}}{{end}}
+
+  <div class="bg-white rounded shadow overflow-hidden">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-100 text-left">
+        <tr>
+          <th class="px-4 py-3">ID</th>
+          <th class="px-4 py-3">Name</th>
+          <th class="px-4 py-3">Platforms</th>
+          <th class="px-4 py-3">Updated</th>
+          <th class="px-4 py-3"></th>
+        </tr>
+      </thead>
+      <tbody id="app-list" class="divide-y">
+        {{range .Applications.Applications}}
+          {{template "app-row" .}}
+        {{else}}
+        <tr><td colspan="5" class="px-4 py-6 text-center text-gray-400">No applications yet.</td></tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+
+  {{if .Applications.HasMore}}
+  <p class="mt-4 text-gray-500 text-sm">
+    Showing {{.Applications.PageSize}} of {{.Applications.TotalCount}} applications.
+  </p>
+  {{end}}
+</main>
+</body>
+</html>
+{{end}}
+
+{{define "new-application-form"}}
+<!DOCTYPE html>
+<html lang="en">
+<head><title>New Application - Updater Admin</title>{{template "head" .}}</head>
+<body class="bg-gray-50">
+{{template "nav" .}}
+<main class="max-w-2xl mx-auto p-6">
+  <h1 class="text-2xl font-bold mb-6">New Application</h1>
+  {{if .Error}}<p class="text-red-600 mb-4">{{.Error}}</p>{{end}}
+  <form method="POST" action="/admin/applications" class="bg-white rounded shadow p-6 space-y-4">
+    <div>
+      <label class="block font-medium mb-1">ID <span class="text-red-500">*</span></label>
+      <input type="text" name="id" value="{{.Form.ID}}"
+             class="w-full border rounded px-3 py-2" placeholder="my-app" required>
+      <p class="text-gray-400 text-xs mt-1">Alphanumeric, hyphens, underscores. Max 100 chars.</p>
+    </div>
+    <div>
+      <label class="block font-medium mb-1">Name <span class="text-red-500">*</span></label>
+      <input type="text" name="name" value="{{.Form.Name}}"
+             class="w-full border rounded px-3 py-2" required>
+    </div>
+    <div>
+      <label class="block font-medium mb-1">Description</label>
+      <input type="text" name="description" value="{{.Form.Description}}"
+             class="w-full border rounded px-3 py-2">
+    </div>
+    <div>
+      <label class="block font-medium mb-1">Platforms <span class="text-red-500">*</span></label>
+      <div class="flex gap-4 flex-wrap">
+        {{range $p := .Platforms}}
+        <label class="flex items-center gap-1">
+          <input type="checkbox" name="platforms" value="{{$p}}"> {{$p}}
+        </label>
+        {{end}}
+      </div>
+    </div>
+    <div class="flex gap-3">
+      <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
+        Create
+      </button>
+      <a href="/admin/applications" class="px-6 py-2 border rounded hover:bg-gray-50">Cancel</a>
+    </div>
+  </form>
+</main>
+</body>
+</html>
+{{end}}

@@ -1,0 +1,20 @@
+{{define "app-row"}}
+<tr id="app-{{.ID}}" class="hover:bg-gray-50">
+  <td class="px-4 py-3 font-mono text-sm">{{.ID}}</td>
+  <td class="px-4 py-3">
+    <a href="/admin/applications/{{.ID}}" class="text-blue-600 hover:underline">{{.Name}}</a>
+  </td>
+  <td class="px-4 py-3 text-gray-500">{{range .Platforms}}{{.}} {{end}}</td>
+  <td class="px-4 py-3 text-gray-500 text-sm">{{.UpdatedAt}}</td>
+  <td class="px-4 py-3 text-right">
+    <button
+      hx-delete="/admin/applications/{{.ID}}"
+      hx-confirm="Delete {{.Name}}? All releases must be removed first."
+      hx-target="closest tr"
+      hx-swap="delete"
+      class="text-red-600 hover:underline text-sm">
+      Delete
+    </button>
+  </td>
+</tr>
+{{end}}

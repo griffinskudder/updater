@@ -1,0 +1,35 @@
+{{define "health"}}
+<!DOCTYPE html>
+<html lang="en">
+<head><title>Health - Updater Admin</title>{{template "head" .}}</head>
+<body class="bg-gray-50">
+{{template "nav" .}}
+<main class="max-w-4xl mx-auto p-6">
+  <h1 class="text-2xl font-bold mb-6">Service Health</h1>
+  <div class="bg-white rounded shadow p-6 mb-4">
+    <p class="text-lg">Status:
+      <span class="font-bold {{if eq .Health.Status "healthy"}}text-green-600{{else}}text-red-600{{end}}">
+        {{.Health.Status}}
+      </span>
+    </p>
+    <p class="text-gray-500 text-sm mt-1">{{.Health.Timestamp}}</p>
+    {{if .Health.Version}}<p class="mt-2">Version: {{.Health.Version}}</p>{{end}}
+    {{if .Health.Uptime}}<p>Uptime: {{.Health.Uptime}}</p>{{end}}
+  </div>
+  {{if .Health.Components}}
+  <h2 class="text-xl font-semibold mb-3">Components</h2>
+  <div class="space-y-2">
+    {{range $name, $comp := .Health.Components}}
+    <div class="bg-white rounded shadow p-4 flex justify-between items-center">
+      <span class="font-medium">{{$name}}</span>
+      <span class="{{if eq $comp.Status "healthy"}}text-green-600{{else}}text-red-600{{end}}">
+        {{$comp.Status}}{{if $comp.Message}} — {{$comp.Message}}{{end}}
+      </span>
+    </div>
+    {{end}}
+  </div>
+  {{end}}
+</main>
+</body>
+</html>
+{{end}}
