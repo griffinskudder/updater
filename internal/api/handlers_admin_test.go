@@ -79,6 +79,8 @@ func TestAdminLogin_POST_ValidKey_Redirects(t *testing.T) {
 		if c.Name == "admin_session" {
 			assert.Equal(t, "admin-key", c.Value)
 			assert.True(t, c.HttpOnly)
+			assert.True(t, c.Secure, "login cookie must carry Secure flag")
+			assert.Equal(t, http.SameSiteStrictMode, c.SameSite, "login cookie must be SameSite=Strict")
 			found = true
 		}
 	}
@@ -108,6 +110,9 @@ func TestAdminLogout_ClearsCookieAndRedirects(t *testing.T) {
 	for _, c := range rec.Result().Cookies() {
 		if c.Name == "admin_session" {
 			assert.Equal(t, -1, c.MaxAge)
+			assert.True(t, c.HttpOnly, "logout cookie must be HttpOnly")
+			assert.True(t, c.Secure, "logout cookie must carry Secure flag")
+			assert.Equal(t, http.SameSiteStrictMode, c.SameSite, "logout cookie must be SameSite=Strict")
 		}
 	}
 }

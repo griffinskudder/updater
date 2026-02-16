@@ -148,6 +148,7 @@ func (h *Handlers) AdminLogin(w http.ResponseWriter, r *http.Request) {
 		Value:    key,
 		Path:     "/admin",
 		HttpOnly: true,
+		Secure:   true,
 		SameSite: http.SameSiteStrictMode,
 	})
 	http.Redirect(w, r, "/admin/applications", http.StatusSeeOther)
@@ -156,10 +157,13 @@ func (h *Handlers) AdminLogin(w http.ResponseWriter, r *http.Request) {
 // AdminLogout clears the session cookie and redirects to login.
 func (h *Handlers) AdminLogout(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
-		Name:   "admin_session",
-		Value:  "",
-		Path:   "/admin",
-		MaxAge: -1,
+		Name:     "admin_session",
+		Value:    "",
+		Path:     "/admin",
+		MaxAge:   -1,
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteStrictMode,
 	})
 	http.Redirect(w, r, "/admin/login", http.StatusSeeOther)
 }
