@@ -1,6 +1,6 @@
 ##@ Go Development
 
-.PHONY: build run test fmt fmt-check vet clean tidy check
+.PHONY: build run test cover fmt fmt-check vet clean tidy check
 
 build: ## Build the application to bin/updater
 	$(GO_DOCKER) go build -o $(BIN_DIR)/$(APP_NAME) ./cmd/$(APP_NAME)
@@ -10,6 +10,9 @@ run: ## Run the application
 
 test: ## Run tests
 	$(GO_DOCKER) go test ./...
+
+cover: ## Run tests with coverage report
+	$(GO_DOCKER) sh -c 'go test -coverprofile=coverage.out ./... && go tool cover -func=coverage.out | grep ^total'
 
 fmt: ## Format code
 	$(GO_DOCKER) go fmt ./...
