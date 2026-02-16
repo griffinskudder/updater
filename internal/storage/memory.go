@@ -283,12 +283,20 @@ func (m *MemoryStorage) Close() error {
 	return nil
 }
 
+// copyAPIKey returns a deep copy of an APIKey, including its Permissions slice.
+func copyAPIKey(k *models.APIKey) *models.APIKey {
+	c := *k
+	perms := make([]string, len(k.Permissions))
+	copy(perms, k.Permissions)
+	c.Permissions = perms
+	return &c
+}
+
 // CreateAPIKey stores a new API key in memory.
 func (m *MemoryStorage) CreateAPIKey(ctx context.Context, key *models.APIKey) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	c := *key
-	m.apiKeys[key.ID] = &c
+	m.apiKeys[key.ID] = copyAPIKey(key)
 	m.apiKeyHashes[key.KeyHash] = key.ID
 	return nil
 }
@@ -302,8 +310,7 @@ func (m *MemoryStorage) GetAPIKeyByHash(ctx context.Context, hash string) (*mode
 	if !ok {
 		return nil, ErrNotFound
 	}
-	c := *m.apiKeys[id]
-	return &c, nil
+	return copyAPIKey(m.apiKeys[id]), nil
 }
 
 // ListAPIKeys returns all API keys (both enabled and disabled).
@@ -312,8 +319,7 @@ func (m *MemoryStorage) ListAPIKeys(ctx context.Context) ([]*models.APIKey, erro
 	defer m.mu.RUnlock()
 	out := make([]*models.APIKey, 0, len(m.apiKeys))
 	for _, k := range m.apiKeys {
-		c := *k
-		out = append(out, &c)
+		out = append(out, copyAPIKey(k))
 	}
 	return out, nil
 }
@@ -331,8 +337,7 @@ func (m *MemoryStorage) UpdateAPIKey(ctx context.Context, key *models.APIKey) er
 		delete(m.apiKeyHashes, existing.KeyHash)
 		m.apiKeyHashes[key.KeyHash] = key.ID
 	}
-	c := *key
-	m.apiKeys[key.ID] = &c
+	m.apiKeys[key.ID] = copyAPIKey(key)
 	return nil
 }
 

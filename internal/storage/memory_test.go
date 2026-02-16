@@ -350,7 +350,7 @@ func TestMemoryStorage_APIKeyCRUD(t *testing.T) {
 	// Delete
 	require.NoError(t, s.DeleteAPIKey(ctx, key.ID))
 	_, err = s.GetAPIKeyByHash(ctx, key.KeyHash)
-	assert.Error(t, err)
+	assert.ErrorIs(t, err, ErrNotFound)
 }
 
 func TestMemoryStorage_GetAPIKeyByHash_NotFound(t *testing.T) {
