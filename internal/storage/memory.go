@@ -17,6 +17,8 @@ type MemoryStorage struct {
 	mu           sync.RWMutex
 	applications map[string]*models.Application
 	releases     map[string][]*models.Release // key: applicationID
+	apiKeys      map[string]*models.APIKey    // keyed by ID
+	apiKeyHashes map[string]string            // hash -> ID
 }
 
 // NewMemoryStorage creates a new memory-based storage instance
@@ -24,6 +26,8 @@ func NewMemoryStorage(config Config) (*MemoryStorage, error) {
 	return &MemoryStorage{
 		applications: make(map[string]*models.Application),
 		releases:     make(map[string][]*models.Release),
+		apiKeys:      make(map[string]*models.APIKey),
+		apiKeyHashes: make(map[string]string),
 	}, nil
 }
 
@@ -273,6 +277,75 @@ func (m *MemoryStorage) Close() error {
 	// Clear all data
 	m.applications = make(map[string]*models.Application)
 	m.releases = make(map[string][]*models.Release)
+	m.apiKeys = make(map[string]*models.APIKey)
+	m.apiKeyHashes = make(map[string]string)
 
+	return nil
+}
+
+// CreateAPIKey stores a new API key in memory.
+func (m *MemoryStorage) CreateAPIKey(ctx context.Context, key *models.APIKey) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	c := *key
+	m.apiKeys[key.ID] = &c
+	m.apiKeyHashes[key.KeyHash] = key.ID
+	return nil
+}
+
+// GetAPIKeyByHash retrieves an API key by its SHA-256 hash.
+// Returns ErrNotFound if no matching key exists.
+func (m *MemoryStorage) GetAPIKeyByHash(ctx context.Context, hash string) (*models.APIKey, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	id, ok := m.apiKeyHashes[hash]
+	if !ok {
+		return nil, ErrNotFound
+	}
+	c := *m.apiKeys[id]
+	return &c, nil
+}
+
+// ListAPIKeys returns all API keys (both enabled and disabled).
+func (m *MemoryStorage) ListAPIKeys(ctx context.Context) ([]*models.APIKey, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	out := make([]*models.APIKey, 0, len(m.apiKeys))
+	for _, k := range m.apiKeys {
+		c := *k
+		out = append(out, &c)
+	}
+	return out, nil
+}
+
+// UpdateAPIKey replaces the mutable fields of an existing API key.
+// Returns ErrNotFound if the key does not exist.
+func (m *MemoryStorage) UpdateAPIKey(ctx context.Context, key *models.APIKey) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	existing, ok := m.apiKeys[key.ID]
+	if !ok {
+		return ErrNotFound
+	}
+	if existing.KeyHash != key.KeyHash {
+		delete(m.apiKeyHashes, existing.KeyHash)
+		m.apiKeyHashes[key.KeyHash] = key.ID
+	}
+	c := *key
+	m.apiKeys[key.ID] = &c
+	return nil
+}
+
+// DeleteAPIKey permanently removes an API key by ID.
+// Returns ErrNotFound if the key does not exist.
+func (m *MemoryStorage) DeleteAPIKey(ctx context.Context, id string) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	k, ok := m.apiKeys[id]
+	if !ok {
+		return ErrNotFound
+	}
+	delete(m.apiKeyHashes, k.KeyHash)
+	delete(m.apiKeys, id)
 	return nil
 }

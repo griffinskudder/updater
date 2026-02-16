@@ -418,3 +418,28 @@ func (j *JSONStorage) Close() error {
 
 	return nil
 }
+
+// CreateAPIKey is not implemented for JSONStorage.
+func (j *JSONStorage) CreateAPIKey(ctx context.Context, key *models.APIKey) error {
+	return ErrNotFound
+}
+
+// GetAPIKeyByHash is not implemented for JSONStorage.
+func (j *JSONStorage) GetAPIKeyByHash(ctx context.Context, hash string) (*models.APIKey, error) {
+	return nil, ErrNotFound
+}
+
+// ListAPIKeys is not implemented for JSONStorage.
+func (j *JSONStorage) ListAPIKeys(ctx context.Context) ([]*models.APIKey, error) {
+	return nil, ErrNotFound
+}
+
+// UpdateAPIKey is not implemented for JSONStorage.
+func (j *JSONStorage) UpdateAPIKey(ctx context.Context, key *models.APIKey) error {
+	return ErrNotFound
+}
+
+// DeleteAPIKey is not implemented for JSONStorage.
+func (j *JSONStorage) DeleteAPIKey(ctx context.Context, id string) error {
+	return ErrNotFound
+}

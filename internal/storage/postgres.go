@@ -472,3 +472,28 @@ func timeToPgTimestamptz(t time.Time) pgtype.Timestamptz {
 	}
 	return pgtype.Timestamptz{Time: t, Valid: true}
 }
+
+// CreateAPIKey is not implemented for PostgresStorage.
+func (ps *PostgresStorage) CreateAPIKey(ctx context.Context, key *models.APIKey) error {
+	return ErrNotFound
+}
+
+// GetAPIKeyByHash is not implemented for PostgresStorage.
+func (ps *PostgresStorage) GetAPIKeyByHash(ctx context.Context, hash string) (*models.APIKey, error) {
+	return nil, ErrNotFound
+}
+
+// ListAPIKeys is not implemented for PostgresStorage.
+func (ps *PostgresStorage) ListAPIKeys(ctx context.Context) ([]*models.APIKey, error) {
+	return nil, ErrNotFound
+}
+
+// UpdateAPIKey is not implemented for PostgresStorage.
+func (ps *PostgresStorage) UpdateAPIKey(ctx context.Context, key *models.APIKey) error {
+	return ErrNotFound
+}
+
+// DeleteAPIKey is not implemented for PostgresStorage.
+func (ps *PostgresStorage) DeleteAPIKey(ctx context.Context, id string) error {
+	return ErrNotFound
+}

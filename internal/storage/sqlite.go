@@ -480,3 +480,28 @@ func stringToNullString(s string) sql.NullString {
 	}
 	return sql.NullString{String: s, Valid: true}
 }
+
+// CreateAPIKey is not implemented for SQLiteStorage.
+func (ss *SQLiteStorage) CreateAPIKey(ctx context.Context, key *models.APIKey) error {
+	return ErrNotFound
+}
+
+// GetAPIKeyByHash is not implemented for SQLiteStorage.
+func (ss *SQLiteStorage) GetAPIKeyByHash(ctx context.Context, hash string) (*models.APIKey, error) {
+	return nil, ErrNotFound
+}
+
+// ListAPIKeys is not implemented for SQLiteStorage.
+func (ss *SQLiteStorage) ListAPIKeys(ctx context.Context) ([]*models.APIKey, error) {
+	return nil, ErrNotFound
+}
+
+// UpdateAPIKey is not implemented for SQLiteStorage.
+func (ss *SQLiteStorage) UpdateAPIKey(ctx context.Context, key *models.APIKey) error {
+	return ErrNotFound
+}
+
+// DeleteAPIKey is not implemented for SQLiteStorage.
+func (ss *SQLiteStorage) DeleteAPIKey(ctx context.Context, id string) error {
+	return ErrNotFound
+}
