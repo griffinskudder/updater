@@ -79,8 +79,19 @@ func main() {
 	// Initialize update service
 	updateService := update.NewService(activeStorage)
 
+	// Parse admin UI templates from embedded FS.
+	adminTmpl, err := api.ParseAdminTemplates()
+	if err != nil {
+		slog.Error("Failed to parse admin templates", "error", err)
+		os.Exit(1)
+	}
+
 	// Initialize HTTP handlers with storage for health checks
-	handlers := api.NewHandlers(updateService, api.WithStorage(activeStorage))
+	handlers := api.NewHandlers(updateService,
+		api.WithStorage(activeStorage),
+		api.WithAdminTemplates(adminTmpl),
+		api.WithSecurityConfig(cfg.Security),
+	)
 
 	// Setup routes with middleware
 	routeOpts := []api.RouteOption{}
