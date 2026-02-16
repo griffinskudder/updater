@@ -23,10 +23,10 @@ func WithOTelMiddleware(serviceName string) RouteOption {
 			otelmux.WithFilter(func(r *http.Request) bool {
 				// Filter out health and metrics endpoints from tracing
 				return r.URL.Path != "/health" &&
-				r.URL.Path != "/api/v1/health" &&
-				r.URL.Path != "/metrics" &&
-				r.URL.Path != "/api/v1/openapi.yaml" &&
-				r.URL.Path != "/api/v1/docs"
+					r.URL.Path != "/api/v1/health" &&
+					r.URL.Path != "/metrics" &&
+					r.URL.Path != "/api/v1/openapi.yaml" &&
+					r.URL.Path != "/api/v1/docs"
 			}),
 		))
 	}

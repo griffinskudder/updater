@@ -262,7 +262,7 @@ func TestAdminCreateRelease_ValidInput_Redirects(t *testing.T) {
 	form := url.Values{
 		"version": {"1.0.0"}, "platform": {"windows"}, "architecture": {"amd64"},
 		"download_url": {"https://example.com/app.exe"},
-		"checksum": {"abc"}, "checksum_type": {"sha256"},
+		"checksum":     {"abc"}, "checksum_type": {"sha256"},
 	}
 	req := httptest.NewRequest(http.MethodPost, "/admin/applications/my-app/releases",
 		strings.NewReader(form.Encode()))

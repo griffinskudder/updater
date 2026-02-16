@@ -119,6 +119,7 @@ See `docs/ARCHITECTURE.md` for full design details and rationales.
 - ALWAYS: Ensure all tests are passing before finalising the request. This doesn't include docs changes.
 - ALWAYS: Use context7 before using library code.
 - ALWAYS: Update the openapi file when updating the API. This is a manual process, but it is important to keep the openapi file up to date.
+- ALWAYS: Edit files directly, rather than using scripts to make changes. This is to ensure that the changes are intentional and to avoid accidentally making changes that are not intended.
 
 ## Gotchas
 
