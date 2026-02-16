@@ -1,7 +1,7 @@
 site_name: Updater Service Documentation
 site_description: Documentation for the Go-based software update service
 site_author: Updater Service Team
-site_url: ""
+site_url: https://griffinskudder.github.io/updater/
 
 repo_name: updater
 repo_url: https://github.com/griffinskudder/updater
@@ -68,6 +68,8 @@ nav:
     - Admin Frontend: plans/2026-02-16-admin-frontend.md
     - GitHub CI Design: plans/2026-02-16-github-ci-design.md
     - GitHub CI Implementation: plans/2026-02-16-github-ci-implementation.md
+    - GitHub Pages Design: plans/2026-02-16-github-pages-design.md
+    - GitHub Pages Implementation: plans/2026-02-16-github-pages-implementation.md
 
 markdown_extensions:
   - toc:
