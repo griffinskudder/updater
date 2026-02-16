@@ -1,0 +1,1413 @@
+openapi: "3.0.3"
+
+info:
+  title: Updater Service API
+  version: "1.0.0"
+  description: |
+    RESTful API for the updater service. Desktop applications query this API to check for
+    software updates, retrieve release information, and manage applications.
+
+    All request and response bodies use `application/json`. Timestamps follow RFC 3339 format
+    and versions follow semantic versioning (semver).
+
+    ## Authentication
+
+    Protected endpoints require a Bearer token in the `Authorization` header:
+
+    ```
+    Authorization: Bearer <api-key>
+    ```
+
+    The permission hierarchy is cumulative:
+
+    | Level  | Includes           | Description                                       |
+    |--------|--------------------|---------------------------------------------------|
+    | read   | read               | Query releases, list applications                 |
+    | write  | read, write        | Register releases, create applications            |
+    | admin  | read, write, admin | Update and delete applications, delete releases   |
+
+    Public endpoints (update checks, latest version, health, OpenAPI spec) do not require
+    authentication. When authentication is disabled in the server configuration, all endpoints
+    are accessible without a token.
+
+servers:
+  - url: /api/v1
+    description: Versioned API prefix
+  - url: /
+    description: Root prefix (used by /health)
+
+tags:
+  - name: updates
+    description: Update check and latest version endpoints
+  - name: releases
+    description: Release management endpoints
+  - name: applications
+    description: Application management endpoints
+  - name: health
+    description: Service health check
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: |
+        API key authentication. Keys are configured on the server with permission levels.
+        Permission hierarchy: read < write < admin.
+
+  parameters:
+    AppIdPath:
+      name: app_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Application identifier
+
+    VersionPath:
+      name: version
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Semantic version of the release (e.g. 2.1.0)
+
+    PlatformPath:
+      name: platform
+      in: path
+      required: true
+      schema:
+        $ref: "#/components/schemas/Platform"
+      description: Target operating system
+
+    ArchPath:
+      name: arch
+      in: path
+      required: true
+      schema:
+        $ref: "#/components/schemas/Architecture"
+      description: Target CPU architecture
+
+  schemas:
+    Platform:
+      type: string
+      enum: [windows, linux, darwin, android, ios]
+      description: Target operating system
+
+    Architecture:
+      type: string
+      enum: [amd64, arm64, "386", arm]
+      description: Target CPU architecture
+
+    ChecksumType:
+      type: string
+      enum: [sha256, md5, sha1]
+      description: Hash algorithm used for the file checksum
+
+    SortBy:
+      type: string
+      enum: [version, release_date, platform, architecture, created_at]
+      description: Field to sort results by
+
+    SortOrder:
+      type: string
+      enum: [asc, desc]
+      description: Sort direction
+
+    ErrorResponse:
+      type: object
+      required: [error, message, code, timestamp]
+      properties:
+        error:
+          type: string
+          description: Short error category
+          example: not_found
+        message:
+          type: string
+          description: Human-readable error description
+          example: Application not found
+        code:
+          type: string
+          description: Machine-readable error code
+          example: NOT_FOUND
+        details:
+          type: object
+          additionalProperties: true
+          description: Optional structured detail fields
+        timestamp:
+          type: string
+          format: date-time
+          description: RFC 3339 timestamp of the error
+        request_id:
+          type: string
+          description: Optional request correlation identifier
+
+    UpdateCheckRequest:
+      type: object
+      required: [application_id, current_version, platform, architecture]
+      properties:
+        application_id:
+          type: string
+          description: Target application identifier
+          example: my-app
+        current_version:
+          type: string
+          description: Client's current semantic version
+          example: "2.0.0"
+        platform:
+          $ref: "#/components/schemas/Platform"
+        architecture:
+          $ref: "#/components/schemas/Architecture"
+        allow_prerelease:
+          type: boolean
+          default: false
+          description: Include pre-release versions in the check
+        include_metadata:
+          type: boolean
+          default: false
+          description: Include release metadata in the response
+
+    UpdateCheckResponse:
+      type: object
+      required: [update_available, current_version, required]
+      properties:
+        update_available:
+          type: boolean
+          description: Whether a newer version is available
+        latest_version:
+          type: string
+          description: Version string of the latest release (present when update_available is true)
+          example: "2.1.0"
+        current_version:
+          type: string
+          description: The version provided in the request
+          example: "2.0.0"
+        download_url:
+          type: string
+          format: uri
+          description: URL to download the latest release
+        checksum:
+          type: string
+          description: Integrity hash of the download
+          example: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        checksum_type:
+          $ref: "#/components/schemas/ChecksumType"
+        file_size:
+          type: integer
+          format: int64
+          description: File size in bytes
+        release_notes:
+          type: string
+          description: Human-readable changelog
+        release_date:
+          type: string
+          format: date-time
+          description: Date the release was published
+        required:
+          type: boolean
+          description: Whether the update is mandatory
+        minimum_version:
+          type: string
+          description: Minimum version required to apply this update
+
+    LatestVersionResponse:
+      type: object
+      required: [version, download_url, release_date, required]
+      properties:
+        version:
+          type: string
+          description: Latest available version
+          example: "2.1.0"
+        download_url:
+          type: string
+          format: uri
+          description: URL to download the release
+        checksum:
+          type: string
+          description: Integrity hash of the download
+        checksum_type:
+          $ref: "#/components/schemas/ChecksumType"
+        file_size:
+          type: integer
+          format: int64
+          description: File size in bytes
+        release_notes:
+          type: string
+          description: Human-readable changelog
+        release_date:
+          type: string
+          format: date-time
+          description: Date the release was published
+        required:
+          type: boolean
+          description: Whether the update is mandatory
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+          description: Arbitrary key-value metadata (present when include_metadata is true)
+
+    RegisterReleaseRequest:
+      type: object
+      required:
+        - application_id
+        - version
+        - platform
+        - architecture
+        - download_url
+        - checksum
+        - checksum_type
+      properties:
+        application_id:
+          type: string
+          description: Target application identifier
+          example: my-app
+        version:
+          type: string
+          description: Semantic version of the release
+          example: "2.1.0"
+        platform:
+          $ref: "#/components/schemas/Platform"
+        architecture:
+          $ref: "#/components/schemas/Architecture"
+        download_url:
+          type: string
+          format: uri
+          description: External URL to download the release artifact
+        checksum:
+          type: string
+          description: Integrity hash of the release artifact
+          example: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        checksum_type:
+          $ref: "#/components/schemas/ChecksumType"
+        file_size:
+          type: integer
+          format: int64
+          description: File size in bytes
+        release_notes:
+          type: string
+          description: Human-readable changelog
+        required:
+          type: boolean
+          default: false
+          description: Force-update flag
+        minimum_version:
+          type: string
+          description: Minimum version required to apply this update
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+          description: Arbitrary key-value metadata
+          example:
+            build_number: "1234"
+            commit_sha: abc123
+
+    RegisterReleaseResponse:
+      type: object
+      required: [id, message, created_at]
+      properties:
+        id:
+          type: string
+          description: Unique identifier assigned to the registered release
+          example: rel-001
+        message:
+          type: string
+          description: Success message
+          example: Release registered successfully
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp when the release was registered
+
+    DeleteReleaseResponse:
+      type: object
+      required: [id, message]
+      properties:
+        id:
+          type: string
+          description: Identifier of the deleted release
+          example: rel-001
+        message:
+          type: string
+          description: Success message
+          example: Release deleted successfully
+
+    ReleaseInfo:
+      type: object
+      required: [id, version, platform, architecture, download_url, release_date]
+      properties:
+        id:
+          type: string
+          description: Unique release identifier
+          example: rel-001
+        version:
+          type: string
+          description: Semantic version
+          example: "2.1.0"
+        platform:
+          $ref: "#/components/schemas/Platform"
+        architecture:
+          $ref: "#/components/schemas/Architecture"
+        download_url:
+          type: string
+          format: uri
+          description: URL to download the release
+        checksum:
+          type: string
+          description: Integrity hash of the release artifact
+        checksum_type:
+          $ref: "#/components/schemas/ChecksumType"
+        file_size:
+          type: integer
+          format: int64
+          description: File size in bytes
+        release_notes:
+          type: string
+          description: Human-readable changelog
+        release_date:
+          type: string
+          format: date-time
+          description: Date the release was published
+        required:
+          type: boolean
+          description: Whether the update is mandatory
+        minimum_version:
+          type: string
+          description: Minimum version required to apply this update
+
+    ListReleasesResponse:
+      type: object
+      required: [releases, total_count, page, page_size, has_more]
+      properties:
+        releases:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReleaseInfo"
+        total_count:
+          type: integer
+          description: Total number of releases matching the filter
+        page:
+          type: integer
+          description: Current page number (1-based)
+        page_size:
+          type: integer
+          description: Number of results per page
+        has_more:
+          type: boolean
+          description: Whether additional pages exist
+
+    ApplicationConfig:
+      type: object
+      properties:
+        update_check_url:
+          type: string
+          description: Custom update check endpoint override
+        auto_update:
+          type: boolean
+          default: false
+          description: Enable automatic updates
+        update_interval:
+          type: integer
+          default: 3600
+          description: Check interval in seconds
+        required_update:
+          type: boolean
+          default: false
+          description: Force all updates to be mandatory
+        min_version:
+          type: string
+          description: Minimum supported client version (semver)
+        max_version:
+          type: string
+          description: Maximum supported client version (semver)
+        allow_prerelease:
+          type: boolean
+          default: false
+          description: Include pre-release versions in update checks
+        notification_url:
+          type: string
+          description: Webhook URL for update notifications
+        analytics_enabled:
+          type: boolean
+          default: false
+          description: Enable usage analytics
+        custom_fields:
+          type: object
+          additionalProperties:
+            type: string
+          description: Arbitrary key-value metadata
+
+    ApplicationStats:
+      type: object
+      properties:
+        total_releases:
+          type: integer
+          description: Total number of registered releases
+        latest_version:
+          type: string
+          description: Most recent release version
+        latest_release_date:
+          type: string
+          format: date-time
+          description: Date of the most recent release
+        platform_count:
+          type: integer
+          description: Number of distinct platforms with releases
+        required_releases:
+          type: integer
+          description: Number of releases marked as required
+
+    CreateApplicationRequest:
+      type: object
+      required: [id, name, platforms]
+      properties:
+        id:
+          type: string
+          maxLength: 100
+          description: Unique application identifier (alphanumeric, hyphens, underscores)
+          example: my-app
+        name:
+          type: string
+          description: Human-readable application name
+          example: My Application
+        description:
+          type: string
+          description: Optional application description
+        platforms:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/Platform"
+          description: Supported platforms (at least one required)
+        config:
+          $ref: "#/components/schemas/ApplicationConfig"
+
+    CreateApplicationResponse:
+      type: object
+      required: [id, message, created_at]
+      properties:
+        id:
+          type: string
+          description: Identifier of the created application
+          example: my-app
+        message:
+          type: string
+          description: Success message
+          example: Application created successfully
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp when the application was created
+
+    UpdateApplicationRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: New human-readable application name
+        description:
+          type: string
+          description: New application description
+        platforms:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/Platform"
+          description: Updated platform list (at least one required if provided)
+        config:
+          $ref: "#/components/schemas/ApplicationConfig"
+
+    UpdateApplicationResponse:
+      type: object
+      required: [id, message, updated_at]
+      properties:
+        id:
+          type: string
+          description: Identifier of the updated application
+          example: my-app
+        message:
+          type: string
+          description: Success message
+          example: Application updated successfully
+        updated_at:
+          type: string
+          format: date-time
+          description: Timestamp of the update
+
+    ApplicationSummary:
+      type: object
+      required: [id, name, platforms, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          description: Application identifier
+          example: my-app
+        name:
+          type: string
+          description: Human-readable application name
+        description:
+          type: string
+          description: Application description
+        platforms:
+          type: array
+          items:
+            $ref: "#/components/schemas/Platform"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    ApplicationInfoResponse:
+      type: object
+      required: [id, name, platforms, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          description: Application identifier
+          example: my-app
+        name:
+          type: string
+          description: Human-readable application name
+        description:
+          type: string
+          description: Application description
+        platforms:
+          type: array
+          items:
+            $ref: "#/components/schemas/Platform"
+        config:
+          $ref: "#/components/schemas/ApplicationConfig"
+        stats:
+          $ref: "#/components/schemas/ApplicationStats"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    ListApplicationsResponse:
+      type: object
+      required: [applications, total_count, page, page_size, has_more]
+      properties:
+        applications:
+          type: array
+          items:
+            $ref: "#/components/schemas/ApplicationSummary"
+        total_count:
+          type: integer
+          description: Total number of applications
+        page:
+          type: integer
+          description: Current page number (1-based)
+        page_size:
+          type: integer
+          description: Number of results per page
+        has_more:
+          type: boolean
+          description: Whether additional pages exist
+
+    ComponentHealth:
+      type: object
+      required: [status, timestamp]
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy, unknown]
+          description: Component health status
+        message:
+          type: string
+          description: Human-readable status description
+        timestamp:
+          type: string
+          format: date-time
+          description: Time the health check was performed
+
+    HealthCheckResponse:
+      type: object
+      required: [status, timestamp]
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy, unknown]
+          description: Overall service health
+        timestamp:
+          type: string
+          format: date-time
+          description: Time the health check was performed
+        version:
+          type: string
+          description: Service version
+        uptime:
+          type: string
+          description: Human-readable uptime duration (e.g. 48h32m15s)
+        components:
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/ComponentHealth"
+          description: Per-component health status (present for authenticated requests)
+        metrics:
+          type: object
+          additionalProperties: true
+          description: Operational metrics (present for authenticated requests)
+
+  responses:
+    BadRequest:
+      description: Malformed or invalid request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error: bad_request
+            message: Invalid JSON body
+            code: INVALID_REQUEST
+            timestamp: "2026-02-16T10:00:00Z"
+
+    Unauthorized:
+      description: Missing or invalid authentication credentials
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error: unauthorized
+            message: Authorization required
+            code: UNAUTHORIZED
+            timestamp: "2026-02-16T10:00:00Z"
+
+    Forbidden:
+      description: Authenticated but insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error: forbidden
+            message: Insufficient permissions
+            code: FORBIDDEN
+            timestamp: "2026-02-16T10:00:00Z"
+
+    NotFound:
+      description: Requested resource does not exist
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error: not_found
+            message: Application not found
+            code: NOT_FOUND
+            timestamp: "2026-02-16T10:00:00Z"
+
+    Conflict:
+      description: Resource already exists or state conflict
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error: conflict
+            message: Application already exists
+            code: CONFLICT
+            timestamp: "2026-02-16T10:00:00Z"
+
+    UnprocessableEntity:
+      description: Input validation failed
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error: validation_error
+            message: Invalid version format
+            code: VALIDATION_ERROR
+            timestamp: "2026-02-16T10:00:00Z"
+
+    InternalError:
+      description: Unexpected server-side error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error: internal_error
+            message: Internal server error
+            code: INTERNAL_ERROR
+            timestamp: "2026-02-16T10:00:00Z"
+
+security:
+  - bearerAuth: []
+
+paths:
+  /updates/{app_id}/check:
+    get:
+      tags: [updates]
+      summary: Check for updates (GET)
+      description: |
+        Check whether a newer version is available for a specific application, platform,
+        and architecture. Parameters are provided as query strings.
+      operationId: checkForUpdatesGet
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/AppIdPath"
+        - name: current_version
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Client's current semantic version
+          example: "2.0.0"
+        - name: platform
+          in: query
+          required: true
+          schema:
+            $ref: "#/components/schemas/Platform"
+        - name: architecture
+          in: query
+          required: true
+          schema:
+            $ref: "#/components/schemas/Architecture"
+        - name: allow_prerelease
+          in: query
+          schema:
+            type: boolean
+            default: false
+          description: Include pre-release versions
+        - name: include_metadata
+          in: query
+          schema:
+            type: boolean
+            default: false
+          description: Include release metadata in response
+      responses:
+        "200":
+          description: Update check result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpdateCheckResponse"
+              examples:
+                update_available:
+                  summary: Update available
+                  value:
+                    update_available: true
+                    latest_version: "2.1.0"
+                    current_version: "2.0.0"
+                    download_url: https://releases.example.com/app/2.1.0/app-windows-amd64.exe
+                    checksum: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+                    checksum_type: sha256
+                    file_size: 15728640
+                    release_notes: Performance improvements and bug fixes
+                    release_date: "2026-02-10T12:00:00Z"
+                    required: false
+                    minimum_version: "1.0.0"
+                no_update:
+                  summary: No update available
+                  value:
+                    update_available: false
+                    current_version: "2.1.0"
+                    required: false
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /check:
+    post:
+      tags: [updates]
+      summary: Check for updates (POST)
+      description: |
+        Alternative endpoint that accepts update check parameters as a JSON body instead
+        of query parameters. Useful for clients that prefer structured request bodies.
+      operationId: checkForUpdatesPost
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCheckRequest"
+            example:
+              application_id: my-app
+              current_version: "2.0.0"
+              platform: windows
+              architecture: amd64
+              allow_prerelease: false
+              include_metadata: false
+      responses:
+        "200":
+          description: Update check result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpdateCheckResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /updates/{app_id}/latest:
+    get:
+      tags: [updates]
+      summary: Get latest version (path-based)
+      description: |
+        Retrieve the latest release for a given application, platform, and architecture.
+        The application ID is provided as a path parameter.
+      operationId: getLatestVersionPath
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/AppIdPath"
+        - name: platform
+          in: query
+          required: true
+          schema:
+            $ref: "#/components/schemas/Platform"
+        - name: architecture
+          in: query
+          required: true
+          schema:
+            $ref: "#/components/schemas/Architecture"
+        - name: allow_prerelease
+          in: query
+          schema:
+            type: boolean
+            default: false
+          description: Include pre-release versions
+        - name: include_metadata
+          in: query
+          schema:
+            type: boolean
+            default: false
+          description: Include release metadata in response
+      responses:
+        "200":
+          description: Latest release information
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LatestVersionResponse"
+              example:
+                version: "2.1.0"
+                download_url: https://releases.example.com/app/2.1.0/app-windows-amd64.exe
+                checksum: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+                checksum_type: sha256
+                file_size: 15728640
+                release_notes: Performance improvements and bug fixes
+                release_date: "2026-02-10T12:00:00Z"
+                required: false
+                metadata: {}
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /latest:
+    get:
+      tags: [updates]
+      summary: Get latest version (query-based)
+      description: |
+        Compatibility alias for the latest version endpoint. The application ID is provided
+        as a query parameter instead of a path segment.
+      operationId: getLatestVersionQuery
+      security: []
+      parameters:
+        - name: app_id
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Application identifier
+          example: my-app
+        - name: platform
+          in: query
+          required: true
+          schema:
+            $ref: "#/components/schemas/Platform"
+        - name: architecture
+          in: query
+          required: true
+          schema:
+            $ref: "#/components/schemas/Architecture"
+        - name: allow_prerelease
+          in: query
+          schema:
+            type: boolean
+            default: false
+          description: Include pre-release versions
+        - name: include_metadata
+          in: query
+          schema:
+            type: boolean
+            default: false
+          description: Include release metadata in response
+      responses:
+        "200":
+          description: Latest release information
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LatestVersionResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /updates/{app_id}/releases:
+    get:
+      tags: [releases]
+      summary: List releases
+      description: |
+        List releases for an application with optional filtering, sorting, and pagination.
+        Requires `read` permission.
+      operationId: listReleases
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/AppIdPath"
+        - name: platform
+          in: query
+          schema:
+            $ref: "#/components/schemas/Platform"
+          description: Filter by platform
+        - name: architecture
+          in: query
+          schema:
+            $ref: "#/components/schemas/Architecture"
+          description: Filter by architecture
+        - name: version
+          in: query
+          schema:
+            type: string
+          description: Filter by exact version
+        - name: required
+          in: query
+          schema:
+            type: boolean
+          description: Filter by required flag
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 50
+          description: Page size
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: Page offset
+        - name: sort_by
+          in: query
+          schema:
+            $ref: "#/components/schemas/SortBy"
+          description: Sort field (default release_date)
+        - name: sort_order
+          in: query
+          schema:
+            $ref: "#/components/schemas/SortOrder"
+          description: Sort direction (default desc)
+      responses:
+        "200":
+          description: Paginated list of releases
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListReleasesResponse"
+              example:
+                releases:
+                  - id: rel-001
+                    version: "2.1.0"
+                    platform: windows
+                    architecture: amd64
+                    download_url: https://releases.example.com/app/2.1.0/app-windows-amd64.exe
+                    checksum: e3b0c44298fc1c149afbf4c8996fb924
+                    checksum_type: sha256
+                    file_size: 15728640
+                    release_notes: Performance improvements
+                    release_date: "2026-02-10T12:00:00Z"
+                    required: false
+                    minimum_version: "1.0.0"
+                total_count: 1
+                page: 1
+                page_size: 50
+                has_more: false
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /updates/{app_id}/register:
+    post:
+      tags: [releases]
+      summary: Register release
+      description: |
+        Register a new release for an application. Requires `write` permission.
+      operationId: registerRelease
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/AppIdPath"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterReleaseRequest"
+            example:
+              application_id: my-app
+              version: "2.1.0"
+              platform: windows
+              architecture: amd64
+              download_url: https://releases.example.com/app/2.1.0/app-windows-amd64.exe
+              checksum: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+              checksum_type: sha256
+              file_size: 15728640
+              release_notes: Performance improvements and bug fixes
+              required: false
+              minimum_version: "1.0.0"
+              metadata:
+                build_number: "1234"
+                commit_sha: abc123
+      responses:
+        "201":
+          description: Release registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegisterReleaseResponse"
+              example:
+                id: rel-001
+                message: Release registered successfully
+                created_at: "2026-02-16T10:00:00Z"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /updates/{app_id}/releases/{version}/{platform}/{arch}:
+    delete:
+      tags: [releases]
+      summary: Delete release
+      description: |
+        Delete a specific release identified by application, version, platform, and
+        architecture. Requires `admin` permission.
+      operationId: deleteRelease
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/AppIdPath"
+        - $ref: "#/components/parameters/VersionPath"
+        - $ref: "#/components/parameters/PlatformPath"
+        - $ref: "#/components/parameters/ArchPath"
+      responses:
+        "200":
+          description: Release deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteReleaseResponse"
+              example:
+                id: rel-001
+                message: Release deleted successfully
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /applications:
+    get:
+      tags: [applications]
+      summary: List applications
+      description: |
+        Retrieve a paginated list of all registered applications. Requires `read` permission.
+      operationId: listApplications
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 50
+          description: Page size
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: Page offset
+      responses:
+        "200":
+          description: Paginated list of applications
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListApplicationsResponse"
+              example:
+                applications:
+                  - id: my-app
+                    name: My Application
+                    description: A desktop application
+                    platforms: [windows, linux, darwin]
+                    created_at: "2026-01-01T00:00:00Z"
+                    updated_at: "2026-02-01T00:00:00Z"
+                total_count: 1
+                page: 1
+                page_size: 50
+                has_more: false
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+    post:
+      tags: [applications]
+      summary: Create application
+      description: |
+        Register a new application in the update service. Requires `write` permission.
+      operationId: createApplication
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateApplicationRequest"
+            example:
+              id: my-app
+              name: My Application
+              description: A cross-platform desktop application
+              platforms: [windows, linux, darwin]
+              config:
+                auto_update: false
+                update_interval: 3600
+                required_update: false
+                allow_prerelease: false
+                analytics_enabled: false
+      responses:
+        "201":
+          description: Application created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateApplicationResponse"
+              example:
+                id: my-app
+                message: Application created successfully
+                created_at: "2026-02-16T10:00:00Z"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /applications/{app_id}:
+    get:
+      tags: [applications]
+      summary: Get application
+      description: |
+        Retrieve detailed information about a single application, including configuration
+        and statistics. Requires `read` permission.
+      operationId: getApplication
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/AppIdPath"
+      responses:
+        "200":
+          description: Application details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationInfoResponse"
+              example:
+                id: my-app
+                name: My Application
+                description: A desktop application
+                platforms: [windows, linux, darwin]
+                config:
+                  auto_update: false
+                  update_interval: 3600
+                  required_update: false
+                  allow_prerelease: false
+                  analytics_enabled: false
+                stats:
+                  total_releases: 12
+                  latest_version: "2.1.0"
+                  latest_release_date: "2026-02-10T12:00:00Z"
+                  platform_count: 3
+                  required_releases: 1
+                created_at: "2026-01-01T00:00:00Z"
+                updated_at: "2026-02-01T00:00:00Z"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+    put:
+      tags: [applications]
+      summary: Update application
+      description: |
+        Update an existing application's metadata and configuration. Only provided fields
+        are updated; omitted fields remain unchanged. Requires `admin` permission.
+      operationId: updateApplication
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/AppIdPath"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateApplicationRequest"
+            example:
+              name: My Application (Renamed)
+              description: Updated description
+              platforms: [windows, linux, darwin, android]
+              config:
+                auto_update: true
+                update_interval: 1800
+      responses:
+        "200":
+          description: Application updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpdateApplicationResponse"
+              example:
+                id: my-app
+                message: Application updated successfully
+                updated_at: "2026-02-16T11:00:00Z"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+    delete:
+      tags: [applications]
+      summary: Delete application
+      description: |
+        Permanently delete an application. The application must have no existing releases;
+        if releases exist the request returns `409 Conflict`. Requires `admin` permission.
+      operationId: deleteApplication
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/AppIdPath"
+      responses:
+        "204":
+          description: Application deleted successfully (no body)
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /health:
+    get:
+      tags: [health]
+      summary: Health check
+      description: |
+        Returns the service health status. When called with a valid Bearer token, the response
+        includes additional component details and operational metrics.
+
+        Available at both `/health` and `/api/v1/health`.
+      operationId: healthCheck
+      security: []
+      servers:
+        - url: /
+          description: Root prefix
+        - url: /api/v1
+          description: Versioned API prefix
+      responses:
+        "200":
+          description: Service health status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthCheckResponse"
+              examples:
+                basic:
+                  summary: Public (unauthenticated) response
+                  value:
+                    status: healthy
+                    timestamp: "2026-02-16T10:00:00Z"
+                authenticated:
+                  summary: Authenticated response with enhanced details
+                  value:
+                    status: healthy
+                    timestamp: "2026-02-16T10:00:00Z"
+                    version: "1.0.0"
+                    uptime: 48h32m15s
+                    components:
+                      storage:
+                        status: healthy
+                        message: Storage backend responding
+                        timestamp: "2026-02-16T10:00:00Z"
+                    metrics:
+                      goroutines: 12
+                      memory_alloc_mb: 8.5
+        "500":
+          $ref: "#/components/responses/InternalError"

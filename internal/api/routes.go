@@ -22,7 +22,11 @@ func WithOTelMiddleware(serviceName string) RouteOption {
 		r.Use(otelmux.Middleware(serviceName,
 			otelmux.WithFilter(func(r *http.Request) bool {
 				// Filter out health and metrics endpoints from tracing
-				return r.URL.Path != "/health" && r.URL.Path != "/api/v1/health" && r.URL.Path != "/metrics"
+				return r.URL.Path != "/health" &&
+				r.URL.Path != "/api/v1/health" &&
+				r.URL.Path != "/metrics" &&
+				r.URL.Path != "/api/v1/openapi.yaml" &&
+				r.URL.Path != "/api/v1/docs"
 			}),
 		))
 	}
@@ -47,6 +51,10 @@ func SetupRoutes(handlers *Handlers, config *models.Config, opts ...RouteOption)
 	publicAPI.HandleFunc("/check", handlers.CheckForUpdates).Methods("POST")                         // POST version with JSON body
 	publicAPI.HandleFunc("/check", methodNotAllowedHandler).Methods("GET", "PUT", "DELETE", "PATCH") // Explicitly handle other methods
 	publicAPI.HandleFunc("/latest", handlers.GetLatestVersion).Methods("GET")                        // GET version for compatibility
+
+	// OpenAPI documentation endpoints (public, no authentication required)
+	api.HandleFunc("/openapi.yaml", handlers.ServeOpenAPISpec).Methods("GET")
+	api.HandleFunc("/docs", handlers.ServeSwaggerUI).Methods("GET")
 
 	// Health check endpoint (public with optional enhanced details for authenticated users)
 	router.HandleFunc("/health", handlers.HealthCheck).Methods("GET")
