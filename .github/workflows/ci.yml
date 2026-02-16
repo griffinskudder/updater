@@ -54,10 +54,13 @@ jobs:
       - name: Generate SARIF report
         run: gosec -no-fail -fmt sarif -out gosec.sarif ./...
 
+      - name: Fix SARIF relationships
+        run: jq 'del(.runs[].tool.driver.rules[].relationships)' gosec.sarif > gosec-fixed.sarif
+
       - name: Upload to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
-          sarif_file: gosec.sarif
+          sarif_file: gosec-fixed.sarif
 
       - name: Enforce security threshold
         run: gosec -severity high -confidence medium ./...
