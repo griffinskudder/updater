@@ -3,10 +3,12 @@ package storage
 import (
 	"context"
 	"database/sql"
-	_ "embed"
+	"embed"
 	"errors"
 	"fmt"
+	"io/fs"
 	"sort"
+	"strings"
 	"time"
 	"updater/internal/models"
 	sqlcite "updater/internal/storage/sqlc/sqlite"
@@ -15,8 +17,8 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-//go:embed sqlite_schema.sql
-var sqliteSchema string
+//go:embed sqlc/schema/sqlite
+var sqliteMigrationsFS embed.FS
 
 // SQLiteStorage implements the Storage interface using SQLite with sqlc-generated queries.
 type SQLiteStorage struct {
@@ -58,10 +60,9 @@ func NewSQLiteStorage(config Config) (Storage, error) {
 		return nil, fmt.Errorf("failed to enable foreign keys: %w", err)
 	}
 
-	// Execute DDL schema (uses IF NOT EXISTS via CREATE TABLE/INDEX)
-	if _, err := db.Exec(sqliteSchema); err != nil {
+	if err := runSQLiteMigrations(db); err != nil {
 		db.Close()
-		return nil, fmt.Errorf("failed to initialize schema: %w", err)
+		return nil, fmt.Errorf("failed to run migrations: %w", err)
 	}
 
 	return &SQLiteStorage{
@@ -597,6 +598,60 @@ func (ss *SQLiteStorage) DeleteAPIKey(ctx context.Context, id string) error {
 	}
 	if rows == 0 {
 		return ErrNotFound
+	}
+	return nil
+}
+
+// runSQLiteMigrations applies any unapplied migration files from the embedded
+// sqlc/schema/sqlite directory. Applied migrations are tracked in a
+// schema_migrations table so each file is executed at most once.
+func runSQLiteMigrations(db *sql.DB) error {
+	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS schema_migrations (
+		name       TEXT NOT NULL PRIMARY KEY,
+		applied_at TEXT NOT NULL DEFAULT (datetime('now'))
+	)`); err != nil {
+		return fmt.Errorf("create schema_migrations: %w", err)
+	}
+
+	entries, err := fs.ReadDir(sqliteMigrationsFS, "sqlc/schema/sqlite")
+	if err != nil {
+		return fmt.Errorf("read migration dir: %w", err)
+	}
+
+	for _, entry := range entries {
+		name := entry.Name()
+		if entry.IsDir() || !strings.HasSuffix(name, ".sql") {
+			continue
+		}
+
+		var count int
+		if err := db.QueryRow("SELECT COUNT(*) FROM schema_migrations WHERE name = ?", name).Scan(&count); err != nil {
+			return fmt.Errorf("check migration %s: %w", name, err)
+		}
+		if count > 0 {
+			continue
+		}
+
+		data, err := fs.ReadFile(sqliteMigrationsFS, "sqlc/schema/sqlite/"+name)
+		if err != nil {
+			return fmt.Errorf("read migration %s: %w", name, err)
+		}
+
+		tx, err := db.Begin()
+		if err != nil {
+			return fmt.Errorf("begin migration %s: %w", name, err)
+		}
+		if _, err := tx.Exec(string(data)); err != nil {
+			tx.Rollback()
+			return fmt.Errorf("apply migration %s: %w", name, err)
+		}
+		if _, err := tx.Exec("INSERT INTO schema_migrations (name) VALUES (?)", name); err != nil {
+			tx.Rollback()
+			return fmt.Errorf("record migration %s: %w", name, err)
+		}
+		if err := tx.Commit(); err != nil {
+			return fmt.Errorf("commit migration %s: %w", name, err)
+		}
 	}
 	return nil
 }
