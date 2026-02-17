@@ -131,6 +131,15 @@ func SetupRoutes(handlers *Handlers, config *models.Config, opts ...RouteOption)
 		adminAPI.Use(RequirePermission(PermissionAdmin))
 		adminAPI.HandleFunc("/updates/{app_id}/releases/{version}/{platform}/{arch}", handlers.DeleteRelease).Methods("DELETE")
 
+		// API key management (admin permission required)
+		keyAdminAPI := api.PathPrefix("/admin/keys").Subrouter()
+		keyAdminAPI.Use(authMiddleware(handlers.storage))
+		keyAdminAPI.Use(RequirePermission(PermissionAdmin))
+		keyAdminAPI.HandleFunc("", handlers.ListAPIKeys).Methods("GET")
+		keyAdminAPI.HandleFunc("", handlers.CreateAPIKey).Methods("POST")
+		keyAdminAPI.HandleFunc("/{id}", handlers.UpdateAPIKey).Methods("PATCH")
+		keyAdminAPI.HandleFunc("/{id}", handlers.DeleteAPIKey).Methods("DELETE")
+
 		router.Use(OptionalAuth(handlers.storage))
 	} else {
 		api.HandleFunc("/updates/{app_id}/releases", handlers.ListReleases).Methods("GET")
@@ -141,6 +150,10 @@ func SetupRoutes(handlers *Handlers, config *models.Config, opts ...RouteOption)
 		api.HandleFunc("/applications/{app_id}", handlers.UpdateApplication).Methods("PUT")
 		api.HandleFunc("/applications/{app_id}", handlers.DeleteApplication).Methods("DELETE")
 		api.HandleFunc("/updates/{app_id}/releases/{version}/{platform}/{arch}", handlers.DeleteRelease).Methods("DELETE")
+		api.HandleFunc("/admin/keys", handlers.ListAPIKeys).Methods("GET")
+		api.HandleFunc("/admin/keys", handlers.CreateAPIKey).Methods("POST")
+		api.HandleFunc("/admin/keys/{id}", handlers.UpdateAPIKey).Methods("PATCH")
+		api.HandleFunc("/admin/keys/{id}", handlers.DeleteAPIKey).Methods("DELETE")
 	}
 
 	return router
