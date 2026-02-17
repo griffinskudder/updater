@@ -72,6 +72,11 @@ func SetupRoutes(handlers *Handlers, config *models.Config, opts ...RouteOption)
 	adminRouter.HandleFunc("/applications/{app_id}/releases", handlers.AdminCreateRelease).Methods("POST")
 	adminRouter.HandleFunc("/applications/{app_id}/releases/{version}/{platform}/{arch}",
 		handlers.AdminDeleteRelease).Methods("DELETE")
+	adminRouter.HandleFunc("/keys", handlers.AdminListKeys).Methods("GET")
+	adminRouter.HandleFunc("/keys/new", handlers.AdminNewKeyForm).Methods("GET")
+	adminRouter.HandleFunc("/keys", handlers.AdminCreateKey).Methods("POST")
+	adminRouter.HandleFunc("/keys/{id}", handlers.AdminDeleteKey).Methods("DELETE")
+	adminRouter.HandleFunc("/keys/{id}/toggle", handlers.AdminToggleKey).Methods("POST")
 
 	router.HandleFunc("/health", handlers.HealthCheck).Methods("GET")
 	router.HandleFunc("/api/v1/health", handlers.HealthCheck).Methods("GET")

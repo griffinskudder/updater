@@ -2,12 +2,14 @@ package api
 
 import (
 	"embed"
+	"errors"
 	"html/template"
 	"log/slog"
 	"net/http"
 	"net/url"
 	"strings"
 	"updater/internal/models"
+	"updater/internal/storage"
 
 	"github.com/gorilla/mux"
 )
@@ -21,6 +23,14 @@ func ParseAdminTemplates() (*template.Template, error) {
 		"hasPlatform": func(platforms []string, p string) bool {
 			for _, pl := range platforms {
 				if pl == p {
+					return true
+				}
+			}
+			return false
+		},
+		"hasPermission": func(permissions []string, p string) bool {
+			for _, perm := range permissions {
+				if perm == p {
 					return true
 				}
 			}
@@ -85,6 +95,29 @@ type adminReleaseFormData struct {
 type adminHealthData struct {
 	adminBaseData
 	Health *models.HealthCheckResponse
+}
+
+type adminKeysData struct {
+	adminBaseData
+	Keys []*models.APIKey
+}
+
+type adminNewKeyData struct {
+	adminBaseData
+	Error      string
+	Form       adminKeyForm
+	CreatedKey *createdKeyData
+}
+
+type adminKeyForm struct {
+	Name        string
+	Permissions []string
+}
+
+type createdKeyData struct {
+	Name   string
+	Key    string // raw key — shown once
+	Prefix string
 }
 
 var allPlatforms = []string{"windows", "linux", "darwin", "android", "ios"}
@@ -406,4 +439,142 @@ func (h *Handlers) AdminDeleteRelease(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
+}
+
+// AdminListKeys renders the API keys list page.
+func (h *Handlers) AdminListKeys(w http.ResponseWriter, r *http.Request) {
+	keys, err := h.storage.ListAPIKeys(r.Context())
+	if err != nil {
+		h.renderAdmin(w, "keys", adminKeysData{
+			adminBaseData: adminBaseData{Flash: &adminFlashData{Type: "error", Message: err.Error()}},
+		})
+		return
+	}
+	h.renderAdmin(w, "keys", adminKeysData{
+		adminBaseData: adminBaseData{Flash: flashFromQuery(r)},
+		Keys:          keys,
+	})
+}
+
+// AdminNewKeyForm renders the create-key form.
+func (h *Handlers) AdminNewKeyForm(w http.ResponseWriter, r *http.Request) {
+	h.renderAdmin(w, "new-key-form", adminNewKeyData{})
+}
+
+// AdminCreateKey processes the create-key form.
+func (h *Handlers) AdminCreateKey(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		h.renderAdmin(w, "new-key-form", adminNewKeyData{Error: "Invalid form"})
+		return
+	}
+	name := strings.TrimSpace(r.FormValue("name"))
+	permissions := r.Form["permissions"]
+	if name == "" {
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		h.renderAdmin(w, "new-key-form", adminNewKeyData{
+			Error: "Name is required",
+			Form:  adminKeyForm{Name: name, Permissions: permissions},
+		})
+		return
+	}
+	if len(permissions) == 0 {
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		h.renderAdmin(w, "new-key-form", adminNewKeyData{
+			Error: "At least one permission is required",
+			Form:  adminKeyForm{Name: name, Permissions: permissions},
+		})
+		return
+	}
+
+	rawKey, err := models.GenerateAPIKey()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		h.renderAdmin(w, "new-key-form", adminNewKeyData{Error: "Failed to generate key"})
+		return
+	}
+	key := models.NewAPIKey(models.NewKeyID(), name, rawKey, permissions)
+	if err := h.storage.CreateAPIKey(r.Context(), key); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		h.renderAdmin(w, "new-key-form", adminNewKeyData{Error: "Failed to create key"})
+		return
+	}
+
+	slog.Info("api key created",
+		"event", "security_audit",
+		"action", "create",
+		"key_id", key.ID,
+		"key_name", key.Name,
+		"actor", "admin_ui",
+	)
+
+	h.renderAdmin(w, "new-key-form", adminNewKeyData{
+		CreatedKey: &createdKeyData{
+			Name:   key.Name,
+			Key:    rawKey,
+			Prefix: key.Prefix,
+		},
+	})
+}
+
+// AdminDeleteKey deletes an API key and returns 200 (HTMX removes the row).
+func (h *Handlers) AdminDeleteKey(w http.ResponseWriter, r *http.Request) {
+	id := adminPathVar(r, "id")
+	if err := h.storage.DeleteAPIKey(r.Context(), id); err != nil {
+		if errors.Is(err, storage.ErrNotFound) {
+			http.Error(w, "key not found", http.StatusNotFound)
+		} else {
+			http.Error(w, "failed to delete key", http.StatusInternalServerError)
+		}
+		return
+	}
+
+	slog.Info("api key deleted",
+		"event", "security_audit",
+		"action", "delete",
+		"key_id", id,
+		"actor", "admin_ui",
+	)
+
+	w.WriteHeader(http.StatusOK)
+}
+
+// AdminToggleKey flips the Enabled flag on an API key and returns an updated key-row partial.
+func (h *Handlers) AdminToggleKey(w http.ResponseWriter, r *http.Request) {
+	id := adminPathVar(r, "id")
+	keys, err := h.storage.ListAPIKeys(r.Context())
+	if err != nil {
+		http.Error(w, "failed to list keys", http.StatusInternalServerError)
+		return
+	}
+	var key *models.APIKey
+	for _, k := range keys {
+		if k.ID == id {
+			c := *k
+			key = &c
+			break
+		}
+	}
+	if key == nil {
+		http.Error(w, "key not found", http.StatusNotFound)
+		return
+	}
+	key.Enabled = !key.Enabled
+	if err := h.storage.UpdateAPIKey(r.Context(), key); err != nil {
+		http.Error(w, "failed to update key", http.StatusInternalServerError)
+		return
+	}
+
+	slog.Info("api key toggled",
+		"event", "security_audit",
+		"action", "toggle",
+		"key_id", id,
+		"enabled", key.Enabled,
+		"actor", "admin_ui",
+	)
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	if err := h.adminTmpl.ExecuteTemplate(w, "key-row", key); err != nil {
+		slog.Error("admin template error", "template", "key-row", "error", err)
+	}
 }
