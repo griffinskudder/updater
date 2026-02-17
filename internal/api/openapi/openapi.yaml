@@ -45,6 +45,8 @@ tags:
     description: Application management endpoints
   - name: health
     description: Service health check
+  - name: keys
+    description: API key management endpoints (admin permission required)
 
 components:
   securitySchemes:
@@ -653,6 +655,111 @@ components:
           type: object
           additionalProperties: true
           description: Operational metrics (present for authenticated requests)
+
+    APIKeyMeta:
+      type: object
+      required: [id, name, prefix, permissions, enabled, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique key identifier
+          example: 01944a7f-1234-7abc-8def-0123456789ab
+        name:
+          type: string
+          description: Human-readable label for this key
+          example: CI Publisher
+        prefix:
+          type: string
+          description: First 8 characters of the raw key (display only)
+          example: upd_xK3m
+        permissions:
+          type: array
+          items:
+            type: string
+            enum: [read, write, admin]
+          description: Granted permission levels
+          example: [write]
+        enabled:
+          type: boolean
+          description: Whether this key is active
+        created_at:
+          type: string
+          format: date-time
+          description: RFC 3339 creation timestamp
+        updated_at:
+          type: string
+          format: date-time
+          description: RFC 3339 last-update timestamp
+
+    CreateAPIKeyRequest:
+      type: object
+      required: [name, permissions]
+      properties:
+        name:
+          type: string
+          description: Human-readable label for the new key
+          example: CI Publisher
+          minLength: 1
+        permissions:
+          type: array
+          items:
+            type: string
+            enum: [read, write, admin]
+          minItems: 1
+          description: Permission levels to grant
+          example: [write]
+
+    CreateAPIKeyResponse:
+      type: object
+      required: [id, name, key, prefix, permissions, enabled, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique key identifier
+        name:
+          type: string
+          description: Human-readable label
+        key:
+          type: string
+          description: |
+            The raw API key. Returned exactly once at creation time.
+            Store it securely — it cannot be retrieved again.
+          example: upd_xK3mABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ab
+        prefix:
+          type: string
+          description: First 8 characters of the raw key (display only)
+          example: upd_xK3m
+        permissions:
+          type: array
+          items:
+            type: string
+            enum: [read, write, admin]
+        enabled:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+
+    UpdateAPIKeyRequest:
+      type: object
+      description: All fields are optional; only provided fields are updated.
+      properties:
+        name:
+          type: string
+          description: New human-readable label
+          example: Renamed Key
+        permissions:
+          type: array
+          items:
+            type: string
+            enum: [read, write, admin]
+          description: Replacement permission set
+          example: [read, write]
+        enabled:
+          type: boolean
+          description: Enable or disable the key
 
   responses:
     BadRequest:
@@ -1362,6 +1469,123 @@ paths:
           $ref: "#/components/responses/NotFound"
         "409":
           $ref: "#/components/responses/Conflict"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /admin/keys:
+    get:
+      tags: [keys]
+      summary: List API keys
+      description: Returns metadata for all API keys. Requires admin permission.
+      operationId: listAPIKeys
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: List of API key metadata
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/APIKeyMeta"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalError"
+    post:
+      tags: [keys]
+      summary: Create API key
+      description: |
+        Creates a new API key. The raw key is returned exactly once in the response body.
+        Store it securely — it cannot be retrieved again.
+
+        Requires admin permission.
+      operationId: createAPIKey
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAPIKeyRequest"
+      responses:
+        "201":
+          description: Key created. Raw key included once — store it now.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateAPIKeyResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /admin/keys/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: API key identifier
+    patch:
+      tags: [keys]
+      summary: Update API key
+      description: |
+        Updates one or more fields of an existing API key. All request body fields are optional.
+
+        Requires admin permission.
+      operationId: updateAPIKey
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateAPIKeyRequest"
+      responses:
+        "200":
+          description: Updated key metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIKeyMeta"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+    delete:
+      tags: [keys]
+      summary: Delete API key
+      description: Permanently revokes an API key. Requires admin permission.
+      operationId: deleteAPIKey
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: Key deleted (no body)
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalError"
 
