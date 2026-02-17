@@ -2,10 +2,10 @@ package models
 
 import (
 	"crypto/rand"
-	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"golang.org/x/crypto/bcrypt"
 	"time"
 
 	"github.com/google/uuid"
@@ -54,9 +54,9 @@ func GenerateAPIKey() (string, error) {
 	return "upd_" + base64.RawURLEncoding.EncodeToString(b), nil
 }
 
-// HashAPIKey computes the SHA-256 hex digest of a raw API key.
+// HashAPIKey computes the bcrypt hex digest of a raw API key.
 func HashAPIKey(rawKey string) string {
-	sum := sha256.Sum256([]byte(rawKey))
+	sum, _ := bcrypt.GenerateFromPassword([]byte(rawKey), bcrypt.DefaultCost)
 	return hex.EncodeToString(sum[:])
 }
 
