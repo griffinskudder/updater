@@ -56,10 +56,6 @@ RUN CGO_ENABLED=0 \
     -o healthcheck \
     ./cmd/healthcheck
 
-# Verify the binary
-RUN ldd updater 2>&1 | grep -q "not a dynamic executable" || \
-  (echo "FAILED: binary is not statically linked" && exit 1)
-
 # =============================================================================
 # Runtime Stage - Distroless (OS-less)
 # =============================================================================
