@@ -176,9 +176,9 @@ func loadFromEnvironment(config *models.Config) {
 		}
 	}
 
-	// API Keys from environment
-	if apiKeys := os.Getenv("UPDATER_API_KEYS"); apiKeys != "" {
-		config.Security.APIKeys = parseAPIKeys(apiKeys)
+	// Bootstrap key from environment
+	if bk := os.Getenv("UPDATER_BOOTSTRAP_KEY"); bk != "" {
+		config.Security.BootstrapKey = bk
 	}
 
 	// Logging configuration
@@ -285,46 +285,6 @@ func loadFromEnvironment(config *models.Config) {
 	}
 }
 
-// parseAPIKeys parses API keys from a comma-separated environment variable
-// Format: "key1:name1:permission1,permission2;key2:name2:permission3"
-func parseAPIKeys(apiKeysEnv string) []models.APIKey {
-	var apiKeys []models.APIKey
-
-	// Split by semicolon for multiple keys
-	keySpecs := strings.Split(apiKeysEnv, ";")
-	for _, keySpec := range keySpecs {
-		if keySpec == "" {
-			continue
-		}
-
-		// Split by colon for key:name:permissions
-		parts := strings.Split(keySpec, ":")
-		if len(parts) < 2 {
-			continue
-		}
-
-		apiKey := models.APIKey{
-			Key:     parts[0],
-			Name:    parts[1],
-			Enabled: true,
-		}
-
-		// Parse permissions if provided
-		if len(parts) > 2 && parts[2] != "" {
-			permissions := strings.Split(parts[2], ",")
-			apiKey.Permissions = make([]string, 0, len(permissions))
-			for _, perm := range permissions {
-				if perm = strings.TrimSpace(perm); perm != "" {
-					apiKey.Permissions = append(apiKey.Permissions, perm)
-				}
-			}
-		}
-
-		apiKeys = append(apiKeys, apiKey)
-	}
-
-	return apiKeys
-}
 
 // SaveExample saves an example configuration file
 func SaveExample(filePath string) error {
@@ -336,15 +296,8 @@ func SaveExample(filePath string) error {
 	// Get default config with some example values
 	config := models.NewDefaultConfig()
 
-	// Add example API key
-	config.Security.APIKeys = []models.APIKey{
-		{
-			Key:         "your-api-key-here",
-			Name:        "Admin Key",
-			Permissions: []string{"read", "write"},
-			Enabled:     true,
-		},
-	}
+	// Set example bootstrap key
+	config.Security.BootstrapKey = "upd_your-bootstrap-key-here"
 
 	// Enable authentication for example
 	config.Security.EnableAuth = true

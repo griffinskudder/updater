@@ -37,11 +37,7 @@ storage:
 security:
   enable_auth: true
   jwt_secret: "test-secret"
-  api_keys:
-    - key: "test-key"
-      name: "Test Key"
-      permissions: ["read", "write"]
-      enabled: true
+  bootstrap_key: "upd_test-bootstrap-key-here"
   rate_limit:
     enabled: true
     requests_per_minute: 100
@@ -99,11 +95,7 @@ metrics:
 	// Verify security config
 	assert.True(t, config.Security.EnableAuth)
 	assert.Equal(t, "test-secret", config.Security.JWTSecret)
-	require.Len(t, config.Security.APIKeys, 1)
-	assert.Equal(t, "test-key", config.Security.APIKeys[0].Key)
-	assert.Equal(t, "Test Key", config.Security.APIKeys[0].Name)
-	assert.Equal(t, []string{"read", "write"}, config.Security.APIKeys[0].Permissions)
-	assert.True(t, config.Security.APIKeys[0].Enabled)
+	assert.Equal(t, "upd_test-bootstrap-key-here", config.Security.BootstrapKey)
 
 	// Verify rate limiting config
 	assert.True(t, config.Security.RateLimit.Enabled)
@@ -168,7 +160,7 @@ storage:
 	// Security defaults
 	assert.False(t, config.Security.EnableAuth) // Default
 	assert.Empty(t, config.Security.JWTSecret)
-	assert.Empty(t, config.Security.APIKeys)
+	assert.Empty(t, config.Security.BootstrapKey)
 
 	// Rate limiting defaults
 	assert.True(t, config.Security.RateLimit.Enabled)                // Default
@@ -193,12 +185,13 @@ storage:
 func TestLoad_WithEnvironmentVariables(t *testing.T) {
 	// Set environment variables
 	originalEnv := map[string]string{
-		"UPDATER_PORT":         os.Getenv("UPDATER_PORT"),
-		"UPDATER_HOST":         os.Getenv("UPDATER_HOST"),
-		"UPDATER_STORAGE_TYPE": os.Getenv("UPDATER_STORAGE_TYPE"),
-		"UPDATER_STORAGE_PATH": os.Getenv("UPDATER_STORAGE_PATH"),
-		"UPDATER_ENABLE_AUTH":  os.Getenv("UPDATER_ENABLE_AUTH"),
-		"UPDATER_LOG_LEVEL":    os.Getenv("UPDATER_LOG_LEVEL"),
+		"UPDATER_PORT":          os.Getenv("UPDATER_PORT"),
+		"UPDATER_HOST":          os.Getenv("UPDATER_HOST"),
+		"UPDATER_STORAGE_TYPE":  os.Getenv("UPDATER_STORAGE_TYPE"),
+		"UPDATER_STORAGE_PATH":  os.Getenv("UPDATER_STORAGE_PATH"),
+		"UPDATER_ENABLE_AUTH":   os.Getenv("UPDATER_ENABLE_AUTH"),
+		"UPDATER_BOOTSTRAP_KEY": os.Getenv("UPDATER_BOOTSTRAP_KEY"),
+		"UPDATER_LOG_LEVEL":     os.Getenv("UPDATER_LOG_LEVEL"),
 	}
 
 	// Clean up after test
@@ -218,6 +211,7 @@ func TestLoad_WithEnvironmentVariables(t *testing.T) {
 	os.Setenv("UPDATER_STORAGE_TYPE", "memory")
 	os.Setenv("UPDATER_STORAGE_PATH", "/tmp/test.json")
 	os.Setenv("UPDATER_ENABLE_AUTH", "true")
+	os.Setenv("UPDATER_BOOTSTRAP_KEY", "upd_test-env-bootstrap-key")
 	os.Setenv("UPDATER_LOG_LEVEL", "warn")
 
 	tempDir := t.TempDir()
@@ -398,9 +392,9 @@ cache:
 	assert.Equal(t, 20, config.Cache.Redis.PoolSize)
 }
 
-func TestLoad_WithComplexAPIKeys(t *testing.T) {
+func TestLoad_WithBootstrapKey(t *testing.T) {
 	tempDir := t.TempDir()
-	configFile := filepath.Join(tempDir, "api_keys_config.yaml")
+	configFile := filepath.Join(tempDir, "bootstrap_key_config.yaml")
 
 	configContent := `
 server:
@@ -413,19 +407,7 @@ storage:
 security:
   enable_auth: true
   jwt_secret: "complex-jwt-secret-123"
-  api_keys:
-    - key: "admin-key-12345"
-      name: "Admin Key"
-      permissions: ["read", "write", "delete"]
-      enabled: true
-    - key: "read-only-key-67890"
-      name: "Read Only Key"
-      permissions: ["read"]
-      enabled: true
-    - key: "disabled-key-abcdef"
-      name: "Disabled Key"
-      permissions: ["read", "write"]
-      enabled: false
+  bootstrap_key: "upd_my-bootstrap-key-abc123"
   trusted_proxies:
     - "10.0.0.0/8"
     - "172.16.0.0/12"
@@ -440,25 +422,7 @@ security:
 
 	assert.True(t, config.Security.EnableAuth)
 	assert.Equal(t, "complex-jwt-secret-123", config.Security.JWTSecret)
-	require.Len(t, config.Security.APIKeys, 3)
-
-	// Check first API key (admin)
-	assert.Equal(t, "admin-key-12345", config.Security.APIKeys[0].Key)
-	assert.Equal(t, "Admin Key", config.Security.APIKeys[0].Name)
-	assert.Equal(t, []string{"read", "write", "delete"}, config.Security.APIKeys[0].Permissions)
-	assert.True(t, config.Security.APIKeys[0].Enabled)
-
-	// Check second API key (read-only)
-	assert.Equal(t, "read-only-key-67890", config.Security.APIKeys[1].Key)
-	assert.Equal(t, "Read Only Key", config.Security.APIKeys[1].Name)
-	assert.Equal(t, []string{"read"}, config.Security.APIKeys[1].Permissions)
-	assert.True(t, config.Security.APIKeys[1].Enabled)
-
-	// Check third API key (disabled)
-	assert.Equal(t, "disabled-key-abcdef", config.Security.APIKeys[2].Key)
-	assert.Equal(t, "Disabled Key", config.Security.APIKeys[2].Name)
-	assert.Equal(t, []string{"read", "write"}, config.Security.APIKeys[2].Permissions)
-	assert.False(t, config.Security.APIKeys[2].Enabled)
+	assert.Equal(t, "upd_my-bootstrap-key-abc123", config.Security.BootstrapKey)
 
 	// Check trusted proxies
 	assert.Equal(t, []string{"10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"}, config.Security.TrustedProxies)

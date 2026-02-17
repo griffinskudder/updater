@@ -77,7 +77,6 @@ func TestMiddleware_AuthenticatedRequest(t *testing.T) {
 	handler := Middleware(anonLimiter, authLimiter)(http.HandlerFunc(okHandler))
 
 	apiKey := &models.APIKey{
-		Key:         "test-key",
 		Name:        "Test Key",
 		Permissions: []string{"read"},
 		Enabled:     true,

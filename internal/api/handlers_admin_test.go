@@ -1,12 +1,14 @@
 package api
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"strings"
 	"testing"
 	"updater/internal/models"
+	"updater/internal/storage"
 
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
@@ -33,14 +35,17 @@ func newAdminHandlers(t *testing.T) *Handlers {
 	t.Helper()
 	tmpl, err := ParseAdminTemplates()
 	require.NoError(t, err)
-	cfg := models.SecurityConfig{
-		APIKeys: []models.APIKey{
-			{Key: "admin-key", Name: "test", Permissions: []string{"admin"}, Enabled: true},
-		},
-	}
+	store, err := storage.NewMemoryStorage(storage.Config{})
+	require.NoError(t, err)
+	rawKey := "admin-key"
+	ak := models.NewAPIKey(models.NewKeyID(), "test", rawKey, []string{"admin"})
+	err = store.CreateAPIKey(context.Background(), ak)
+	require.NoError(t, err)
+	cfg := models.SecurityConfig{EnableAuth: true}
 	return NewHandlers(&MockUpdateService{},
 		WithAdminTemplates(tmpl),
 		WithSecurityConfig(cfg),
+		WithStorage(store),
 	)
 }
 

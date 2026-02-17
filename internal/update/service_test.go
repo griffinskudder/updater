@@ -151,6 +151,26 @@ func (m *MockStorage) Close() error {
 	return nil
 }
 
+func (m *MockStorage) CreateAPIKey(_ context.Context, _ *models.APIKey) error {
+	return nil
+}
+
+func (m *MockStorage) GetAPIKeyByHash(_ context.Context, _ string) (*models.APIKey, error) {
+	return nil, nil
+}
+
+func (m *MockStorage) ListAPIKeys(_ context.Context) ([]*models.APIKey, error) {
+	return nil, nil
+}
+
+func (m *MockStorage) UpdateAPIKey(_ context.Context, _ *models.APIKey) error {
+	return nil
+}
+
+func (m *MockStorage) DeleteAPIKey(_ context.Context, _ string) error {
+	return nil
+}
+
 func TestNewService(t *testing.T) {
 	mockStorage := NewMockStorage()
 	service := NewService(mockStorage)

@@ -143,7 +143,7 @@ func (h *Handlers) AdminLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	key := r.FormValue("api_key")
-	if !isValidAdminKey(key, h.securityConfig) {
+	if !isValidAdminKey(r.Context(), key, h.storage, h.securityConfig.EnableAuth) {
 		w.WriteHeader(http.StatusUnauthorized)
 		h.renderAdmin(w, "login", adminLoginData{Error: "Invalid API key or insufficient permissions"})
 		return

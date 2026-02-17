@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 	"updater/internal/models"
+	"updater/internal/storage"
 
 	"github.com/gorilla/mux"
 )
@@ -90,9 +91,10 @@ func RequirePermission(required Permission) mux.MiddlewareFunc {
 	}
 }
 
-// OptionalAuth creates middleware that allows optional authentication
-// Used for endpoints that provide different data based on auth status
-func OptionalAuth(securityConfig models.SecurityConfig) mux.MiddlewareFunc {
+// OptionalAuth creates middleware that allows optional authentication.
+// Used for endpoints that provide different data based on auth status.
+// On any error, the request continues without authentication.
+func OptionalAuth(store storage.Storage) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// Check for API key in Authorization header
@@ -113,23 +115,17 @@ func OptionalAuth(securityConfig models.SecurityConfig) mux.MiddlewareFunc {
 
 			token := authHeader[len(prefix):]
 
-			// Check if API key is valid
-			var validKey *models.APIKey
-			for _, apiKey := range securityConfig.APIKeys {
-				if apiKey.Key == token && apiKey.Enabled {
-					validKey = &apiKey
-					break
-				}
+			hash := models.HashAPIKey(token)
+			validKey, err := store.GetAPIKeyByHash(r.Context(), hash)
+			if err != nil || !validKey.Enabled {
+				// Invalid or disabled key, continue without auth
+				next.ServeHTTP(w, r)
+				return
 			}
 
-			if validKey != nil {
-				// Add API key info to context for handlers to use
-				ctx := context.WithValue(r.Context(), "api_key", validKey)
-				next.ServeHTTP(w, r.WithContext(ctx))
-			} else {
-				// Invalid key, continue without auth
-				next.ServeHTTP(w, r)
-			}
+			// Add API key info to context for handlers to use
+			ctx := context.WithValue(r.Context(), "api_key", validKey)
+			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
 }

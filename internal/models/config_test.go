@@ -35,7 +35,7 @@ func TestNewDefaultConfig(t *testing.T) {
 	assert.NotNil(t, config.Storage.Options)
 
 	// Test security defaults
-	assert.Empty(t, config.Security.APIKeys)
+	assert.Empty(t, config.Security.BootstrapKey)
 	assert.True(t, config.Security.RateLimit.Enabled)
 	assert.Equal(t, 60, config.Security.RateLimit.RequestsPerMinute)
 	assert.Equal(t, 10, config.Security.RateLimit.BurstSize)
@@ -367,21 +367,7 @@ func TestSecurityConfig_Validate(t *testing.T) {
 			},
 			expectError: false,
 		},
-		{
-			name: "valid config with API keys",
-			config: SecurityConfig{
-				APIKeys: []APIKey{
-					{
-						Key:         "test-key",
-						Name:        "Test Key",
-						Permissions: []string{"read", "write"},
-						Enabled:     true,
-					},
-				},
-				RateLimit: RateLimitConfig{Enabled: false},
-			},
-			expectError: false,
-		},
+
 		{
 			name: "negative requests per minute",
 			config: SecurityConfig{
@@ -426,34 +412,8 @@ func TestSecurityConfig_Validate(t *testing.T) {
 			expectError: true,
 			errorMsg:    "authenticated burst size cannot be negative",
 		},
-		{
-			name: "API key without key",
-			config: SecurityConfig{
-				APIKeys: []APIKey{
-					{
-						Name:    "Test Key",
-						Enabled: true,
-					},
-				},
-				RateLimit: RateLimitConfig{Enabled: false},
-			},
-			expectError: true,
-			errorMsg:    "API key cannot be empty",
-		},
-		{
-			name: "API key without name",
-			config: SecurityConfig{
-				APIKeys: []APIKey{
-					{
-						Key:     "test-key",
-						Enabled: true,
-					},
-				},
-				RateLimit: RateLimitConfig{Enabled: false},
-			},
-			expectError: true,
-			errorMsg:    "API key name cannot be empty",
-		},
+
+
 	}
 
 	for _, tt := range tests {
@@ -812,7 +772,6 @@ func TestAPIKey_HasPermission(t *testing.T) {
 		{
 			name: "has specific permission",
 			apiKey: APIKey{
-				Key:         "test-key",
 				Permissions: []string{"read", "write"},
 				Enabled:     true,
 			},
@@ -822,7 +781,6 @@ func TestAPIKey_HasPermission(t *testing.T) {
 		{
 			name: "does not have permission",
 			apiKey: APIKey{
-				Key:         "test-key",
 				Permissions: []string{"read"},
 				Enabled:     true,
 			},
@@ -832,7 +790,6 @@ func TestAPIKey_HasPermission(t *testing.T) {
 		{
 			name: "has wildcard permission",
 			apiKey: APIKey{
-				Key:         "admin-key",
 				Permissions: []string{"*"},
 				Enabled:     true,
 			},
@@ -842,7 +799,6 @@ func TestAPIKey_HasPermission(t *testing.T) {
 		{
 			name: "key disabled",
 			apiKey: APIKey{
-				Key:         "disabled-key",
 				Permissions: []string{"read", "write"},
 				Enabled:     false,
 			},
@@ -852,7 +808,6 @@ func TestAPIKey_HasPermission(t *testing.T) {
 		{
 			name: "empty permissions",
 			apiKey: APIKey{
-				Key:         "empty-key",
 				Permissions: []string{},
 				Enabled:     true,
 			},
