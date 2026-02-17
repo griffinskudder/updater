@@ -477,4 +477,3 @@ func (oc *ObservabilityConfig) Validate() error {
 
 	return nil
 }
-

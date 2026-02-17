@@ -338,8 +338,8 @@ func TestEndpointSecurity(t *testing.T) {
 	store, err := storage.NewMemoryStorage(storage.Config{})
 	require.NoError(t, err)
 	for _, spec := range []struct {
-		raw  string
-		name string
+		raw   string
+		name  string
 		perms []string
 	}{
 		{"read-key-123", "Read Only Key", []string{"read"}},
@@ -353,7 +353,7 @@ func TestEndpointSecurity(t *testing.T) {
 	// Create test configuration
 	config := &models.Config{
 		Security: models.SecurityConfig{
-			EnableAuth: true,
+			EnableAuth:   true,
 			BootstrapKey: "upd_test-bootstrap",
 			RateLimit: models.RateLimitConfig{
 				Enabled: false, // Disable for tests

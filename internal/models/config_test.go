@@ -412,8 +412,6 @@ func TestSecurityConfig_Validate(t *testing.T) {
 			expectError: true,
 			errorMsg:    "authenticated burst size cannot be negative",
 		},
-
-
 	}
 
 	for _, tt := range tests {

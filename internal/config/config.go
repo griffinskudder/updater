@@ -285,7 +285,6 @@ func loadFromEnvironment(config *models.Config) {
 	}
 }
 
-
 // SaveExample saves an example configuration file
 func SaveExample(filePath string) error {
 	// Create directory if it doesn't exist
