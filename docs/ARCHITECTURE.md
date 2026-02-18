@@ -88,7 +88,7 @@ Fully implemented business logic for version comparison and update determination
 Multi-provider persistence layer with a unified interface and factory-based provider creation.
 
 **Core Components:**
-- **Interface** (`interface.go`): `Storage` interface with 10 data operations + 5 API key operations + `Ping()` + `Close()` (15 methods total)
+- **Interface** (`interface.go`): `Storage` interface with context support for all operations
 - **Factory** (`factory.go`): Factory pattern for creating providers by type string
 - **Type Conversions** (`dbconvert.go`): Shared database-to-model conversion helpers
 
