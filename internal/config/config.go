@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -35,24 +36,52 @@ func Load(configPath string) (*models.Config, error) {
 	return config, nil
 }
 
-// LoadFromFile loads configuration from a YAML file
+// deprecatedConfig mirrors removed config fields for detecting stale operator configs.
+type deprecatedConfig struct {
+	Server struct {
+		CORS interface{} `yaml:"cors"`
+	} `yaml:"server"`
+	Security struct {
+		JWTSecret      string      `yaml:"jwt_secret"`
+		TrustedProxies interface{} `yaml:"trusted_proxies"`
+		RateLimit      interface{} `yaml:"rate_limit"`
+	} `yaml:"security"`
+}
+
+// warnDeprecatedKeys logs a warning for each removed config key found in the YAML data.
+// The service continues to start normally - these keys are silently ignored by the main decoder.
+func warnDeprecatedKeys(data []byte) {
+	var dep deprecatedConfig
+	if err := yaml.Unmarshal(data, &dep); err != nil {
+		return
+	}
+	if dep.Server.CORS != nil {
+		slog.Warn("Config key is no longer supported; configure CORS at your reverse proxy. See docs/reverse-proxy.md.", "config_key", "server.cors")
+	}
+	if dep.Security.JWTSecret != "" {
+		slog.Warn("Config key is no longer used and can be removed from your config file.", "config_key", "security.jwt_secret")
+	}
+	if dep.Security.TrustedProxies != nil {
+		slog.Warn("Config key is no longer supported; configure proxy trust at your reverse proxy. See docs/reverse-proxy.md.", "config_key", "security.trusted_proxies")
+	}
+	if dep.Security.RateLimit != nil {
+		slog.Warn("Config key is no longer supported; configure rate limiting at your reverse proxy. See docs/reverse-proxy.md.", "config_key", "security.rate_limit")
+	}
+}
+
+// loadFromFile loads configuration from a YAML file
 func loadFromFile(config *models.Config, filePath string) error {
-	// Check if file exists
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		return fmt.Errorf("config file not found: %s", filePath)
 	}
-
-	// Read file
 	data, err := os.ReadFile(filePath)
 	if err != nil {
 		return fmt.Errorf("failed to read config file: %w", err)
 	}
-
-	// Parse YAML
+	warnDeprecatedKeys(data)
 	if err := yaml.Unmarshal(data, config); err != nil {
 		return fmt.Errorf("failed to parse YAML config: %w", err)
 	}
-
 	return nil
 }
 
@@ -99,29 +128,6 @@ func loadFromEnvironment(config *models.Config) {
 		config.Server.TLSKeyFile = keyFile
 	}
 
-	// CORS configuration
-	if cors := os.Getenv("UPDATER_CORS_ENABLED"); cors != "" {
-		config.Server.CORS.Enabled = strings.ToLower(cors) == "true"
-	}
-
-	if origins := os.Getenv("UPDATER_CORS_ALLOWED_ORIGINS"); origins != "" {
-		config.Server.CORS.AllowedOrigins = strings.Split(origins, ",")
-	}
-
-	if methods := os.Getenv("UPDATER_CORS_ALLOWED_METHODS"); methods != "" {
-		config.Server.CORS.AllowedMethods = strings.Split(methods, ",")
-	}
-
-	if headers := os.Getenv("UPDATER_CORS_ALLOWED_HEADERS"); headers != "" {
-		config.Server.CORS.AllowedHeaders = strings.Split(headers, ",")
-	}
-
-	if maxAge := os.Getenv("UPDATER_CORS_MAX_AGE"); maxAge != "" {
-		if age, err := strconv.Atoi(maxAge); err == nil {
-			config.Server.CORS.MaxAge = age
-		}
-	}
-
 	// Storage configuration
 	if storageType := os.Getenv("UPDATER_STORAGE_TYPE"); storageType != "" {
 		config.Storage.Type = storageType
@@ -154,26 +160,6 @@ func loadFromEnvironment(config *models.Config) {
 	// Security configuration
 	if auth := os.Getenv("UPDATER_ENABLE_AUTH"); auth != "" {
 		config.Security.EnableAuth = strings.ToLower(auth) == "true"
-	}
-
-	if secret := os.Getenv("UPDATER_JWT_SECRET"); secret != "" {
-		config.Security.JWTSecret = secret
-	}
-
-	if rateLimit := os.Getenv("UPDATER_RATE_LIMIT_ENABLED"); rateLimit != "" {
-		config.Security.RateLimit.Enabled = strings.ToLower(rateLimit) == "true"
-	}
-
-	if rpm := os.Getenv("UPDATER_RATE_LIMIT_RPM"); rpm != "" {
-		if r, err := strconv.Atoi(rpm); err == nil {
-			config.Security.RateLimit.RequestsPerMinute = r
-		}
-	}
-
-	if burst := os.Getenv("UPDATER_RATE_LIMIT_BURST"); burst != "" {
-		if b, err := strconv.Atoi(burst); err == nil {
-			config.Security.RateLimit.BurstSize = b
-		}
 	}
 
 	// Bootstrap key from environment
@@ -300,7 +286,6 @@ func SaveExample(filePath string) error {
 
 	// Enable authentication for example
 	config.Security.EnableAuth = true
-	config.Security.JWTSecret = "your-jwt-secret-here"
 
 	// Example TLS configuration
 	config.Server.TLSEnabled = false

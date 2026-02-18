@@ -50,7 +50,6 @@ Response Design Principles: \- Consistent JSON structure across all endpoints \-
 - [type ApplicationStats](<#ApplicationStats>)
 - [type ApplicationSummary](<#ApplicationSummary>)
   - [func \(as \*ApplicationSummary\) FromApplication\(app \*Application\)](<#ApplicationSummary.FromApplication>)
-- [type CORSConfig](<#CORSConfig>)
 - [type CacheConfig](<#CacheConfig>)
   - [func \(cc \*CacheConfig\) Validate\(\) error](<#CacheConfig.Validate>)
 - [type ComponentHealth](<#ComponentHealth>)
@@ -91,7 +90,6 @@ Response Design Principles: \- Consistent JSON structure across all endpoints \-
 - [type PlatformInfo](<#PlatformInfo>)
   - [func \(pi \*PlatformInfo\) String\(\) string](<#PlatformInfo.String>)
   - [func \(pi \*PlatformInfo\) Validate\(\) error](<#PlatformInfo.Validate>)
-- [type RateLimitConfig](<#RateLimitConfig>)
 - [type RedisConfig](<#RedisConfig>)
 - [type RegisterReleaseRequest](<#RegisterReleaseRequest>)
   - [func \(r \*RegisterReleaseRequest\) Normalize\(\)](<#RegisterReleaseRequest.Normalize>)
@@ -499,23 +497,8 @@ func (as *ApplicationSummary) FromApplication(app *Application)
 
 
 
-<a name="CORSConfig"></a>
-## type [CORSConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L64-L70>)
-
-
-
-```go
-type CORSConfig struct {
-    Enabled        bool     `yaml:"enabled" json:"enabled"`
-    AllowedOrigins []string `yaml:"allowed_origins" json:"allowed_origins"`
-    AllowedMethods []string `yaml:"allowed_methods" json:"allowed_methods"`
-    AllowedHeaders []string `yaml:"allowed_headers" json:"allowed_headers"`
-    MaxAge         int      `yaml:"max_age" json:"max_age"`
-}
-```
-
 <a name="CacheConfig"></a>
-## type [CacheConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L129-L135>)
+## type [CacheConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L103-L109>)
 
 
 
@@ -530,7 +513,7 @@ type CacheConfig struct {
 ```
 
 <a name="CacheConfig.Validate"></a>
-### func \(\*CacheConfig\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L424>)
+### func \(\*CacheConfig\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L366>)
 
 ```go
 func (cc *CacheConfig) Validate() error
@@ -557,7 +540,7 @@ type ComponentHealth struct {
 
 Config is the root configuration structure containing all service settings.
 
-Configuration Structure: \- Server: HTTP server and network settings \- Storage: Database and file storage configuration \- Security: Authentication, authorization, and rate limiting \- Logging: Structured logging and output configuration \- Cache: Performance caching settings \- Metrics: Monitoring and observability
+Configuration Structure: \- Server: HTTP server and network settings \- Storage: Database and file storage configuration \- Security: Authentication and authorization \- Logging: Structured logging and output configuration \- Cache: Performance caching settings \- Metrics: Monitoring and observability
 
 Design Benefits: \- Single source of truth for all configuration \- Clear separation of concerns by component \- Easy to serialize/deserialize from YAML/JSON \- Comprehensive validation across all components
 
@@ -574,7 +557,7 @@ type Config struct {
 ```
 
 <a name="NewDefaultConfig"></a>
-### func [NewDefaultConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L187>)
+### func [NewDefaultConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L160>)
 
 ```go
 func NewDefaultConfig() *Config
@@ -584,10 +567,10 @@ NewDefaultConfig creates a configuration with production\-ready defaults.
 
 Default Configuration Principles: \- Security\-first: Authentication disabled but ready, HTTPS preferred \- Performance: Reasonable timeouts and connection limits \- Reliability: Conservative rate limits, structured logging \- Observability: Metrics enabled by default for monitoring \- Development\-friendly: JSON file storage, permissive CORS for testing \- Production\-ready: Easy to override for deployment\-specific needs
 
-Default Values Rationale: \- Port 8080: Standard non\-privileged HTTP port \- 30\-second timeouts: Balance between user experience and resource protection \- JSON storage: Simple setup without external dependencies \- Rate limiting enabled: Prevent abuse from the start \- Structured logging: Better for log aggregation and analysis \- Memory caching: Good performance without external dependencies
+Default Values Rationale: \- Port 8080: Standard non\-privileged HTTP port \- 30\-second timeouts: Balance between user experience and resource protection \- JSON storage: Simple setup without external dependencies \- Structured logging: Better for log aggregation and analysis \- Memory caching: Good performance without external dependencies
 
 <a name="Config.Validate"></a>
-### func \(\*Config\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L263>)
+### func \(\*Config\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L220>)
 
 ```go
 func (c *Config) Validate() error
@@ -642,7 +625,7 @@ type CreateApplicationResponse struct {
 ```
 
 <a name="DatabaseConfig"></a>
-## type [DatabaseConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L79-L86>)
+## type [DatabaseConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L71-L78>)
 
 
 
@@ -895,7 +878,7 @@ type ListReleasesResponse struct {
 ```
 
 <a name="LoggingConfig"></a>
-## type [LoggingConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L118-L127>)
+## type [LoggingConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L92-L101>)
 
 
 
@@ -913,7 +896,7 @@ type LoggingConfig struct {
 ```
 
 <a name="LoggingConfig.Validate"></a>
-### func \(\*LoggingConfig\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L380>)
+### func \(\*LoggingConfig\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L322>)
 
 ```go
 func (lc *LoggingConfig) Validate() error
@@ -922,7 +905,7 @@ func (lc *LoggingConfig) Validate() error
 
 
 <a name="MemoryConfig"></a>
-## type [MemoryConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L144-L147>)
+## type [MemoryConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L118-L121>)
 
 
 
@@ -934,7 +917,7 @@ type MemoryConfig struct {
 ```
 
 <a name="MetricsConfig"></a>
-## type [MetricsConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L149-L153>)
+## type [MetricsConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L123-L127>)
 
 
 
@@ -947,7 +930,7 @@ type MetricsConfig struct {
 ```
 
 <a name="MetricsConfig.Validate"></a>
-### func \(\*MetricsConfig\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L452>)
+### func \(\*MetricsConfig\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L394>)
 
 ```go
 func (mc *MetricsConfig) Validate() error
@@ -956,7 +939,7 @@ func (mc *MetricsConfig) Validate() error
 
 
 <a name="ObservabilityConfig"></a>
-## type [ObservabilityConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L156-L160>)
+## type [ObservabilityConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L130-L134>)
 
 ObservabilityConfig holds configuration for OpenTelemetry\-based observability.
 
@@ -969,7 +952,7 @@ type ObservabilityConfig struct {
 ```
 
 <a name="ObservabilityConfig.Validate"></a>
-### func \(\*ObservabilityConfig\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L468>)
+### func \(\*ObservabilityConfig\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L410>)
 
 ```go
 func (oc *ObservabilityConfig) Validate() error
@@ -1011,28 +994,8 @@ func (pi *PlatformInfo) Validate() error
 
 
 
-<a name="RateLimitConfig"></a>
-## type [RateLimitConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L105-L116>)
-
-RateLimitConfig configures the two\-tier token\-bucket rate limiter. Anonymous requests are limited by RequestsPerMinute/BurstSize. Authenticated requests are limited by the higher AuthenticatedRequestsPerMinute/AuthenticatedBurstSize values.
-
-```go
-type RateLimitConfig struct {
-    Enabled bool `yaml:"enabled" json:"enabled"`
-    // RequestsPerMinute is the sustained request rate for anonymous (unauthenticated) clients.
-    RequestsPerMinute int `yaml:"requests_per_minute" json:"requests_per_minute"`
-    // BurstSize is the maximum burst capacity for anonymous clients.
-    BurstSize int `yaml:"burst_size" json:"burst_size"`
-    // AuthenticatedRequestsPerMinute is the sustained request rate for authenticated clients.
-    AuthenticatedRequestsPerMinute int `yaml:"authenticated_requests_per_minute" json:"authenticated_requests_per_minute"`
-    // AuthenticatedBurstSize is the maximum burst capacity for authenticated clients.
-    AuthenticatedBurstSize int           `yaml:"authenticated_burst_size" json:"authenticated_burst_size"`
-    CleanupInterval        time.Duration `yaml:"cleanup_interval" json:"cleanup_interval"`
-}
-```
-
 <a name="RedisConfig"></a>
-## type [RedisConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L137-L142>)
+## type [RedisConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L111-L116>)
 
 
 
@@ -1326,9 +1289,9 @@ type ReleaseStats struct {
 ```
 
 <a name="SecurityConfig"></a>
-## type [SecurityConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L89-L100>)
+## type [SecurityConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L81-L89>)
 
-SecurityConfig holds authentication, authorisation, and rate limiting settings.
+SecurityConfig holds authentication and authorisation settings.
 
 ```go
 type SecurityConfig struct {
@@ -1336,17 +1299,14 @@ type SecurityConfig struct {
     // when the api_keys table is empty. Required when EnableAuth is true.
     // Set via the UPDATER_BOOTSTRAP_KEY environment variable or security.bootstrap_key
     // in the config file. After the first startup, keys are managed via the REST API.
-    BootstrapKey string          `yaml:"bootstrap_key" json:"bootstrap_key"`
-    RateLimit    RateLimitConfig `yaml:"rate_limit" json:"rate_limit"`
-    JWTSecret    string          `yaml:"jwt_secret" json:"jwt_secret"`
+    BootstrapKey string `yaml:"bootstrap_key" json:"bootstrap_key"`
     // EnableAuth toggles API key authentication. When false all endpoints are public.
-    EnableAuth     bool     `yaml:"enable_auth" json:"enable_auth"`
-    TrustedProxies []string `yaml:"trusted_proxies" json:"trusted_proxies"`
+    EnableAuth bool `yaml:"enable_auth" json:"enable_auth"`
 }
 ```
 
 <a name="SecurityConfig.Validate"></a>
-### func \(\*SecurityConfig\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L357>)
+### func \(\*SecurityConfig\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L314>)
 
 ```go
 func (sec *SecurityConfig) Validate() error
@@ -1355,7 +1315,7 @@ func (sec *SecurityConfig) Validate() error
 
 
 <a name="ServerConfig"></a>
-## type [ServerConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L52-L62>)
+## type [ServerConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L52-L61>)
 
 
 
@@ -1369,12 +1329,11 @@ type ServerConfig struct {
     TLSEnabled   bool          `yaml:"tls_enabled" json:"tls_enabled"`
     TLSCertFile  string        `yaml:"tls_cert_file" json:"tls_cert_file"`
     TLSKeyFile   string        `yaml:"tls_key_file" json:"tls_key_file"`
-    CORS         CORSConfig    `yaml:"cors" json:"cors"`
 }
 ```
 
 <a name="ServerConfig.Validate"></a>
-### func \(\*ServerConfig\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L295>)
+### func \(\*ServerConfig\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L252>)
 
 ```go
 func (sc *ServerConfig) Validate() error
@@ -1399,7 +1358,7 @@ type StatsResponse struct {
 ```
 
 <a name="StorageConfig"></a>
-## type [StorageConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L72-L77>)
+## type [StorageConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L64-L69>)
 
 
 
@@ -1413,7 +1372,7 @@ type StorageConfig struct {
 ```
 
 <a name="StorageConfig.Validate"></a>
-### func \(\*StorageConfig\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L328>)
+### func \(\*StorageConfig\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L285>)
 
 ```go
 func (stc *StorageConfig) Validate() error
@@ -1422,7 +1381,7 @@ func (stc *StorageConfig) Validate() error
 
 
 <a name="TracingConfig"></a>
-## type [TracingConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L163-L168>)
+## type [TracingConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L137-L142>)
 
 TracingConfig holds configuration for distributed tracing.
 

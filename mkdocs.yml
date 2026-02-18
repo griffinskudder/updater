@@ -49,6 +49,7 @@ nav:
   - Rate Limiting: rate-limiting.md
   - Logging: logging.md
   - Storage: storage.md
+  - Reverse Proxy: reverse-proxy.md
   - Observability: observability.md
   - Makefile: makefile.md
   - Models:

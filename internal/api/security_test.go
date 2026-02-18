@@ -10,9 +10,7 @@ import (
 	"net/url"
 	"strings"
 	"testing"
-	"time"
 	"updater/internal/models"
-	"updater/internal/ratelimit"
 	"updater/internal/storage"
 	"updater/internal/update"
 
@@ -355,15 +353,8 @@ func TestEndpointSecurity(t *testing.T) {
 		Security: models.SecurityConfig{
 			EnableAuth:   true,
 			BootstrapKey: "upd_test-bootstrap",
-			RateLimit: models.RateLimitConfig{
-				Enabled: false, // Disable for tests
-			},
 		},
-		Server: models.ServerConfig{
-			CORS: models.CORSConfig{
-				Enabled: false, // Disable for tests
-			},
-		},
+		Server: models.ServerConfig{},
 	}
 
 	// Mock handlers with update service
@@ -514,15 +505,8 @@ func TestSecurityVulnerabilities(t *testing.T) {
 		Security: models.SecurityConfig{
 			EnableAuth:   true,
 			BootstrapKey: "upd_test-bootstrap",
-			RateLimit: models.RateLimitConfig{
-				Enabled: false, // Disable for tests
-			},
 		},
-		Server: models.ServerConfig{
-			CORS: models.CORSConfig{
-				Enabled: false, // Disable for tests
-			},
-		},
+		Server: models.ServerConfig{},
 	}
 
 	mockUpdateService := &MockUpdateService{}
@@ -676,78 +660,13 @@ func TestSecurityVulnerabilities(t *testing.T) {
 	})
 }
 
-// TestRateLimiting tests the rate limiting functionality
-func TestRateLimiting(t *testing.T) {
-	config := &models.Config{
-		Security: models.SecurityConfig{
-			EnableAuth: false,
-			RateLimit: models.RateLimitConfig{
-				Enabled:           true,
-				RequestsPerMinute: 5,
-				BurstSize:         5,
-				CleanupInterval:   5 * time.Minute,
-			},
-		},
-		Server: models.ServerConfig{
-			CORS: models.CORSConfig{
-				Enabled: false,
-			},
-		},
-	}
-
-	mockUpdateService := &MockUpdateService{}
-	mockUpdateService.On("CheckForUpdate", mock.Anything, mock.Anything).
-		Return((*models.UpdateCheckResponse)(nil), update.NewApplicationNotFoundError("test")).Maybe()
-
-	mockHandlers := NewHandlers(mockUpdateService)
-
-	limiter := ratelimit.NewMemoryLimiter(
-		config.Security.RateLimit.RequestsPerMinute,
-		config.Security.RateLimit.BurstSize,
-		config.Security.RateLimit.CleanupInterval,
-	)
-	defer limiter.Close()
-
-	router := SetupRoutes(mockHandlers, config,
-		WithRateLimiter(ratelimit.Middleware(limiter, limiter)),
-	)
-
-	clientIP := "192.168.1.100"
-
-	var rateLimitHit bool
-	for i := 0; i < 10; i++ {
-		req := httptest.NewRequest("GET", "/api/v1/updates/test/check", nil)
-		req.RemoteAddr = clientIP + ":12345"
-		rr := httptest.NewRecorder()
-		router.ServeHTTP(rr, req)
-
-		if rr.Code == http.StatusTooManyRequests {
-			rateLimitHit = true
-			break
-		}
-	}
-
-	assert.True(t, rateLimitHit, "Rate limiting should trigger after exceeding limit")
-}
-
 // TestSecurityHeaders tests that appropriate security headers are set
 func TestSecurityHeaders(t *testing.T) {
 	config := &models.Config{
 		Security: models.SecurityConfig{
 			EnableAuth: false,
-			RateLimit: models.RateLimitConfig{
-				Enabled: false,
-			},
 		},
-		Server: models.ServerConfig{
-			CORS: models.CORSConfig{
-				Enabled:        true,
-				AllowedOrigins: []string{"https://example.com"},
-				AllowedMethods: []string{"GET", "POST"},
-				AllowedHeaders: []string{"Authorization", "Content-Type"},
-				MaxAge:         86400,
-			},
-		},
+		Server: models.ServerConfig{},
 	}
 
 	mockUpdateService := &MockUpdateService{}
@@ -758,20 +677,6 @@ func TestSecurityHeaders(t *testing.T) {
 
 	mockHandlers := NewHandlers(mockUpdateService)
 	router := SetupRoutes(mockHandlers, config)
-
-	t.Run("CORS Headers", func(t *testing.T) {
-		req := httptest.NewRequest("OPTIONS", "/api/v1/updates/test/check", nil)
-		req.Header.Set("Origin", "https://example.com")
-		rr := httptest.NewRecorder()
-
-		router.ServeHTTP(rr, req)
-
-		assert.Equal(t, http.StatusNoContent, rr.Code)
-		assert.Equal(t, "https://example.com", rr.Header().Get("Access-Control-Allow-Origin"))
-		assert.Contains(t, rr.Header().Get("Access-Control-Allow-Methods"), "GET")
-		assert.Contains(t, rr.Header().Get("Access-Control-Allow-Headers"), "Authorization")
-		assert.Equal(t, "86400", rr.Header().Get("Access-Control-Max-Age"))
-	})
 
 	t.Run("Content-Type Header", func(t *testing.T) {
 		req := httptest.NewRequest("GET", "/health", nil)

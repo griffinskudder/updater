@@ -1,0 +1,38 @@
+# Updater Service with nginx reverse proxy
+# Suitable for production deployments where TLS certificates are already present on the host.
+# Copy your fullchain.pem and privkey.pem into ./ssl/ before starting.
+#
+# Usage:
+#   cp /etc/letsencrypt/live/api.example.com/fullchain.pem ssl/
+#   cp /etc/letsencrypt/live/api.example.com/privkey.pem   ssl/
+#   UPDATER_BOOTSTRAP_KEY=$(openssl rand -base64 32) docker compose up -d
+
+services:
+  updater:
+    image: ghcr.io/griffinskudder/updater:latest
+    environment:
+      UPDATER_BOOTSTRAP_KEY: "${UPDATER_BOOTSTRAP_KEY}"
+      UPDATER_ENABLE_AUTH: "true"
+      UPDATER_STORAGE_TYPE: "sqlite"
+      UPDATER_DATABASE_DSN: "/data/updater.db"
+      UPDATER_LOG_FORMAT: "json"
+    volumes:
+      - updater_data:/data
+    expose:
+      - "8080"
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - updater
+    restart: unless-stopped
+
+volumes:
+  updater_data:

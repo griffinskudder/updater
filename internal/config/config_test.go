@@ -1,6 +1,8 @@
 package config
 
 import (
+	"context"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"testing"
@@ -23,26 +25,13 @@ server:
   write_timeout: 30s
   idle_timeout: 60s
   tls_enabled: false
-  cors:
-    enabled: true
-    allowed_origins: ["*"]
-    allowed_methods: ["GET", "POST"]
-    allowed_headers: ["Content-Type"]
-    max_age: 3600
-
 storage:
   type: "json"
   path: "./data/test.json"
 
 security:
   enable_auth: true
-  jwt_secret: "test-secret"
   bootstrap_key: "upd_test-bootstrap-key-here"
-  rate_limit:
-    enabled: true
-    requests_per_minute: 100
-    burst_size: 10
-    cleanup_interval: 300s
 
 logging:
   level: "debug"
@@ -81,27 +70,13 @@ metrics:
 	assert.Equal(t, 60*time.Second, config.Server.IdleTimeout)
 	assert.False(t, config.Server.TLSEnabled)
 
-	// Verify CORS config
-	assert.True(t, config.Server.CORS.Enabled)
-	assert.Equal(t, []string{"*"}, config.Server.CORS.AllowedOrigins)
-	assert.Equal(t, []string{"GET", "POST"}, config.Server.CORS.AllowedMethods)
-	assert.Equal(t, []string{"Content-Type"}, config.Server.CORS.AllowedHeaders)
-	assert.Equal(t, 3600, config.Server.CORS.MaxAge)
-
 	// Verify storage config
 	assert.Equal(t, "json", config.Storage.Type)
 	assert.Equal(t, "./data/test.json", config.Storage.Path)
 
 	// Verify security config
 	assert.True(t, config.Security.EnableAuth)
-	assert.Equal(t, "test-secret", config.Security.JWTSecret)
 	assert.Equal(t, "upd_test-bootstrap-key-here", config.Security.BootstrapKey)
-
-	// Verify rate limiting config
-	assert.True(t, config.Security.RateLimit.Enabled)
-	assert.Equal(t, 100, config.Security.RateLimit.RequestsPerMinute)
-	assert.Equal(t, 10, config.Security.RateLimit.BurstSize)
-	assert.Equal(t, 300*time.Second, config.Security.RateLimit.CleanupInterval)
 
 	// Verify logging config
 	assert.Equal(t, "debug", config.Logging.Level)
@@ -159,12 +134,7 @@ storage:
 
 	// Security defaults
 	assert.False(t, config.Security.EnableAuth) // Default
-	assert.Empty(t, config.Security.JWTSecret)
 	assert.Empty(t, config.Security.BootstrapKey)
-
-	// Rate limiting defaults
-	assert.True(t, config.Security.RateLimit.Enabled)                // Default
-	assert.Equal(t, 60, config.Security.RateLimit.RequestsPerMinute) // Default
 
 	// Logging defaults
 	assert.Equal(t, "info", config.Logging.Level)    // Default
@@ -406,12 +376,7 @@ storage:
 
 security:
   enable_auth: true
-  jwt_secret: "complex-jwt-secret-123"
   bootstrap_key: "upd_my-bootstrap-key-abc123"
-  trusted_proxies:
-    - "10.0.0.0/8"
-    - "172.16.0.0/12"
-    - "192.168.0.0/16"
 `
 
 	err := os.WriteFile(configFile, []byte(configContent), 0644)
@@ -421,11 +386,7 @@ security:
 	require.NoError(t, err)
 
 	assert.True(t, config.Security.EnableAuth)
-	assert.Equal(t, "complex-jwt-secret-123", config.Security.JWTSecret)
 	assert.Equal(t, "upd_my-bootstrap-key-abc123", config.Security.BootstrapKey)
-
-	// Check trusted proxies
-	assert.Equal(t, []string{"10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"}, config.Security.TrustedProxies)
 }
 
 func TestLoad_WithFileLogging(t *testing.T) {
@@ -540,3 +501,100 @@ func TestValidate_TLSEnabledWithoutCerts(t *testing.T) {
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "TLS cert file is required when TLS is enabled")
 }
+
+func TestWarnDeprecatedKeys(t *testing.T) {
+	tests := []struct {
+		name     string
+		yaml     string
+		wantWarn []string
+	}{
+		{
+			name:     "no deprecated keys",
+			yaml:     "server:\n  port: 8080\n",
+			wantWarn: nil,
+		},
+		{
+			name:     "cors key warns",
+			yaml:     "server:\n  cors:\n    enabled: true\n",
+			wantWarn: []string{"server.cors"},
+		},
+		{
+			name:     "rate_limit key warns",
+			yaml:     "security:\n  rate_limit:\n    enabled: true\n",
+			wantWarn: []string{"security.rate_limit"},
+		},
+		{
+			name:     "jwt_secret key warns",
+			yaml:     "security:\n  jwt_secret: \"abc\"\n",
+			wantWarn: []string{"security.jwt_secret"},
+		},
+		{
+			name:     "trusted_proxies key warns",
+			yaml:     "security:\n  trusted_proxies:\n    - \"10.0.0.1\"\n",
+			wantWarn: []string{"security.trusted_proxies"},
+		},
+		{
+			name:     "all deprecated keys warn",
+			yaml:     "server:\n  cors:\n    enabled: true\nsecurity:\n  jwt_secret: \"x\"\n  rate_limit:\n    enabled: true\n  trusted_proxies: []\n",
+			wantWarn: []string{"server.cors", "security.jwt_secret", "security.rate_limit", "security.trusted_proxies"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var records []capturedLog
+			h := &capturingSlogHandler{records: &records}
+			orig := slog.Default()
+			slog.SetDefault(slog.New(h))
+			defer slog.SetDefault(orig)
+
+			warnDeprecatedKeys([]byte(tt.yaml))
+
+			if len(tt.wantWarn) == 0 && len(records) > 0 {
+				t.Errorf("expected no warnings, got %v", records)
+			}
+			for _, want := range tt.wantWarn {
+				found := false
+				for _, rec := range records {
+					if rec.configKey == want {
+						found = true
+						break
+					}
+				}
+				if !found {
+					t.Errorf("expected warning with config_key=%q, got %v", want, records)
+				}
+			}
+		})
+	}
+}
+
+// capturedLog holds a single captured Warn-level log record for testing.
+type capturedLog struct {
+	msg       string
+	configKey string
+}
+
+// capturingSlogHandler captures Warn-level log records (message + config_key attribute) for testing.
+type capturingSlogHandler struct {
+	records *[]capturedLog
+}
+
+func (h *capturingSlogHandler) Enabled(_ context.Context, level slog.Level) bool {
+	return level >= slog.LevelWarn
+}
+
+func (h *capturingSlogHandler) Handle(_ context.Context, r slog.Record) error {
+	log := capturedLog{msg: r.Message}
+	r.Attrs(func(a slog.Attr) bool {
+		if a.Key == "config_key" {
+			log.configKey = a.Value.String()
+		}
+		return true
+	})
+	*h.records = append(*h.records, log)
+	return nil
+}
+
+func (h *capturingSlogHandler) WithAttrs(_ []slog.Attr) slog.Handler { return h }
+func (h *capturingSlogHandler) WithGroup(_ string) slog.Handler      { return h }

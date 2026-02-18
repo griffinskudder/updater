@@ -18,14 +18,6 @@ func TestNewDefaultConfig(t *testing.T) {
 	assert.Equal(t, 60*time.Second, config.Server.IdleTimeout)
 	assert.False(t, config.Server.TLSEnabled)
 
-	// Test CORS defaults
-	assert.True(t, config.Server.CORS.Enabled)
-	assert.Contains(t, config.Server.CORS.AllowedOrigins, "*")
-	assert.Contains(t, config.Server.CORS.AllowedMethods, "GET")
-	assert.Contains(t, config.Server.CORS.AllowedMethods, "POST")
-	assert.Contains(t, config.Server.CORS.AllowedHeaders, "*")
-	assert.Equal(t, 86400, config.Server.CORS.MaxAge)
-
 	// Test storage defaults
 	assert.Equal(t, "json", config.Storage.Type)
 	assert.Equal(t, "./data/releases.json", config.Storage.Path)
@@ -36,12 +28,6 @@ func TestNewDefaultConfig(t *testing.T) {
 
 	// Test security defaults
 	assert.Empty(t, config.Security.BootstrapKey)
-	assert.True(t, config.Security.RateLimit.Enabled)
-	assert.Equal(t, 60, config.Security.RateLimit.RequestsPerMinute)
-	assert.Equal(t, 10, config.Security.RateLimit.BurstSize)
-	assert.Equal(t, 120, config.Security.RateLimit.AuthenticatedRequestsPerMinute)
-	assert.Equal(t, 20, config.Security.RateLimit.AuthenticatedBurstSize)
-	assert.Equal(t, 5*time.Minute, config.Security.RateLimit.CleanupInterval)
 	assert.False(t, config.Security.EnableAuth)
 
 	// Test logging defaults
@@ -93,9 +79,7 @@ func TestConfig_Validate(t *testing.T) {
 					Type: "json",
 					Path: "./data/test.json",
 				},
-				Security: SecurityConfig{
-					RateLimit: RateLimitConfig{Enabled: false},
-				},
+				Security: SecurityConfig{},
 				Logging: LoggingConfig{
 					Level:  "info",
 					Format: "json",
@@ -121,9 +105,7 @@ func TestConfig_Validate(t *testing.T) {
 				Storage: StorageConfig{
 					Type: "invalid-type",
 				},
-				Security: SecurityConfig{
-					RateLimit: RateLimitConfig{Enabled: false},
-				},
+				Security: SecurityConfig{},
 				Logging: LoggingConfig{
 					Level:  "info",
 					Format: "json",
@@ -355,62 +337,25 @@ func TestSecurityConfig_Validate(t *testing.T) {
 		errorMsg    string
 	}{
 		{
-			name: "valid config with rate limiting",
-			config: SecurityConfig{
-				RateLimit: RateLimitConfig{
-					Enabled:                        true,
-					RequestsPerMinute:              60,
-					BurstSize:                      10,
-					AuthenticatedRequestsPerMinute: 120,
-					AuthenticatedBurstSize:         20,
-				},
-			},
+			name:        "valid config",
+			config:      SecurityConfig{},
 			expectError: false,
 		},
-
 		{
-			name: "negative requests per minute",
+			name: "auth enabled without bootstrap key",
 			config: SecurityConfig{
-				RateLimit: RateLimitConfig{
-					Enabled:           true,
-					RequestsPerMinute: -1,
-				},
+				EnableAuth: true,
 			},
 			expectError: true,
-			errorMsg:    "requests per minute cannot be negative",
+			errorMsg:    "bootstrap key is required when auth is enabled",
 		},
 		{
-			name: "negative burst size",
+			name: "auth enabled with bootstrap key",
 			config: SecurityConfig{
-				RateLimit: RateLimitConfig{
-					Enabled:   true,
-					BurstSize: -1,
-				},
+				EnableAuth:   true,
+				BootstrapKey: "upd_test-key",
 			},
-			expectError: true,
-			errorMsg:    "burst size cannot be negative",
-		},
-		{
-			name: "negative authenticated requests per minute",
-			config: SecurityConfig{
-				RateLimit: RateLimitConfig{
-					Enabled:                        true,
-					AuthenticatedRequestsPerMinute: -1,
-				},
-			},
-			expectError: true,
-			errorMsg:    "authenticated requests per minute cannot be negative",
-		},
-		{
-			name: "negative authenticated burst size",
-			config: SecurityConfig{
-				RateLimit: RateLimitConfig{
-					Enabled:                true,
-					AuthenticatedBurstSize: -1,
-				},
-			},
-			expectError: true,
-			errorMsg:    "authenticated burst size cannot be negative",
+			expectError: false,
 		},
 	}
 
@@ -836,9 +781,7 @@ func TestConfigStructFields(t *testing.T) {
 	assert.NotNil(t, config.Observability)
 
 	// Verify nested structures
-	assert.NotNil(t, config.Server.CORS)
 	assert.NotNil(t, config.Storage.Database)
-	assert.NotNil(t, config.Security.RateLimit)
 	assert.NotNil(t, config.Cache.Memory)
 	assert.NotNil(t, config.Cache.Redis)
 }
@@ -859,24 +802,6 @@ func TestDatabaseConfig_Structure(t *testing.T) {
 	assert.Equal(t, 10, dbConfig.MaxIdleConns)
 	assert.Equal(t, 1*time.Hour, dbConfig.ConnMaxLifetime)
 	assert.Equal(t, 30*time.Minute, dbConfig.ConnMaxIdleTime)
-}
-
-func TestRateLimitConfig_Structure(t *testing.T) {
-	rateLimitConfig := RateLimitConfig{
-		Enabled:                        true,
-		RequestsPerMinute:              120,
-		BurstSize:                      20,
-		AuthenticatedRequestsPerMinute: 240,
-		AuthenticatedBurstSize:         40,
-		CleanupInterval:                10 * time.Minute,
-	}
-
-	assert.True(t, rateLimitConfig.Enabled)
-	assert.Equal(t, 120, rateLimitConfig.RequestsPerMinute)
-	assert.Equal(t, 20, rateLimitConfig.BurstSize)
-	assert.Equal(t, 240, rateLimitConfig.AuthenticatedRequestsPerMinute)
-	assert.Equal(t, 40, rateLimitConfig.AuthenticatedBurstSize)
-	assert.Equal(t, 10*time.Minute, rateLimitConfig.CleanupInterval)
 }
 
 func TestMemoryConfig_Structure(t *testing.T) {

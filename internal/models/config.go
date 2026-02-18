@@ -29,7 +29,7 @@ const (
 // Configuration Structure:
 // - Server: HTTP server and network settings
 // - Storage: Database and file storage configuration
-// - Security: Authentication, authorization, and rate limiting
+// - Security: Authentication and authorization
 // - Logging: Structured logging and output configuration
 // - Cache: Performance caching settings
 // - Metrics: Monitoring and observability
@@ -58,15 +58,6 @@ type ServerConfig struct {
 	TLSEnabled   bool          `yaml:"tls_enabled" json:"tls_enabled"`
 	TLSCertFile  string        `yaml:"tls_cert_file" json:"tls_cert_file"`
 	TLSKeyFile   string        `yaml:"tls_key_file" json:"tls_key_file"`
-	CORS         CORSConfig    `yaml:"cors" json:"cors"`
-}
-
-type CORSConfig struct {
-	Enabled        bool     `yaml:"enabled" json:"enabled"`
-	AllowedOrigins []string `yaml:"allowed_origins" json:"allowed_origins"`
-	AllowedMethods []string `yaml:"allowed_methods" json:"allowed_methods"`
-	AllowedHeaders []string `yaml:"allowed_headers" json:"allowed_headers"`
-	MaxAge         int      `yaml:"max_age" json:"max_age"`
 }
 
 type StorageConfig struct {
@@ -85,34 +76,15 @@ type DatabaseConfig struct {
 	ConnMaxIdleTime time.Duration `yaml:"conn_max_idle_time" json:"conn_max_idle_time"`
 }
 
-// SecurityConfig holds authentication, authorisation, and rate limiting settings.
+// SecurityConfig holds authentication and authorisation settings.
 type SecurityConfig struct {
 	// BootstrapKey is the initial admin API key seeded into storage on first startup
 	// when the api_keys table is empty. Required when EnableAuth is true.
 	// Set via the UPDATER_BOOTSTRAP_KEY environment variable or security.bootstrap_key
 	// in the config file. After the first startup, keys are managed via the REST API.
-	BootstrapKey string          `yaml:"bootstrap_key" json:"bootstrap_key"`
-	RateLimit    RateLimitConfig `yaml:"rate_limit" json:"rate_limit"`
-	JWTSecret    string          `yaml:"jwt_secret" json:"jwt_secret"`
+	BootstrapKey string `yaml:"bootstrap_key" json:"bootstrap_key"`
 	// EnableAuth toggles API key authentication. When false all endpoints are public.
-	EnableAuth     bool     `yaml:"enable_auth" json:"enable_auth"`
-	TrustedProxies []string `yaml:"trusted_proxies" json:"trusted_proxies"`
-}
-
-// RateLimitConfig configures the two-tier token-bucket rate limiter.
-// Anonymous requests are limited by RequestsPerMinute/BurstSize.
-// Authenticated requests are limited by the higher AuthenticatedRequestsPerMinute/AuthenticatedBurstSize values.
-type RateLimitConfig struct {
-	Enabled bool `yaml:"enabled" json:"enabled"`
-	// RequestsPerMinute is the sustained request rate for anonymous (unauthenticated) clients.
-	RequestsPerMinute int `yaml:"requests_per_minute" json:"requests_per_minute"`
-	// BurstSize is the maximum burst capacity for anonymous clients.
-	BurstSize int `yaml:"burst_size" json:"burst_size"`
-	// AuthenticatedRequestsPerMinute is the sustained request rate for authenticated clients.
-	AuthenticatedRequestsPerMinute int `yaml:"authenticated_requests_per_minute" json:"authenticated_requests_per_minute"`
-	// AuthenticatedBurstSize is the maximum burst capacity for authenticated clients.
-	AuthenticatedBurstSize int           `yaml:"authenticated_burst_size" json:"authenticated_burst_size"`
-	CleanupInterval        time.Duration `yaml:"cleanup_interval" json:"cleanup_interval"`
+	EnableAuth bool `yaml:"enable_auth" json:"enable_auth"`
 }
 
 type LoggingConfig struct {
@@ -181,7 +153,6 @@ type TracingConfig struct {
 // - Port 8080: Standard non-privileged HTTP port
 // - 30-second timeouts: Balance between user experience and resource protection
 // - JSON storage: Simple setup without external dependencies
-// - Rate limiting enabled: Prevent abuse from the start
 // - Structured logging: Better for log aggregation and analysis
 // - Memory caching: Good performance without external dependencies
 func NewDefaultConfig() *Config {
@@ -193,13 +164,6 @@ func NewDefaultConfig() *Config {
 			WriteTimeout: 30 * time.Second,
 			IdleTimeout:  60 * time.Second,
 			TLSEnabled:   false,
-			CORS: CORSConfig{
-				Enabled:        true,
-				AllowedOrigins: []string{"*"},
-				AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-				AllowedHeaders: []string{"*"},
-				MaxAge:         86400,
-			},
 		},
 		Storage: StorageConfig{
 			Type: "json",
@@ -214,16 +178,7 @@ func NewDefaultConfig() *Config {
 			Options: make(map[string]string),
 		},
 		Security: SecurityConfig{
-			RateLimit: RateLimitConfig{
-				Enabled:                        true,
-				RequestsPerMinute:              60,
-				BurstSize:                      10,
-				AuthenticatedRequestsPerMinute: 120,
-				AuthenticatedBurstSize:         20,
-				CleanupInterval:                5 * time.Minute,
-			},
-			EnableAuth:     false,
-			TrustedProxies: []string{},
+			EnableAuth: false,
 		},
 		Logging: LoggingConfig{
 			Level:      "info",
@@ -357,21 +312,6 @@ func (stc *StorageConfig) Validate() error {
 func (sec *SecurityConfig) Validate() error {
 	if sec.EnableAuth && sec.BootstrapKey == "" {
 		return errors.New("bootstrap key is required when auth is enabled")
-	}
-
-	if sec.RateLimit.Enabled {
-		if sec.RateLimit.RequestsPerMinute < 0 {
-			return errors.New("requests per minute cannot be negative")
-		}
-		if sec.RateLimit.BurstSize < 0 {
-			return errors.New("burst size cannot be negative")
-		}
-		if sec.RateLimit.AuthenticatedRequestsPerMinute < 0 {
-			return errors.New("authenticated requests per minute cannot be negative")
-		}
-		if sec.RateLimit.AuthenticatedBurstSize < 0 {
-			return errors.New("authenticated burst size cannot be negative")
-		}
 	}
 
 	return nil
