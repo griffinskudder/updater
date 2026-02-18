@@ -84,16 +84,29 @@ Every HTTP request is logged with the following fields:
 
 ### Security Audit Logging
 
-Security-sensitive operations include the `event` field set to `security_audit`:
+Security-sensitive operations include the `event` field set to `security_audit`.
+The fields present depend on which operation triggered the event.
+
+#### Release and application operations
 
 | Field | Description |
 |-------|-------------|
-| `event` | Always `security_audit` for security events |
+| `event` | Always `security_audit` |
 | `app_id` | Application identifier |
 | `api_key` | Name of the API key used |
 | `client_ip` | Client IP address |
 | `version` | Release version (when applicable) |
 | `error` | Error details (when applicable) |
+
+#### API key management operations
+
+| Field | Description |
+|-------|-------------|
+| `event` | Always `security_audit` |
+| `action` | Operation performed: `create`, `update`, `delete`, or `toggle` |
+| `key_id` | UUID of the key being managed |
+| `key_name` | Human-readable name of the key |
+| `actor_key_id` | UUID of the key that performed the operation (REST API path) |
 
 ### Error Logging
 
@@ -134,8 +147,11 @@ sequenceDiagram
     C->>M: HTTP Request
     M->>L: Log request (method, path, remote_addr)
     M->>H: Forward request
-    alt Security Event
-        H->>L: Log security audit (event, app_id, api_key)
+    alt Security Event (release/app operation)
+        H->>L: Log security audit (event, app_id, api_key, client_ip)
+    end
+    alt Security Event (key management)
+        H->>L: Log security audit (event, action, key_id, key_name)
     end
     alt Error
         H->>L: Log error (error details)

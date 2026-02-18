@@ -2,54 +2,42 @@
 
 The updater service models provide a comprehensive type system for managing software updates, version control, and service configuration. This documentation is organized into focused components for easy navigation and understanding.
 
-## Documentation Structure
+## Model Reference
 
-### [Version Models](./version-models.md)
-**Purpose:** Semantic versioning implementation and version comparison logic
-**Content:** Version parsing, comparison operations, constraint checking
-**Key Components:** `Version` struct, `VersionConstraint`, comparison methods
-**Use Cases:** Update availability determination, compatibility checking
+The complete type reference for `internal/models` is auto-generated from Go doc
+comments and always reflects the current code:
 
-### [Platform & Application Models](./platform-models.md)
-**Purpose:** Platform support, application metadata, and configuration management
-**Content:** Platform/architecture constants, application settings, configuration schemas
-**Key Components:** `Application` struct, `ApplicationConfig`, platform constants
-**Use Cases:** Multi-platform support, application registration, update policies
+**[Model Reference (auto-generated)](./auto/models.md)**
 
-### [Release Models](./release-models.md)
-**Purpose:** Software release management with security and integrity verification
-**Content:** Release metadata, checksum validation, filtering capabilities
-**Key Components:** `Release` struct, `ReleaseFilter`, security validation
-**Use Cases:** Release registration, integrity verification, release queries
+Key types:
 
-### [API Models](./api-models.md)
-**Purpose:** HTTP API request/response contracts and validation
-**Content:** Request/response structures, error handling, validation strategies
-**Key Components:** Request types, response types, error responses, validation
-**Use Cases:** API endpoint implementation, client integration, error handling
-
-### [Configuration Models](./config-models.md)
-**Purpose:** Service configuration and operational settings
-**Content:** Configuration structures, validation, defaults, deployment scenarios
-**Key Components:** `Config` struct, component configurations, validation methods
-**Use Cases:** Service deployment, environment configuration, operational tuning
+| Type | Description |
+|------|-------------|
+| `Application` | Application metadata, platform support, configuration |
+| `ApplicationConfig` | Per-application update policy settings |
+| `Release` | Release metadata, checksum validation, filtering |
+| `ReleaseFilter` | Criteria for filtering release queries |
+| `APIKey` | Storage-backed API key with permission checking |
+| `Config` | Root service configuration with all sub-configs |
+| `SecurityConfig` | Auth settings: bootstrap key, rate limiting, trusted proxies |
+| `RateLimitConfig` | Two-tier token-bucket rate limiting (anonymous + authenticated) |
+| Request types | `CheckUpdateRequest`, `RegisterReleaseRequest`, `CreateApplicationRequest`, etc. |
+| Response types | `UpdateCheckResponse`, `LatestVersionResponse`, `HealthResponse`, etc. |
 
 ## Quick Start Guide
 
 ### For API Integration
-1. Start with [API Models](./api-models.md) for request/response contracts
-2. Review [Version Models](./version-models.md) for version comparison logic
-3. Check [Platform Models](./platform-models.md) for supported platforms
+1. Start with the [Model Reference](./auto/models.md) for request/response contracts
+2. Review the `UpdateCheckRequest`, `RegisterReleaseRequest` types
+3. Check platform and architecture constants in the reference
 
 ### For Service Deployment
-1. Begin with [Configuration Models](./config-models.md) for setup
-2. Understand [Release Models](./release-models.md) for data management
-3. Review security considerations across all components
+1. Read the `Config`, `SecurityConfig`, and `RateLimitConfig` sections in the reference
+2. See [Security](../SECURITY.md) for the API key management workflow
 
 ### For Client Development
-1. Study [API Models](./api-models.md) for integration patterns
-2. Implement [Version Models](./version-models.md) comparison logic
-3. Handle [Platform Models](./platform-models.md) compatibility
+1. Study request/response types in the [Model Reference](./auto/models.md)
+2. Use the `Version` semver comparison helpers for local update checks
 
 ## Architecture Overview
 
@@ -124,11 +112,12 @@ graph TB
 
 | Component | Status | Documentation | Tests | Notes |
 |-----------|--------|---------------|-------|-------|
-| Version Models | Complete | Complete | Complete | Semantic versioning support |
-| Platform Models | Complete | Complete | Complete | Multi-platform support |
-| Release Models | Complete | Complete | Complete | Security & integrity |
-| API Models | Complete | Complete | Complete | Request/response contracts |
-| Config Models | Complete | Complete | Complete | Service configuration |
+| Version Models | Complete | Auto-generated | Complete | Semantic versioning support |
+| Platform Models | Complete | Auto-generated | Complete | Multi-platform support |
+| Release Models | Complete | Auto-generated | Complete | Security & integrity |
+| API Models | Complete | Auto-generated | Complete | Request/response contracts |
+| Config Models | Complete | Auto-generated | Complete | Service configuration |
+| API Key Models | Complete | Auto-generated | Complete | Storage-backed key management |
 
 ## Related Documentation
 
@@ -142,25 +131,21 @@ graph TB
 
 ### Adding New Models
 1. Implement the Go struct in appropriate `internal/models/*.go` file
-2. Add comprehensive inline documentation
+2. Add exported Go doc comments on the type and each exported field
 3. Include validation methods and business logic
-4. Update relevant documentation file in `docs/models/`
-5. Add usage examples and integration patterns
-6. Write unit tests (following IMPORTANT guidelines)
+4. Update this `index.md` overview table with the new type
+5. Run `make docs-generate` to regenerate `docs/models/auto/models.md`
+6. Write unit tests
 
 ### Modifying Existing Models
 1. Ensure backward compatibility for API changes
-2. Update inline documentation in Go files
-3. Refresh relevant documentation file
-4. Update examples if behavior changes
-5. Add migration notes if breaking changes are unavoidable
+2. Update Go doc comments to reflect the change
+3. Run `make docs-generate` to regenerate the reference
 
 ### Documentation Standards
-- Include design rationale for major decisions
-- Provide practical usage examples
-- Document security considerations
-- Explain performance implications
-- Cover common troubleshooting scenarios
+- Write Go doc comments in the source files — the reference is auto-generated from them
+- Include design rationale in the Overview section of this file, not in Go doc comments
+- Document security considerations in [Security](../SECURITY.md)
 
 ---
 

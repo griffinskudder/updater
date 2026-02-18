@@ -1,0 +1,8 @@
+name: Updater Service Database
+desc: PostgreSQL schema for the updater service
+docPath: docs/db
+er:
+  format: svg
+  comment: true
+exclude:
+  - schema_migrations

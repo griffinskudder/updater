@@ -11,11 +11,12 @@ the login page.
 
 ## Authentication
 
-Enter an API key configured with `admin` permission in your server configuration.
-In development mode (no API keys configured) any non-empty string is accepted.
+Enter an API key with `admin` permission on the login page. After a successful
+login the browser receives an HttpOnly, SameSite=Strict `admin_session` cookie
+scoped to `/admin`. Subsequent requests are authenticated automatically via this
+cookie — the key is never re-entered per request and is never visible to JavaScript.
 
-The key is stored in an HttpOnly, SameSite=Strict session cookie scoped to `/admin`.
-It is never visible to JavaScript.
+In development mode (auth disabled) any non-empty string is accepted as the key.
 
 ## Pages
 
@@ -27,6 +28,8 @@ It is never visible to JavaScript.
 | `/admin/applications/{id}` | Application detail and release list |
 | `/admin/applications/{id}/edit` | Edit application form |
 | `/admin/applications/{id}/releases/new` | Register a release |
+| `/admin/keys` | API key list with enable/disable toggle (HTMX) and revoke button |
+| `/admin/keys/new` | Create key form; raw key displayed exactly once on success |
 | `/admin/health` | Service health dashboard |
 
 ## Architecture

@@ -39,6 +39,12 @@ Fully implemented HTTP API with production-ready features and comprehensive secu
 - `DELETE /api/v1/applications/{app_id}` - Delete application (protected: admin permission)
 - `GET /health` - Health check (public with enhanced details for authenticated users)
 - `GET /api/v1/health` - Versioned health check alias (public)
+- `GET /api/v1/admin/keys` - List API keys (protected: admin permission)
+- `POST /api/v1/admin/keys` - Create API key; raw value returned once (protected: admin permission)
+- `PATCH /api/v1/admin/keys/{id}` - Update API key name, permissions, or enabled status (protected: admin permission)
+- `DELETE /api/v1/admin/keys/{id}` - Permanently revoke an API key (protected: admin permission)
+- `GET /api/v1/docs` - Swagger UI (public)
+- `GET /api/v1/openapi.yaml` - OpenAPI specification (public)
 
 **Security Features:**
 - API key authentication with Bearer token format
@@ -82,7 +88,7 @@ Fully implemented business logic for version comparison and update determination
 Multi-provider persistence layer with a unified interface and factory-based provider creation.
 
 **Core Components:**
-- **Interface** (`interface.go`): `Storage` interface with 9 data operations + `Ping()` + `Close()`
+- **Interface** (`interface.go`): `Storage` interface with 10 data operations + 5 API key operations + `Ping()` + `Close()` (15 methods total)
 - **Factory** (`factory.go`): Factory pattern for creating providers by type string
 - **Type Conversions** (`dbconvert.go`): Shared database-to-model conversion helpers
 
@@ -102,6 +108,7 @@ Multi-provider persistence layer with a unified interface and factory-based prov
 - Copy-on-return to prevent callers from mutating cached data
 - `Ping()` method on all providers for health check integration
 - `Close()` for clean resource release (database connections, file handles)
+- Auth middleware calls `GetAPIKeyByHash(ctx, sha256(bearerToken))` on every authenticated request — no plaintext keys are ever stored
 
 ### 4. Models (`internal/models/`) ✅ **COMPLETE**
 Data structures, domain objects, and validation logic.
@@ -112,6 +119,7 @@ Data structures, domain objects, and validation logic.
 - **Request** (`request.go`): API request types with validation
 - **Response** (`response.go`): API response types with helper constructors
 - **Config** (`config.go`): Service configuration schemas with defaults and validation
+- **APIKey** (`api_key.go`): Storage-backed API key with key generation, SHA-256 hashing, and permission checking
 
 **Key Design Decisions:**
 - Version comparison uses `github.com/Masterminds/semver/v3` directly (no separate version model)
@@ -471,25 +479,13 @@ server:
 
 security:
   enable_auth: true
-  api_keys:
-    - key: "${ADMIN_API_KEY}"
-      name: "Production Admin"
-      permissions: ["admin"]
-      enabled: true
-    - key: "${RELEASE_API_KEY}"
-      name: "Release Publisher"
-      permissions: ["write"]
-      enabled: true
-    - key: "${MONITORING_API_KEY}"
-      name: "Monitoring System"
-      permissions: ["read"]
-      enabled: true
-
+  bootstrap_key: "${UPDATER_BOOTSTRAP_KEY}"
   rate_limit:
     enabled: true
-    requests_per_minute: 120
-    requests_per_hour: 2000
-    burst_size: 20
+    requests_per_minute: 60
+    burst_size: 10
+    authenticated_requests_per_minute: 300
+    authenticated_burst_size: 50
     cleanup_interval: 300s
 
   trusted_proxies:
@@ -646,11 +642,12 @@ Configuration is loaded from a YAML file (via `-config` CLI flag) and overridden
 **Security:**
 - `UPDATER_ENABLE_AUTH`: Enable API key authentication (default: false)
 - `UPDATER_JWT_SECRET`: JWT signing secret
-- `UPDATER_API_KEYS`: API keys (format: `key:name:perm1,perm2;key2:name2:perm`)
+- `UPDATER_BOOTSTRAP_KEY`: Initial admin API key seeded on first startup
 - `UPDATER_RATE_LIMIT_ENABLED`: Enable rate limiting (default: false)
-- `UPDATER_RATE_LIMIT_RPM`: Requests per minute
-- `UPDATER_RATE_LIMIT_RPH`: Requests per hour
-- `UPDATER_RATE_LIMIT_BURST`: Burst size
+- `UPDATER_RATE_LIMIT_RPM`: Anonymous requests per minute
+- `UPDATER_RATE_LIMIT_BURST`: Anonymous burst size
+- `UPDATER_RATE_LIMIT_AUTH_RPM`: Authenticated requests per minute
+- `UPDATER_RATE_LIMIT_AUTH_BURST`: Authenticated burst size
 
 **Logging:**
 - `UPDATER_LOG_LEVEL`: Log level (debug, info, warn, error)
@@ -707,16 +704,13 @@ storage:
 
 security:
   enable_auth: false
-  api_keys:
-    - key: "admin-key-123"
-      name: "Admin"
-      permissions: ["read", "write"]
-      enabled: true
+  bootstrap_key: ""
   rate_limit:
     enabled: false
     requests_per_minute: 60
-    requests_per_hour: 1000
     burst_size: 10
+    authenticated_requests_per_minute: 120
+    authenticated_burst_size: 20
   trusted_proxies:
     - "10.0.0.0/8"
     - "172.16.0.0/12"
