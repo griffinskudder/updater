@@ -233,4 +233,3 @@ func authMiddleware(store storage.Storage) mux.MiddlewareFunc {
 		})
 	}
 }
-
