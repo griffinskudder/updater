@@ -58,16 +58,8 @@ type ServerConfig struct {
 	TLSEnabled   bool          `yaml:"tls_enabled" json:"tls_enabled"`
 	TLSCertFile  string        `yaml:"tls_cert_file" json:"tls_cert_file"`
 	TLSKeyFile   string        `yaml:"tls_key_file" json:"tls_key_file"`
-	CORS         CORSConfig    `yaml:"cors" json:"cors"`
 }
 
-type CORSConfig struct {
-	Enabled        bool     `yaml:"enabled" json:"enabled"`
-	AllowedOrigins []string `yaml:"allowed_origins" json:"allowed_origins"`
-	AllowedMethods []string `yaml:"allowed_methods" json:"allowed_methods"`
-	AllowedHeaders []string `yaml:"allowed_headers" json:"allowed_headers"`
-	MaxAge         int      `yaml:"max_age" json:"max_age"`
-}
 
 type StorageConfig struct {
 	Type     string            `yaml:"type" json:"type"`
@@ -181,7 +173,6 @@ type TracingConfig struct {
 // - Port 8080: Standard non-privileged HTTP port
 // - 30-second timeouts: Balance between user experience and resource protection
 // - JSON storage: Simple setup without external dependencies
-// - Rate limiting enabled: Prevent abuse from the start
 // - Structured logging: Better for log aggregation and analysis
 // - Memory caching: Good performance without external dependencies
 func NewDefaultConfig() *Config {
@@ -193,13 +184,6 @@ func NewDefaultConfig() *Config {
 			WriteTimeout: 30 * time.Second,
 			IdleTimeout:  60 * time.Second,
 			TLSEnabled:   false,
-			CORS: CORSConfig{
-				Enabled:        true,
-				AllowedOrigins: []string{"*"},
-				AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-				AllowedHeaders: []string{"*"},
-				MaxAge:         86400,
-			},
 		},
 		Storage: StorageConfig{
 			Type: "json",

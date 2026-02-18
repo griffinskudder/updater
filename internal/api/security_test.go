@@ -359,11 +359,7 @@ func TestEndpointSecurity(t *testing.T) {
 				Enabled: false, // Disable for tests
 			},
 		},
-		Server: models.ServerConfig{
-			CORS: models.CORSConfig{
-				Enabled: false, // Disable for tests
-			},
-		},
+		Server: models.ServerConfig{},
 	}
 
 	// Mock handlers with update service
@@ -518,11 +514,7 @@ func TestSecurityVulnerabilities(t *testing.T) {
 				Enabled: false, // Disable for tests
 			},
 		},
-		Server: models.ServerConfig{
-			CORS: models.CORSConfig{
-				Enabled: false, // Disable for tests
-			},
-		},
+		Server: models.ServerConfig{},
 	}
 
 	mockUpdateService := &MockUpdateService{}
@@ -688,11 +680,7 @@ func TestRateLimiting(t *testing.T) {
 				CleanupInterval:   5 * time.Minute,
 			},
 		},
-		Server: models.ServerConfig{
-			CORS: models.CORSConfig{
-				Enabled: false,
-			},
-		},
+		Server: models.ServerConfig{},
 	}
 
 	mockUpdateService := &MockUpdateService{}
@@ -739,15 +727,7 @@ func TestSecurityHeaders(t *testing.T) {
 				Enabled: false,
 			},
 		},
-		Server: models.ServerConfig{
-			CORS: models.CORSConfig{
-				Enabled:        true,
-				AllowedOrigins: []string{"https://example.com"},
-				AllowedMethods: []string{"GET", "POST"},
-				AllowedHeaders: []string{"Authorization", "Content-Type"},
-				MaxAge:         86400,
-			},
-		},
+		Server: models.ServerConfig{},
 	}
 
 	mockUpdateService := &MockUpdateService{}
@@ -758,20 +738,6 @@ func TestSecurityHeaders(t *testing.T) {
 
 	mockHandlers := NewHandlers(mockUpdateService)
 	router := SetupRoutes(mockHandlers, config)
-
-	t.Run("CORS Headers", func(t *testing.T) {
-		req := httptest.NewRequest("OPTIONS", "/api/v1/updates/test/check", nil)
-		req.Header.Set("Origin", "https://example.com")
-		rr := httptest.NewRecorder()
-
-		router.ServeHTTP(rr, req)
-
-		assert.Equal(t, http.StatusNoContent, rr.Code)
-		assert.Equal(t, "https://example.com", rr.Header().Get("Access-Control-Allow-Origin"))
-		assert.Contains(t, rr.Header().Get("Access-Control-Allow-Methods"), "GET")
-		assert.Contains(t, rr.Header().Get("Access-Control-Allow-Headers"), "Authorization")
-		assert.Equal(t, "86400", rr.Header().Get("Access-Control-Max-Age"))
-	})
 
 	t.Run("Content-Type Header", func(t *testing.T) {
 		req := httptest.NewRequest("GET", "/health", nil)

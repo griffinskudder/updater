@@ -99,28 +99,6 @@ func loadFromEnvironment(config *models.Config) {
 		config.Server.TLSKeyFile = keyFile
 	}
 
-	// CORS configuration
-	if cors := os.Getenv("UPDATER_CORS_ENABLED"); cors != "" {
-		config.Server.CORS.Enabled = strings.ToLower(cors) == "true"
-	}
-
-	if origins := os.Getenv("UPDATER_CORS_ALLOWED_ORIGINS"); origins != "" {
-		config.Server.CORS.AllowedOrigins = strings.Split(origins, ",")
-	}
-
-	if methods := os.Getenv("UPDATER_CORS_ALLOWED_METHODS"); methods != "" {
-		config.Server.CORS.AllowedMethods = strings.Split(methods, ",")
-	}
-
-	if headers := os.Getenv("UPDATER_CORS_ALLOWED_HEADERS"); headers != "" {
-		config.Server.CORS.AllowedHeaders = strings.Split(headers, ",")
-	}
-
-	if maxAge := os.Getenv("UPDATER_CORS_MAX_AGE"); maxAge != "" {
-		if age, err := strconv.Atoi(maxAge); err == nil {
-			config.Server.CORS.MaxAge = age
-		}
-	}
 
 	// Storage configuration
 	if storageType := os.Getenv("UPDATER_STORAGE_TYPE"); storageType != "" {

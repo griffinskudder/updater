@@ -23,13 +23,6 @@ server:
   write_timeout: 30s
   idle_timeout: 60s
   tls_enabled: false
-  cors:
-    enabled: true
-    allowed_origins: ["*"]
-    allowed_methods: ["GET", "POST"]
-    allowed_headers: ["Content-Type"]
-    max_age: 3600
-
 storage:
   type: "json"
   path: "./data/test.json"
@@ -80,13 +73,6 @@ metrics:
 	assert.Equal(t, 30*time.Second, config.Server.WriteTimeout)
 	assert.Equal(t, 60*time.Second, config.Server.IdleTimeout)
 	assert.False(t, config.Server.TLSEnabled)
-
-	// Verify CORS config
-	assert.True(t, config.Server.CORS.Enabled)
-	assert.Equal(t, []string{"*"}, config.Server.CORS.AllowedOrigins)
-	assert.Equal(t, []string{"GET", "POST"}, config.Server.CORS.AllowedMethods)
-	assert.Equal(t, []string{"Content-Type"}, config.Server.CORS.AllowedHeaders)
-	assert.Equal(t, 3600, config.Server.CORS.MaxAge)
 
 	// Verify storage config
 	assert.Equal(t, "json", config.Storage.Type)

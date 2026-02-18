@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -89,10 +88,6 @@ func SetupRoutes(handlers *Handlers, config *models.Config, opts ...RouteOption)
 		w.WriteHeader(http.StatusNotFound)
 	}).Methods("OPTIONS")
 
-	if config.Server.CORS.Enabled {
-		router.Use(corsMiddleware(config.Server.CORS))
-	}
-
 	router.Use(loggingMiddleware)
 	router.Use(recoveryMiddleware)
 
@@ -172,33 +167,6 @@ func methodNotAllowedHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(errorResp)
 }
 
-// corsMiddleware handles Cross-Origin Resource Sharing
-func corsMiddleware(corsConfig models.CORSConfig) mux.MiddlewareFunc {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if len(corsConfig.AllowedOrigins) > 0 {
-				origin := r.Header.Get("Origin")
-				if origin != "" && (contains(corsConfig.AllowedOrigins, "*") || contains(corsConfig.AllowedOrigins, origin)) {
-					w.Header().Set("Access-Control-Allow-Origin", origin)
-				}
-			}
-			if len(corsConfig.AllowedMethods) > 0 {
-				w.Header().Set("Access-Control-Allow-Methods", joinStrings(corsConfig.AllowedMethods, ", "))
-			}
-			if len(corsConfig.AllowedHeaders) > 0 {
-				w.Header().Set("Access-Control-Allow-Headers", joinStrings(corsConfig.AllowedHeaders, ", "))
-			}
-			if corsConfig.MaxAge > 0 {
-				w.Header().Set("Access-Control-Max-Age", fmt.Sprintf("%d", corsConfig.MaxAge))
-			}
-			if r.Method == "OPTIONS" {
-				w.WriteHeader(http.StatusNoContent)
-				return
-			}
-			next.ServeHTTP(w, r)
-		})
-	}
-}
 
 // loggingMiddleware logs HTTP requests
 func loggingMiddleware(next http.Handler) http.Handler {

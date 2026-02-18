@@ -18,13 +18,6 @@ func TestNewDefaultConfig(t *testing.T) {
 	assert.Equal(t, 60*time.Second, config.Server.IdleTimeout)
 	assert.False(t, config.Server.TLSEnabled)
 
-	// Test CORS defaults
-	assert.True(t, config.Server.CORS.Enabled)
-	assert.Contains(t, config.Server.CORS.AllowedOrigins, "*")
-	assert.Contains(t, config.Server.CORS.AllowedMethods, "GET")
-	assert.Contains(t, config.Server.CORS.AllowedMethods, "POST")
-	assert.Contains(t, config.Server.CORS.AllowedHeaders, "*")
-	assert.Equal(t, 86400, config.Server.CORS.MaxAge)
 
 	// Test storage defaults
 	assert.Equal(t, "json", config.Storage.Type)
@@ -836,7 +829,6 @@ func TestConfigStructFields(t *testing.T) {
 	assert.NotNil(t, config.Observability)
 
 	// Verify nested structures
-	assert.NotNil(t, config.Server.CORS)
 	assert.NotNil(t, config.Storage.Database)
 	assert.NotNil(t, config.Security.RateLimit)
 	assert.NotNil(t, config.Cache.Memory)
