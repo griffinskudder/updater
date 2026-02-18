@@ -1,0 +1,71 @@
+# Updater Service with Traefik v3 reverse proxy
+# Traefik handles TLS (Let's Encrypt), CORS middleware, and rate limiting via labels.
+#
+# Usage:
+#   Replace api.example.com and admin@example.com with your values.
+#   UPDATER_BOOTSTRAP_KEY=$(openssl rand -base64 32) docker compose up -d
+
+services:
+  traefik:
+    image: traefik:v3
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.letsencrypt.acme.email=admin@example.com"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "traefik_certs:/letsencrypt"
+    restart: unless-stopped
+
+  updater:
+    image: ghcr.io/griffinskudder/updater:latest
+    environment:
+      UPDATER_BOOTSTRAP_KEY: "${UPDATER_BOOTSTRAP_KEY}"
+      UPDATER_ENABLE_AUTH: "true"
+      UPDATER_STORAGE_TYPE: "sqlite"
+      UPDATER_DATABASE_DSN: "/data/updater.db"
+      UPDATER_LOG_FORMAT: "json"
+    volumes:
+      - updater_data:/data
+    expose:
+      - "8080"
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+
+      # Router: HTTPS with Let's Encrypt
+      - "traefik.http.routers.updater.rule=Host(`api.example.com`)"
+      - "traefik.http.routers.updater.entrypoints=websecure"
+      - "traefik.http.routers.updater.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.updater.middlewares=updater-cors,updater-ratelimit,updater-security"
+
+      # CORS middleware -- adjust Access-Control-Allow-Origin for your frontend domain
+      - "traefik.http.middlewares.updater-cors.headers.accesscontrolallowmethods=GET,POST,PUT,DELETE,OPTIONS"
+      - "traefik.http.middlewares.updater-cors.headers.accesscontrolalloworiginlist=*"
+      - "traefik.http.middlewares.updater-cors.headers.accesscontrolallowheaders=Authorization,Content-Type"
+      - "traefik.http.middlewares.updater-cors.headers.accesscontrolmaxage=86400"
+
+      # Rate limit middleware (per IP; adjust average and burst to match your traffic)
+      - "traefik.http.middlewares.updater-ratelimit.ratelimit.average=60"
+      - "traefik.http.middlewares.updater-ratelimit.ratelimit.burst=20"
+      - "traefik.http.middlewares.updater-ratelimit.ratelimit.period=1m"
+
+      # Security headers
+      - "traefik.http.middlewares.updater-security.headers.stsSeconds=31536000"
+      - "traefik.http.middlewares.updater-security.headers.stsIncludeSubdomains=true"
+      - "traefik.http.middlewares.updater-security.headers.contentTypeNosniff=true"
+      - "traefik.http.middlewares.updater-security.headers.frameDeny=true"
+
+volumes:
+  updater_data:
+  traefik_certs:
