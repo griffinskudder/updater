@@ -134,25 +134,7 @@ func loadFromEnvironment(config *models.Config) {
 		config.Security.EnableAuth = strings.ToLower(auth) == "true"
 	}
 
-	if secret := os.Getenv("UPDATER_JWT_SECRET"); secret != "" {
-		config.Security.JWTSecret = secret
-	}
 
-	if rateLimit := os.Getenv("UPDATER_RATE_LIMIT_ENABLED"); rateLimit != "" {
-		config.Security.RateLimit.Enabled = strings.ToLower(rateLimit) == "true"
-	}
-
-	if rpm := os.Getenv("UPDATER_RATE_LIMIT_RPM"); rpm != "" {
-		if r, err := strconv.Atoi(rpm); err == nil {
-			config.Security.RateLimit.RequestsPerMinute = r
-		}
-	}
-
-	if burst := os.Getenv("UPDATER_RATE_LIMIT_BURST"); burst != "" {
-		if b, err := strconv.Atoi(burst); err == nil {
-			config.Security.RateLimit.BurstSize = b
-		}
-	}
 
 	// Bootstrap key from environment
 	if bk := os.Getenv("UPDATER_BOOTSTRAP_KEY"); bk != "" {
@@ -278,7 +260,6 @@ func SaveExample(filePath string) error {
 
 	// Enable authentication for example
 	config.Security.EnableAuth = true
-	config.Security.JWTSecret = "your-jwt-secret-here"
 
 	// Example TLS configuration
 	config.Server.TLSEnabled = false

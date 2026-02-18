@@ -10,9 +10,7 @@ import (
 	"net/url"
 	"strings"
 	"testing"
-	"time"
 	"updater/internal/models"
-	"updater/internal/ratelimit"
 	"updater/internal/storage"
 	"updater/internal/update"
 
@@ -355,9 +353,6 @@ func TestEndpointSecurity(t *testing.T) {
 		Security: models.SecurityConfig{
 			EnableAuth:   true,
 			BootstrapKey: "upd_test-bootstrap",
-			RateLimit: models.RateLimitConfig{
-				Enabled: false, // Disable for tests
-			},
 		},
 		Server: models.ServerConfig{},
 	}
@@ -510,9 +505,6 @@ func TestSecurityVulnerabilities(t *testing.T) {
 		Security: models.SecurityConfig{
 			EnableAuth:   true,
 			BootstrapKey: "upd_test-bootstrap",
-			RateLimit: models.RateLimitConfig{
-				Enabled: false, // Disable for tests
-			},
 		},
 		Server: models.ServerConfig{},
 	}
@@ -668,64 +660,12 @@ func TestSecurityVulnerabilities(t *testing.T) {
 	})
 }
 
-// TestRateLimiting tests the rate limiting functionality
-func TestRateLimiting(t *testing.T) {
-	config := &models.Config{
-		Security: models.SecurityConfig{
-			EnableAuth: false,
-			RateLimit: models.RateLimitConfig{
-				Enabled:           true,
-				RequestsPerMinute: 5,
-				BurstSize:         5,
-				CleanupInterval:   5 * time.Minute,
-			},
-		},
-		Server: models.ServerConfig{},
-	}
-
-	mockUpdateService := &MockUpdateService{}
-	mockUpdateService.On("CheckForUpdate", mock.Anything, mock.Anything).
-		Return((*models.UpdateCheckResponse)(nil), update.NewApplicationNotFoundError("test")).Maybe()
-
-	mockHandlers := NewHandlers(mockUpdateService)
-
-	limiter := ratelimit.NewMemoryLimiter(
-		config.Security.RateLimit.RequestsPerMinute,
-		config.Security.RateLimit.BurstSize,
-		config.Security.RateLimit.CleanupInterval,
-	)
-	defer limiter.Close()
-
-	router := SetupRoutes(mockHandlers, config,
-		WithRateLimiter(ratelimit.Middleware(limiter, limiter)),
-	)
-
-	clientIP := "192.168.1.100"
-
-	var rateLimitHit bool
-	for i := 0; i < 10; i++ {
-		req := httptest.NewRequest("GET", "/api/v1/updates/test/check", nil)
-		req.RemoteAddr = clientIP + ":12345"
-		rr := httptest.NewRecorder()
-		router.ServeHTTP(rr, req)
-
-		if rr.Code == http.StatusTooManyRequests {
-			rateLimitHit = true
-			break
-		}
-	}
-
-	assert.True(t, rateLimitHit, "Rate limiting should trigger after exceeding limit")
-}
 
 // TestSecurityHeaders tests that appropriate security headers are set
 func TestSecurityHeaders(t *testing.T) {
 	config := &models.Config{
 		Security: models.SecurityConfig{
 			EnableAuth: false,
-			RateLimit: models.RateLimitConfig{
-				Enabled: false,
-			},
 		},
 		Server: models.ServerConfig{},
 	}

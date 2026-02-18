@@ -29,13 +29,7 @@ storage:
 
 security:
   enable_auth: true
-  jwt_secret: "test-secret"
   bootstrap_key: "upd_test-bootstrap-key-here"
-  rate_limit:
-    enabled: true
-    requests_per_minute: 100
-    burst_size: 10
-    cleanup_interval: 300s
 
 logging:
   level: "debug"
@@ -80,14 +74,7 @@ metrics:
 
 	// Verify security config
 	assert.True(t, config.Security.EnableAuth)
-	assert.Equal(t, "test-secret", config.Security.JWTSecret)
 	assert.Equal(t, "upd_test-bootstrap-key-here", config.Security.BootstrapKey)
-
-	// Verify rate limiting config
-	assert.True(t, config.Security.RateLimit.Enabled)
-	assert.Equal(t, 100, config.Security.RateLimit.RequestsPerMinute)
-	assert.Equal(t, 10, config.Security.RateLimit.BurstSize)
-	assert.Equal(t, 300*time.Second, config.Security.RateLimit.CleanupInterval)
 
 	// Verify logging config
 	assert.Equal(t, "debug", config.Logging.Level)
@@ -145,12 +132,7 @@ storage:
 
 	// Security defaults
 	assert.False(t, config.Security.EnableAuth) // Default
-	assert.Empty(t, config.Security.JWTSecret)
 	assert.Empty(t, config.Security.BootstrapKey)
-
-	// Rate limiting defaults
-	assert.True(t, config.Security.RateLimit.Enabled)                // Default
-	assert.Equal(t, 60, config.Security.RateLimit.RequestsPerMinute) // Default
 
 	// Logging defaults
 	assert.Equal(t, "info", config.Logging.Level)    // Default
@@ -392,12 +374,7 @@ storage:
 
 security:
   enable_auth: true
-  jwt_secret: "complex-jwt-secret-123"
   bootstrap_key: "upd_my-bootstrap-key-abc123"
-  trusted_proxies:
-    - "10.0.0.0/8"
-    - "172.16.0.0/12"
-    - "192.168.0.0/16"
 `
 
 	err := os.WriteFile(configFile, []byte(configContent), 0644)
@@ -407,11 +384,7 @@ security:
 	require.NoError(t, err)
 
 	assert.True(t, config.Security.EnableAuth)
-	assert.Equal(t, "complex-jwt-secret-123", config.Security.JWTSecret)
 	assert.Equal(t, "upd_my-bootstrap-key-abc123", config.Security.BootstrapKey)
-
-	// Check trusted proxies
-	assert.Equal(t, []string{"10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"}, config.Security.TrustedProxies)
 }
 
 func TestLoad_WithFileLogging(t *testing.T) {

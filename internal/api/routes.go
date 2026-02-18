@@ -235,12 +235,6 @@ func authMiddleware(store storage.Storage) mux.MiddlewareFunc {
 	}
 }
 
-// WithRateLimiter adds rate limiting middleware to the router.
-func WithRateLimiter(middleware func(http.Handler) http.Handler) RouteOption {
-	return func(r *mux.Router) {
-		r.Use(middleware)
-	}
-}
 
 func contains(slice []string, item string) bool {
 	for _, s := range slice {
