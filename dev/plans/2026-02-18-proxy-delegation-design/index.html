@@ -12,31 +12,27 @@
         <meta name="author" content="Updater Service Team">
       
       
-        <link rel="canonical" href="https://griffinskudder.github.io/updater/dev/db/">
+        <link rel="canonical" href="https://griffinskudder.github.io/updater/dev/plans/2026-02-18-proxy-delegation-design/">
       
       
-        <link rel="prev" href="../models/auto/models/">
-      
-      
-        <link rel="next" href="public.applications/">
       
       
         
       
       
-      <link rel="icon" href="../assets/images/favicon.png">
+      <link rel="icon" href="../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
     
     
       
-        <title>Overview - Updater Service Documentation</title>
+        <title>Proxy Delegation Design - Updater Service Documentation</title>
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -55,9 +51,9 @@
       
     
     
-      <link rel="stylesheet" href="../assets/extra.css">
+      <link rel="stylesheet" href="../../assets/extra.css">
     
-    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -82,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#updater" class="md-skip">
+        <a href="#proxy-delegation-design" class="md-skip">
           Skip to content
         </a>
       
@@ -100,7 +96,7 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href=".." title="Updater Service Documentation" class="md-header__button md-logo" aria-label="Updater Service Documentation" data-md-component="logo">
+    <a href="../.." title="Updater Service Documentation" class="md-header__button md-logo" aria-label="Updater Service Documentation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -120,7 +116,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Overview
+              Proxy Delegation Design
             
           </span>
         </div>
@@ -236,7 +232,7 @@
   
   
     <li class="md-tabs__item">
-      <a href=".." class="md-tabs__link">
+      <a href="../.." class="md-tabs__link">
         
   
   
@@ -255,7 +251,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../ROADMAP/" class="md-tabs__link">
+      <a href="../../ROADMAP/" class="md-tabs__link">
         
   
   
@@ -274,7 +270,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../use-cases/" class="md-tabs__link">
+      <a href="../../use-cases/" class="md-tabs__link">
         
   
   
@@ -295,7 +291,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../api/" class="md-tabs__link">
+        <a href="../../api/" class="md-tabs__link">
           
   
   
@@ -313,7 +309,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../ARCHITECTURE/" class="md-tabs__link">
+      <a href="../../ARCHITECTURE/" class="md-tabs__link">
         
   
   
@@ -334,7 +330,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../SECURITY/" class="md-tabs__link">
+        <a href="../../SECURITY/" class="md-tabs__link">
           
   
   
@@ -352,7 +348,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../rate-limiting/" class="md-tabs__link">
+      <a href="../../rate-limiting/" class="md-tabs__link">
         
   
   
@@ -371,7 +367,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../logging/" class="md-tabs__link">
+      <a href="../../logging/" class="md-tabs__link">
         
   
   
@@ -390,7 +386,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../storage/" class="md-tabs__link">
+      <a href="../../storage/" class="md-tabs__link">
         
   
   
@@ -409,7 +405,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../reverse-proxy/" class="md-tabs__link">
+      <a href="../../reverse-proxy/" class="md-tabs__link">
         
   
   
@@ -428,7 +424,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../observability/" class="md-tabs__link">
+      <a href="../../observability/" class="md-tabs__link">
         
   
   
@@ -447,7 +443,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../makefile/" class="md-tabs__link">
+      <a href="../../makefile/" class="md-tabs__link">
         
   
   
@@ -468,7 +464,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../models/" class="md-tabs__link">
+        <a href="../../models/" class="md-tabs__link">
           
   
   
@@ -484,13 +480,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="./" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../db/" class="md-tabs__link">
           
   
   
@@ -524,7 +518,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href=".." title="Updater Service Documentation" class="md-nav__button md-logo" aria-label="Updater Service Documentation" data-md-component="logo">
+    <a href="../.." title="Updater Service Documentation" class="md-nav__button md-logo" aria-label="Updater Service Documentation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -554,7 +548,7 @@
   
   
     <li class="md-nav__item">
-      <a href=".." class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         
   
   
@@ -581,7 +575,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ROADMAP/" class="md-nav__link">
+      <a href="../../ROADMAP/" class="md-nav__link">
         
   
   
@@ -608,7 +602,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../use-cases/" class="md-nav__link">
+      <a href="../../use-cases/" class="md-nav__link">
         
   
   
@@ -689,7 +683,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../api/" class="md-nav__link">
+      <a href="../../api/" class="md-nav__link">
         
   
   
@@ -717,7 +711,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../openapi/" class="md-nav__link">
+      <a href="../../openapi/" class="md-nav__link">
         
   
   
@@ -745,7 +739,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../admin-ui/" class="md-nav__link">
+      <a href="../../admin-ui/" class="md-nav__link">
         
   
   
@@ -780,7 +774,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ARCHITECTURE/" class="md-nav__link">
+      <a href="../../ARCHITECTURE/" class="md-nav__link">
         
   
   
@@ -861,7 +855,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../SECURITY/" class="md-nav__link">
+      <a href="../../SECURITY/" class="md-nav__link">
         
   
   
@@ -889,7 +883,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../DEPLOYMENT_SECURITY/" class="md-nav__link">
+      <a href="../../DEPLOYMENT_SECURITY/" class="md-nav__link">
         
   
   
@@ -924,7 +918,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../rate-limiting/" class="md-nav__link">
+      <a href="../../rate-limiting/" class="md-nav__link">
         
   
   
@@ -951,7 +945,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../logging/" class="md-nav__link">
+      <a href="../../logging/" class="md-nav__link">
         
   
   
@@ -978,7 +972,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../storage/" class="md-nav__link">
+      <a href="../../storage/" class="md-nav__link">
         
   
   
@@ -1005,7 +999,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../reverse-proxy/" class="md-nav__link">
+      <a href="../../reverse-proxy/" class="md-nav__link">
         
   
   
@@ -1032,7 +1026,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../observability/" class="md-nav__link">
+      <a href="../../observability/" class="md-nav__link">
         
   
   
@@ -1059,7 +1053,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../makefile/" class="md-nav__link">
+      <a href="../../makefile/" class="md-nav__link">
         
   
   
@@ -1140,7 +1134,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../models/" class="md-nav__link">
+      <a href="../../models/" class="md-nav__link">
         
   
   
@@ -1168,7 +1162,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../models/auto/models/" class="md-nav__link">
+      <a href="../../models/auto/models/" class="md-nav__link">
         
   
   
@@ -1200,31 +1194,28 @@
       
   
   
-    
   
   
-  
     
     
     
     
-      
-        
-        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_14" checked>
         
           
-          <label class="md-nav__link" for="__nav_14" id="__nav_14_label" tabindex="">
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_14" >
+        
+          
+          <label class="md-nav__link" for="__nav_14" id="__nav_14_label" tabindex="0">
             
   
   
@@ -1242,7 +1233,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_14_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_14_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_14">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1257,37 +1248,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Overview
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../db/" class="md-nav__link">
         
   
   
@@ -1303,59 +1267,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#tables" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Tables
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#stored-procedures-and-functions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Stored procedures and functions
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#relations" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Relations
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1368,7 +1279,7 @@
   
   
     <li class="md-nav__item">
-      <a href="public.applications/" class="md-nav__link">
+      <a href="../../db/public.applications/" class="md-nav__link">
         
   
   
@@ -1396,7 +1307,7 @@
   
   
     <li class="md-nav__item">
-      <a href="public.releases/" class="md-nav__link">
+      <a href="../../db/public.releases/" class="md-nav__link">
         
   
   
@@ -1424,7 +1335,7 @@
   
   
     <li class="md-nav__item">
-      <a href="public.api_keys/" class="md-nav__link">
+      <a href="../../db/public.api_keys/" class="md-nav__link">
         
   
   
@@ -1479,10 +1390,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#tables" class="md-nav__link">
+  <a href="#problem" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Tables
+        Problem
       
     </span>
   </a>
@@ -1490,10 +1401,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#stored-procedures-and-functions" class="md-nav__link">
+  <a href="#decision" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Stored procedures and functions
+        Decision
       
     </span>
   </a>
@@ -1501,10 +1412,154 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#relations" class="md-nav__link">
+  <a href="#scope" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Relations
+        Scope
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Scope">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#removed-from-the-application" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Removed from the application
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#unchanged" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unchanged
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deprecation-warning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deprecation Warning
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#new-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        New Files
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#updated-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Updated Files
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#proxy-responsibilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Proxy Responsibilities
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Proxy Responsibilities">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CORS
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rate-limiting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rate limiting
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TLS
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#real-client-ip" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real client IP
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#breaking-config-change" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Breaking Config Change
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#out-of-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Out of Scope
       
     </span>
   </a>
@@ -1529,46 +1584,6 @@
   
 
 
-  <nav class="md-path" aria-label="Navigation" >
-    <ol class="md-path__list">
-      
-        
-  
-  
-    <li class="md-path__item">
-      <a href=".." class="md-path__link">
-        
-  <span class="md-ellipsis">
-    Home
-  </span>
-
-      </a>
-    </li>
-  
-
-      
-      
-        
-  
-  
-    
-    
-      <li class="md-path__item">
-        <a href="./" class="md-path__link">
-          
-  <span class="md-ellipsis">
-    Database
-  </span>
-
-        </a>
-      </li>
-    
-  
-
-      
-    </ol>
-  </nav>
-
               
               <article class="md-content__inner md-typeset">
                 
@@ -1579,63 +1594,174 @@
   
 
 
-<h1 id="updater">updater<a class="headerlink" href="#updater" title="Permanent link">&para;</a></h1>
-<h2 id="tables">Tables<a class="headerlink" href="#tables" title="Permanent link">&para;</a></h2>
+<h1 id="proxy-delegation-design">Proxy Delegation Design<a class="headerlink" href="#proxy-delegation-design" title="Permanent link">&para;</a></h1>
+<p><strong>Date:</strong> 2026-02-18
+<strong>Status:</strong> Approved</p>
+<h2 id="problem">Problem<a class="headerlink" href="#problem" title="Permanent link">&para;</a></h2>
+<p>The updater service currently implements CORS, rate limiting, trusted proxy handling, and a JWT secret field in its own application layer. These concerns are better owned by a reverse proxy (nginx, Traefik) that sits in front of the service in every production deployment. Keeping them in the application adds configuration surface, code to maintain, and test coverage obligations without providing value that the proxy layer does not already supply.</p>
+<h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
+<p>Remove the four features from the application entirely. The service will document which proxy configuration replaces each removed feature and will emit startup warnings if deprecated config keys are still present in the YAML.</p>
+<h2 id="scope">Scope<a class="headerlink" href="#scope" title="Permanent link">&para;</a></h2>
+<h3 id="removed-from-the-application">Removed from the application<a class="headerlink" href="#removed-from-the-application" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
-<th>Name</th>
-<th>Columns</th>
-<th>Comment</th>
-<th>Type</th>
+<th>Feature</th>
+<th>Location</th>
+<th>Notes</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><a href="public.applications/">public.applications</a></td>
-<td>7</td>
-<td></td>
-<td>BASE TABLE</td>
+<td><code>CORSConfig</code> type + <code>server.cors</code> block</td>
+<td><code>internal/models/config.go</code></td>
+<td>Proxy sets <code>Access-Control-Allow-*</code> headers</td>
 </tr>
 <tr>
-<td><a href="public.releases/">public.releases</a></td>
-<td>15</td>
-<td></td>
-<td>BASE TABLE</td>
+<td><code>RateLimitConfig</code> type + <code>security.rate_limit</code> block</td>
+<td><code>internal/models/config.go</code></td>
+<td>Proxy enforces request limits</td>
 </tr>
 <tr>
-<td><a href="public.api_keys/">public.api_keys</a></td>
-<td>8</td>
-<td></td>
-<td>BASE TABLE</td>
+<td><code>SecurityConfig.TrustedProxies</code></td>
+<td><code>internal/models/config.go</code></td>
+<td>Proxy is unconditionally trusted</td>
+</tr>
+<tr>
+<td><code>SecurityConfig.JWTSecret</code></td>
+<td><code>internal/models/config.go</code></td>
+<td>Unused in the current codebase</td>
+</tr>
+<tr>
+<td><code>corsMiddleware</code> + <code>WithRateLimiter</code> wiring</td>
+<td><code>internal/api/routes.go</code></td>
+<td>~30 lines</td>
+</tr>
+<tr>
+<td><code>internal/ratelimit/</code> package</td>
+<td>entire directory</td>
+<td><code>limiter.go</code>, <code>memory.go</code>, <code>middleware.go</code> + tests</td>
+</tr>
+<tr>
+<td>Rate limiter wiring</td>
+<td><code>cmd/updater/updater.go</code></td>
+<td>~8 lines</td>
+</tr>
+<tr>
+<td>CORS + rate limit tests</td>
+<td><code>internal/api/security_test.go</code>, <code>internal/models/config_test.go</code></td>
+<td>Remove only the cases for removed features</td>
 </tr>
 </tbody>
 </table>
-<h2 id="stored-procedures-and-functions">Stored procedures and functions<a class="headerlink" href="#stored-procedures-and-functions" title="Permanent link">&para;</a></h2>
+<h3 id="unchanged">Unchanged<a class="headerlink" href="#unchanged" title="Permanent link">&para;</a></h3>
+<ul>
+<li>API key authentication (<code>authMiddleware</code>, <code>OptionalAuth</code>)</li>
+<li>Permission enforcement (<code>RequirePermission</code>, read/write/admin hierarchy)</li>
+<li>Admin cookie session middleware (<code>adminSessionMiddleware</code>)</li>
+<li><code>EnableAuth</code> config toggle</li>
+<li>All HTTP handlers, OpenAPI spec, request/response models</li>
+<li>Logging middleware, panic recovery middleware</li>
+</ul>
+<h2 id="deprecation-warning">Deprecation Warning<a class="headerlink" href="#deprecation-warning" title="Permanent link">&para;</a></h2>
+<p>On startup, <code>LoadConfig</code> will perform a second decode into a <code>deprecatedConfig</code> struct that retains the old fields:</p>
+<div class="language-go highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kd">type</span><span class="w"> </span><span class="nx">deprecatedConfig</span><span class="w"> </span><span class="kd">struct</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="nx">Server</span><span class="w">   </span><span class="kd">struct</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">CORS</span><span class="w"> </span><span class="kd">interface</span><span class="p">{}</span><span class="w"> </span><span class="s">`yaml:&quot;cors&quot;`</span><span class="w"> </span><span class="p">}</span><span class="w">         </span><span class="s">`yaml:&quot;server&quot;`</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="nx">Security</span><span class="w"> </span><span class="kd">struct</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">        </span><span class="nx">JWTSecret</span><span class="w">      </span><span class="kt">string</span><span class="w">      </span><span class="s">`yaml:&quot;jwt_secret&quot;`</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">        </span><span class="nx">TrustedProxies</span><span class="w"> </span><span class="kd">interface</span><span class="p">{}</span><span class="w"> </span><span class="s">`yaml:&quot;trusted_proxies&quot;`</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">        </span><span class="nx">RateLimit</span><span class="w">      </span><span class="kd">interface</span><span class="p">{}</span><span class="w"> </span><span class="s">`yaml:&quot;rate_limit&quot;`</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="s">`yaml:&quot;security&quot;`</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="p">}</span>
+</span></code></pre></div>
+<p>If any field is non-zero, a <code>slog.Warn</code> is emitted naming the offending key and pointing to <code>docs/reverse-proxy.md</code>. The service continues to start normally — no fatal error.</p>
+<h2 id="new-files">New Files<a class="headerlink" href="#new-files" title="Permanent link">&para;</a></h2>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>examples/
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>  nginx/
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    nginx.conf          # TLS termination, CORS, rate limiting, X-Forwarded-For
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    docker-compose.yml  # nginx + updater compose
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>  traefik/
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    docker-compose.yml  # Traefik v3 + updater with CORS middleware, rate limiting, Let&#39;s Encrypt TLS
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>docs/
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>  reverse-proxy.md      # Overview: what the proxy must handle, links to examples
+</span></code></pre></div>
+<h2 id="updated-files">Updated Files<a class="headerlink" href="#updated-files" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Name</th>
-<th>ReturnType</th>
-<th>Arguments</th>
-<th>Type</th>
+<th>File</th>
+<th>Change</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>public.update_updated_at_column</td>
-<td>trigger</td>
-<td></td>
-<td>FUNCTION</td>
+<td><code>docker/nginx/nginx.conf</code></td>
+<td>Add <code>Access-Control-Allow-*</code> headers; update comments</td>
+</tr>
+<tr>
+<td><code>examples/config.yaml</code></td>
+<td>Remove <code>cors</code>, <code>jwt_secret</code>, <code>rate_limit</code>, <code>trusted_proxies</code>, stale <code>api_keys</code></td>
+</tr>
+<tr>
+<td><code>docs/SECURITY.md</code></td>
+<td>Remove CORS and rate limiting sections; add "Proxy Layer" section</td>
+</tr>
+<tr>
+<td><code>docs/ARCHITECTURE.md</code></td>
+<td>Update security features list</td>
+</tr>
+<tr>
+<td><code>mkdocs.yml</code></td>
+<td>Add <code>reverse-proxy.md</code> to nav</td>
+</tr>
+<tr>
+<td><code>internal/models/config.go</code></td>
+<td>Remove four config types/fields and their defaults</td>
+</tr>
+<tr>
+<td><code>internal/models/config_test.go</code></td>
+<td>Remove <code>RateLimitConfig</code> and <code>CORSConfig</code> test cases</td>
+</tr>
+<tr>
+<td><code>internal/api/routes.go</code></td>
+<td>Remove <code>corsMiddleware</code>, <code>WithRateLimiter</code>; remove CORS opt-in block</td>
+</tr>
+<tr>
+<td><code>internal/api/security_test.go</code></td>
+<td>Remove CORS header assertion tests</td>
+</tr>
+<tr>
+<td><code>cmd/updater/updater.go</code></td>
+<td>Remove <code>ratelimit</code> import and limiter construction</td>
+</tr>
+<tr>
+<td><code>internal/config/</code></td>
+<td>Add <code>checkDeprecatedKeys</code> function</td>
 </tr>
 </tbody>
 </table>
-<h2 id="relations">Relations<a class="headerlink" href="#relations" title="Permanent link">&para;</a></h2>
-<p><img alt="er" src="schema.svg" /></p>
-<hr />
-<blockquote>
-<p>Generated by <a href="https://github.com/k1LoW/tbls">tbls</a></p>
-</blockquote>
+<h2 id="proxy-responsibilities">Proxy Responsibilities<a class="headerlink" href="#proxy-responsibilities" title="Permanent link">&para;</a></h2>
+<h3 id="cors">CORS<a class="headerlink" href="#cors" title="Permanent link">&para;</a></h3>
+<p>nginx sets <code>Access-Control-Allow-*</code> response headers on all proxied requests. The service no longer handles preflight OPTIONS responses for CORS purposes (the existing OPTIONS handler for unknown routes returns 204 and is unrelated to CORS).</p>
+<h3 id="rate-limiting">Rate limiting<a class="headerlink" href="#rate-limiting" title="Permanent link">&para;</a></h3>
+<p>nginx uses two <code>limit_req_zone</code> zones keyed on <code>$binary_remote_addr</code> to approximate the app's two-tier behaviour:</p>
+<ul>
+<li>Anonymous zone: lower rate (equivalent to the former <code>requests_per_minute</code> / <code>burst_size</code>)</li>
+<li>A separate zone for the <code>/api/</code> path at a higher rate reflects the former <code>authenticated_requests_per_minute</code></li>
+</ul>
+<p>A true per-key authenticated rate limit requires custom logic (e.g., <code>auth_request</code> + Redis) and is out of scope.</p>
+<h3 id="tls">TLS<a class="headerlink" href="#tls" title="Permanent link">&para;</a></h3>
+<p>Both nginx and Traefik examples terminate TLS externally and forward plain HTTP to the service on port 8080.</p>
+<h3 id="real-client-ip">Real client IP<a class="headerlink" href="#real-client-ip" title="Permanent link">&para;</a></h3>
+<p><code>X-Forwarded-For</code> and <code>X-Real-IP</code> are forwarded by the proxy. The service's request logging reads <code>r.RemoteAddr</code> which will be the proxy's IP. If real client IPs are needed in logs, handlers should read <code>X-Real-IP</code>. This is a known trade-off — no logging change is in scope for this PR.</p>
+<h2 id="breaking-config-change">Breaking Config Change<a class="headerlink" href="#breaking-config-change" title="Permanent link">&para;</a></h2>
+<p>Operators using <code>server.cors</code>, <code>security.rate_limit</code>, <code>security.jwt_secret</code>, or <code>security.trusted_proxies</code> in their YAML files will see startup warnings but no crash. They should migrate those concerns to their reverse proxy and remove the deprecated keys from their config.</p>
+<h2 id="out-of-scope">Out of Scope<a class="headerlink" href="#out-of-scope" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Updating request logging to use the forwarded real IP</li>
+<li>Distributed rate limiting (Redis-backed) for HA deployments — this is tracked in roadmap item 3.2</li>
+<li>Multi-tenancy changes</li>
+</ul>
 
 
 
@@ -1711,10 +1837,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.path", "navigation.top", "search.highlight", "search.share", "toc.follow", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "latest", "provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.path", "navigation.top", "search.highlight", "search.share", "toc.follow", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "latest", "provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
     
   </body>

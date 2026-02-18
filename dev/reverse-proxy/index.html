@@ -12,13 +12,13 @@
         <meta name="author" content="Updater Service Team">
       
       
-        <link rel="canonical" href="https://griffinskudder.github.io/updater/dev/db/">
+        <link rel="canonical" href="https://griffinskudder.github.io/updater/dev/reverse-proxy/">
       
       
-        <link rel="prev" href="../models/auto/models/">
+        <link rel="prev" href="../storage/">
       
       
-        <link rel="next" href="public.applications/">
+        <link rel="next" href="../observability/">
       
       
         
@@ -29,7 +29,7 @@
     
     
       
-        <title>Overview - Updater Service Documentation</title>
+        <title>Reverse Proxy - Updater Service Documentation</title>
       
     
     
@@ -82,7 +82,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#updater" class="md-skip">
+        <a href="#reverse-proxy" class="md-skip">
           Skip to content
         </a>
       
@@ -120,7 +120,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Overview
+              Reverse Proxy
             
           </span>
         </div>
@@ -407,9 +407,11 @@
   
   
   
+    
   
-    <li class="md-tabs__item">
-      <a href="../reverse-proxy/" class="md-tabs__link">
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
         
   
   
@@ -484,13 +486,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="./" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../db/" class="md-tabs__link">
           
   
   
@@ -1002,10 +1002,37 @@
       
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../reverse-proxy/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reverse Proxy
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1021,6 +1048,81 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-a-reverse-proxy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why a reverse proxy?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-configurations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example configurations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#real-client-ip-in-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real client IP in logs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TLS
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#migrating-from-previous-config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Migrating from previous config
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1200,31 +1302,28 @@
       
   
   
-    
   
   
-  
     
     
     
     
-      
-        
-        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_14" checked>
         
           
-          <label class="md-nav__link" for="__nav_14" id="__nav_14_label" tabindex="">
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_14" >
+        
+          
+          <label class="md-nav__link" for="__nav_14" id="__nav_14_label" tabindex="0">
             
   
   
@@ -1242,7 +1341,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_14_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_14_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_14">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1257,37 +1356,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Overview
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../db/" class="md-nav__link">
         
   
   
@@ -1303,59 +1375,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#tables" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Tables
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#stored-procedures-and-functions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Stored procedures and functions
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#relations" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Relations
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1368,7 +1387,7 @@
   
   
     <li class="md-nav__item">
-      <a href="public.applications/" class="md-nav__link">
+      <a href="../db/public.applications/" class="md-nav__link">
         
   
   
@@ -1396,7 +1415,7 @@
   
   
     <li class="md-nav__item">
-      <a href="public.releases/" class="md-nav__link">
+      <a href="../db/public.releases/" class="md-nav__link">
         
   
   
@@ -1424,7 +1443,7 @@
   
   
     <li class="md-nav__item">
-      <a href="public.api_keys/" class="md-nav__link">
+      <a href="../db/public.api_keys/" class="md-nav__link">
         
   
   
@@ -1479,10 +1498,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#tables" class="md-nav__link">
+  <a href="#why-a-reverse-proxy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Tables
+        Why a reverse proxy?
       
     </span>
   </a>
@@ -1490,10 +1509,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#stored-procedures-and-functions" class="md-nav__link">
+  <a href="#example-configurations" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Stored procedures and functions
+        Example configurations
       
     </span>
   </a>
@@ -1501,10 +1520,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#relations" class="md-nav__link">
+  <a href="#real-client-ip-in-logs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Relations
+        Real client IP in logs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TLS
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#migrating-from-previous-config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Migrating from previous config
       
     </span>
   </a>
@@ -1529,46 +1570,6 @@
   
 
 
-  <nav class="md-path" aria-label="Navigation" >
-    <ol class="md-path__list">
-      
-        
-  
-  
-    <li class="md-path__item">
-      <a href=".." class="md-path__link">
-        
-  <span class="md-ellipsis">
-    Home
-  </span>
-
-      </a>
-    </li>
-  
-
-      
-      
-        
-  
-  
-    
-    
-      <li class="md-path__item">
-        <a href="./" class="md-path__link">
-          
-  <span class="md-ellipsis">
-    Database
-  </span>
-
-        </a>
-      </li>
-    
-  
-
-      
-    </ol>
-  </nav>
-
               
               <article class="md-content__inner md-typeset">
                 
@@ -1579,63 +1580,79 @@
   
 
 
-<h1 id="updater">updater<a class="headerlink" href="#updater" title="Permanent link">&para;</a></h1>
-<h2 id="tables">Tables<a class="headerlink" href="#tables" title="Permanent link">&para;</a></h2>
+<h1 id="reverse-proxy">Reverse Proxy<a class="headerlink" href="#reverse-proxy" title="Permanent link">&para;</a></h1>
+<p>The updater service does not enforce CORS headers, rate limits, or TLS itself.
+These concerns must be configured at the reverse proxy layer for every production deployment.</p>
+<h2 id="why-a-reverse-proxy">Why a reverse proxy?<a class="headerlink" href="#why-a-reverse-proxy" title="Permanent link">&para;</a></h2>
+<p>A reverse proxy (nginx, Traefik, Caddy, Cloudflare) provides these features with
+more flexibility and less operational overhead than embedding them in the service:</p>
+<ul>
+<li>TLS termination and certificate renewal (Let's Encrypt)</li>
+<li>CORS header management per route and origin</li>
+<li>Rate limiting with IP-based and token-bucket strategies</li>
+<li>Security headers (HSTS, CSP, X-Frame-Options)</li>
+<li>Load balancing across multiple service replicas</li>
+</ul>
+<h2 id="example-configurations">Example configurations<a class="headerlink" href="#example-configurations" title="Permanent link">&para;</a></h2>
+<p>Ready-to-use configurations are provided in the <code>examples/</code> directory:</p>
 <table>
 <thead>
 <tr>
-<th>Name</th>
-<th>Columns</th>
-<th>Comment</th>
-<th>Type</th>
+<th>Directory</th>
+<th>Proxy</th>
+<th>What it provides</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><a href="public.applications/">public.applications</a></td>
-<td>7</td>
-<td></td>
-<td>BASE TABLE</td>
+<td><code>examples/nginx/</code></td>
+<td>nginx</td>
+<td>TLS (manual certs), CORS, rate limiting, security headers</td>
 </tr>
 <tr>
-<td><a href="public.releases/">public.releases</a></td>
-<td>15</td>
-<td></td>
-<td>BASE TABLE</td>
-</tr>
-<tr>
-<td><a href="public.api_keys/">public.api_keys</a></td>
-<td>8</td>
-<td></td>
-<td>BASE TABLE</td>
+<td><code>examples/traefik/</code></td>
+<td>Traefik v3</td>
+<td>TLS (Let's Encrypt), CORS middleware, rate limiting, security headers</td>
 </tr>
 </tbody>
 </table>
-<h2 id="stored-procedures-and-functions">Stored procedures and functions<a class="headerlink" href="#stored-procedures-and-functions" title="Permanent link">&para;</a></h2>
+<p>Each directory contains an <code>nginx.conf</code> or <code>docker-compose.yml</code> ready to use with minor substitution of your domain and certificate paths.</p>
+<h2 id="real-client-ip-in-logs">Real client IP in logs<a class="headerlink" href="#real-client-ip-in-logs" title="Permanent link">&para;</a></h2>
+<p>When running behind a proxy, <code>r.RemoteAddr</code> in the service will be the proxy IP, not the client IP.
+The nginx and Traefik examples forward <code>X-Real-IP</code> and <code>X-Forwarded-For</code>. If you need the client IP in service logs, read the <code>X-Real-IP</code> header in your application or configure your proxy to replace <code>RemoteAddr</code> directly.</p>
+<h2 id="tls">TLS<a class="headerlink" href="#tls" title="Permanent link">&para;</a></h2>
+<p>Both example configurations terminate TLS at the proxy and forward plain HTTP to the service on port 8080.
+Do not expose port 8080 directly to the internet.</p>
+<h2 id="migrating-from-previous-config">Migrating from previous config<a class="headerlink" href="#migrating-from-previous-config" title="Permanent link">&para;</a></h2>
+<p>If your <code>config.yaml</code> contains any of the following keys, they are no longer used.
+The service logs a warning on startup and continues running.
+Remove them from your config and configure the equivalent at your proxy instead.</p>
 <table>
 <thead>
 <tr>
-<th>Name</th>
-<th>ReturnType</th>
-<th>Arguments</th>
-<th>Type</th>
+<th>Removed config key</th>
+<th>Proxy equivalent</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>public.update_updated_at_column</td>
-<td>trigger</td>
-<td></td>
-<td>FUNCTION</td>
+<td><code>server.cors</code></td>
+<td><code>add_header Access-Control-*</code> (nginx) or <code>headers</code> middleware (Traefik)</td>
+</tr>
+<tr>
+<td><code>security.rate_limit</code></td>
+<td><code>limit_req_zone</code> (nginx) or <code>rateLimit</code> middleware (Traefik)</td>
+</tr>
+<tr>
+<td><code>security.trusted_proxies</code></td>
+<td>Proxy trust is unconditional -- remove this key</td>
+</tr>
+<tr>
+<td><code>security.jwt_secret</code></td>
+<td>Not used -- remove this key</td>
 </tr>
 </tbody>
 </table>
-<h2 id="relations">Relations<a class="headerlink" href="#relations" title="Permanent link">&para;</a></h2>
-<p><img alt="er" src="schema.svg" /></p>
-<hr />
-<blockquote>
-<p>Generated by <a href="https://github.com/k1LoW/tbls">tbls</a></p>
-</blockquote>
 
 
 
