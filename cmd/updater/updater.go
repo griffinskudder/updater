@@ -15,7 +15,6 @@ import (
 	"updater/internal/logger"
 	"updater/internal/models"
 	"updater/internal/observability"
-	"updater/internal/ratelimit"
 	"updater/internal/storage"
 	"updater/internal/update"
 )
@@ -102,28 +101,6 @@ func main() {
 	routeOpts := []api.RouteOption{}
 	if cfg.Observability.Tracing.Enabled {
 		routeOpts = append(routeOpts, api.WithOTelMiddleware(cfg.Observability.ServiceName))
-	}
-
-	// Initialize rate limiter if enabled
-	if cfg.Security.RateLimit.Enabled {
-		rlCfg := cfg.Security.RateLimit
-
-		// Default authenticated values to 2x anonymous if not set
-		authRPM := rlCfg.AuthenticatedRequestsPerMinute
-		if authRPM == 0 {
-			authRPM = rlCfg.RequestsPerMinute * 2
-		}
-		authBurst := rlCfg.AuthenticatedBurstSize
-		if authBurst == 0 {
-			authBurst = rlCfg.BurstSize * 2
-		}
-
-		anonLimiter := ratelimit.NewMemoryLimiter(rlCfg.RequestsPerMinute, rlCfg.BurstSize, rlCfg.CleanupInterval)
-		authLimiter := ratelimit.NewMemoryLimiter(authRPM, authBurst, rlCfg.CleanupInterval)
-		defer anonLimiter.Close()
-		defer authLimiter.Close()
-
-		routeOpts = append(routeOpts, api.WithRateLimiter(ratelimit.Middleware(anonLimiter, authLimiter)))
 	}
 
 	router := api.SetupRoutes(handlers, cfg, routeOpts...)
