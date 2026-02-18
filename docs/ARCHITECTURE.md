@@ -264,25 +264,33 @@ Parameters can be provided via query params or headers:
 │   │   ├── sqlite_test.go
 │   │   └── sqlc/
 │   │       ├── postgres/             # Generated PostgreSQL queries
+│   │       │   ├── api_keys.sql.go
 │   │       │   ├── applications.sql.go
 │   │       │   ├── db.go
 │   │       │   ├── models.go
 │   │       │   └── releases.sql.go
 │   │       ├── queries/              # SQL query definitions
 │   │       │   ├── postgres/
+│   │       │   │   ├── api_keys.sql
 │   │       │   │   ├── applications.sql
 │   │       │   │   └── releases.sql
 │   │       │   └── sqlite/
+│   │       │       ├── api_keys.sql
 │   │       │       ├── applications.sql
 │   │       │       └── releases.sql
 │   │       ├── schema/               # Database migrations
 │   │       │   ├── postgres/
 │   │       │   │   ├── 001_initial.sql
-│   │       │   │   └── 002_add_indexes.sql
+│   │       │   │   ├── 002_add_indexes.sql
+│   │       │   │   ├── 003_fk_restrict.sql
+│   │       │   │   └── 004_api_keys.sql
 │   │       │   └── sqlite/
 │   │       │       ├── 001_initial.sql
-│   │       │       └── 002_add_indexes.sql
+│   │       │       ├── 002_add_indexes.sql
+│   │       │       ├── 003_fk_restrict.sql
+│   │       │       └── 004_api_keys.sql
 │   │       └── sqlite/               # Generated SQLite queries
+│   │           ├── api_keys.sql.go
 │   │           ├── applications.sql.go
 │   │           ├── db.go
 │   │           ├── models.go

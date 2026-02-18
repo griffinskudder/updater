@@ -32,7 +32,7 @@ docs-generate: ## Generate model reference docs from Go source comments using go
 		-v updater-go-build-cache:/root/.cache/go-build \
 		-w /app \
 		golang:1.25-alpine \
-		sh -c "go run github.com/princjef/gomarkdoc/cmd/gomarkdoc@latest \
+		sh -c "go run github.com/princjef/gomarkdoc/cmd/gomarkdoc@v1.1.0 \
 			--output docs/models/auto/models.md \
 			./internal/models/..."
 

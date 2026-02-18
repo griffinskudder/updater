@@ -212,8 +212,9 @@ security:
   rate_limit:
     enabled: true
     requests_per_minute: 60
-    requests_per_hour: 1000
     burst_size: 10
+    authenticated_requests_per_minute: 300
+    authenticated_burst_size: 50
     cleanup_interval: 300s
 ```
 
