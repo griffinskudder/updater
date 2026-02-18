@@ -587,9 +587,6 @@ storage:
 
 security:
   enable_auth: false
-  rate_limit:
-    enabled: true
-    requests_per_minute: 120
 
 logging:
   level: "debug"
@@ -622,8 +619,6 @@ metrics:
 	assert.Equal(t, "./integration_test.json", cfg.Storage.Path)
 
 	assert.False(t, cfg.Security.EnableAuth)
-	assert.True(t, cfg.Security.RateLimit.Enabled)
-	assert.Equal(t, 120, cfg.Security.RateLimit.RequestsPerMinute)
 
 	assert.Equal(t, "debug", cfg.Logging.Level)
 	assert.Equal(t, "text", cfg.Logging.Format)

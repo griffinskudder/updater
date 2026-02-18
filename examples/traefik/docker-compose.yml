@@ -49,9 +49,10 @@ services:
       - "traefik.http.routers.updater.tls.certresolver=letsencrypt"
       - "traefik.http.routers.updater.middlewares=updater-cors,updater-ratelimit,updater-security"
 
-      # CORS middleware -- adjust Access-Control-Allow-Origin for your frontend domain
+      # CORS middleware -- replace the origin with your frontend domain.
+      # Do NOT use "*" in production for authenticated APIs.
       - "traefik.http.middlewares.updater-cors.headers.accesscontrolallowmethods=GET,POST,PUT,DELETE,OPTIONS"
-      - "traefik.http.middlewares.updater-cors.headers.accesscontrolalloworiginlist=*"
+      - "traefik.http.middlewares.updater-cors.headers.accesscontrolalloworiginlist=https://your-frontend.example.com"
       - "traefik.http.middlewares.updater-cors.headers.accesscontrolallowheaders=Authorization,Content-Type"
       - "traefik.http.middlewares.updater-cors.headers.accesscontrolmaxage=86400"
 

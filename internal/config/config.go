@@ -56,16 +56,16 @@ func warnDeprecatedKeys(data []byte) {
 		return
 	}
 	if dep.Server.CORS != nil {
-		slog.Warn("Config key 'server.cors' is no longer supported; configure CORS at your reverse proxy. See docs/reverse-proxy.md.")
+		slog.Warn("Config key is no longer supported; configure CORS at your reverse proxy. See docs/reverse-proxy.md.", "config_key", "server.cors")
 	}
 	if dep.Security.JWTSecret != "" {
-		slog.Warn("Config key 'security.jwt_secret' is no longer used and can be removed from your config file.")
+		slog.Warn("Config key is no longer used and can be removed from your config file.", "config_key", "security.jwt_secret")
 	}
 	if dep.Security.TrustedProxies != nil {
-		slog.Warn("Config key 'security.trusted_proxies' is no longer supported; configure proxy trust at your reverse proxy. See docs/reverse-proxy.md.")
+		slog.Warn("Config key is no longer supported; configure proxy trust at your reverse proxy. See docs/reverse-proxy.md.", "config_key", "security.trusted_proxies")
 	}
 	if dep.Security.RateLimit != nil {
-		slog.Warn("Config key 'security.rate_limit' is no longer supported; configure rate limiting at your reverse proxy. See docs/reverse-proxy.md.")
+		slog.Warn("Config key is no longer supported; configure rate limiting at your reverse proxy. See docs/reverse-proxy.md.", "config_key", "security.rate_limit")
 	}
 }
 

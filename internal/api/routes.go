@@ -234,15 +234,3 @@ func authMiddleware(store storage.Storage) mux.MiddlewareFunc {
 	}
 }
 
-func contains(slice []string, item string) bool {
-	for _, s := range slice {
-		if s == item {
-			return true
-		}
-	}
-	return false
-}
-
-func joinStrings(slice []string, separator string) string {
-	return strings.Join(slice, separator)
-}

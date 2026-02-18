@@ -5,7 +5,6 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 	"time"
 	"updater/internal/models"
@@ -543,36 +542,42 @@ func TestWarnDeprecatedKeys(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			var warnings []string
-			h := &capturingSlogHandler{warned: &warnings}
+			var records []capturedLog
+			h := &capturingSlogHandler{records: &records}
 			orig := slog.Default()
 			slog.SetDefault(slog.New(h))
 			defer slog.SetDefault(orig)
 
 			warnDeprecatedKeys([]byte(tt.yaml))
 
-			if len(tt.wantWarn) == 0 && len(warnings) > 0 {
-				t.Errorf("expected no warnings, got %v", warnings)
+			if len(tt.wantWarn) == 0 && len(records) > 0 {
+				t.Errorf("expected no warnings, got %v", records)
 			}
 			for _, want := range tt.wantWarn {
 				found := false
-				for _, w := range warnings {
-					if strings.Contains(w, want) {
+				for _, rec := range records {
+					if rec.configKey == want {
 						found = true
 						break
 					}
 				}
 				if !found {
-					t.Errorf("expected warning containing %q, got %v", want, warnings)
+					t.Errorf("expected warning with config_key=%q, got %v", want, records)
 				}
 			}
 		})
 	}
 }
 
-// capturingSlogHandler captures Warn-level log messages for testing.
+// capturedLog holds a single captured Warn-level log record for testing.
+type capturedLog struct {
+	msg       string
+	configKey string
+}
+
+// capturingSlogHandler captures Warn-level log records (message + config_key attribute) for testing.
 type capturingSlogHandler struct {
-	warned *[]string
+	records *[]capturedLog
 }
 
 func (h *capturingSlogHandler) Enabled(_ context.Context, level slog.Level) bool {
@@ -580,7 +585,14 @@ func (h *capturingSlogHandler) Enabled(_ context.Context, level slog.Level) bool
 }
 
 func (h *capturingSlogHandler) Handle(_ context.Context, r slog.Record) error {
-	*h.warned = append(*h.warned, r.Message)
+	log := capturedLog{msg: r.Message}
+	r.Attrs(func(a slog.Attr) bool {
+		if a.Key == "config_key" {
+			log.configKey = a.Value.String()
+		}
+		return true
+	})
+	*h.records = append(*h.records, log)
 	return nil
 }
 
