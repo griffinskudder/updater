@@ -1,8 +1,11 @@
 package config
 
 import (
+	"context"
+	"log/slog"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 	"updater/internal/models"
@@ -499,3 +502,87 @@ func TestValidate_TLSEnabledWithoutCerts(t *testing.T) {
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "TLS cert file is required when TLS is enabled")
 }
+
+func TestWarnDeprecatedKeys(t *testing.T) {
+	tests := []struct {
+		name     string
+		yaml     string
+		wantWarn []string
+	}{
+		{
+			name:     "no deprecated keys",
+			yaml:     "server:\n  port: 8080\n",
+			wantWarn: nil,
+		},
+		{
+			name:     "cors key warns",
+			yaml:     "server:\n  cors:\n    enabled: true\n",
+			wantWarn: []string{"server.cors"},
+		},
+		{
+			name:     "rate_limit key warns",
+			yaml:     "security:\n  rate_limit:\n    enabled: true\n",
+			wantWarn: []string{"security.rate_limit"},
+		},
+		{
+			name:     "jwt_secret key warns",
+			yaml:     "security:\n  jwt_secret: \"abc\"\n",
+			wantWarn: []string{"security.jwt_secret"},
+		},
+		{
+			name:     "trusted_proxies key warns",
+			yaml:     "security:\n  trusted_proxies:\n    - \"10.0.0.1\"\n",
+			wantWarn: []string{"security.trusted_proxies"},
+		},
+		{
+			name: "all deprecated keys warn",
+			yaml: "server:\n  cors:\n    enabled: true\nsecurity:\n  jwt_secret: \"x\"\n  rate_limit:\n    enabled: true\n  trusted_proxies: []\n",
+			wantWarn: []string{"server.cors", "security.jwt_secret", "security.rate_limit", "security.trusted_proxies"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var warnings []string
+			h := &capturingSlogHandler{warned: &warnings}
+			orig := slog.Default()
+			slog.SetDefault(slog.New(h))
+			defer slog.SetDefault(orig)
+
+			warnDeprecatedKeys([]byte(tt.yaml))
+
+			if len(tt.wantWarn) == 0 && len(warnings) > 0 {
+				t.Errorf("expected no warnings, got %v", warnings)
+			}
+			for _, want := range tt.wantWarn {
+				found := false
+				for _, w := range warnings {
+					if strings.Contains(w, want) {
+						found = true
+						break
+					}
+				}
+				if !found {
+					t.Errorf("expected warning containing %q, got %v", want, warnings)
+				}
+			}
+		})
+	}
+}
+
+// capturingSlogHandler captures Warn-level log messages for testing.
+type capturingSlogHandler struct {
+	warned *[]string
+}
+
+func (h *capturingSlogHandler) Enabled(_ context.Context, level slog.Level) bool {
+	return level >= slog.LevelWarn
+}
+
+func (h *capturingSlogHandler) Handle(_ context.Context, r slog.Record) error {
+	*h.warned = append(*h.warned, r.Message)
+	return nil
+}
+
+func (h *capturingSlogHandler) WithAttrs(_ []slog.Attr) slog.Handler { return h }
+func (h *capturingSlogHandler) WithGroup(_ string) slog.Handler      { return h }

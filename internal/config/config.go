@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -35,24 +36,52 @@ func Load(configPath string) (*models.Config, error) {
 	return config, nil
 }
 
-// LoadFromFile loads configuration from a YAML file
+// deprecatedConfig mirrors removed config fields for detecting stale operator configs.
+type deprecatedConfig struct {
+	Server struct {
+		CORS interface{} `yaml:"cors"`
+	} `yaml:"server"`
+	Security struct {
+		JWTSecret      string      `yaml:"jwt_secret"`
+		TrustedProxies interface{} `yaml:"trusted_proxies"`
+		RateLimit      interface{} `yaml:"rate_limit"`
+	} `yaml:"security"`
+}
+
+// warnDeprecatedKeys logs a warning for each removed config key found in the YAML data.
+// The service continues to start normally - these keys are silently ignored by the main decoder.
+func warnDeprecatedKeys(data []byte) {
+	var dep deprecatedConfig
+	if err := yaml.Unmarshal(data, &dep); err != nil {
+		return
+	}
+	if dep.Server.CORS != nil {
+		slog.Warn("Config key 'server.cors' is no longer supported; configure CORS at your reverse proxy. See docs/reverse-proxy.md.")
+	}
+	if dep.Security.JWTSecret != "" {
+		slog.Warn("Config key 'security.jwt_secret' is no longer used and can be removed from your config file.")
+	}
+	if dep.Security.TrustedProxies != nil {
+		slog.Warn("Config key 'security.trusted_proxies' is no longer supported; configure proxy trust at your reverse proxy. See docs/reverse-proxy.md.")
+	}
+	if dep.Security.RateLimit != nil {
+		slog.Warn("Config key 'security.rate_limit' is no longer supported; configure rate limiting at your reverse proxy. See docs/reverse-proxy.md.")
+	}
+}
+
+// loadFromFile loads configuration from a YAML file
 func loadFromFile(config *models.Config, filePath string) error {
-	// Check if file exists
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		return fmt.Errorf("config file not found: %s", filePath)
 	}
-
-	// Read file
 	data, err := os.ReadFile(filePath)
 	if err != nil {
 		return fmt.Errorf("failed to read config file: %w", err)
 	}
-
-	// Parse YAML
+	warnDeprecatedKeys(data)
 	if err := yaml.Unmarshal(data, config); err != nil {
 		return fmt.Errorf("failed to parse YAML config: %w", err)
 	}
-
 	return nil
 }
 
