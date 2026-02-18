@@ -128,7 +128,6 @@ func loadFromEnvironment(config *models.Config) {
 		config.Server.TLSKeyFile = keyFile
 	}
 
-
 	// Storage configuration
 	if storageType := os.Getenv("UPDATER_STORAGE_TYPE"); storageType != "" {
 		config.Storage.Type = storageType
@@ -162,8 +161,6 @@ func loadFromEnvironment(config *models.Config) {
 	if auth := os.Getenv("UPDATER_ENABLE_AUTH"); auth != "" {
 		config.Security.EnableAuth = strings.ToLower(auth) == "true"
 	}
-
-
 
 	// Bootstrap key from environment
 	if bk := os.Getenv("UPDATER_BOOTSTRAP_KEY"); bk != "" {

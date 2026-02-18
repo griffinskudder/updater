@@ -167,7 +167,6 @@ func methodNotAllowedHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(errorResp)
 }
 
-
 // loggingMiddleware logs HTTP requests
 func loggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -234,7 +233,6 @@ func authMiddleware(store storage.Storage) mux.MiddlewareFunc {
 		})
 	}
 }
-
 
 func contains(slice []string, item string) bool {
 	for _, s := range slice {

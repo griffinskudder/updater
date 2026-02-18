@@ -660,7 +660,6 @@ func TestSecurityVulnerabilities(t *testing.T) {
 	})
 }
 
-
 // TestSecurityHeaders tests that appropriate security headers are set
 func TestSecurityHeaders(t *testing.T) {
 	config := &models.Config{

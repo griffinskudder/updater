@@ -18,7 +18,6 @@ func TestNewDefaultConfig(t *testing.T) {
 	assert.Equal(t, 60*time.Second, config.Server.IdleTimeout)
 	assert.False(t, config.Server.TLSEnabled)
 
-
 	// Test storage defaults
 	assert.Equal(t, "json", config.Storage.Type)
 	assert.Equal(t, "./data/releases.json", config.Storage.Path)
@@ -804,7 +803,6 @@ func TestDatabaseConfig_Structure(t *testing.T) {
 	assert.Equal(t, 1*time.Hour, dbConfig.ConnMaxLifetime)
 	assert.Equal(t, 30*time.Minute, dbConfig.ConnMaxIdleTime)
 }
-
 
 func TestMemoryConfig_Structure(t *testing.T) {
 	memoryConfig := MemoryConfig{

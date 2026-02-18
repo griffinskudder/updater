@@ -535,8 +535,8 @@ func TestWarnDeprecatedKeys(t *testing.T) {
 			wantWarn: []string{"security.trusted_proxies"},
 		},
 		{
-			name: "all deprecated keys warn",
-			yaml: "server:\n  cors:\n    enabled: true\nsecurity:\n  jwt_secret: \"x\"\n  rate_limit:\n    enabled: true\n  trusted_proxies: []\n",
+			name:     "all deprecated keys warn",
+			yaml:     "server:\n  cors:\n    enabled: true\nsecurity:\n  jwt_secret: \"x\"\n  rate_limit:\n    enabled: true\n  trusted_proxies: []\n",
 			wantWarn: []string{"server.cors", "security.jwt_secret", "security.rate_limit", "security.trusted_proxies"},
 		},
 	}

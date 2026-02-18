@@ -60,7 +60,6 @@ type ServerConfig struct {
 	TLSKeyFile   string        `yaml:"tls_key_file" json:"tls_key_file"`
 }
 
-
 type StorageConfig struct {
 	Type     string            `yaml:"type" json:"type"`
 	Path     string            `yaml:"path" json:"path"`
@@ -87,7 +86,6 @@ type SecurityConfig struct {
 	// EnableAuth toggles API key authentication. When false all endpoints are public.
 	EnableAuth bool `yaml:"enable_auth" json:"enable_auth"`
 }
-
 
 type LoggingConfig struct {
 	Level      string `yaml:"level" json:"level"`
