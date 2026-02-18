@@ -346,10 +346,6 @@ func (sec *SecurityConfig) Validate() error {
 		return errors.New("bootstrap key is required when auth is enabled")
 	}
 
-	if sec.EnableAuth && len(sec.BootstrapKey) > 72 {
-		return errors.New("bootstrap key can't be longer than 72 characters")
-	}
-
 	if sec.RateLimit.Enabled {
 		if sec.RateLimit.RequestsPerMinute < 0 {
 			return errors.New("requests per minute cannot be negative")
