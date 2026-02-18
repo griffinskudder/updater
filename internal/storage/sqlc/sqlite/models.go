@@ -8,6 +8,17 @@ import (
 	"database/sql"
 )
 
+type ApiKey struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	KeyHash     string `json:"key_hash"`
+	Prefix      string `json:"prefix"`
+	Permissions string `json:"permissions"`
+	Enabled     int64  `json:"enabled"`
+	CreatedAt   string `json:"created_at"`
+	UpdatedAt   string `json:"updated_at"`
+}
+
 type Application struct {
 	ID          string         `json:"id"`
 	Name        string         `json:"name"`

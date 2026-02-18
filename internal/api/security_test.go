@@ -13,6 +13,7 @@ import (
 	"time"
 	"updater/internal/models"
 	"updater/internal/ratelimit"
+	"updater/internal/storage"
 	"updater/internal/update"
 
 	"github.com/stretchr/testify/assert"
@@ -31,7 +32,6 @@ func TestSecurityContext(t *testing.T) {
 		{
 			name: "admin has all permissions",
 			apiKey: &models.APIKey{
-				Key:         "admin-key",
 				Name:        "Admin Key",
 				Permissions: []string{"admin"},
 				Enabled:     true,
@@ -42,7 +42,6 @@ func TestSecurityContext(t *testing.T) {
 		{
 			name: "admin has write permission",
 			apiKey: &models.APIKey{
-				Key:         "admin-key",
 				Name:        "Admin Key",
 				Permissions: []string{"admin"},
 				Enabled:     true,
@@ -53,7 +52,6 @@ func TestSecurityContext(t *testing.T) {
 		{
 			name: "write has read permission",
 			apiKey: &models.APIKey{
-				Key:         "write-key",
 				Name:        "Write Key",
 				Permissions: []string{"write"},
 				Enabled:     true,
@@ -64,7 +62,6 @@ func TestSecurityContext(t *testing.T) {
 		{
 			name: "read does not have write permission",
 			apiKey: &models.APIKey{
-				Key:         "read-key",
 				Name:        "Read Key",
 				Permissions: []string{"read"},
 				Enabled:     true,
@@ -75,7 +72,6 @@ func TestSecurityContext(t *testing.T) {
 		{
 			name: "read does not have admin permission",
 			apiKey: &models.APIKey{
-				Key:         "read-key",
 				Name:        "Read Key",
 				Permissions: []string{"read"},
 				Enabled:     true,
@@ -109,25 +105,24 @@ func TestSecurityContext(t *testing.T) {
 
 // TestAuthMiddleware tests the authentication middleware
 func TestAuthMiddleware(t *testing.T) {
-	securityConfig := models.SecurityConfig{
-		EnableAuth: true,
-		APIKeys: []models.APIKey{
-			{
-				Key:         "valid-key-123",
-				Name:        "Test Key",
-				Permissions: []string{"read"},
-				Enabled:     true,
-			},
-			{
-				Key:         "disabled-key",
-				Name:        "Disabled Key",
-				Permissions: []string{"admin"},
-				Enabled:     false,
-			},
-		},
-	}
+	store, err := storage.NewMemoryStorage(storage.Config{})
+	require.NoError(t, err)
 
-	middleware := authMiddleware(securityConfig)
+	validRawKey := "valid-key-123"
+	disabledRawKey := "disabled-key"
+
+	// Create a valid enabled key
+	vk := models.NewAPIKey(models.NewKeyID(), "Test Key", validRawKey, []string{"read"})
+	err = store.CreateAPIKey(context.Background(), vk)
+	require.NoError(t, err)
+
+	// Create a disabled key
+	dk := models.NewAPIKey(models.NewKeyID(), "Disabled Key", disabledRawKey, []string{"admin"})
+	dk.Enabled = false
+	err = store.CreateAPIKey(context.Background(), dk)
+	require.NoError(t, err)
+
+	middleware := authMiddleware(store)
 
 	tests := []struct {
 		name              string
@@ -201,7 +196,7 @@ func TestAuthMiddleware(t *testing.T) {
 				if tt.expectAPIKeyInCtx {
 					assert.NotNil(t, apiKey, "Expected API key in context")
 					if actualKey, ok := apiKey.(*models.APIKey); ok {
-						assert.Equal(t, "valid-key-123", actualKey.Key)
+						assert.Equal(t, "Test Key", actualKey.Name)
 					}
 				} else {
 					assert.Nil(t, apiKey, "Expected no API key in context")
@@ -248,7 +243,6 @@ func TestRequirePermissionMiddleware(t *testing.T) {
 		{
 			name: "read permission for read endpoint",
 			apiKey: &models.APIKey{
-				Key:         "read-key",
 				Name:        "Read Key",
 				Permissions: []string{"read"},
 				Enabled:     true,
@@ -259,7 +253,6 @@ func TestRequirePermissionMiddleware(t *testing.T) {
 		{
 			name: "write permission for write endpoint",
 			apiKey: &models.APIKey{
-				Key:         "write-key",
 				Name:        "Write Key",
 				Permissions: []string{"write"},
 				Enabled:     true,
@@ -270,7 +263,6 @@ func TestRequirePermissionMiddleware(t *testing.T) {
 		{
 			name: "admin permission for any endpoint",
 			apiKey: &models.APIKey{
-				Key:         "admin-key",
 				Name:        "Admin Key",
 				Permissions: []string{"admin"},
 				Enabled:     true,
@@ -281,7 +273,6 @@ func TestRequirePermissionMiddleware(t *testing.T) {
 		{
 			name: "insufficient permission",
 			apiKey: &models.APIKey{
-				Key:         "read-key",
 				Name:        "Read Key",
 				Permissions: []string{"read"},
 				Enabled:     true,
@@ -343,30 +334,27 @@ func TestRequirePermissionMiddleware(t *testing.T) {
 
 // TestEndpointSecurity tests that endpoints properly enforce security
 func TestEndpointSecurity(t *testing.T) {
+	// Set up storage with test API keys
+	store, err := storage.NewMemoryStorage(storage.Config{})
+	require.NoError(t, err)
+	for _, spec := range []struct {
+		raw   string
+		name  string
+		perms []string
+	}{
+		{"read-key-123", "Read Only Key", []string{"read"}},
+		{"write-key-456", "Write Key", []string{"write"}},
+		{"admin-key-789", "Admin Key", []string{"admin"}},
+	} {
+		ak := models.NewAPIKey(models.NewKeyID(), spec.name, spec.raw, spec.perms)
+		require.NoError(t, store.CreateAPIKey(context.Background(), ak))
+	}
+
 	// Create test configuration
 	config := &models.Config{
 		Security: models.SecurityConfig{
-			EnableAuth: true,
-			APIKeys: []models.APIKey{
-				{
-					Key:         "read-key-123",
-					Name:        "Read Only Key",
-					Permissions: []string{"read"},
-					Enabled:     true,
-				},
-				{
-					Key:         "write-key-456",
-					Name:        "Write Key",
-					Permissions: []string{"write"},
-					Enabled:     true,
-				},
-				{
-					Key:         "admin-key-789",
-					Name:        "Admin Key",
-					Permissions: []string{"admin"},
-					Enabled:     true,
-				},
-			},
+			EnableAuth:   true,
+			BootstrapKey: "upd_test-bootstrap",
 			RateLimit: models.RateLimitConfig{
 				Enabled: false, // Disable for tests
 			},
@@ -398,7 +386,7 @@ func TestEndpointSecurity(t *testing.T) {
 		Message: "Release registered successfully",
 	}, nil)
 
-	mockHandlers := NewHandlers(mockUpdateService)
+	mockHandlers := NewHandlers(mockUpdateService, WithStorage(store))
 
 	// Setup routes
 	router := SetupRoutes(mockHandlers, config)
@@ -516,17 +504,16 @@ func TestEndpointSecurity(t *testing.T) {
 
 // TestSecurityVulnerabilities tests for common security vulnerabilities
 func TestSecurityVulnerabilities(t *testing.T) {
+	vulnStore, err := storage.NewMemoryStorage(storage.Config{})
+	require.NoError(t, err)
+	vulnAdminKey := "admin-key-123"
+	vak := models.NewAPIKey(models.NewKeyID(), "Admin Key", vulnAdminKey, []string{"admin"})
+	require.NoError(t, vulnStore.CreateAPIKey(context.Background(), vak))
+
 	config := &models.Config{
 		Security: models.SecurityConfig{
-			EnableAuth: true,
-			APIKeys: []models.APIKey{
-				{
-					Key:         "admin-key-123",
-					Name:        "Admin Key",
-					Permissions: []string{"admin"},
-					Enabled:     true,
-				},
-			},
+			EnableAuth:   true,
+			BootstrapKey: "upd_test-bootstrap",
 			RateLimit: models.RateLimitConfig{
 				Enabled: false, // Disable for tests
 			},
@@ -553,7 +540,7 @@ func TestSecurityVulnerabilities(t *testing.T) {
 			Message: "Release registered successfully",
 		}, nil).Maybe()
 
-	mockHandlers := NewHandlers(mockUpdateService)
+	mockHandlers := NewHandlers(mockUpdateService, WithStorage(vulnStore))
 	router := SetupRoutes(mockHandlers, config)
 
 	t.Run("SQL Injection Protection", func(t *testing.T) {
@@ -801,19 +788,12 @@ func TestSecurityHeaders(t *testing.T) {
 
 // BenchmarkAuthMiddleware benchmarks authentication middleware performance
 func BenchmarkAuthMiddleware(b *testing.B) {
-	securityConfig := models.SecurityConfig{
-		EnableAuth: true,
-		APIKeys: []models.APIKey{
-			{
-				Key:         "benchmark-key-123",
-				Name:        "Benchmark Key",
-				Permissions: []string{"read"},
-				Enabled:     true,
-			},
-		},
-	}
+	benchStore, _ := storage.NewMemoryStorage(storage.Config{})
+	benchRawKey := "benchmark-key-123"
+	bak := models.NewAPIKey(models.NewKeyID(), "Benchmark Key", benchRawKey, []string{"read"})
+	_ = benchStore.CreateAPIKey(context.Background(), bak)
 
-	middleware := authMiddleware(securityConfig)
+	middleware := authMiddleware(benchStore)
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
@@ -834,7 +814,6 @@ func BenchmarkAuthMiddleware(b *testing.B) {
 func BenchmarkPermissionCheck(b *testing.B) {
 	securityContext := &SecurityContext{
 		APIKey: &models.APIKey{
-			Key:         "test-key",
 			Name:        "Test Key",
 			Permissions: []string{"read", "write"},
 			Enabled:     true,
@@ -850,19 +829,14 @@ func BenchmarkPermissionCheck(b *testing.B) {
 
 // TestOptionalAuthMiddleware tests optional authentication functionality
 func TestOptionalAuthMiddleware(t *testing.T) {
-	securityConfig := models.SecurityConfig{
-		EnableAuth: true,
-		APIKeys: []models.APIKey{
-			{
-				Key:         "valid-key-123",
-				Name:        "Test Key",
-				Permissions: []string{"read"},
-				Enabled:     true,
-			},
-		},
-	}
+	optStore, err := storage.NewMemoryStorage(storage.Config{})
+	require.NoError(t, err)
+	optRawKey := "valid-key-123"
+	ok := models.NewAPIKey(models.NewKeyID(), "Test Key", optRawKey, []string{"read"})
+	err = optStore.CreateAPIKey(context.Background(), ok)
+	require.NoError(t, err)
 
-	middleware := OptionalAuth(securityConfig)
+	middleware := OptionalAuth(optStore)
 
 	tests := []struct {
 		name              string

@@ -472,3 +472,116 @@ func timeToPgTimestamptz(t time.Time) pgtype.Timestamptz {
 	}
 	return pgtype.Timestamptz{Time: t, Valid: true}
 }
+
+// postgresAPIKeyToModel converts a sqlcpg.ApiKey row to a *models.APIKey.
+func postgresAPIKeyToModel(row sqlcpg.ApiKey) (*models.APIKey, error) {
+	perms, err := unmarshalPermissions(string(row.Permissions))
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal permissions for key %s: %w", row.ID, err)
+	}
+
+	key := &models.APIKey{
+		ID:          row.ID,
+		Name:        row.Name,
+		KeyHash:     row.KeyHash,
+		Prefix:      row.Prefix,
+		Permissions: perms,
+		Enabled:     row.Enabled,
+	}
+
+	if row.CreatedAt.Valid {
+		key.CreatedAt = row.CreatedAt.Time
+	}
+	if row.UpdatedAt.Valid {
+		key.UpdatedAt = row.UpdatedAt.Time
+	}
+
+	return key, nil
+}
+
+// CreateAPIKey persists a new API key.
+func (ps *PostgresStorage) CreateAPIKey(ctx context.Context, key *models.APIKey) error {
+	permsJSON, err := marshalPermissions(key.Permissions)
+	if err != nil {
+		return fmt.Errorf("marshal permissions: %w", err)
+	}
+
+	if err := ps.queries.CreateAPIKey(ctx, sqlcpg.CreateAPIKeyParams{
+		ID:          key.ID,
+		Name:        key.Name,
+		KeyHash:     key.KeyHash,
+		Prefix:      key.Prefix,
+		Permissions: []byte(permsJSON),
+		Enabled:     key.Enabled,
+		CreatedAt:   timeToPgTimestamptz(key.CreatedAt),
+		UpdatedAt:   timeToPgTimestamptz(key.UpdatedAt),
+	}); err != nil {
+		return fmt.Errorf("failed to create api key: %w", err)
+	}
+	return nil
+}
+
+// GetAPIKeyByHash retrieves an API key by its SHA-256 hash.
+func (ps *PostgresStorage) GetAPIKeyByHash(ctx context.Context, hash string) (*models.APIKey, error) {
+	row, err := ps.queries.GetAPIKeyByHash(ctx, hash)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrNotFound
+		}
+		return nil, fmt.Errorf("failed to get api key: %w", err)
+	}
+	return postgresAPIKeyToModel(row)
+}
+
+// ListAPIKeys returns all stored API keys.
+func (ps *PostgresStorage) ListAPIKeys(ctx context.Context) ([]*models.APIKey, error) {
+	rows, err := ps.queries.ListAPIKeys(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list api keys: %w", err)
+	}
+
+	keys := make([]*models.APIKey, 0, len(rows))
+	for _, row := range rows {
+		key, err := postgresAPIKeyToModel(row)
+		if err != nil {
+			return nil, fmt.Errorf("failed to convert api key %s: %w", row.ID, err)
+		}
+		keys = append(keys, key)
+	}
+	return keys, nil
+}
+
+// UpdateAPIKey updates an existing API key's mutable fields.
+func (ps *PostgresStorage) UpdateAPIKey(ctx context.Context, key *models.APIKey) error {
+	permsJSON, err := marshalPermissions(key.Permissions)
+	if err != nil {
+		return fmt.Errorf("marshal permissions: %w", err)
+	}
+
+	rows, err := ps.queries.UpdateAPIKey(ctx, sqlcpg.UpdateAPIKeyParams{
+		ID:          key.ID,
+		Name:        key.Name,
+		Permissions: []byte(permsJSON),
+		Enabled:     key.Enabled,
+		UpdatedAt:   timeToPgTimestamptz(time.Now().UTC()),
+	})
+	if err != nil {
+		return fmt.Errorf("update api key: %w", err)
+	}
+	if rows == 0 {
+		return ErrNotFound
+	}
+	return nil
+}
+
+// DeleteAPIKey removes an API key by its ID.
+func (ps *PostgresStorage) DeleteAPIKey(ctx context.Context, id string) error {
+	rows, err := ps.queries.DeleteAPIKey(ctx, id)
+	if err != nil {
+		return fmt.Errorf("delete api key: %w", err)
+	}
+	if rows == 0 {
+		return ErrNotFound
+	}
+	return nil
+}

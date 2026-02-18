@@ -214,3 +214,25 @@ func TestInstrumentedStorage_ImplementsInterface(t *testing.T) {
 	var _ storage.Storage = instrumented
 	_ = fmt.Sprintf("%T", instrumented) // avoid unused variable
 }
+
+func TestInstrumentedStorage_APIKeyMethods(t *testing.T) {
+	_ = setupTestProvider(t)
+	inner, err := storage.NewMemoryStorage(storage.Config{})
+	require.NoError(t, err)
+	s, err := NewInstrumentedStorage(inner)
+	require.NoError(t, err)
+	ctx := context.Background()
+
+	raw, err := models.GenerateAPIKey()
+	require.NoError(t, err)
+	key := models.NewAPIKey(models.NewKeyID(), "test", raw, []string{"read"})
+
+	assert.NoError(t, s.CreateAPIKey(ctx, key))
+	_, err = s.GetAPIKeyByHash(ctx, key.KeyHash)
+	assert.NoError(t, err)
+	_, err = s.ListAPIKeys(ctx)
+	assert.NoError(t, err)
+	key.Name = "test2"
+	assert.NoError(t, s.UpdateAPIKey(ctx, key))
+	assert.NoError(t, s.DeleteAPIKey(ctx, key.ID))
+}

@@ -4,6 +4,9 @@ import (
 	"reflect"
 	"testing"
 	"updater/internal/models"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMarshalUnmarshalPlatforms(t *testing.T) {
@@ -206,5 +209,51 @@ func TestUnmarshalMetadataInvalidJSON(t *testing.T) {
 	_, err := unmarshalMetadata([]byte("not json"))
 	if err == nil {
 		t.Error("expected error for invalid JSON")
+	}
+}
+
+func TestMarshalPermissions(t *testing.T) {
+	tests := []struct {
+		name  string
+		input []string
+		want  string
+	}{
+		{"nil slice", nil, "[]"},
+		{"empty slice", []string{}, "[]"},
+		{"single", []string{"read"}, `["read"]`},
+		{"multiple", []string{"read", "write"}, `["read","write"]`},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := marshalPermissions(tt.input)
+			require.NoError(t, err)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestUnmarshalPermissions(t *testing.T) {
+	tests := []struct {
+		name    string
+		input   string
+		want    []string
+		wantErr bool
+	}{
+		{"empty string", "", []string{}, false},
+		{"empty array", "[]", []string{}, false},
+		{"single", `["read"]`, []string{"read"}, false},
+		{"multiple", `["read","write"]`, []string{"read", "write"}, false},
+		{"invalid json", "not-json", nil, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := unmarshalPermissions(tt.input)
+			if tt.wantErr {
+				assert.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+			assert.Equal(t, tt.want, got)
+		})
 	}
 }

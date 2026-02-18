@@ -47,6 +47,21 @@ func (m *mockStorage) GetReleasesAfterVersion(_ context.Context, _, _, _, _ stri
 }
 func (m *mockStorage) Ping(_ context.Context) error { return m.pingErr }
 func (m *mockStorage) Close() error                 { return nil }
+func (m *mockStorage) CreateAPIKey(_ context.Context, _ *models.APIKey) error {
+	return nil
+}
+func (m *mockStorage) GetAPIKeyByHash(_ context.Context, _ string) (*models.APIKey, error) {
+	return nil, nil
+}
+func (m *mockStorage) ListAPIKeys(_ context.Context) ([]*models.APIKey, error) {
+	return nil, nil
+}
+func (m *mockStorage) UpdateAPIKey(_ context.Context, _ *models.APIKey) error {
+	return nil
+}
+func (m *mockStorage) DeleteAPIKey(_ context.Context, _ string) error {
+	return nil
+}
 
 // MockUpdateService implements the update.ServiceInterface for testing
 type MockUpdateService struct {

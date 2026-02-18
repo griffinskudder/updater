@@ -1,0 +1,37 @@
+{{define "key-row"}}
+<tr id="key-{{.ID}}" class="hover:bg-gray-50">
+  <td class="px-4 py-3 font-mono text-sm">{{.Prefix}}...</td>
+  <td class="px-4 py-3">{{.Name}}</td>
+  <td class="px-4 py-3 text-gray-500">{{range .Permissions}}{{.}} {{end}}</td>
+  <td class="px-4 py-3">
+    {{if .Enabled}}
+    <button
+      hx-post="/admin/keys/{{.ID}}/toggle"
+      hx-target="closest tr"
+      hx-swap="outerHTML"
+      class="text-green-700 bg-green-100 px-2 py-0.5 rounded text-xs hover:bg-green-200">
+      Enabled
+    </button>
+    {{else}}
+    <button
+      hx-post="/admin/keys/{{.ID}}/toggle"
+      hx-target="closest tr"
+      hx-swap="outerHTML"
+      class="text-gray-500 bg-gray-100 px-2 py-0.5 rounded text-xs hover:bg-gray-200">
+      Disabled
+    </button>
+    {{end}}
+  </td>
+  <td class="px-4 py-3 text-gray-500 text-sm">{{.CreatedAt.Format "2006-01-02"}}</td>
+  <td class="px-4 py-3 text-right">
+    <button
+      hx-delete="/admin/keys/{{.ID}}"
+      hx-confirm="Revoke this key? This cannot be undone."
+      hx-target="closest tr"
+      hx-swap="outerHTML"
+      class="text-red-600 hover:underline text-sm">
+      Revoke
+    </button>
+  </td>
+</tr>
+{{end}}

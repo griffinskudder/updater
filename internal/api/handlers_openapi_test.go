@@ -127,9 +127,7 @@ func TestOpenAPIRoutes_ArePublic(t *testing.T) {
 			config := &models.Config{}
 			config.Security.EnableAuth = tt.enableAuth
 			if tt.enableAuth {
-				config.Security.APIKeys = []models.APIKey{
-					{Key: "test-key", Enabled: true, Permissions: []string{"read", "write", "admin"}},
-				}
+				config.Security.BootstrapKey = "upd_test-bootstrap-key"
 			}
 
 			router := SetupRoutes(handlers, config)

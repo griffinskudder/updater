@@ -7,6 +7,9 @@ import (
 	"testing"
 	"time"
 	"updater/internal/models"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMemoryStorage(t *testing.T) {
@@ -312,4 +315,62 @@ func TestMemoryStorageConcurrency(t *testing.T) {
 	for i := 0; i < 10; i++ {
 		<-done
 	}
+}
+
+func TestMemoryStorage_APIKeyCRUD(t *testing.T) {
+	s, err := NewMemoryStorage(Config{})
+	require.NoError(t, err)
+	ctx := context.Background()
+
+	raw, err := models.GenerateAPIKey()
+	require.NoError(t, err)
+	key := models.NewAPIKey(models.NewKeyID(), "test", raw, []string{"read"})
+
+	// Create
+	require.NoError(t, s.CreateAPIKey(ctx, key))
+
+	// GetByHash
+	got, err := s.GetAPIKeyByHash(ctx, key.KeyHash)
+	require.NoError(t, err)
+	assert.Equal(t, key.ID, got.ID)
+	assert.Equal(t, key.Name, got.Name)
+
+	// List
+	list, err := s.ListAPIKeys(ctx)
+	require.NoError(t, err)
+	assert.Len(t, list, 1)
+
+	// Update
+	key.Name = "updated"
+	require.NoError(t, s.UpdateAPIKey(ctx, key))
+	got, err = s.GetAPIKeyByHash(ctx, key.KeyHash)
+	require.NoError(t, err)
+	assert.Equal(t, "updated", got.Name)
+
+	// Delete
+	require.NoError(t, s.DeleteAPIKey(ctx, key.ID))
+	_, err = s.GetAPIKeyByHash(ctx, key.KeyHash)
+	assert.ErrorIs(t, err, ErrNotFound)
+}
+
+func TestMemoryStorage_GetAPIKeyByHash_NotFound(t *testing.T) {
+	s, err := NewMemoryStorage(Config{})
+	require.NoError(t, err)
+	_, err = s.GetAPIKeyByHash(context.Background(), "nonexistent")
+	assert.ErrorIs(t, err, ErrNotFound)
+}
+
+func TestMemoryStorage_UpdateAPIKey_NotFound(t *testing.T) {
+	s, err := NewMemoryStorage(Config{})
+	require.NoError(t, err)
+	key := &models.APIKey{ID: "missing"}
+	err = s.UpdateAPIKey(context.Background(), key)
+	assert.ErrorIs(t, err, ErrNotFound)
+}
+
+func TestMemoryStorage_DeleteAPIKey_NotFound(t *testing.T) {
+	s, err := NewMemoryStorage(Config{})
+	require.NoError(t, err)
+	err = s.DeleteAPIKey(context.Background(), "missing")
+	assert.ErrorIs(t, err, ErrNotFound)
 }

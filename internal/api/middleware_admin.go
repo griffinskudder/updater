@@ -1,16 +1,18 @@
 package api
 
 import (
+	"context"
 	"net/http"
 	"strings"
 	"updater/internal/models"
+	"updater/internal/storage"
 
 	"github.com/gorilla/mux"
 )
 
 // adminSessionMiddleware validates the HttpOnly admin_session cookie.
 // Requests to /admin/login and /admin/logout are always passed through.
-func adminSessionMiddleware(cfg models.SecurityConfig) mux.MiddlewareFunc {
+func adminSessionMiddleware(store storage.Storage, enableAuth bool) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// Login and logout pages are exempt.
@@ -20,7 +22,7 @@ func adminSessionMiddleware(cfg models.SecurityConfig) mux.MiddlewareFunc {
 			}
 
 			cookie, err := r.Cookie("admin_session")
-			if err != nil || !isValidAdminKey(cookie.Value, cfg) {
+			if err != nil || !isValidAdminKey(r.Context(), cookie.Value, store, enableAuth) {
 				// Clear any stale cookie.
 				http.SetCookie(w, &http.Cookie{
 					Name:     "admin_session",
@@ -41,24 +43,20 @@ func adminSessionMiddleware(cfg models.SecurityConfig) mux.MiddlewareFunc {
 }
 
 // isValidAdminKey returns true when key is authorised to access the admin UI.
-// If no API keys are configured the service is in dev mode and any non-empty
-// string is accepted.
-func isValidAdminKey(key string, cfg models.SecurityConfig) bool {
+// If enableAuth is false (dev mode), any non-empty key is accepted.
+// Otherwise the key is looked up in storage and must have the "admin" permission.
+func isValidAdminKey(ctx context.Context, key string, store storage.Storage, enableAuth bool) bool {
 	if key == "" {
 		return false
 	}
-	if len(cfg.APIKeys) == 0 {
-		return true // dev mode
+	if !enableAuth {
+		// Dev mode: any non-empty key is accepted when auth is disabled.
+		return true
 	}
-	for _, ak := range cfg.APIKeys {
-		if ak.Key != key || !ak.Enabled {
-			continue
-		}
-		for _, p := range ak.Permissions {
-			if p == "admin" || p == "*" {
-				return true
-			}
-		}
+	hash := models.HashAPIKey(key)
+	ak, err := store.GetAPIKeyByHash(ctx, hash)
+	if err != nil || !ak.Enabled {
+		return false
 	}
-	return false
+	return ak.HasPermission("admin")
 }

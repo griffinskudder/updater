@@ -83,3 +83,30 @@ func unmarshalMetadata(data []byte) (map[string]string, error) {
 func unmarshalMetadataFromString(data string) (map[string]string, error) {
 	return unmarshalMetadata([]byte(data))
 }
+
+// marshalPermissions serialises a permissions slice to a JSON string.
+func marshalPermissions(perms []string) (string, error) {
+	if perms == nil {
+		perms = []string{}
+	}
+	b, err := json.Marshal(perms)
+	if err != nil {
+		return "", fmt.Errorf("marshal permissions: %w", err)
+	}
+	return string(b), nil
+}
+
+// unmarshalPermissions parses a JSON string into a permissions slice.
+func unmarshalPermissions(data string) ([]string, error) {
+	if data == "" {
+		return []string{}, nil
+	}
+	var perms []string
+	if err := json.Unmarshal([]byte(data), &perms); err != nil {
+		return nil, fmt.Errorf("unmarshal permissions: %w", err)
+	}
+	if perms == nil {
+		perms = []string{}
+	}
+	return perms, nil
+}

@@ -3,10 +3,12 @@ package storage
 import (
 	"context"
 	"database/sql"
-	_ "embed"
+	"embed"
 	"errors"
 	"fmt"
+	"io/fs"
 	"sort"
+	"strings"
 	"time"
 	"updater/internal/models"
 	sqlcite "updater/internal/storage/sqlc/sqlite"
@@ -15,8 +17,8 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-//go:embed sqlite_schema.sql
-var sqliteSchema string
+//go:embed sqlc/schema/sqlite
+var sqliteMigrationsFS embed.FS
 
 // SQLiteStorage implements the Storage interface using SQLite with sqlc-generated queries.
 type SQLiteStorage struct {
@@ -58,10 +60,9 @@ func NewSQLiteStorage(config Config) (Storage, error) {
 		return nil, fmt.Errorf("failed to enable foreign keys: %w", err)
 	}
 
-	// Execute DDL schema (uses IF NOT EXISTS via CREATE TABLE/INDEX)
-	if _, err := db.Exec(sqliteSchema); err != nil {
+	if err := runSQLiteMigrations(db); err != nil {
 		db.Close()
-		return nil, fmt.Errorf("failed to initialize schema: %w", err)
+		return nil, fmt.Errorf("failed to run migrations: %w", err)
 	}
 
 	return &SQLiteStorage{
@@ -479,4 +480,178 @@ func stringToNullString(s string) sql.NullString {
 		return sql.NullString{Valid: false}
 	}
 	return sql.NullString{String: s, Valid: true}
+}
+
+// sqliteAPIKeyToModel converts a sqlcite.ApiKey row to a *models.APIKey.
+func sqliteAPIKeyToModel(row sqlcite.ApiKey) (*models.APIKey, error) {
+	perms, err := unmarshalPermissions(row.Permissions)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal permissions for key %s: %w", row.ID, err)
+	}
+
+	createdAt, _ := time.Parse(time.RFC3339, row.CreatedAt)
+	updatedAt, _ := time.Parse(time.RFC3339, row.UpdatedAt)
+
+	return &models.APIKey{
+		ID:          row.ID,
+		Name:        row.Name,
+		KeyHash:     row.KeyHash,
+		Prefix:      row.Prefix,
+		Permissions: perms,
+		Enabled:     row.Enabled != 0,
+		CreatedAt:   createdAt,
+		UpdatedAt:   updatedAt,
+	}, nil
+}
+
+// CreateAPIKey persists a new API key.
+func (ss *SQLiteStorage) CreateAPIKey(ctx context.Context, key *models.APIKey) error {
+	perms, err := marshalPermissions(key.Permissions)
+	if err != nil {
+		return fmt.Errorf("failed to marshal permissions: %w", err)
+	}
+
+	var enabled int64
+	if key.Enabled {
+		enabled = 1
+	}
+
+	now := time.Now().UTC().Format(time.RFC3339)
+	if err := ss.queries.CreateAPIKey(ctx, sqlcite.CreateAPIKeyParams{
+		ID:          key.ID,
+		Name:        key.Name,
+		KeyHash:     key.KeyHash,
+		Prefix:      key.Prefix,
+		Permissions: perms,
+		Enabled:     enabled,
+		CreatedAt:   now,
+		UpdatedAt:   now,
+	}); err != nil {
+		return fmt.Errorf("failed to create api key: %w", err)
+	}
+	return nil
+}
+
+// GetAPIKeyByHash retrieves an API key by its SHA-256 hash.
+func (ss *SQLiteStorage) GetAPIKeyByHash(ctx context.Context, hash string) (*models.APIKey, error) {
+	row, err := ss.queries.GetAPIKeyByHash(ctx, hash)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrNotFound
+		}
+		return nil, fmt.Errorf("failed to get api key: %w", err)
+	}
+	return sqliteAPIKeyToModel(row)
+}
+
+// ListAPIKeys returns all stored API keys.
+func (ss *SQLiteStorage) ListAPIKeys(ctx context.Context) ([]*models.APIKey, error) {
+	rows, err := ss.queries.ListAPIKeys(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list api keys: %w", err)
+	}
+
+	keys := make([]*models.APIKey, 0, len(rows))
+	for _, row := range rows {
+		key, err := sqliteAPIKeyToModel(row)
+		if err != nil {
+			return nil, fmt.Errorf("failed to convert api key %s: %w", row.ID, err)
+		}
+		keys = append(keys, key)
+	}
+	return keys, nil
+}
+
+// UpdateAPIKey updates an existing API key's mutable fields.
+func (ss *SQLiteStorage) UpdateAPIKey(ctx context.Context, key *models.APIKey) error {
+	perms, err := marshalPermissions(key.Permissions)
+	if err != nil {
+		return fmt.Errorf("failed to marshal permissions: %w", err)
+	}
+
+	var enabled int64
+	if key.Enabled {
+		enabled = 1
+	}
+
+	rows, err := ss.queries.UpdateAPIKey(ctx, sqlcite.UpdateAPIKeyParams{
+		Name:        key.Name,
+		Permissions: perms,
+		Enabled:     enabled,
+		UpdatedAt:   time.Now().UTC().Format(time.RFC3339),
+		ID:          key.ID,
+	})
+	if err != nil {
+		return fmt.Errorf("update api key: %w", err)
+	}
+	if rows == 0 {
+		return ErrNotFound
+	}
+	return nil
+}
+
+// DeleteAPIKey removes an API key by its ID.
+func (ss *SQLiteStorage) DeleteAPIKey(ctx context.Context, id string) error {
+	rows, err := ss.queries.DeleteAPIKey(ctx, id)
+	if err != nil {
+		return fmt.Errorf("delete api key: %w", err)
+	}
+	if rows == 0 {
+		return ErrNotFound
+	}
+	return nil
+}
+
+// runSQLiteMigrations applies any unapplied migration files from the embedded
+// sqlc/schema/sqlite directory. Applied migrations are tracked in a
+// schema_migrations table so each file is executed at most once.
+func runSQLiteMigrations(db *sql.DB) error {
+	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS schema_migrations (
+		name       TEXT NOT NULL PRIMARY KEY,
+		applied_at TEXT NOT NULL DEFAULT (datetime('now'))
+	)`); err != nil {
+		return fmt.Errorf("create schema_migrations: %w", err)
+	}
+
+	entries, err := fs.ReadDir(sqliteMigrationsFS, "sqlc/schema/sqlite")
+	if err != nil {
+		return fmt.Errorf("read migration dir: %w", err)
+	}
+
+	for _, entry := range entries {
+		name := entry.Name()
+		if entry.IsDir() || !strings.HasSuffix(name, ".sql") {
+			continue
+		}
+
+		var count int
+		if err := db.QueryRow("SELECT COUNT(*) FROM schema_migrations WHERE name = ?", name).Scan(&count); err != nil {
+			return fmt.Errorf("check migration %s: %w", name, err)
+		}
+		if count > 0 {
+			continue
+		}
+
+		data, err := fs.ReadFile(sqliteMigrationsFS, "sqlc/schema/sqlite/"+name)
+		if err != nil {
+			return fmt.Errorf("read migration %s: %w", name, err)
+		}
+
+		tx, err := db.Begin()
+		if err != nil {
+			return fmt.Errorf("begin migration %s: %w", name, err)
+		}
+		if _, err := tx.Exec(string(data)); err != nil {
+			tx.Rollback()
+			return fmt.Errorf("apply migration %s: %w", name, err)
+		}
+		if _, err := tx.Exec("INSERT INTO schema_migrations (name) VALUES (?)", name); err != nil {
+			tx.Rollback()
+			return fmt.Errorf("record migration %s: %w", name, err)
+		}
+		if err := tx.Commit(); err != nil {
+			return fmt.Errorf("commit migration %s: %w", name, err)
+		}
+	}
+	return nil
 }

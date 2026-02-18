@@ -787,7 +787,7 @@ func setupTestServer(t *testing.T, enableAuth bool) (*httptest.Server, storage.S
 	t.Cleanup(func() { store.Close() })
 
 	updateService := update.NewService(store)
-	handlers := api.NewHandlers(updateService)
+	handlers := api.NewHandlers(updateService, api.WithStorage(store))
 
 	cfg := &models.Config{
 		Server: models.ServerConfig{
@@ -803,26 +803,20 @@ func setupTestServer(t *testing.T, enableAuth bool) (*httptest.Server, storage.S
 	if enableAuth {
 		cfg.Security = models.SecurityConfig{
 			EnableAuth: true,
-			APIKeys: []models.APIKey{
-				{
-					Key:         "test-read-key",
-					Name:        "read-key",
-					Permissions: []string{"read"},
-					Enabled:     true,
-				},
-				{
-					Key:         "test-write-key",
-					Name:        "write-key",
-					Permissions: []string{"write"},
-					Enabled:     true,
-				},
-				{
-					Key:         "test-admin-key",
-					Name:        "admin-key",
-					Permissions: []string{"admin"},
-					Enabled:     true,
-				},
-			},
+		}
+		// Seed the three test keys into storage.
+		seedKeys := []struct {
+			raw  string
+			name string
+			perm []string
+		}{
+			{"test-read-key", "read-key", []string{"read"}},
+			{"test-write-key", "write-key", []string{"write"}},
+			{"test-admin-key", "admin-key", []string{"admin"}},
+		}
+		for _, sk := range seedKeys {
+			k := models.NewAPIKey(models.NewKeyID(), sk.name, sk.raw, sk.perm)
+			require.NoError(t, store.CreateAPIKey(context.Background(), k))
 		}
 	}
 

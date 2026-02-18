@@ -6,6 +6,9 @@ import (
 	"testing"
 	"time"
 	"updater/internal/models"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func newSQLiteTestStorage(t *testing.T) Storage {
@@ -475,4 +478,56 @@ func TestSQLiteStorageClose(t *testing.T) {
 	if err != nil {
 		t.Errorf("Close failed: %v", err)
 	}
+}
+
+func TestSQLiteStorage_APIKeyCRUD(t *testing.T) {
+	s := newSQLiteTestStorage(t)
+	ctx := context.Background()
+
+	raw, err := models.GenerateAPIKey()
+	require.NoError(t, err)
+	key := models.NewAPIKey(models.NewKeyID(), "deploy", raw, []string{"write"})
+
+	require.NoError(t, s.CreateAPIKey(ctx, key))
+
+	got, err := s.GetAPIKeyByHash(ctx, key.KeyHash)
+	require.NoError(t, err)
+	assert.Equal(t, key.ID, got.ID)
+	assert.Equal(t, []string{"write"}, got.Permissions)
+
+	keys, err := s.ListAPIKeys(ctx)
+	require.NoError(t, err)
+	assert.Len(t, keys, 1)
+
+	key.Name = "deploy-v2"
+	key.Permissions = []string{"write", "read"}
+	require.NoError(t, s.UpdateAPIKey(ctx, key))
+
+	got, err = s.GetAPIKeyByHash(ctx, key.KeyHash)
+	require.NoError(t, err)
+	assert.Equal(t, "deploy-v2", got.Name)
+	assert.Equal(t, []string{"write", "read"}, got.Permissions)
+
+	require.NoError(t, s.DeleteAPIKey(ctx, key.ID))
+	_, err = s.GetAPIKeyByHash(ctx, key.KeyHash)
+	assert.ErrorIs(t, err, ErrNotFound)
+}
+
+func TestSQLiteStorage_GetAPIKeyByHash_NotFound(t *testing.T) {
+	s := newSQLiteTestStorage(t)
+	_, err := s.GetAPIKeyByHash(context.Background(), "nonexistent")
+	assert.ErrorIs(t, err, ErrNotFound)
+}
+
+func TestSQLiteStorage_UpdateAPIKey_NotFound(t *testing.T) {
+	s := newSQLiteTestStorage(t)
+	key := &models.APIKey{ID: "missing", Name: "x", Permissions: []string{"read"}}
+	err := s.UpdateAPIKey(context.Background(), key)
+	assert.ErrorIs(t, err, ErrNotFound)
+}
+
+func TestSQLiteStorage_DeleteAPIKey_NotFound(t *testing.T) {
+	s := newSQLiteTestStorage(t)
+	err := s.DeleteAPIKey(context.Background(), "missing")
+	assert.ErrorIs(t, err, ErrNotFound)
 }

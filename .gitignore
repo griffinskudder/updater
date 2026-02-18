@@ -37,3 +37,6 @@ go.work.sum
 # Git worktrees
 .worktrees/
 coverage.out
+
+# Compiled docs
+site/
