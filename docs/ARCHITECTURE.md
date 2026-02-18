@@ -49,8 +49,7 @@ Fully implemented HTTP API with production-ready features and comprehensive secu
 **Security Features:**
 - API key authentication with Bearer token format
 - Role-based authorization (read/write/admin permissions with hierarchy)
-- Rate limiting with configurable requests per minute
-- CORS support with configurable origins, methods, and headers
+- CORS, rate limiting, and TLS delegated to the reverse proxy layer (see `docs/reverse-proxy.md`)
 - Request validation and structured error responses
 - Audit logging for all security-sensitive operations
 - Protection against common vulnerabilities (SQL injection, path traversal, etc.)
@@ -401,9 +400,7 @@ sequenceDiagram
 
 #### 1. Network Security Layer ✅ **IMPLEMENTED**
 - **TLS/HTTPS Enforcement**: All communications encrypted in transit
-- **CORS Protection**: `corsMiddleware` with configurable origin validation prevents unauthorized cross-origin requests
-- **OPTIONS Request Handling**: Proper CORS preflight request handling with 204 No Content responses
-- **Trusted Proxy Support**: `getClientIP` function provides proper client IP detection through reverse proxies
+- CORS, rate limiting, and TLS delegated to the reverse proxy layer (see `docs/reverse-proxy.md`)
 
 #### 2. Authentication Layer ✅ **IMPLEMENTED**
 - **API Key Authentication**: Bearer token-based authentication system (`authMiddleware`)
@@ -428,7 +425,6 @@ sequenceDiagram
 - **JSON Parsing Security**: Secure JSON parsing with error handling
 
 #### 5. Operational Security Layer ✅ **IMPLEMENTED**
-- **Rate Limiting**: Per-IP request throttling with configurable limits (`rateLimitMiddleware`)
 - **Audit Logging**: Comprehensive security event logging with client IP identification
 - **Health Monitoring**: Service health checks with authenticated enhanced details
 - **Panic Recovery**: `recoveryMiddleware` handles panics gracefully
@@ -478,29 +474,12 @@ server:
   tls_cert_file: "/etc/ssl/certs/updater.pem"
   tls_key_file: "/etc/ssl/private/updater.key"
 
-  cors:
-    enabled: true
-    allowed_origins: ["https://api.yourdomain.com"]
-    allowed_methods: ["GET", "POST"]
-    allowed_headers: ["Authorization", "Content-Type"]
-    max_age: 86400
-
 security:
   enable_auth: true
   bootstrap_key: "${UPDATER_BOOTSTRAP_KEY}"
-  rate_limit:
-    enabled: true
-    requests_per_minute: 60
-    burst_size: 10
-    authenticated_requests_per_minute: 300
-    authenticated_burst_size: 50
-    cleanup_interval: 300s
-
-  trusted_proxies:
-    - "10.0.0.0/8"
-    - "172.16.0.0/12"
-    - "192.168.0.0/16"
 ```
+
+CORS, rate limiting, and TLS are configured at the reverse proxy. See [Reverse Proxy](../reverse-proxy.md) for examples.
 
 ### Threat Mitigation
 
@@ -632,13 +611,6 @@ Configuration is loaded from a YAML file (via `-config` CLI flag) and overridden
 - `UPDATER_TLS_CERT_FILE`: Path to TLS certificate
 - `UPDATER_TLS_KEY_FILE`: Path to TLS private key
 
-**CORS:**
-- `UPDATER_CORS_ENABLED`: Enable CORS middleware (default: false)
-- `UPDATER_CORS_ALLOWED_ORIGINS`: Comma-separated allowed origins
-- `UPDATER_CORS_ALLOWED_METHODS`: Comma-separated allowed methods
-- `UPDATER_CORS_ALLOWED_HEADERS`: Comma-separated allowed headers
-- `UPDATER_CORS_MAX_AGE`: Preflight cache duration in seconds
-
 **Storage:**
 - `UPDATER_STORAGE_TYPE`: Storage backend (json, memory, postgres, sqlite)
 - `UPDATER_STORAGE_PATH`: File path for JSON storage
@@ -649,13 +621,8 @@ Configuration is loaded from a YAML file (via `-config` CLI flag) and overridden
 
 **Security:**
 - `UPDATER_ENABLE_AUTH`: Enable API key authentication (default: false)
-- `UPDATER_JWT_SECRET`: JWT signing secret
 - `UPDATER_BOOTSTRAP_KEY`: Initial admin API key seeded on first startup
-- `UPDATER_RATE_LIMIT_ENABLED`: Enable rate limiting (default: false)
-- `UPDATER_RATE_LIMIT_RPM`: Anonymous requests per minute
-- `UPDATER_RATE_LIMIT_BURST`: Anonymous burst size
-- `UPDATER_RATE_LIMIT_AUTH_RPM`: Authenticated requests per minute
-- `UPDATER_RATE_LIMIT_AUTH_BURST`: Authenticated burst size
+- CORS, rate limiting, and TLS are handled by the reverse proxy (see [Reverse Proxy](../reverse-proxy.md))
 
 **Logging:**
 - `UPDATER_LOG_LEVEL`: Log level (debug, info, warn, error)
@@ -694,13 +661,6 @@ server:
   tls_enabled: false
   tls_cert_file: ""
   tls_key_file: ""
-  cors:
-    enabled: false
-    allowed_origins: ["*"]
-    allowed_methods: ["GET", "POST"]
-    allowed_headers: ["Authorization", "Content-Type"]
-    max_age: 86400
-
 storage:
   type: json
   path: ./data/releases.json
@@ -713,15 +673,6 @@ storage:
 security:
   enable_auth: false
   bootstrap_key: ""
-  rate_limit:
-    enabled: false
-    requests_per_minute: 60
-    burst_size: 10
-    authenticated_requests_per_minute: 120
-    authenticated_burst_size: 20
-  trusted_proxies:
-    - "10.0.0.0/8"
-    - "172.16.0.0/12"
 
 cache:
   enabled: false

@@ -145,6 +145,11 @@ Permissions are cumulative: `admin` includes `write`, `write` includes `read`.
 
 ## Configuration Security
 
+### Proxy Layer
+
+Rate limiting, CORS, and TLS are enforced by the reverse proxy in front of the service.
+See [Reverse Proxy](reverse-proxy.md) for nginx and Traefik configuration examples.
+
 ## Threat Model
 
 ### Identified Threats
@@ -203,31 +208,6 @@ server:
     allowed_origins: ["https://yourdomain.com"]
     allowed_methods: ["GET", "POST"]
     max_age: 86400
-```
-
-### Rate Limiting
-
-```yaml
-security:
-  rate_limit:
-    enabled: true
-    requests_per_minute: 60
-    burst_size: 10
-    authenticated_requests_per_minute: 300
-    authenticated_burst_size: 50
-    cleanup_interval: 300s
-```
-
-### Reverse Proxy Security
-
-When using reverse proxies (nginx, Cloudflare):
-
-```yaml
-security:
-  trusted_proxies:
-    - "10.0.0.0/8"      # Internal network
-    - "172.16.0.0/12"   # Docker networks
-    - "192.168.0.0/16"  # Local networks
 ```
 
 ## Security Monitoring & Logging
