@@ -85,21 +85,34 @@ type DatabaseConfig struct {
 	ConnMaxIdleTime time.Duration `yaml:"conn_max_idle_time" json:"conn_max_idle_time"`
 }
 
+// SecurityConfig holds authentication, authorisation, and rate limiting settings.
 type SecurityConfig struct {
-	BootstrapKey   string          `yaml:"bootstrap_key" json:"bootstrap_key"`
-	RateLimit      RateLimitConfig `yaml:"rate_limit" json:"rate_limit"`
-	JWTSecret      string          `yaml:"jwt_secret" json:"jwt_secret"`
-	EnableAuth     bool            `yaml:"enable_auth" json:"enable_auth"`
-	TrustedProxies []string        `yaml:"trusted_proxies" json:"trusted_proxies"`
+	// BootstrapKey is the initial admin API key seeded into storage on first startup
+	// when the api_keys table is empty. Required when EnableAuth is true.
+	// Set via the UPDATER_BOOTSTRAP_KEY environment variable or security.bootstrap_key
+	// in the config file. After the first startup, keys are managed via the REST API.
+	BootstrapKey string          `yaml:"bootstrap_key" json:"bootstrap_key"`
+	RateLimit    RateLimitConfig `yaml:"rate_limit" json:"rate_limit"`
+	JWTSecret    string          `yaml:"jwt_secret" json:"jwt_secret"`
+	// EnableAuth toggles API key authentication. When false all endpoints are public.
+	EnableAuth     bool     `yaml:"enable_auth" json:"enable_auth"`
+	TrustedProxies []string `yaml:"trusted_proxies" json:"trusted_proxies"`
 }
 
+// RateLimitConfig configures the two-tier token-bucket rate limiter.
+// Anonymous requests are limited by RequestsPerMinute/BurstSize.
+// Authenticated requests are limited by the higher AuthenticatedRequestsPerMinute/AuthenticatedBurstSize values.
 type RateLimitConfig struct {
-	Enabled                        bool          `yaml:"enabled" json:"enabled"`
-	RequestsPerMinute              int           `yaml:"requests_per_minute" json:"requests_per_minute"`
-	BurstSize                      int           `yaml:"burst_size" json:"burst_size"`
-	AuthenticatedRequestsPerMinute int           `yaml:"authenticated_requests_per_minute" json:"authenticated_requests_per_minute"`
-	AuthenticatedBurstSize         int           `yaml:"authenticated_burst_size" json:"authenticated_burst_size"`
-	CleanupInterval                time.Duration `yaml:"cleanup_interval" json:"cleanup_interval"`
+	Enabled bool `yaml:"enabled" json:"enabled"`
+	// RequestsPerMinute is the sustained request rate for anonymous (unauthenticated) clients.
+	RequestsPerMinute int `yaml:"requests_per_minute" json:"requests_per_minute"`
+	// BurstSize is the maximum burst capacity for anonymous clients.
+	BurstSize int `yaml:"burst_size" json:"burst_size"`
+	// AuthenticatedRequestsPerMinute is the sustained request rate for authenticated clients.
+	AuthenticatedRequestsPerMinute int `yaml:"authenticated_requests_per_minute" json:"authenticated_requests_per_minute"`
+	// AuthenticatedBurstSize is the maximum burst capacity for authenticated clients.
+	AuthenticatedBurstSize int           `yaml:"authenticated_burst_size" json:"authenticated_burst_size"`
+	CleanupInterval        time.Duration `yaml:"cleanup_interval" json:"cleanup_interval"`
 }
 
 type LoggingConfig struct {

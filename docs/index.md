@@ -20,25 +20,20 @@ The updater service acts as a metadata provider, referencing externally hosted d
 Complete system design, API specification, and architectural decisions. Start here for system overview and design rationale.
 
 ### [Models Documentation](models/index.md)
-Comprehensive documentation of all data models, organized by component:
+Overview and auto-generated type reference for all data models:
 
-- **[Version Models](models/version-models.md)** - Semantic versioning and comparison logic
-- **[Platform Models](models/platform-models.md)** - Multi-platform support and application configuration
-- **[Release Models](models/release-models.md)** - Release management with security validation
-- **[API Models](models/api-models.md)** - HTTP request/response contracts
-- **[Configuration Models](models/config-models.md)** - Service configuration and deployment
+- **[Model Reference](models/auto/models.md)** - Complete auto-generated type reference (Application, Release, APIKey, Config, request/response types)
 
 ## Getting Started
 
 ### For API Integration
 1. Review the [Architecture Documentation](ARCHITECTURE.md) for system overview
-2. Study [API Models](models/api-models.md) for request/response contracts
-3. Implement [Version Models](models/version-models.md) comparison logic
-4. Handle [Platform Models](models/platform-models.md) compatibility
+2. Study [API Models](models/auto/models.md) for request/response contracts
+3. Check the [API Reference](api.md) for the live Swagger UI
 
 ### For Service Deployment
-1. Start with [Configuration Models](models/config-models.md) for setup options
-2. Understand [Release Models](models/release-models.md) for data management
+1. Start with [Configuration Models](models/auto/models.md) for setup options
+2. See [Security](SECURITY.md) for the API key management workflow
 3. Review security considerations across all components
 
 ### For Development
@@ -144,7 +139,7 @@ The service supports flexible configuration for different deployment scenarios:
 - **Production**: Database storage, security hardening, structured logging
 - **Container**: Environment variable configuration, health checks
 
-Full configuration options are documented in [Configuration Models](models/config-models.md).
+Full configuration options are documented in the [Model Reference](models/auto/models.md).
 
 ## Support and Contributing
 

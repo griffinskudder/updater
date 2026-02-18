@@ -53,23 +53,12 @@ nav:
   - Makefile: makefile.md
   - Models:
     - Overview: models/index.md
-    - Version Models: models/version-models.md
-    - Platform & Application Models: models/platform-models.md
-    - Release Models: models/release-models.md
-    - API Models: models/api-models.md
-    - Configuration Models: models/config-models.md
-  - Plans:
-    - Application Management API Design: plans/2026-02-15-application-management-api-design.md
-    - Application Management API Implementation: plans/2026-02-15-application-management-api-implementation.md
-    - Makefile Restructure Design: plans/2026-02-15-makefile-restructure-design.md
-    - Makefile Restructure Implementation: plans/2026-02-15-makefile-restructure-implementation.md
-    - Rate Limiter Design: plans/2026-02-15-rate-limiter-design.md
-    - Rate Limiter Implementation: plans/2026-02-15-rate-limiter-implementation.md
-    - Admin Frontend: plans/2026-02-16-admin-frontend.md
-    - GitHub CI Design: plans/2026-02-16-github-ci-design.md
-    - GitHub CI Implementation: plans/2026-02-16-github-ci-implementation.md
-    - GitHub Pages Design: plans/2026-02-16-github-pages-design.md
-    - GitHub Pages Implementation: plans/2026-02-16-github-pages-implementation.md
+    - Reference: models/auto/models.md
+  - Database:
+    - Overview: db/README.md
+    - applications: db/public.applications.md
+    - releases: db/public.releases.md
+    - api_keys: db/public.api_keys.md
 
 markdown_extensions:
   - toc:

@@ -75,58 +75,75 @@ The authorization system implements role-based permissions:
 - `write` permission includes `read` operations
 - `read` permission grants only query access
 
-## Configuration Security
+## API Key Management
 
-### API Key Configuration
+API keys are stored in the service database, not in the configuration file.
+
+### Bootstrap Key
+
+The `security.bootstrap_key` config field (or `UPDATER_BOOTSTRAP_KEY` env var)
+seeds a single `admin`-permission key into an empty database on first startup.
+This key is the entry point for all subsequent key management.
 
 ```yaml
 security:
   enable_auth: true
-  api_keys:
-    # Production Admin Key
-    - key: "${ADMIN_API_KEY}"
-      name: "Production Admin"
-      permissions: ["admin"]
-      enabled: true
-
-    # Release Management Key
-    - key: "${RELEASE_API_KEY}"
-      name: "Release Publisher"
-      permissions: ["read", "write"]
-      enabled: true
-
-    # Read-Only Integration Key
-    - key: "${READONLY_API_KEY}"
-      name: "Monitoring System"
-      permissions: ["read"]
-      enabled: true
+  bootstrap_key: "${UPDATER_BOOTSTRAP_KEY}"
 ```
+
+Generate a bootstrap key:
+
+```bash
+openssl rand -base64 32
+```
+
+### Key Format
+
+Generated keys use the format `upd_<44-char base64url>`, providing 256 bits of
+entropy. The raw key value is returned exactly once — at creation time — and is
+never stored. Only the SHA-256 hex digest (`key_hash`) and an 8-character
+display prefix are persisted.
+
+### Key Lifecycle (REST API)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/v1/admin/keys` | List all keys (hash and raw key never returned) |
+| `POST` | `/api/v1/admin/keys` | Create a key; raw value returned once in response |
+| `PATCH` | `/api/v1/admin/keys/{id}` | Update name, permissions, or enabled status |
+| `DELETE` | `/api/v1/admin/keys/{id}` | Permanently revoke a key |
+
+All key management endpoints require `admin` permission. The admin UI at
+`/admin/keys` and `/admin/keys/new` provides a browser-based interface for the
+same operations.
+
+### Permission Model
+
+| Permission | Grants access to |
+|------------|-----------------|
+| `read` | Read-only query endpoints |
+| `write` | `read` + release and application creation |
+| `admin` | `write` + updates, deletes, and key management |
+| `*` | Alias for `admin` — full access |
+
+Permissions are cumulative: `admin` includes `write`, `write` includes `read`.
 
 ### Security Best Practices
 
-#### API Key Management
+1. **Key Rotation**: Rotate keys regularly (recommended: every 90 days). Create
+   the replacement key before revoking the old one for zero-downtime rotation.
 
-1. **Key Generation**
-   ```bash
-   # Generate cryptographically secure API keys
-   openssl rand -base64 32
-   ```
+2. **Least Privilege**: Assign the minimum permission required. Read-only
+   integrations should use `read`; release publishers should use `write`.
 
-2. **Key Rotation**
-   - Rotate API keys regularly (recommended: every 90 days)
-   - Use environment variables, never hardcode keys
-   - Implement key versioning for zero-downtime rotation
+3. **Bootstrap Key Storage**: Store the bootstrap key in a secret manager
+   (HashiCorp Vault, AWS Secrets Manager, Kubernetes Secrets). Never commit it
+   to version control.
 
-3. **Key Storage**
-   - Store keys in secure environment variables
-   - Use secret management systems (HashiCorp Vault, AWS Secrets Manager)
-   - Never commit keys to version control
+4. **Revocation**: Revoke compromised keys immediately via `DELETE
+   /api/v1/admin/keys/{id}` or the `/admin/keys` UI.
 
-#### Minimum Key Length Requirements
-
-- **API Keys**: Minimum 32 characters (256 bits of entropy)
-- **JWT Secrets**: Minimum 32 characters
-- **Production**: Use 64+ character keys
+## Configuration Security
 
 ## Threat Model
 
@@ -195,8 +212,9 @@ security:
   rate_limit:
     enabled: true
     requests_per_minute: 60
-    requests_per_hour: 1000
     burst_size: 10
+    authenticated_requests_per_minute: 300
+    authenticated_burst_size: 50
     cleanup_interval: 300s
 ```
 
@@ -289,14 +307,21 @@ Set up alerts for:
 
 ### Emergency API Key Revocation
 
-```bash
-# Emergency key disable via environment variable
-export UPDATER_SECURITY_DISABLE_KEY="compromised-key-value"
+Revoke a key immediately via the REST API (requires an active `admin` key):
 
-# Or through configuration update
-kubectl patch configmap updater-config \
-  -p '{"data":{"security.api_keys[0].enabled":"false"}}'
+```bash
+# Permanently delete a key by ID
+curl -X DELETE https://updater.example.com/api/v1/admin/keys/<key-id> \
+  -H "Authorization: Bearer <admin-api-key>"
+
+# Or disable without deleting (can be re-enabled later)
+curl -X PATCH https://updater.example.com/api/v1/admin/keys/<key-id> \
+  -H "Authorization: Bearer <admin-api-key>" \
+  -H "Content-Type: application/json" \
+  -d '{"enabled": false}'
 ```
+
+Key IDs are visible in `GET /api/v1/admin/keys` or the `/admin/keys` admin UI.
 
 ## Security Testing
 

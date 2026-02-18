@@ -32,7 +32,7 @@ graph TD
 
 ## Storage Interface
 
-All providers implement 10 methods covering application and release CRUD operations:
+All providers implement 15 methods covering application, release, and API key CRUD operations, plus health and lifecycle management:
 
 ```mermaid
 classDiagram
@@ -41,13 +41,20 @@ classDiagram
         +Applications(ctx) []*Application, error
         +GetApplication(ctx, appID) *Application, error
         +SaveApplication(ctx, app) error
+        +DeleteApplication(ctx, appID) error
         +Releases(ctx, appID) []*Release, error
         +GetRelease(ctx, appID, version, platform, arch) *Release, error
         +SaveRelease(ctx, release) error
         +DeleteRelease(ctx, appID, version, platform, arch) error
         +GetLatestRelease(ctx, appID, platform, arch) *Release, error
         +GetReleasesAfterVersion(ctx, appID, version, platform, arch) []*Release, error
+        +Ping(ctx) error
         +Close() error
+        +CreateAPIKey(ctx, key) error
+        +GetAPIKeyByHash(ctx, hash) *APIKey, error
+        +ListAPIKeys(ctx) []*APIKey, error
+        +UpdateAPIKey(ctx, key) error
+        +DeleteAPIKey(ctx, id) error
     }
 ```
 
@@ -149,8 +156,20 @@ erDiagram
         JSON metadata
         TIMESTAMP created_at
     }
+    api_keys {
+        TEXT id PK
+        TEXT name
+        TEXT key_hash UK
+        TEXT prefix
+        TEXT permissions
+        INTEGER enabled
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
     applications ||--o{ releases : "has many"
 ```
+
+The `api_keys.permissions` column stores a JSON array of permission strings (e.g. `["admin"]`). The `enabled` column uses `INTEGER` (0/1) in SQLite and `BOOLEAN` in PostgreSQL.
 
 ### Type Differences
 
@@ -181,6 +200,16 @@ store, err := factory.Create(config.Storage)
 ```
 
 The factory validates configuration before creating providers and supports all four backend types.
+
+## Database Schema Docs
+
+The auto-generated schema reference (including ER diagrams per table) lives in
+the [Database](db/README.md) section. It is generated from the live
+PostgreSQL schema by running:
+
+```bash
+make docs-db
+```
 
 ## Testing
 
