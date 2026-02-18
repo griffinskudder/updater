@@ -12,22 +12,23 @@ The service implements multiple layers of security protection:
 
 ```mermaid
 graph TB
-    A[Client Request] --> B[Rate Limiting]
-    B --> C[CORS Protection]
-    C --> D[TLS Termination]
-    D --> E[Authentication]
-    E --> F[Authorization]
-    F --> G[Input Validation]
-    G --> H[Business Logic]
-    H --> I[Audit Logging]
+    P[Reverse Proxy] --> A[Rate Limiting]
+    P --> B[CORS Enforcement]
+    P --> C[TLS Termination]
+    C --> D[Authentication]
+    D --> E[Authorization]
+    E --> F[Input Validation]
+    F --> G[Business Logic]
+    G --> H[Audit Logging]
 ```
 
 ### Security Layers
 
-1. **Network Security**
-   - TLS/HTTPS enforcement
-   - CORS protection with configurable origins
-   - Trusted proxy configuration
+1. **Network Security** (reverse proxy layer)
+   - TLS/HTTPS termination and certificate renewal
+   - CORS header management
+   - Rate limiting and DDoS mitigation
+   - See [Reverse Proxy](reverse-proxy.md) for nginx and Traefik examples
 
 2. **Authentication Layer**
    - API key-based authentication
@@ -45,7 +46,6 @@ graph TB
    - Path traversal protection
 
 5. **Operational Security**
-   - Rate limiting and DDoS protection
    - Comprehensive audit logging
    - Security event monitoring
 
@@ -196,19 +196,9 @@ See [Reverse Proxy](reverse-proxy.md) for nginx and Traefik configuration exampl
 
 ### HTTPS/TLS Configuration
 
-```yaml
-server:
-  tls_enabled: true
-  tls_cert_file: "/etc/ssl/certs/updater.pem"
-  tls_key_file: "/etc/ssl/private/updater.key"
-
-  # Security headers
-  cors:
-    enabled: true
-    allowed_origins: ["https://yourdomain.com"]
-    allowed_methods: ["GET", "POST"]
-    max_age: 86400
-```
+TLS termination is handled by the reverse proxy. The service does not need TLS
+configured directly. See [Reverse Proxy](reverse-proxy.md) for nginx and Traefik
+examples that terminate TLS and forward plain HTTP to the service on port 8080.
 
 ## Security Monitoring & Logging
 
@@ -225,11 +215,6 @@ The service logs the following security-relevant events:
   - Permission validation failures
   - Unauthorized endpoint access attempts
   - Admin operation attempts without proper permissions
-
-- **Rate Limiting Events**
-  - Rate limit violations by IP
-  - Sustained attack patterns
-  - Burst limit exceeded events
 
 - **Operational Events**
   - Release registration operations
@@ -309,7 +294,7 @@ Key IDs are visible in `GET /api/v1/admin/keys` or the `/admin/keys` admin UI.
 
 - [ ] API authentication required for admin endpoints
 - [ ] Permission validation enforced
-- [ ] Rate limiting functional
+- [ ] Rate limiting configured at reverse proxy
 - [ ] Input validation preventing injection
 - [ ] Error messages don't leak sensitive information
 - [ ] HTTPS enforced in production

@@ -376,14 +376,14 @@ The updater service implements a comprehensive multi-layered security architectu
 ```mermaid
 sequenceDiagram
     participant C as Client
-    participant RL as Rate Limiter
+    participant RP as Reverse Proxy
     participant AM as Auth Middleware
     participant PM as Permission Middleware
     participant H as Handler
     participant S as Storage
 
-    C->>RL: HTTP Request
-    RL->>AM: Rate Check Passed
+    C->>RP: HTTPS Request
+    RP->>AM: Rate/CORS checked; plain HTTP forwarded
     AM->>AM: Validate API Key
     AM->>PM: Authentication Success
     PM->>PM: Check Permissions
