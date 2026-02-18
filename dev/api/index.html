@@ -471,11 +471,11 @@
     
     
       <li class="md-tabs__item">
-        <a href="../plans/2026-02-15-application-management-api-design/" class="md-tabs__link">
+        <a href="../db/" class="md-tabs__link">
           
   
   
-  Plans
+  Database
 
         </a>
       </li>
@@ -733,10 +733,21 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#overview" class="md-nav__link">
+  <a href="#swagger-ui" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Overview
+        Swagger UI
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#openapi-specification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OpenAPI Specification
       
     </span>
   </a>
@@ -766,228 +777,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#endpoints-summary" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Endpoints Summary
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#update-endpoints" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Update Endpoints
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Update Endpoints">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#check-for-updates-get" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Check for Updates (GET)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#check-for-updates-post" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Check for Updates (POST)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#get-latest-version-get-with-path" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Get Latest Version (GET with path)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#get-latest-version-query-params" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Get Latest Version (query params)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#list-releases" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        List Releases
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#register-release" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Register Release
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#release-management" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Release Management
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Release Management">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#delete-release" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Delete Release
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#application-management" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Application Management
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Application Management">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#list-applications" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        List Applications
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#get-application" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Get Application
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#create-application" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Create Application
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#update-application" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Update Application
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#delete-application" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Delete Application
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#health" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Health
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Health">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#health-check" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Health Check
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#error-responses" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -995,45 +784,6 @@
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Error Responses">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#error-codes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Error Codes
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#validation-errors" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Validation Errors
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#common-error-scenarios" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Common Error Scenarios
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -1477,126 +1227,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../models/version-models/" class="md-nav__link">
+      <a href="../models/auto/models/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Version Models
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../models/platform-models/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Platform & Application Models
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../models/release-models/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Release Models
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../models/api-models/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    API Models
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../models/config-models/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Configuration Models
+    Reference
   
 
     
@@ -1649,7 +1287,7 @@
   <span class="md-ellipsis">
     
   
-    Plans
+    Database
   
 
     
@@ -1665,7 +1303,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    Plans
+    Database
   
 
           </label>
@@ -1678,14 +1316,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../plans/2026-02-15-application-management-api-design/" class="md-nav__link">
+      <a href="../db/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Application Management API Design
+    Overview
   
 
     
@@ -1706,14 +1344,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../plans/2026-02-15-application-management-api-implementation/" class="md-nav__link">
+      <a href="../db/public.applications/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Application Management API Implementation
+    applications
   
 
     
@@ -1734,14 +1372,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../plans/2026-02-15-makefile-restructure-design/" class="md-nav__link">
+      <a href="../db/public.releases/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Makefile Restructure Design
+    releases
   
 
     
@@ -1762,210 +1400,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../plans/2026-02-15-makefile-restructure-implementation/" class="md-nav__link">
+      <a href="../db/public.api_keys/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Makefile Restructure Implementation
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../plans/2026-02-15-rate-limiter-design/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Rate Limiter Design
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../plans/2026-02-15-rate-limiter-implementation/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Rate Limiter Implementation
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../plans/2026-02-16-admin-frontend/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Admin Frontend
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../plans/2026-02-16-github-ci-design/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    GitHub CI Design
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../plans/2026-02-16-github-ci-implementation/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    GitHub CI Implementation
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../plans/2026-02-16-github-pages-design/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    GitHub Pages Design
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../plans/2026-02-16-github-pages-implementation/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    GitHub Pages Implementation
+    api_keys
   
 
     
@@ -2013,10 +1455,21 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#overview" class="md-nav__link">
+  <a href="#swagger-ui" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Overview
+        Swagger UI
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#openapi-specification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OpenAPI Specification
       
     </span>
   </a>
@@ -2046,228 +1499,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#endpoints-summary" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Endpoints Summary
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#update-endpoints" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Update Endpoints
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Update Endpoints">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#check-for-updates-get" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Check for Updates (GET)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#check-for-updates-post" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Check for Updates (POST)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#get-latest-version-get-with-path" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Get Latest Version (GET with path)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#get-latest-version-query-params" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Get Latest Version (query params)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#list-releases" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        List Releases
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#register-release" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Register Release
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#release-management" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Release Management
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Release Management">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#delete-release" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Delete Release
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#application-management" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Application Management
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Application Management">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#list-applications" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        List Applications
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#get-application" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Get Application
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#create-application" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Create Application
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#update-application" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Update Application
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#delete-application" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Delete Application
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#health" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Health
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Health">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#health-check" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Health Check
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#error-responses" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2275,45 +1506,6 @@
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Error Responses">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#error-codes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Error Codes
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#validation-errors" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Validation Errors
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#common-error-scenarios" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Common Error Scenarios
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -2386,13 +1578,27 @@
 
 
 <h1 id="api-reference">API Reference<a class="headerlink" href="#api-reference" title="Permanent link">&para;</a></h1>
-<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
-<p>The updater service exposes a RESTful JSON API under the <code>/api/v1</code> prefix. Clients query the API to check for software updates, retrieve release information, and manage applications. All request and response bodies use <code>application/json</code>. Timestamps follow RFC 3339 format, and versions follow semantic versioning.</p>
+<p>The interactive API reference is served directly by the running updater service.</p>
+<h2 id="swagger-ui">Swagger UI<a class="headerlink" href="#swagger-ui" title="Permanent link">&para;</a></h2>
+<p>Navigate to <code>/api/v1/docs</code> on your running instance:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>http://localhost:8080/api/v1/docs
+</span></code></pre></div>
+<p>The Swagger UI is generated from the embedded OpenAPI 3.0.3 specification and
+always reflects the exact endpoints and schemas of the running version.</p>
+<h2 id="openapi-specification">OpenAPI Specification<a class="headerlink" href="#openapi-specification" title="Permanent link">&para;</a></h2>
+<p>The raw OpenAPI YAML is available at:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>http://localhost:8080/api/v1/openapi.yaml
+</span></code></pre></div>
+<p>You can also validate the specification locally without starting the service:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>make<span class="w"> </span>openapi-validate
+</span></code></pre></div>
+<p>The specification source lives at <code>internal/api/openapi/openapi.yaml</code>.</p>
 <h2 id="authentication">Authentication<a class="headerlink" href="#authentication" title="Permanent link">&para;</a></h2>
 <p>Protected endpoints require a Bearer token in the <code>Authorization</code> header:</p>
-<div class="language-http highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="err">Authorization: Bearer &lt;api-key&gt;</span>
+<div class="language-http highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="err">Authorization: Bearer &lt;api-key&gt;</span>
 </span></code></pre></div>
-<p>API keys are configured on the server with one or more permission levels. The permission hierarchy is cumulative:</p>
+<p>API keys are managed via the key management endpoints or the admin UI. The
+permission hierarchy is cumulative:</p>
 <table>
 <thead>
 <tr>
@@ -2415,11 +1621,10 @@
 <tr>
 <td><code>admin</code></td>
 <td>read, write, admin</td>
-<td>Update and delete applications, delete releases</td>
+<td>Update/delete resources, manage API keys</td>
 </tr>
 </tbody>
 </table>
-<p>Public endpoints (update checks, latest version, health) do not require authentication. When authentication is disabled in the server configuration, all endpoints are accessible without a token.</p>
 <h2 id="request-flow">Request Flow<a class="headerlink" href="#request-flow" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>sequenceDiagram
     participant C as Client
@@ -2431,1000 +1636,26 @@
 
     C-&gt;&gt;R: HTTP Request
     R-&gt;&gt;A: Rate check passed
-    A-&gt;&gt;A: Validate Bearer token
+    A-&gt;&gt;A: SHA-256 hash Bearer token
+    A-&gt;&gt;S: GetAPIKeyByHash
+    S--&gt;&gt;A: APIKey
     A-&gt;&gt;P: Token valid
     P-&gt;&gt;P: Check permission level
     P-&gt;&gt;H: Authorized
     H-&gt;&gt;S: Execute operation
     S--&gt;&gt;H: Result
     H--&gt;&gt;C: JSON Response</code></pre>
-<h2 id="endpoints-summary">Endpoints Summary<a class="headerlink" href="#endpoints-summary" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Method</th>
-<th>Path</th>
-<th>Auth</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>GET</code></td>
-<td><code>/api/v1/updates/{app_id}/check</code></td>
-<td>Public</td>
-<td>Check for available updates</td>
-</tr>
-<tr>
-<td><code>POST</code></td>
-<td><code>/api/v1/check</code></td>
-<td>Public</td>
-<td>Check for updates (JSON body)</td>
-</tr>
-<tr>
-<td><code>GET</code></td>
-<td><code>/api/v1/updates/{app_id}/latest</code></td>
-<td>Public</td>
-<td>Get latest version</td>
-</tr>
-<tr>
-<td><code>GET</code></td>
-<td><code>/api/v1/latest</code></td>
-<td>Public</td>
-<td>Get latest version (query params)</td>
-</tr>
-<tr>
-<td><code>GET</code></td>
-<td><code>/api/v1/updates/{app_id}/releases</code></td>
-<td>read</td>
-<td>List releases for an application</td>
-</tr>
-<tr>
-<td><code>POST</code></td>
-<td><code>/api/v1/updates/{app_id}/register</code></td>
-<td>write</td>
-<td>Register a new release</td>
-</tr>
-<tr>
-<td><code>DELETE</code></td>
-<td><code>/api/v1/updates/{app_id}/releases/{version}/{platform}/{arch}</code></td>
-<td>admin</td>
-<td>Delete a specific release</td>
-</tr>
-<tr>
-<td><code>GET</code></td>
-<td><code>/api/v1/applications</code></td>
-<td>read</td>
-<td>List all applications</td>
-</tr>
-<tr>
-<td><code>GET</code></td>
-<td><code>/api/v1/applications/{app_id}</code></td>
-<td>read</td>
-<td>Get application details</td>
-</tr>
-<tr>
-<td><code>POST</code></td>
-<td><code>/api/v1/applications</code></td>
-<td>write</td>
-<td>Create an application</td>
-</tr>
-<tr>
-<td><code>PUT</code></td>
-<td><code>/api/v1/applications/{app_id}</code></td>
-<td>admin</td>
-<td>Update an application</td>
-</tr>
-<tr>
-<td><code>DELETE</code></td>
-<td><code>/api/v1/applications/{app_id}</code></td>
-<td>admin</td>
-<td>Delete an application</td>
-</tr>
-<tr>
-<td><code>GET</code></td>
-<td><code>/health</code></td>
-<td>Public</td>
-<td>Health check</td>
-</tr>
-<tr>
-<td><code>GET</code></td>
-<td><code>/api/v1/health</code></td>
-<td>Public</td>
-<td>Health check (versioned alias)</td>
-</tr>
-</tbody>
-</table>
-<hr />
-<h2 id="update-endpoints">Update Endpoints<a class="headerlink" href="#update-endpoints" title="Permanent link">&para;</a></h2>
-<h3 id="check-for-updates-get">Check for Updates (GET)<a class="headerlink" href="#check-for-updates-get" title="Permanent link">&para;</a></h3>
-<p>Check whether a newer version is available for a specific application, platform, and architecture.</p>
-<p><strong>Request</strong></p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>GET /api/v1/updates/{app_id}/check?current_version={version}&amp;platform={platform}&amp;architecture={arch}
-</span></code></pre></div>
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>In</th>
-<th>Required</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>app_id</code></td>
-<td>path</td>
-<td>yes</td>
-<td>Application identifier</td>
-</tr>
-<tr>
-<td><code>current_version</code></td>
-<td>query</td>
-<td>yes</td>
-<td>Client's current semantic version</td>
-</tr>
-<tr>
-<td><code>platform</code></td>
-<td>query</td>
-<td>yes</td>
-<td>Target OS (<code>windows</code>, <code>linux</code>, <code>darwin</code>, <code>android</code>, <code>ios</code>)</td>
-</tr>
-<tr>
-<td><code>architecture</code></td>
-<td>query</td>
-<td>yes</td>
-<td>Target architecture (<code>amd64</code>, <code>arm64</code>, <code>386</code>, <code>arm</code>)</td>
-</tr>
-<tr>
-<td><code>allow_prerelease</code></td>
-<td>query</td>
-<td>no</td>
-<td>Include pre-release versions (default <code>false</code>)</td>
-</tr>
-<tr>
-<td><code>include_metadata</code></td>
-<td>query</td>
-<td>no</td>
-<td>Include release metadata in response (default <code>false</code>)</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Response -- update available (200)</strong></p>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p">{</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">&quot;update_available&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span><span class="nt">&quot;latest_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2.1.0&quot;</span><span class="p">,</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span><span class="nt">&quot;current_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2.0.0&quot;</span><span class="p">,</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">  </span><span class="nt">&quot;download_url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://releases.example.com/app/2.1.0/app-windows-amd64.exe&quot;</span><span class="p">,</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">  </span><span class="nt">&quot;checksum&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855&quot;</span><span class="p">,</span>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">  </span><span class="nt">&quot;checksum_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sha256&quot;</span><span class="p">,</span>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">  </span><span class="nt">&quot;file_size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">15728640</span><span class="p">,</span>
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">  </span><span class="nt">&quot;release_notes&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Performance improvements and bug fixes&quot;</span><span class="p">,</span>
-</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">  </span><span class="nt">&quot;release_date&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-02-10T12:00:00Z&quot;</span><span class="p">,</span>
-</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">  </span><span class="nt">&quot;required&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
-</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">  </span><span class="nt">&quot;minimum_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.0.0&quot;</span>
-</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="p">}</span>
-</span></code></pre></div>
-<p><strong>Response -- no update (200)</strong></p>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="p">{</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nt">&quot;update_available&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span><span class="nt">&quot;current_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2.1.0&quot;</span><span class="p">,</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">  </span><span class="nt">&quot;required&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="p">}</span>
-</span></code></pre></div>
-<h3 id="check-for-updates-post">Check for Updates (POST)<a class="headerlink" href="#check-for-updates-post" title="Permanent link">&para;</a></h3>
-<p>Alternative endpoint that accepts the update check parameters as a JSON body instead of query parameters.</p>
-<p><strong>Request</strong></p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>POST /api/v1/check
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>Content-Type: application/json
-</span></code></pre></div>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="p">{</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="nt">&quot;application_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;my-app&quot;</span><span class="p">,</span>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">  </span><span class="nt">&quot;current_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2.0.0&quot;</span><span class="p">,</span>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">  </span><span class="nt">&quot;platform&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;windows&quot;</span><span class="p">,</span>
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">  </span><span class="nt">&quot;architecture&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;amd64&quot;</span><span class="p">,</span>
-</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">  </span><span class="nt">&quot;allow_prerelease&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
-</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">  </span><span class="nt">&quot;include_metadata&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
-</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="p">}</span>
-</span></code></pre></div>
-<p><strong>Response</strong></p>
-<p>Same as the GET variant above.</p>
-<h3 id="get-latest-version-get-with-path">Get Latest Version (GET with path)<a class="headerlink" href="#get-latest-version-get-with-path" title="Permanent link">&para;</a></h3>
-<p>Retrieve the latest release for a given application, platform, and architecture.</p>
-<p><strong>Request</strong></p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>GET /api/v1/updates/{app_id}/latest?platform={platform}&amp;architecture={arch}
-</span></code></pre></div>
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>In</th>
-<th>Required</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>app_id</code></td>
-<td>path</td>
-<td>yes</td>
-<td>Application identifier</td>
-</tr>
-<tr>
-<td><code>platform</code></td>
-<td>query</td>
-<td>yes</td>
-<td>Target OS</td>
-</tr>
-<tr>
-<td><code>architecture</code></td>
-<td>query</td>
-<td>yes</td>
-<td>Target architecture</td>
-</tr>
-<tr>
-<td><code>allow_prerelease</code></td>
-<td>query</td>
-<td>no</td>
-<td>Include pre-release versions (default <code>false</code>)</td>
-</tr>
-<tr>
-<td><code>include_metadata</code></td>
-<td>query</td>
-<td>no</td>
-<td>Include release metadata (default <code>false</code>)</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Response (200)</strong></p>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="p">{</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2.1.0&quot;</span><span class="p">,</span>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">  </span><span class="nt">&quot;download_url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://releases.example.com/app/2.1.0/app-windows-amd64.exe&quot;</span><span class="p">,</span>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">  </span><span class="nt">&quot;checksum&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855&quot;</span><span class="p">,</span>
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">  </span><span class="nt">&quot;checksum_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sha256&quot;</span><span class="p">,</span>
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="w">  </span><span class="nt">&quot;file_size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">15728640</span><span class="p">,</span>
-</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">  </span><span class="nt">&quot;release_notes&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Performance improvements and bug fixes&quot;</span><span class="p">,</span>
-</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="w">  </span><span class="nt">&quot;release_date&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-02-10T12:00:00Z&quot;</span><span class="p">,</span>
-</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="w">  </span><span class="nt">&quot;required&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
-</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="w">  </span><span class="nt">&quot;metadata&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
-</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="p">}</span>
-</span></code></pre></div>
-<h3 id="get-latest-version-query-params">Get Latest Version (query params)<a class="headerlink" href="#get-latest-version-query-params" title="Permanent link">&para;</a></h3>
-<p>Compatibility alias that accepts the application ID as a query parameter.</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>GET /api/v1/latest?application_id={app_id}&amp;platform={platform}&amp;architecture={arch}
-</span></code></pre></div>
-<p>Response format is the same as the path-based variant.</p>
-<h3 id="list-releases">List Releases<a class="headerlink" href="#list-releases" title="Permanent link">&para;</a></h3>
-<p>List releases for an application with filtering, sorting, and pagination.</p>
-<p><strong>Requires</strong>: <code>read</code> permission.</p>
-<p><strong>Request</strong></p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>GET /api/v1/updates/{app_id}/releases
-</span></code></pre></div>
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>In</th>
-<th>Required</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>app_id</code></td>
-<td>path</td>
-<td>yes</td>
-<td>Application identifier</td>
-</tr>
-<tr>
-<td><code>platform</code></td>
-<td>query</td>
-<td>no</td>
-<td>Filter by platform</td>
-</tr>
-<tr>
-<td><code>architecture</code></td>
-<td>query</td>
-<td>no</td>
-<td>Filter by architecture</td>
-</tr>
-<tr>
-<td><code>version</code></td>
-<td>query</td>
-<td>no</td>
-<td>Filter by exact version</td>
-</tr>
-<tr>
-<td><code>required</code></td>
-<td>query</td>
-<td>no</td>
-<td>Filter by required flag</td>
-</tr>
-<tr>
-<td><code>limit</code></td>
-<td>query</td>
-<td>no</td>
-<td>Page size (default <code>50</code>)</td>
-</tr>
-<tr>
-<td><code>offset</code></td>
-<td>query</td>
-<td>no</td>
-<td>Page offset (default <code>0</code>)</td>
-</tr>
-<tr>
-<td><code>sort_by</code></td>
-<td>query</td>
-<td>no</td>
-<td>Sort field: <code>version</code>, <code>release_date</code>, <code>platform</code>, <code>architecture</code>, <code>created_at</code> (default <code>release_date</code>)</td>
-</tr>
-<tr>
-<td><code>sort_order</code></td>
-<td>query</td>
-<td>no</td>
-<td><code>asc</code> or <code>desc</code> (default <code>desc</code>)</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Response (200)</strong></p>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="p">{</span>
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">  </span><span class="nt">&quot;releases&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">    </span><span class="p">{</span>
-</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;rel-001&quot;</span><span class="p">,</span>
-</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">      </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2.1.0&quot;</span><span class="p">,</span>
-</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="w">      </span><span class="nt">&quot;platform&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;windows&quot;</span><span class="p">,</span>
-</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="w">      </span><span class="nt">&quot;architecture&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;amd64&quot;</span><span class="p">,</span>
-</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="w">      </span><span class="nt">&quot;download_url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://releases.example.com/app/2.1.0/app-windows-amd64.exe&quot;</span><span class="p">,</span>
-</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span class="w">      </span><span class="nt">&quot;checksum&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;e3b0c44298fc1c149afbf4c8996fb924...&quot;</span><span class="p">,</span>
-</span><span id="__span-10-10"><a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span class="w">      </span><span class="nt">&quot;checksum_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sha256&quot;</span><span class="p">,</span>
-</span><span id="__span-10-11"><a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span class="w">      </span><span class="nt">&quot;file_size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">15728640</span><span class="p">,</span>
-</span><span id="__span-10-12"><a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span class="w">      </span><span class="nt">&quot;release_notes&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Performance improvements&quot;</span><span class="p">,</span>
-</span><span id="__span-10-13"><a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a><span class="w">      </span><span class="nt">&quot;release_date&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-02-10T12:00:00Z&quot;</span><span class="p">,</span>
-</span><span id="__span-10-14"><a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a><span class="w">      </span><span class="nt">&quot;required&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
-</span><span id="__span-10-15"><a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a><span class="w">      </span><span class="nt">&quot;minimum_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.0.0&quot;</span>
-</span><span id="__span-10-16"><a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a><span class="w">    </span><span class="p">}</span>
-</span><span id="__span-10-17"><a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a><span class="w">  </span><span class="p">],</span>
-</span><span id="__span-10-18"><a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a><span class="w">  </span><span class="nt">&quot;total_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
-</span><span id="__span-10-19"><a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a><span class="w">  </span><span class="nt">&quot;page&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
-</span><span id="__span-10-20"><a id="__codelineno-10-20" name="__codelineno-10-20" href="#__codelineno-10-20"></a><span class="w">  </span><span class="nt">&quot;page_size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="p">,</span>
-</span><span id="__span-10-21"><a id="__codelineno-10-21" name="__codelineno-10-21" href="#__codelineno-10-21"></a><span class="w">  </span><span class="nt">&quot;has_more&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
-</span><span id="__span-10-22"><a id="__codelineno-10-22" name="__codelineno-10-22" href="#__codelineno-10-22"></a><span class="p">}</span>
-</span></code></pre></div>
-<h3 id="register-release">Register Release<a class="headerlink" href="#register-release" title="Permanent link">&para;</a></h3>
-<p>Register a new release for an application.</p>
-<p><strong>Requires</strong>: <code>write</code> permission.</p>
-<p><strong>Request</strong></p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>POST /api/v1/updates/{app_id}/register
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>Content-Type: application/json
-</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>Authorization: Bearer &lt;api-key&gt;
-</span></code></pre></div>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="p">{</span>
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">  </span><span class="nt">&quot;application_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;my-app&quot;</span><span class="p">,</span>
-</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">  </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2.1.0&quot;</span><span class="p">,</span>
-</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">  </span><span class="nt">&quot;platform&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;windows&quot;</span><span class="p">,</span>
-</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">  </span><span class="nt">&quot;architecture&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;amd64&quot;</span><span class="p">,</span>
-</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="w">  </span><span class="nt">&quot;download_url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://releases.example.com/app/2.1.0/app-windows-amd64.exe&quot;</span><span class="p">,</span>
-</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="w">  </span><span class="nt">&quot;checksum&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855&quot;</span><span class="p">,</span>
-</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="w">  </span><span class="nt">&quot;checksum_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sha256&quot;</span><span class="p">,</span>
-</span><span id="__span-12-9"><a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a><span class="w">  </span><span class="nt">&quot;file_size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">15728640</span><span class="p">,</span>
-</span><span id="__span-12-10"><a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a><span class="w">  </span><span class="nt">&quot;release_notes&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Performance improvements and bug fixes&quot;</span><span class="p">,</span>
-</span><span id="__span-12-11"><a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a><span class="w">  </span><span class="nt">&quot;required&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
-</span><span id="__span-12-12"><a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a><span class="w">  </span><span class="nt">&quot;minimum_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.0.0&quot;</span><span class="p">,</span>
-</span><span id="__span-12-13"><a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a><span class="w">  </span><span class="nt">&quot;metadata&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-12-14"><a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a><span class="w">    </span><span class="nt">&quot;build_number&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1234&quot;</span><span class="p">,</span>
-</span><span id="__span-12-15"><a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a><span class="w">    </span><span class="nt">&quot;commit_sha&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;abc123&quot;</span>
-</span><span id="__span-12-16"><a id="__codelineno-12-16" name="__codelineno-12-16" href="#__codelineno-12-16"></a><span class="w">  </span><span class="p">}</span>
-</span><span id="__span-12-17"><a id="__codelineno-12-17" name="__codelineno-12-17" href="#__codelineno-12-17"></a><span class="p">}</span>
-</span></code></pre></div>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Type</th>
-<th>Required</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>application_id</code></td>
-<td>string</td>
-<td>yes</td>
-<td>Target application</td>
-</tr>
-<tr>
-<td><code>version</code></td>
-<td>string</td>
-<td>yes</td>
-<td>Semantic version</td>
-</tr>
-<tr>
-<td><code>platform</code></td>
-<td>string</td>
-<td>yes</td>
-<td>Target platform</td>
-</tr>
-<tr>
-<td><code>architecture</code></td>
-<td>string</td>
-<td>yes</td>
-<td>Target architecture</td>
-</tr>
-<tr>
-<td><code>download_url</code></td>
-<td>string</td>
-<td>yes</td>
-<td>External download URL</td>
-</tr>
-<tr>
-<td><code>checksum</code></td>
-<td>string</td>
-<td>yes</td>
-<td>File integrity hash</td>
-</tr>
-<tr>
-<td><code>checksum_type</code></td>
-<td>string</td>
-<td>yes</td>
-<td>Hash algorithm (e.g. <code>sha256</code>)</td>
-</tr>
-<tr>
-<td><code>file_size</code></td>
-<td>integer</td>
-<td>no</td>
-<td>File size in bytes</td>
-</tr>
-<tr>
-<td><code>release_notes</code></td>
-<td>string</td>
-<td>no</td>
-<td>Human-readable changelog</td>
-</tr>
-<tr>
-<td><code>required</code></td>
-<td>boolean</td>
-<td>no</td>
-<td>Force-update flag (default <code>false</code>)</td>
-</tr>
-<tr>
-<td><code>minimum_version</code></td>
-<td>string</td>
-<td>no</td>
-<td>Minimum version required to apply this update</td>
-</tr>
-<tr>
-<td><code>metadata</code></td>
-<td>object</td>
-<td>no</td>
-<td>Arbitrary key-value metadata</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Response (201)</strong></p>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="p">{</span>
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;rel-001&quot;</span><span class="p">,</span>
-</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">  </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Release registered successfully&quot;</span><span class="p">,</span>
-</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">  </span><span class="nt">&quot;created_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-02-16T10:00:00Z&quot;</span>
-</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="p">}</span>
-</span></code></pre></div>
-<hr />
-<h2 id="release-management">Release Management<a class="headerlink" href="#release-management" title="Permanent link">&para;</a></h2>
-<h3 id="delete-release">Delete Release<a class="headerlink" href="#delete-release" title="Permanent link">&para;</a></h3>
-<p>Delete a specific release identified by application, version, platform, and architecture.</p>
-<p><strong>Requires</strong>: <code>admin</code> permission.</p>
-<p><strong>Request</strong></p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>DELETE /api/v1/updates/{app_id}/releases/{version}/{platform}/{arch}
-</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>Authorization: Bearer &lt;api-key&gt;
-</span></code></pre></div>
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>In</th>
-<th>Required</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>app_id</code></td>
-<td>path</td>
-<td>yes</td>
-<td>Application identifier</td>
-</tr>
-<tr>
-<td><code>version</code></td>
-<td>path</td>
-<td>yes</td>
-<td>Semantic version of the release</td>
-</tr>
-<tr>
-<td><code>platform</code></td>
-<td>path</td>
-<td>yes</td>
-<td>Platform of the release</td>
-</tr>
-<tr>
-<td><code>arch</code></td>
-<td>path</td>
-<td>yes</td>
-<td>Architecture of the release</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Response (200)</strong></p>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="p">{</span>
-</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;rel-001&quot;</span><span class="p">,</span>
-</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">  </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Release deleted successfully&quot;</span>
-</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="p">}</span>
-</span></code></pre></div>
-<p><strong>Error responses</strong></p>
-<table>
-<thead>
-<tr>
-<th>Status</th>
-<th>Code</th>
-<th>Condition</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>401</td>
-<td><code>UNAUTHORIZED</code></td>
-<td>Missing or invalid API key</td>
-</tr>
-<tr>
-<td>403</td>
-<td><code>FORBIDDEN</code></td>
-<td>Insufficient permissions (requires admin)</td>
-</tr>
-<tr>
-<td>404</td>
-<td><code>NOT_FOUND</code></td>
-<td>Release not found</td>
-</tr>
-</tbody>
-</table>
-<hr />
-<h2 id="application-management">Application Management<a class="headerlink" href="#application-management" title="Permanent link">&para;</a></h2>
-<h3 id="list-applications">List Applications<a class="headerlink" href="#list-applications" title="Permanent link">&para;</a></h3>
-<p>Retrieve a paginated list of all registered applications.</p>
-<p><strong>Requires</strong>: <code>read</code> permission.</p>
-<p><strong>Request</strong></p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>GET /api/v1/applications?limit=50&amp;offset=0
-</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>Authorization: Bearer &lt;api-key&gt;
-</span></code></pre></div>
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>In</th>
-<th>Required</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>limit</code></td>
-<td>query</td>
-<td>no</td>
-<td>Page size (default <code>50</code>)</td>
-</tr>
-<tr>
-<td><code>offset</code></td>
-<td>query</td>
-<td>no</td>
-<td>Page offset (default <code>0</code>)</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Response (200)</strong></p>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="p">{</span>
-</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="w">  </span><span class="nt">&quot;applications&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="w">    </span><span class="p">{</span>
-</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;my-app&quot;</span><span class="p">,</span>
-</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;My Application&quot;</span><span class="p">,</span>
-</span><span id="__span-17-6"><a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;A desktop application&quot;</span><span class="p">,</span>
-</span><span id="__span-17-7"><a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a><span class="w">      </span><span class="nt">&quot;platforms&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;windows&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;linux&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;darwin&quot;</span><span class="p">],</span>
-</span><span id="__span-17-8"><a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a><span class="w">      </span><span class="nt">&quot;created_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-01-01T00:00:00Z&quot;</span><span class="p">,</span>
-</span><span id="__span-17-9"><a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a><span class="w">      </span><span class="nt">&quot;updated_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-02-01T00:00:00Z&quot;</span>
-</span><span id="__span-17-10"><a id="__codelineno-17-10" name="__codelineno-17-10" href="#__codelineno-17-10"></a><span class="w">    </span><span class="p">}</span>
-</span><span id="__span-17-11"><a id="__codelineno-17-11" name="__codelineno-17-11" href="#__codelineno-17-11"></a><span class="w">  </span><span class="p">],</span>
-</span><span id="__span-17-12"><a id="__codelineno-17-12" name="__codelineno-17-12" href="#__codelineno-17-12"></a><span class="w">  </span><span class="nt">&quot;total_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
-</span><span id="__span-17-13"><a id="__codelineno-17-13" name="__codelineno-17-13" href="#__codelineno-17-13"></a><span class="w">  </span><span class="nt">&quot;page&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
-</span><span id="__span-17-14"><a id="__codelineno-17-14" name="__codelineno-17-14" href="#__codelineno-17-14"></a><span class="w">  </span><span class="nt">&quot;page_size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="p">,</span>
-</span><span id="__span-17-15"><a id="__codelineno-17-15" name="__codelineno-17-15" href="#__codelineno-17-15"></a><span class="w">  </span><span class="nt">&quot;has_more&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
-</span><span id="__span-17-16"><a id="__codelineno-17-16" name="__codelineno-17-16" href="#__codelineno-17-16"></a><span class="p">}</span>
-</span></code></pre></div>
-<h3 id="get-application">Get Application<a class="headerlink" href="#get-application" title="Permanent link">&para;</a></h3>
-<p>Retrieve detailed information about a single application, including configuration and statistics.</p>
-<p><strong>Requires</strong>: <code>read</code> permission.</p>
-<p><strong>Request</strong></p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>GET /api/v1/applications/{app_id}
-</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>Authorization: Bearer &lt;api-key&gt;
-</span></code></pre></div>
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>In</th>
-<th>Required</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>app_id</code></td>
-<td>path</td>
-<td>yes</td>
-<td>Application identifier</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Response (200)</strong></p>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="p">{</span>
-</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;my-app&quot;</span><span class="p">,</span>
-</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;My Application&quot;</span><span class="p">,</span>
-</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="w">  </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;A desktop application&quot;</span><span class="p">,</span>
-</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a><span class="w">  </span><span class="nt">&quot;platforms&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;windows&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;linux&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;darwin&quot;</span><span class="p">],</span>
-</span><span id="__span-19-6"><a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a><span class="w">  </span><span class="nt">&quot;config&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-19-7"><a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a><span class="w">    </span><span class="nt">&quot;auto_update&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
-</span><span id="__span-19-8"><a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a><span class="w">    </span><span class="nt">&quot;update_interval&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3600</span><span class="p">,</span>
-</span><span id="__span-19-9"><a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a><span class="w">    </span><span class="nt">&quot;required_update&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
-</span><span id="__span-19-10"><a id="__codelineno-19-10" name="__codelineno-19-10" href="#__codelineno-19-10"></a><span class="w">    </span><span class="nt">&quot;allow_prerelease&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
-</span><span id="__span-19-11"><a id="__codelineno-19-11" name="__codelineno-19-11" href="#__codelineno-19-11"></a><span class="w">    </span><span class="nt">&quot;analytics_enabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
-</span><span id="__span-19-12"><a id="__codelineno-19-12" name="__codelineno-19-12" href="#__codelineno-19-12"></a><span class="w">  </span><span class="p">},</span>
-</span><span id="__span-19-13"><a id="__codelineno-19-13" name="__codelineno-19-13" href="#__codelineno-19-13"></a><span class="w">  </span><span class="nt">&quot;stats&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-19-14"><a id="__codelineno-19-14" name="__codelineno-19-14" href="#__codelineno-19-14"></a><span class="w">    </span><span class="nt">&quot;total_releases&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">12</span><span class="p">,</span>
-</span><span id="__span-19-15"><a id="__codelineno-19-15" name="__codelineno-19-15" href="#__codelineno-19-15"></a><span class="w">    </span><span class="nt">&quot;latest_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2.1.0&quot;</span><span class="p">,</span>
-</span><span id="__span-19-16"><a id="__codelineno-19-16" name="__codelineno-19-16" href="#__codelineno-19-16"></a><span class="w">    </span><span class="nt">&quot;latest_release_date&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-02-10T12:00:00Z&quot;</span><span class="p">,</span>
-</span><span id="__span-19-17"><a id="__codelineno-19-17" name="__codelineno-19-17" href="#__codelineno-19-17"></a><span class="w">    </span><span class="nt">&quot;platform_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
-</span><span id="__span-19-18"><a id="__codelineno-19-18" name="__codelineno-19-18" href="#__codelineno-19-18"></a><span class="w">    </span><span class="nt">&quot;required_releases&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span>
-</span><span id="__span-19-19"><a id="__codelineno-19-19" name="__codelineno-19-19" href="#__codelineno-19-19"></a><span class="w">  </span><span class="p">},</span>
-</span><span id="__span-19-20"><a id="__codelineno-19-20" name="__codelineno-19-20" href="#__codelineno-19-20"></a><span class="w">  </span><span class="nt">&quot;created_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-01-01T00:00:00Z&quot;</span><span class="p">,</span>
-</span><span id="__span-19-21"><a id="__codelineno-19-21" name="__codelineno-19-21" href="#__codelineno-19-21"></a><span class="w">  </span><span class="nt">&quot;updated_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-02-01T00:00:00Z&quot;</span>
-</span><span id="__span-19-22"><a id="__codelineno-19-22" name="__codelineno-19-22" href="#__codelineno-19-22"></a><span class="p">}</span>
-</span></code></pre></div>
-<h3 id="create-application">Create Application<a class="headerlink" href="#create-application" title="Permanent link">&para;</a></h3>
-<p>Register a new application in the update service.</p>
-<p><strong>Requires</strong>: <code>write</code> permission.</p>
-<p><strong>Request</strong></p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>POST /api/v1/applications
-</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>Content-Type: application/json
-</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>Authorization: Bearer &lt;api-key&gt;
-</span></code></pre></div>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="p">{</span>
-</span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;my-app&quot;</span><span class="p">,</span>
-</span><span id="__span-21-3"><a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;My Application&quot;</span><span class="p">,</span>
-</span><span id="__span-21-4"><a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="w">  </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;A cross-platform desktop application&quot;</span><span class="p">,</span>
-</span><span id="__span-21-5"><a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a><span class="w">  </span><span class="nt">&quot;platforms&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;windows&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;linux&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;darwin&quot;</span><span class="p">],</span>
-</span><span id="__span-21-6"><a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a><span class="w">  </span><span class="nt">&quot;config&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-21-7"><a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a><span class="w">    </span><span class="nt">&quot;auto_update&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
-</span><span id="__span-21-8"><a id="__codelineno-21-8" name="__codelineno-21-8" href="#__codelineno-21-8"></a><span class="w">    </span><span class="nt">&quot;update_interval&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3600</span><span class="p">,</span>
-</span><span id="__span-21-9"><a id="__codelineno-21-9" name="__codelineno-21-9" href="#__codelineno-21-9"></a><span class="w">    </span><span class="nt">&quot;required_update&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
-</span><span id="__span-21-10"><a id="__codelineno-21-10" name="__codelineno-21-10" href="#__codelineno-21-10"></a><span class="w">    </span><span class="nt">&quot;allow_prerelease&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
-</span><span id="__span-21-11"><a id="__codelineno-21-11" name="__codelineno-21-11" href="#__codelineno-21-11"></a><span class="w">    </span><span class="nt">&quot;analytics_enabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
-</span><span id="__span-21-12"><a id="__codelineno-21-12" name="__codelineno-21-12" href="#__codelineno-21-12"></a><span class="w">  </span><span class="p">}</span>
-</span><span id="__span-21-13"><a id="__codelineno-21-13" name="__codelineno-21-13" href="#__codelineno-21-13"></a><span class="p">}</span>
-</span></code></pre></div>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Type</th>
-<th>Required</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>id</code></td>
-<td>string</td>
-<td>yes</td>
-<td>Unique identifier (alphanumeric, hyphens, underscores; max 100 chars)</td>
-</tr>
-<tr>
-<td><code>name</code></td>
-<td>string</td>
-<td>yes</td>
-<td>Human-readable name</td>
-</tr>
-<tr>
-<td><code>description</code></td>
-<td>string</td>
-<td>no</td>
-<td>Application description</td>
-</tr>
-<tr>
-<td><code>platforms</code></td>
-<td>array</td>
-<td>yes</td>
-<td>At least one supported platform (<code>windows</code>, <code>linux</code>, <code>darwin</code>, <code>android</code>, <code>ios</code>)</td>
-</tr>
-<tr>
-<td><code>config</code></td>
-<td>object</td>
-<td>no</td>
-<td>Application configuration (see below)</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Application Config fields</strong></p>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Type</th>
-<th>Default</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>update_check_url</code></td>
-<td>string</td>
-<td><code>""</code></td>
-<td>Custom update check endpoint override</td>
-</tr>
-<tr>
-<td><code>auto_update</code></td>
-<td>boolean</td>
-<td><code>false</code></td>
-<td>Enable automatic updates</td>
-</tr>
-<tr>
-<td><code>update_interval</code></td>
-<td>integer</td>
-<td><code>3600</code></td>
-<td>Check interval in seconds</td>
-</tr>
-<tr>
-<td><code>required_update</code></td>
-<td>boolean</td>
-<td><code>false</code></td>
-<td>Force all updates</td>
-</tr>
-<tr>
-<td><code>min_version</code></td>
-<td>string</td>
-<td><code>""</code></td>
-<td>Minimum supported version (semver)</td>
-</tr>
-<tr>
-<td><code>max_version</code></td>
-<td>string</td>
-<td><code>""</code></td>
-<td>Maximum supported version (semver)</td>
-</tr>
-<tr>
-<td><code>allow_prerelease</code></td>
-<td>boolean</td>
-<td><code>false</code></td>
-<td>Include pre-release versions</td>
-</tr>
-<tr>
-<td><code>notification_url</code></td>
-<td>string</td>
-<td><code>""</code></td>
-<td>Webhook URL for update notifications</td>
-</tr>
-<tr>
-<td><code>analytics_enabled</code></td>
-<td>boolean</td>
-<td><code>false</code></td>
-<td>Enable usage analytics</td>
-</tr>
-<tr>
-<td><code>custom_fields</code></td>
-<td>object</td>
-<td><code>{}</code></td>
-<td>Arbitrary key-value metadata</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Response (201)</strong></p>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="p">{</span>
-</span><span id="__span-22-2"><a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;my-app&quot;</span><span class="p">,</span>
-</span><span id="__span-22-3"><a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a><span class="w">  </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Application created successfully&quot;</span><span class="p">,</span>
-</span><span id="__span-22-4"><a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="w">  </span><span class="nt">&quot;created_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-02-16T10:00:00Z&quot;</span>
-</span><span id="__span-22-5"><a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a><span class="p">}</span>
-</span></code></pre></div>
-<h3 id="update-application">Update Application<a class="headerlink" href="#update-application" title="Permanent link">&para;</a></h3>
-<p>Update an existing application's metadata and configuration. Only provided fields are updated; omitted fields remain unchanged.</p>
-<p><strong>Requires</strong>: <code>admin</code> permission.</p>
-<p><strong>Request</strong></p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>PUT /api/v1/applications/{app_id}
-</span><span id="__span-23-2"><a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>Content-Type: application/json
-</span><span id="__span-23-3"><a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a>Authorization: Bearer &lt;api-key&gt;
-</span></code></pre></div>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="p">{</span>
-</span><span id="__span-24-2"><a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;My Application (Renamed)&quot;</span><span class="p">,</span>
-</span><span id="__span-24-3"><a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a><span class="w">  </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Updated description&quot;</span><span class="p">,</span>
-</span><span id="__span-24-4"><a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a><span class="w">  </span><span class="nt">&quot;platforms&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;windows&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;linux&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;darwin&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;android&quot;</span><span class="p">],</span>
-</span><span id="__span-24-5"><a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a><span class="w">  </span><span class="nt">&quot;config&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-24-6"><a id="__codelineno-24-6" name="__codelineno-24-6" href="#__codelineno-24-6"></a><span class="w">    </span><span class="nt">&quot;auto_update&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-</span><span id="__span-24-7"><a id="__codelineno-24-7" name="__codelineno-24-7" href="#__codelineno-24-7"></a><span class="w">    </span><span class="nt">&quot;update_interval&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1800</span>
-</span><span id="__span-24-8"><a id="__codelineno-24-8" name="__codelineno-24-8" href="#__codelineno-24-8"></a><span class="w">  </span><span class="p">}</span>
-</span><span id="__span-24-9"><a id="__codelineno-24-9" name="__codelineno-24-9" href="#__codelineno-24-9"></a><span class="p">}</span>
-</span></code></pre></div>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Type</th>
-<th>Required</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>name</code></td>
-<td>string</td>
-<td>no</td>
-<td>New application name</td>
-</tr>
-<tr>
-<td><code>description</code></td>
-<td>string</td>
-<td>no</td>
-<td>New description</td>
-</tr>
-<tr>
-<td><code>platforms</code></td>
-<td>array</td>
-<td>no</td>
-<td>New platform list (at least one if provided)</td>
-</tr>
-<tr>
-<td><code>config</code></td>
-<td>object</td>
-<td>no</td>
-<td>Updated configuration</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Response (200)</strong></p>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="p">{</span>
-</span><span id="__span-25-2"><a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a><span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;my-app&quot;</span><span class="p">,</span>
-</span><span id="__span-25-3"><a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a><span class="w">  </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Application updated successfully&quot;</span><span class="p">,</span>
-</span><span id="__span-25-4"><a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a><span class="w">  </span><span class="nt">&quot;updated_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-02-16T11:00:00Z&quot;</span>
-</span><span id="__span-25-5"><a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a><span class="p">}</span>
-</span></code></pre></div>
-<h3 id="delete-application">Delete Application<a class="headerlink" href="#delete-application" title="Permanent link">&para;</a></h3>
-<p>Permanently delete an application. The application must have no existing releases; if releases exist, the request returns <code>409 Conflict</code>.</p>
-<p><strong>Requires</strong>: <code>admin</code> permission.</p>
-<p><strong>Request</strong></p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a>DELETE /api/v1/applications/{app_id}
-</span><span id="__span-26-2"><a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a>Authorization: Bearer &lt;api-key&gt;
-</span></code></pre></div>
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>In</th>
-<th>Required</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>app_id</code></td>
-<td>path</td>
-<td>yes</td>
-<td>Application identifier</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Response (204)</strong></p>
-<p>No body. A <code>204 No Content</code> status indicates success.</p>
-<p><strong>Error responses</strong></p>
-<table>
-<thead>
-<tr>
-<th>Status</th>
-<th>Code</th>
-<th>Condition</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>401</td>
-<td><code>UNAUTHORIZED</code></td>
-<td>Missing or invalid API key</td>
-</tr>
-<tr>
-<td>403</td>
-<td><code>FORBIDDEN</code></td>
-<td>Insufficient permissions (requires admin)</td>
-</tr>
-<tr>
-<td>404</td>
-<td><code>NOT_FOUND</code></td>
-<td>Application not found</td>
-</tr>
-<tr>
-<td>409</td>
-<td><code>CONFLICT</code></td>
-<td>Application has existing releases</td>
-</tr>
-</tbody>
-</table>
-<hr />
-<h2 id="health">Health<a class="headerlink" href="#health" title="Permanent link">&para;</a></h2>
-<h3 id="health-check">Health Check<a class="headerlink" href="#health-check" title="Permanent link">&para;</a></h3>
-<p>Returns the service health status. When called with a valid authentication token, the response includes additional component details and metrics.</p>
-<p><strong>Request</strong></p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-27-1"><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a>GET /health
-</span></code></pre></div>
-<p>or</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-28-1"><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a>GET /api/v1/health
-</span></code></pre></div>
-<p><strong>Response -- basic (200)</strong></p>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-29-1"><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="p">{</span>
-</span><span id="__span-29-2"><a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a><span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;healthy&quot;</span><span class="p">,</span>
-</span><span id="__span-29-3"><a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a><span class="w">  </span><span class="nt">&quot;timestamp&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-02-16T10:00:00Z&quot;</span>
-</span><span id="__span-29-4"><a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a><span class="p">}</span>
-</span></code></pre></div>
-<p><strong>Response -- authenticated (200)</strong></p>
-<p>When a valid Bearer token is provided, the response is enriched with component health and operational metrics:</p>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-30-1"><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="p">{</span>
-</span><span id="__span-30-2"><a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a><span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;healthy&quot;</span><span class="p">,</span>
-</span><span id="__span-30-3"><a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a><span class="w">  </span><span class="nt">&quot;timestamp&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-02-16T10:00:00Z&quot;</span><span class="p">,</span>
-</span><span id="__span-30-4"><a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a><span class="w">  </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.0.0&quot;</span><span class="p">,</span>
-</span><span id="__span-30-5"><a id="__codelineno-30-5" name="__codelineno-30-5" href="#__codelineno-30-5"></a><span class="w">  </span><span class="nt">&quot;uptime&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;48h32m15s&quot;</span><span class="p">,</span>
-</span><span id="__span-30-6"><a id="__codelineno-30-6" name="__codelineno-30-6" href="#__codelineno-30-6"></a><span class="w">  </span><span class="nt">&quot;components&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-30-7"><a id="__codelineno-30-7" name="__codelineno-30-7" href="#__codelineno-30-7"></a><span class="w">    </span><span class="nt">&quot;storage&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-30-8"><a id="__codelineno-30-8" name="__codelineno-30-8" href="#__codelineno-30-8"></a><span class="w">      </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;healthy&quot;</span><span class="p">,</span>
-</span><span id="__span-30-9"><a id="__codelineno-30-9" name="__codelineno-30-9" href="#__codelineno-30-9"></a><span class="w">      </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Storage backend responding&quot;</span><span class="p">,</span>
-</span><span id="__span-30-10"><a id="__codelineno-30-10" name="__codelineno-30-10" href="#__codelineno-30-10"></a><span class="w">      </span><span class="nt">&quot;timestamp&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-02-16T10:00:00Z&quot;</span>
-</span><span id="__span-30-11"><a id="__codelineno-30-11" name="__codelineno-30-11" href="#__codelineno-30-11"></a><span class="w">    </span><span class="p">}</span>
-</span><span id="__span-30-12"><a id="__codelineno-30-12" name="__codelineno-30-12" href="#__codelineno-30-12"></a><span class="w">  </span><span class="p">},</span>
-</span><span id="__span-30-13"><a id="__codelineno-30-13" name="__codelineno-30-13" href="#__codelineno-30-13"></a><span class="w">  </span><span class="nt">&quot;metrics&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-30-14"><a id="__codelineno-30-14" name="__codelineno-30-14" href="#__codelineno-30-14"></a><span class="w">    </span><span class="nt">&quot;goroutines&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">12</span><span class="p">,</span>
-</span><span id="__span-30-15"><a id="__codelineno-30-15" name="__codelineno-30-15" href="#__codelineno-30-15"></a><span class="w">    </span><span class="nt">&quot;memory_alloc_mb&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">8.5</span>
-</span><span id="__span-30-16"><a id="__codelineno-30-16" name="__codelineno-30-16" href="#__codelineno-30-16"></a><span class="w">  </span><span class="p">}</span>
-</span><span id="__span-30-17"><a id="__codelineno-30-17" name="__codelineno-30-17" href="#__codelineno-30-17"></a><span class="p">}</span>
-</span></code></pre></div>
-<p>Health status values:</p>
-<table>
-<thead>
-<tr>
-<th>Status</th>
-<th>Meaning</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>healthy</code></td>
-<td>All systems operational</td>
-</tr>
-<tr>
-<td><code>degraded</code></td>
-<td>Partial functionality; some features may be slow or limited</td>
-</tr>
-<tr>
-<td><code>unhealthy</code></td>
-<td>Major issues affecting core functionality</td>
-</tr>
-<tr>
-<td><code>unknown</code></td>
-<td>Health status cannot be determined</td>
-</tr>
-</tbody>
-</table>
-<hr />
 <h2 id="error-responses">Error Responses<a class="headerlink" href="#error-responses" title="Permanent link">&para;</a></h2>
 <p>All errors follow a consistent JSON structure:</p>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-31-1"><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="p">{</span>
-</span><span id="__span-31-2"><a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a><span class="w">  </span><span class="nt">&quot;error&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;error&quot;</span><span class="p">,</span>
-</span><span id="__span-31-3"><a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a><span class="w">  </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Human-readable error description&quot;</span><span class="p">,</span>
-</span><span id="__span-31-4"><a id="__codelineno-31-4" name="__codelineno-31-4" href="#__codelineno-31-4"></a><span class="w">  </span><span class="nt">&quot;code&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ERROR_CODE&quot;</span><span class="p">,</span>
-</span><span id="__span-31-5"><a id="__codelineno-31-5" name="__codelineno-31-5" href="#__codelineno-31-5"></a><span class="w">  </span><span class="nt">&quot;details&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span>
-</span><span id="__span-31-6"><a id="__codelineno-31-6" name="__codelineno-31-6" href="#__codelineno-31-6"></a><span class="w">  </span><span class="nt">&quot;timestamp&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-02-16T10:00:00Z&quot;</span><span class="p">,</span>
-</span><span id="__span-31-7"><a id="__codelineno-31-7" name="__codelineno-31-7" href="#__codelineno-31-7"></a><span class="w">  </span><span class="nt">&quot;request_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;req_abc123&quot;</span>
-</span><span id="__span-31-8"><a id="__codelineno-31-8" name="__codelineno-31-8" href="#__codelineno-31-8"></a><span class="p">}</span>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="p">{</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">&quot;error&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;error&quot;</span><span class="p">,</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Human-readable error description&quot;</span><span class="p">,</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span><span class="nt">&quot;code&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ERROR_CODE&quot;</span><span class="p">,</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">  </span><span class="nt">&quot;details&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">  </span><span class="nt">&quot;timestamp&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-02-16T10:00:00Z&quot;</span><span class="p">,</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">  </span><span class="nt">&quot;request_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;req_abc123&quot;</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="p">}</span>
 </span></code></pre></div>
-<h3 id="error-codes">Error Codes<a class="headerlink" href="#error-codes" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
@@ -3483,78 +1714,6 @@
 <td><code>SERVICE_UNAVAILABLE</code></td>
 <td>503</td>
 <td>Service temporarily unavailable</td>
-</tr>
-</tbody>
-</table>
-<h3 id="validation-errors">Validation Errors<a class="headerlink" href="#validation-errors" title="Permanent link">&para;</a></h3>
-<p>When input validation fails, a validation error response may include field-level details:</p>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-32-1"><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a><span class="p">{</span>
-</span><span id="__span-32-2"><a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a><span class="w">  </span><span class="nt">&quot;error&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;validation_error&quot;</span><span class="p">,</span>
-</span><span id="__span-32-3"><a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a><span class="w">  </span><span class="nt">&quot;errors&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-32-4"><a id="__codelineno-32-4" name="__codelineno-32-4" href="#__codelineno-32-4"></a><span class="w">    </span><span class="nt">&quot;platform&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;invalid platform: bsd&quot;</span><span class="p">,</span>
-</span><span id="__span-32-5"><a id="__codelineno-32-5" name="__codelineno-32-5" href="#__codelineno-32-5"></a><span class="w">    </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;invalid version format: not-semver&quot;</span>
-</span><span id="__span-32-6"><a id="__codelineno-32-6" name="__codelineno-32-6" href="#__codelineno-32-6"></a><span class="w">  </span><span class="p">}</span>
-</span><span id="__span-32-7"><a id="__codelineno-32-7" name="__codelineno-32-7" href="#__codelineno-32-7"></a><span class="p">}</span>
-</span></code></pre></div>
-<h3 id="common-error-scenarios">Common Error Scenarios<a class="headerlink" href="#common-error-scenarios" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Scenario</th>
-<th>Status</th>
-<th>Code</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Missing <code>Authorization</code> header on protected endpoint</td>
-<td>401</td>
-<td><code>UNAUTHORIZED</code></td>
-</tr>
-<tr>
-<td>Invalid or expired API key</td>
-<td>401</td>
-<td><code>UNAUTHORIZED</code></td>
-</tr>
-<tr>
-<td>Key lacks required permission</td>
-<td>403</td>
-<td><code>FORBIDDEN</code></td>
-</tr>
-<tr>
-<td>Application not found</td>
-<td>404</td>
-<td><code>APPLICATION_NOT_FOUND</code></td>
-</tr>
-<tr>
-<td>Release not found</td>
-<td>404</td>
-<td><code>NOT_FOUND</code></td>
-</tr>
-<tr>
-<td>Invalid JSON body</td>
-<td>400</td>
-<td><code>INVALID_REQUEST</code></td>
-</tr>
-<tr>
-<td>Wrong <code>Content-Type</code> header</td>
-<td>415</td>
-<td><code>BAD_REQUEST</code></td>
-</tr>
-<tr>
-<td>Duplicate application ID</td>
-<td>409</td>
-<td><code>CONFLICT</code></td>
-</tr>
-<tr>
-<td>Invalid semantic version string</td>
-<td>422</td>
-<td><code>VALIDATION_ERROR</code></td>
-</tr>
-<tr>
-<td>Unsupported HTTP method</td>
-<td>405</td>
-<td><code>INVALID_REQUEST</code></td>
 </tr>
 </tbody>
 </table>

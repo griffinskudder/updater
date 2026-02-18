@@ -1,0 +1,439 @@
+{
+  "name": "updater",
+  "tables": [
+    {
+      "name": "public.applications",
+      "type": "BASE TABLE",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "platforms",
+          "type": "jsonb",
+          "nullable": false,
+          "default": "'[]'::jsonb"
+        },
+        {
+          "name": "config",
+          "type": "jsonb",
+          "nullable": false,
+          "default": "'{}'::jsonb"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "applications_pkey",
+          "def": "CREATE UNIQUE INDEX applications_pkey ON public.applications USING btree (id)",
+          "table": "public.applications",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "idx_applications_name",
+          "def": "CREATE INDEX idx_applications_name ON public.applications USING btree (name)",
+          "table": "public.applications",
+          "columns": [
+            "name"
+          ]
+        },
+        {
+          "name": "idx_applications_platforms",
+          "def": "CREATE INDEX idx_applications_platforms ON public.applications USING gin (platforms)",
+          "table": "public.applications",
+          "columns": [
+            "platforms"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "applications_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.applications",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "triggers": [
+        {
+          "name": "update_applications_updated_at",
+          "def": "CREATE TRIGGER update_applications_updated_at BEFORE UPDATE ON public.applications FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+        }
+      ]
+    },
+    {
+      "name": "public.releases",
+      "type": "BASE TABLE",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "application_id",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "version",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "platform",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "architecture",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "download_url",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "checksum",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "checksum_type",
+          "type": "text",
+          "nullable": false,
+          "default": "'sha256'::text"
+        },
+        {
+          "name": "file_size",
+          "type": "bigint",
+          "nullable": false
+        },
+        {
+          "name": "release_notes",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "release_date",
+          "type": "timestamp with time zone",
+          "nullable": false
+        },
+        {
+          "name": "required",
+          "type": "boolean",
+          "nullable": false,
+          "default": "false"
+        },
+        {
+          "name": "minimum_version",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "metadata",
+          "type": "jsonb",
+          "nullable": true,
+          "default": "'{}'::jsonb"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "releases_pkey",
+          "def": "CREATE UNIQUE INDEX releases_pkey ON public.releases USING btree (id)",
+          "table": "public.releases",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "releases_application_id_version_platform_architecture_key",
+          "def": "CREATE UNIQUE INDEX releases_application_id_version_platform_architecture_key ON public.releases USING btree (application_id, version, platform, architecture)",
+          "table": "public.releases",
+          "columns": [
+            "application_id",
+            "version",
+            "platform",
+            "architecture"
+          ]
+        },
+        {
+          "name": "idx_releases_app_platform_arch",
+          "def": "CREATE INDEX idx_releases_app_platform_arch ON public.releases USING btree (application_id, platform, architecture)",
+          "table": "public.releases",
+          "columns": [
+            "application_id",
+            "platform",
+            "architecture"
+          ]
+        },
+        {
+          "name": "idx_releases_version",
+          "def": "CREATE INDEX idx_releases_version ON public.releases USING btree (version)",
+          "table": "public.releases",
+          "columns": [
+            "version"
+          ]
+        },
+        {
+          "name": "idx_releases_date",
+          "def": "CREATE INDEX idx_releases_date ON public.releases USING btree (release_date DESC)",
+          "table": "public.releases",
+          "columns": [
+            "release_date"
+          ]
+        },
+        {
+          "name": "idx_releases_required",
+          "def": "CREATE INDEX idx_releases_required ON public.releases USING btree (required)",
+          "table": "public.releases",
+          "columns": [
+            "required"
+          ]
+        },
+        {
+          "name": "idx_releases_required_date",
+          "def": "CREATE INDEX idx_releases_required_date ON public.releases USING btree (required, release_date DESC)",
+          "table": "public.releases",
+          "columns": [
+            "required",
+            "release_date"
+          ]
+        },
+        {
+          "name": "idx_releases_metadata_gin",
+          "def": "CREATE INDEX idx_releases_metadata_gin ON public.releases USING gin (metadata)",
+          "table": "public.releases",
+          "columns": [
+            "metadata"
+          ]
+        },
+        {
+          "name": "idx_releases_app_version",
+          "def": "CREATE INDEX idx_releases_app_version ON public.releases USING btree (application_id, version)",
+          "table": "public.releases",
+          "columns": [
+            "application_id",
+            "version"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "releases_application_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE RESTRICT",
+          "table": "public.releases",
+          "referenced_table": "applications",
+          "columns": [
+            "application_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "releases_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.releases",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "releases_application_id_version_platform_architecture_key",
+          "type": "UNIQUE",
+          "def": "UNIQUE (application_id, version, platform, architecture)",
+          "table": "public.releases",
+          "referenced_table": "",
+          "columns": [
+            "application_id",
+            "version",
+            "platform",
+            "architecture"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.api_keys",
+      "type": "BASE TABLE",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "key_hash",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "prefix",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "permissions",
+          "type": "jsonb",
+          "nullable": false,
+          "default": "'[]'::jsonb"
+        },
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "nullable": false,
+          "default": "true"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "api_keys_pkey",
+          "def": "CREATE UNIQUE INDEX api_keys_pkey ON public.api_keys USING btree (id)",
+          "table": "public.api_keys",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "api_keys_key_hash_key",
+          "def": "CREATE UNIQUE INDEX api_keys_key_hash_key ON public.api_keys USING btree (key_hash)",
+          "table": "public.api_keys",
+          "columns": [
+            "key_hash"
+          ]
+        },
+        {
+          "name": "idx_api_keys_hash",
+          "def": "CREATE INDEX idx_api_keys_hash ON public.api_keys USING btree (key_hash)",
+          "table": "public.api_keys",
+          "columns": [
+            "key_hash"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "api_keys_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.api_keys",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "api_keys_key_hash_key",
+          "type": "UNIQUE",
+          "def": "UNIQUE (key_hash)",
+          "table": "public.api_keys",
+          "referenced_table": "",
+          "columns": [
+            "key_hash"
+          ]
+        }
+      ],
+      "triggers": [
+        {
+          "name": "update_api_keys_updated_at",
+          "def": "CREATE TRIGGER update_api_keys_updated_at BEFORE UPDATE ON public.api_keys FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+        }
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "table": "public.releases",
+      "columns": [
+        "application_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "public.applications",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE RESTRICT"
+    }
+  ],
+  "functions": [
+    {
+      "name": "public.update_updated_at_column",
+      "return_type": "trigger",
+      "arguments": "",
+      "type": "FUNCTION"
+    }
+  ],
+  "driver": {
+    "name": "postgres",
+    "database_version": "PostgreSQL 17.6 on x86_64-pc-linux-musl, compiled by gcc (Alpine 14.2.0) 14.2.0, 64-bit",
+    "meta": {
+      "current_schema": "public",
+      "search_paths": [
+        "docs",
+        "public"
+      ],
+      "dict": {
+        "Functions": "Stored procedures and functions"
+      }
+    }
+  }
+}

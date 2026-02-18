@@ -15,10 +15,6 @@
         <link rel="canonical" href="https://griffinskudder.github.io/updater/dev/plans/2026-02-15-rate-limiter-implementation/">
       
       
-        <link rel="prev" href="../2026-02-15-rate-limiter-design/">
-      
-      
-        <link rel="next" href="../2026-02-16-admin-frontend/">
       
       
         
@@ -29,7 +25,7 @@
     
     
       
-        <title>Rate Limiter Implementation - Updater Service Documentation</title>
+        <title>Rate Limiter Overhaul Implementation Plan - Updater Service Documentation</title>
       
     
     
@@ -120,7 +116,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Rate Limiter Implementation
+              Rate Limiter Overhaul Implementation Plan
             
           </span>
         </div>
@@ -465,17 +461,15 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../2026-02-15-application-management-api-design/" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../db/" class="md-tabs__link">
           
   
   
-  Plans
+  Database
 
         </a>
       </li>
@@ -1122,126 +1116,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../models/version-models/" class="md-nav__link">
+      <a href="../../models/auto/models/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Version Models
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../models/platform-models/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Platform & Application Models
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../models/release-models/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Release Models
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../models/api-models/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    API Models
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../models/config-models/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Configuration Models
+    Reference
   
 
     
@@ -1266,38 +1148,35 @@
       
   
   
-    
   
   
-  
     
     
     
     
-      
-        
-        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_13" checked>
         
           
-          <label class="md-nav__link" for="__nav_13" id="__nav_13_label" tabindex="">
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_13" >
+        
+          
+          <label class="md-nav__link" for="__nav_13" id="__nav_13_label" tabindex="0">
             
   
   
   <span class="md-ellipsis">
     
   
-    Plans
+    Database
   
 
     
@@ -1308,12 +1187,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_13">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Plans
+    Database
   
 
           </label>
@@ -1326,14 +1205,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../2026-02-15-application-management-api-design/" class="md-nav__link">
+      <a href="../../db/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Application Management API Design
+    Overview
   
 
     
@@ -1354,14 +1233,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../2026-02-15-application-management-api-implementation/" class="md-nav__link">
+      <a href="../../db/public.applications/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Application Management API Implementation
+    applications
   
 
     
@@ -1382,14 +1261,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../2026-02-15-makefile-restructure-design/" class="md-nav__link">
+      <a href="../../db/public.releases/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Makefile Restructure Design
+    releases
   
 
     
@@ -1410,367 +1289,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../2026-02-15-makefile-restructure-implementation/" class="md-nav__link">
+      <a href="../../db/public.api_keys/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Makefile Restructure Implementation
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../2026-02-15-rate-limiter-design/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Rate Limiter Design
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-    
-  
-  
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Rate Limiter Implementation
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Rate Limiter Implementation
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#task-1-add-golangorgxtime-dependency" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Task 1: Add golang.org/x/time dependency
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#task-2-update-ratelimitconfig-model" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Task 2: Update RateLimitConfig model
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#task-3-create-limiter-interface-and-info-type" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Task 3: Create Limiter interface and Info type
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#task-4-implement-memorylimiter" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Task 4: Implement MemoryLimiter
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#task-5-create-rate-limit-middleware" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Task 5: Create rate limit middleware
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#task-6-integrate-into-routes-and-main" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Task 6: Integrate into routes and main
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#task-7-write-documentation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Task 7: Write documentation
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#task-8-final-verification" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Task 8: Final verification
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#task-dependency-graph" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Task Dependency Graph
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#summary-of-all-files" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Summary of All Files
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../2026-02-16-admin-frontend/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Admin Frontend
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../2026-02-16-github-ci-design/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    GitHub CI Design
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../2026-02-16-github-ci-implementation/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    GitHub CI Implementation
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../2026-02-16-github-pages-design/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    GitHub Pages Design
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../2026-02-16-github-pages-implementation/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    GitHub Pages Implementation
+    api_keys
   
 
     
@@ -1944,46 +1470,6 @@
 
   
 
-
-  <nav class="md-path" aria-label="Navigation" >
-    <ol class="md-path__list">
-      
-        
-  
-  
-    <li class="md-path__item">
-      <a href="../.." class="md-path__link">
-        
-  <span class="md-ellipsis">
-    Home
-  </span>
-
-      </a>
-    </li>
-  
-
-      
-      
-        
-  
-  
-    
-    
-      <li class="md-path__item">
-        <a href="../2026-02-15-application-management-api-design/" class="md-path__link">
-          
-  <span class="md-ellipsis">
-    Plans
-  </span>
-
-        </a>
-      </li>
-    
-  
-
-      
-    </ol>
-  </nav>
 
               
               <article class="md-content__inner md-typeset">

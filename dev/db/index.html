@@ -12,27 +12,31 @@
         <meta name="author" content="Updater Service Team">
       
       
-        <link rel="canonical" href="https://griffinskudder.github.io/updater/dev/plans/2026-02-16-github-pages-implementation/">
+        <link rel="canonical" href="https://griffinskudder.github.io/updater/dev/db/">
       
       
+        <link rel="prev" href="../models/auto/models/">
+      
+      
+        <link rel="next" href="public.applications/">
       
       
         
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+      <link rel="icon" href="../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
     
     
       
-        <title>GitHub Pages with Versioned Docs — Implementation Plan - Updater Service Documentation</title>
+        <title>Overview - Updater Service Documentation</title>
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -51,9 +55,9 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/extra.css">
+      <link rel="stylesheet" href="../assets/extra.css">
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -78,7 +82,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#github-pages-with-versioned-docs-implementation-plan" class="md-skip">
+        <a href="#updater" class="md-skip">
           Skip to content
         </a>
       
@@ -96,7 +100,7 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="Updater Service Documentation" class="md-header__button md-logo" aria-label="Updater Service Documentation" data-md-component="logo">
+    <a href=".." title="Updater Service Documentation" class="md-header__button md-logo" aria-label="Updater Service Documentation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -116,7 +120,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              GitHub Pages with Versioned Docs — Implementation Plan
+              Overview
             
           </span>
         </div>
@@ -232,7 +236,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../.." class="md-tabs__link">
+      <a href=".." class="md-tabs__link">
         
   
   
@@ -251,7 +255,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../ROADMAP/" class="md-tabs__link">
+      <a href="../ROADMAP/" class="md-tabs__link">
         
   
   
@@ -270,7 +274,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../use-cases/" class="md-tabs__link">
+      <a href="../use-cases/" class="md-tabs__link">
         
   
   
@@ -291,7 +295,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../api/" class="md-tabs__link">
+        <a href="../api/" class="md-tabs__link">
           
   
   
@@ -309,7 +313,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../ARCHITECTURE/" class="md-tabs__link">
+      <a href="../ARCHITECTURE/" class="md-tabs__link">
         
   
   
@@ -330,7 +334,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../SECURITY/" class="md-tabs__link">
+        <a href="../SECURITY/" class="md-tabs__link">
           
   
   
@@ -348,7 +352,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../rate-limiting/" class="md-tabs__link">
+      <a href="../rate-limiting/" class="md-tabs__link">
         
   
   
@@ -367,7 +371,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../logging/" class="md-tabs__link">
+      <a href="../logging/" class="md-tabs__link">
         
   
   
@@ -386,7 +390,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../storage/" class="md-tabs__link">
+      <a href="../storage/" class="md-tabs__link">
         
   
   
@@ -405,7 +409,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../observability/" class="md-tabs__link">
+      <a href="../observability/" class="md-tabs__link">
         
   
   
@@ -424,7 +428,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../makefile/" class="md-tabs__link">
+      <a href="../makefile/" class="md-tabs__link">
         
   
   
@@ -445,7 +449,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../models/" class="md-tabs__link">
+        <a href="../models/" class="md-tabs__link">
           
   
   
@@ -461,11 +465,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../../db/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
           
   
   
@@ -499,7 +505,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="Updater Service Documentation" class="md-nav__button md-logo" aria-label="Updater Service Documentation" data-md-component="logo">
+    <a href=".." title="Updater Service Documentation" class="md-nav__button md-logo" aria-label="Updater Service Documentation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -529,7 +535,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../.." class="md-nav__link">
+      <a href=".." class="md-nav__link">
         
   
   
@@ -556,7 +562,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../ROADMAP/" class="md-nav__link">
+      <a href="../ROADMAP/" class="md-nav__link">
         
   
   
@@ -583,7 +589,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../use-cases/" class="md-nav__link">
+      <a href="../use-cases/" class="md-nav__link">
         
   
   
@@ -664,7 +670,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/" class="md-nav__link">
+      <a href="../api/" class="md-nav__link">
         
   
   
@@ -692,7 +698,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../openapi/" class="md-nav__link">
+      <a href="../openapi/" class="md-nav__link">
         
   
   
@@ -720,7 +726,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../admin-ui/" class="md-nav__link">
+      <a href="../admin-ui/" class="md-nav__link">
         
   
   
@@ -755,7 +761,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../ARCHITECTURE/" class="md-nav__link">
+      <a href="../ARCHITECTURE/" class="md-nav__link">
         
   
   
@@ -836,7 +842,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../SECURITY/" class="md-nav__link">
+      <a href="../SECURITY/" class="md-nav__link">
         
   
   
@@ -864,7 +870,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../DEPLOYMENT_SECURITY/" class="md-nav__link">
+      <a href="../DEPLOYMENT_SECURITY/" class="md-nav__link">
         
   
   
@@ -899,7 +905,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../rate-limiting/" class="md-nav__link">
+      <a href="../rate-limiting/" class="md-nav__link">
         
   
   
@@ -926,7 +932,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../logging/" class="md-nav__link">
+      <a href="../logging/" class="md-nav__link">
         
   
   
@@ -953,7 +959,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../storage/" class="md-nav__link">
+      <a href="../storage/" class="md-nav__link">
         
   
   
@@ -980,7 +986,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../observability/" class="md-nav__link">
+      <a href="../observability/" class="md-nav__link">
         
   
   
@@ -1007,7 +1013,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../makefile/" class="md-nav__link">
+      <a href="../makefile/" class="md-nav__link">
         
   
   
@@ -1088,7 +1094,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../models/" class="md-nav__link">
+      <a href="../models/" class="md-nav__link">
         
   
   
@@ -1116,7 +1122,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../models/auto/models/" class="md-nav__link">
+      <a href="../models/auto/models/" class="md-nav__link">
         
   
   
@@ -1148,28 +1154,31 @@
       
   
   
+    
   
   
+  
     
     
     
     
+      
+        
+        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_13" checked>
         
           
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_13" >
-        
-          
-          <label class="md-nav__link" for="__nav_13" id="__nav_13_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_13" id="__nav_13_label" tabindex="">
             
   
   
@@ -1187,7 +1196,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_13">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1202,10 +1211,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../db/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1221,6 +1257,59 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#tables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tables
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#stored-procedures-and-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stored procedures and functions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#relations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Relations
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1233,7 +1322,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../db/public.applications/" class="md-nav__link">
+      <a href="public.applications/" class="md-nav__link">
         
   
   
@@ -1261,7 +1350,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../db/public.releases/" class="md-nav__link">
+      <a href="public.releases/" class="md-nav__link">
         
   
   
@@ -1289,7 +1378,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../db/public.api_keys/" class="md-nav__link">
+      <a href="public.api_keys/" class="md-nav__link">
         
   
   
@@ -1344,10 +1433,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#task-1-set-site_url-in-mkdocsyml" class="md-nav__link">
+  <a href="#tables" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Task 1: Set site_url in mkdocs.yml
+        Tables
       
     </span>
   </a>
@@ -1355,10 +1444,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#task-2-create-the-github-actions-docs-workflow" class="md-nav__link">
+  <a href="#stored-procedures-and-functions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Task 2: Create the GitHub Actions docs workflow
+        Stored procedures and functions
       
     </span>
   </a>
@@ -1366,21 +1455,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#task-3-add-implementation-plan-to-docs-nav-and-commit" class="md-nav__link">
+  <a href="#relations" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Task 3: Add implementation plan to docs nav and commit
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#task-4-configure-github-pages-in-repository-settings-manual" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Task 4: Configure GitHub Pages in repository settings (manual)
+        Relations
       
     </span>
   </a>
@@ -1405,6 +1483,46 @@
   
 
 
+  <nav class="md-path" aria-label="Navigation" >
+    <ol class="md-path__list">
+      
+        
+  
+  
+    <li class="md-path__item">
+      <a href=".." class="md-path__link">
+        
+  <span class="md-ellipsis">
+    Home
+  </span>
+
+      </a>
+    </li>
+  
+
+      
+      
+        
+  
+  
+    
+    
+      <li class="md-path__item">
+        <a href="./" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    Database
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ol>
+  </nav>
+
               
               <article class="md-content__inner md-typeset">
                 
@@ -1415,122 +1533,63 @@
   
 
 
-<h1 id="github-pages-with-versioned-docs-implementation-plan">GitHub Pages with Versioned Docs — Implementation Plan<a class="headerlink" href="#github-pages-with-versioned-docs-implementation-plan" title="Permanent link">&para;</a></h1>
+<h1 id="updater">updater<a class="headerlink" href="#updater" title="Permanent link">&para;</a></h1>
+<h2 id="tables">Tables<a class="headerlink" href="#tables" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Columns</th>
+<th>Comment</th>
+<th>Type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="public.applications/">public.applications</a></td>
+<td>7</td>
+<td></td>
+<td>BASE TABLE</td>
+</tr>
+<tr>
+<td><a href="public.releases/">public.releases</a></td>
+<td>15</td>
+<td></td>
+<td>BASE TABLE</td>
+</tr>
+<tr>
+<td><a href="public.api_keys/">public.api_keys</a></td>
+<td>8</td>
+<td></td>
+<td>BASE TABLE</td>
+</tr>
+</tbody>
+</table>
+<h2 id="stored-procedures-and-functions">Stored procedures and functions<a class="headerlink" href="#stored-procedures-and-functions" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>ReturnType</th>
+<th>Arguments</th>
+<th>Type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>public.update_updated_at_column</td>
+<td>trigger</td>
+<td></td>
+<td>FUNCTION</td>
+</tr>
+</tbody>
+</table>
+<h2 id="relations">Relations<a class="headerlink" href="#relations" title="Permanent link">&para;</a></h2>
+<p><img alt="er" src="schema.svg" /></p>
+<hr />
 <blockquote>
-<p><strong>For Claude:</strong> REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.</p>
+<p>Generated by <a href="https://github.com/k1LoW/tbls">tbls</a></p>
 </blockquote>
-<p><strong>Goal:</strong> Publish the MkDocs site to GitHub Pages with versioned docs managed by <code>mike</code> — <code>dev</code> on every push to <code>main</code>, tagged releases as version numbers, with the latest stable release as the default landing page.</p>
-<p><strong>Architecture:</strong> A new <code>.github/workflows/docs.yml</code> workflow triggers on pushes to <code>main</code> and <code>v*</code> tags. It installs <code>mkdocs-material</code> and <code>mike</code> via pip, then uses <code>mike deploy</code> to publish to the <code>gh-pages</code> branch. MkDocs Material's native version picker reads the <code>mike</code>-managed version list from <code>gh-pages</code>.</p>
-<p><strong>Tech Stack:</strong> <code>mike</code> (MkDocs versioning), <code>mkdocs-material</code>, GitHub Actions, GitHub Pages (serving from <code>gh-pages</code> branch).</p>
-<hr />
-<h3 id="task-1-set-site_url-in-mkdocsyml">Task 1: Set <code>site_url</code> in <code>mkdocs.yml</code><a class="headerlink" href="#task-1-set-site_url-in-mkdocsyml" title="Permanent link">&para;</a></h3>
-<p><strong>Files:</strong>
-- Modify: <code>mkdocs.yml:4</code></p>
-<p><code>mike</code> requires <code>site_url</code> to resolve cross-version URLs correctly. It is currently empty.</p>
-<p><strong>Step 1: Update <code>site_url</code></strong></p>
-<p>In <code>mkdocs.yml</code>, change line 4 from:</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">site_url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span>
-</span></code></pre></div>
-<p>to:</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">site_url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://griffinskudder.github.io/updater/</span>
-</span></code></pre></div>
-<p><strong>Step 2: Verify the docs build</strong></p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>make<span class="w"> </span>docs-build
-</span></code></pre></div>
-<p>Expected: build completes without errors. The <code>site/</code> directory is populated.</p>
-<p><strong>Step 3: Commit</strong></p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>git<span class="w"> </span>add<span class="w"> </span>mkdocs.yml
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;chore(docs): set site_url for GitHub Pages&quot;</span>
-</span></code></pre></div>
-<hr />
-<h3 id="task-2-create-the-github-actions-docs-workflow">Task 2: Create the GitHub Actions docs workflow<a class="headerlink" href="#task-2-create-the-github-actions-docs-workflow" title="Permanent link">&para;</a></h3>
-<p><strong>Files:</strong>
-- Create: <code>.github/workflows/docs.yml</code></p>
-<p><strong>Step 1: Create the workflow file</strong></p>
-<p>Create <code>.github/workflows/docs.yml</code> with the following content:</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Docs</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="nt">on</span><span class="p">:</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span><span class="nt">push</span><span class="p">:</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">    </span><span class="nt">branches</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">main</span><span class="p p-Indicator">]</span>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">  </span><span class="nt">push</span><span class="p">:</span>
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">    </span><span class="nt">tags</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;v*&#39;</span><span class="p p-Indicator">]</span>
-</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>
-</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="nt">jobs</span><span class="p">:</span>
-</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">  </span><span class="nt">deploy</span><span class="p">:</span>
-</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">    </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
-</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">    </span><span class="nt">permissions</span><span class="p">:</span>
-</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="w">      </span><span class="nt">contents</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">write</span>
-</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="w">    </span><span class="nt">steps</span><span class="p">:</span>
-</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/checkout@v4</span>
-</span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="w">        </span><span class="nt">with</span><span class="p">:</span>
-</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="w">          </span><span class="nt">fetch-depth</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
-</span><span id="__span-4-18"><a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a>
-</span><span id="__span-4-19"><a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/setup-python@v5</span>
-</span><span id="__span-4-20"><a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a><span class="w">        </span><span class="nt">with</span><span class="p">:</span>
-</span><span id="__span-4-21"><a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a><span class="w">          </span><span class="nt">python-version</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;3.x&#39;</span>
-</span><span id="__span-4-22"><a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a>
-</span><span id="__span-4-23"><a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Install dependencies</span>
-</span><span id="__span-4-24"><a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a><span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pip install mkdocs-material mike</span>
-</span><span id="__span-4-25"><a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a>
-</span><span id="__span-4-26"><a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Configure git credentials</span>
-</span><span id="__span-4-27"><a id="__codelineno-4-27" name="__codelineno-4-27" href="#__codelineno-4-27"></a><span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
-</span><span id="__span-4-28"><a id="__codelineno-4-28" name="__codelineno-4-28" href="#__codelineno-4-28"></a><span class="w">          </span><span class="no">git config user.name &quot;github-actions[bot]&quot;</span>
-</span><span id="__span-4-29"><a id="__codelineno-4-29" name="__codelineno-4-29" href="#__codelineno-4-29"></a><span class="w">          </span><span class="no">git config user.email &quot;github-actions[bot]@users.noreply.github.com&quot;</span>
-</span><span id="__span-4-30"><a id="__codelineno-4-30" name="__codelineno-4-30" href="#__codelineno-4-30"></a>
-</span><span id="__span-4-31"><a id="__codelineno-4-31" name="__codelineno-4-31" href="#__codelineno-4-31"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Deploy dev docs</span>
-</span><span id="__span-4-32"><a id="__codelineno-4-32" name="__codelineno-4-32" href="#__codelineno-4-32"></a><span class="w">        </span><span class="nt">if</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">github.ref == &#39;refs/heads/main&#39;</span>
-</span><span id="__span-4-33"><a id="__codelineno-4-33" name="__codelineno-4-33" href="#__codelineno-4-33"></a><span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mike deploy --push --update-aliases dev</span>
-</span><span id="__span-4-34"><a id="__codelineno-4-34" name="__codelineno-4-34" href="#__codelineno-4-34"></a>
-</span><span id="__span-4-35"><a id="__codelineno-4-35" name="__codelineno-4-35" href="#__codelineno-4-35"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Deploy versioned docs</span>
-</span><span id="__span-4-36"><a id="__codelineno-4-36" name="__codelineno-4-36" href="#__codelineno-4-36"></a><span class="w">        </span><span class="nt">if</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">startsWith(github.ref, &#39;refs/tags/v&#39;)</span>
-</span><span id="__span-4-37"><a id="__codelineno-4-37" name="__codelineno-4-37" href="#__codelineno-4-37"></a><span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
-</span><span id="__span-4-38"><a id="__codelineno-4-38" name="__codelineno-4-38" href="#__codelineno-4-38"></a><span class="w">          </span><span class="no">VERSION=${GITHUB_REF#refs/tags/}</span>
-</span><span id="__span-4-39"><a id="__codelineno-4-39" name="__codelineno-4-39" href="#__codelineno-4-39"></a><span class="w">          </span><span class="no">mike deploy --push --update-aliases &quot;$VERSION&quot; latest</span>
-</span><span id="__span-4-40"><a id="__codelineno-4-40" name="__codelineno-4-40" href="#__codelineno-4-40"></a><span class="w">          </span><span class="no">mike set-default --push latest</span>
-</span></code></pre></div>
-<p>Note: <code>fetch-depth: 0</code> is required — <code>mike</code> reads and writes the <code>gh-pages</code> branch, which needs the full git history to avoid overwriting previous versions.</p>
-<p><code>--update-aliases</code> ensures the <code>latest</code> alias always points to the version being deployed, replacing any previous pointer.</p>
-<p><strong>Step 2: Commit</strong></p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>git<span class="w"> </span>add<span class="w"> </span>.github/workflows/docs.yml
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;ci: add GitHub Pages docs deployment workflow&quot;</span>
-</span></code></pre></div>
-<hr />
-<h3 id="task-3-add-implementation-plan-to-docs-nav-and-commit">Task 3: Add implementation plan to docs nav and commit<a class="headerlink" href="#task-3-add-implementation-plan-to-docs-nav-and-commit" title="Permanent link">&para;</a></h3>
-<p><strong>Files:</strong>
-- Modify: <code>mkdocs.yml</code></p>
-<p><strong>Step 1: Add implementation plan to nav</strong></p>
-<p>In <code>mkdocs.yml</code>, find the <code>Plans:</code> section in <code>nav</code> and add:</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">GitHub Pages Implementation</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">plans/2026-02-16-github-pages-implementation.md</span>
-</span></code></pre></div>
-<p>after the existing <code>GitHub Pages Design</code> entry.</p>
-<p><strong>Step 2: Verify the docs build</strong></p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>make<span class="w"> </span>docs-build
-</span></code></pre></div>
-<p>Expected: build completes without errors.</p>
-<p><strong>Step 3: Commit</strong></p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>git<span class="w"> </span>add<span class="w"> </span>mkdocs.yml<span class="w"> </span>docs/plans/2026-02-16-github-pages-implementation.md
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;docs: add GitHub Pages implementation plan&quot;</span>
-</span></code></pre></div>
-<hr />
-<h3 id="task-4-configure-github-pages-in-repository-settings-manual">Task 4: Configure GitHub Pages in repository settings (manual)<a class="headerlink" href="#task-4-configure-github-pages-in-repository-settings-manual" title="Permanent link">&para;</a></h3>
-<p>This is a one-time action in the GitHub web UI. <code>mike</code> creates and manages the <code>gh-pages</code> branch automatically on first deploy, but GitHub Pages won't serve it until you point the setting at it.</p>
-<p><strong>Step 1: Push changes to <code>main</code></strong></p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>git<span class="w"> </span>push
-</span></code></pre></div>
-<p>This triggers the workflow and creates the <code>gh-pages</code> branch with the <code>dev</code> docs.</p>
-<p><strong>Step 2: Wait for the workflow to complete</strong></p>
-<p>In the GitHub Actions tab, confirm the <code>Docs</code> workflow run succeeds and the <code>gh-pages</code> branch now exists.</p>
-<p><strong>Step 3: Configure GitHub Pages source</strong></p>
-<p>Go to the repository on GitHub: <em>Settings → Pages → Build and deployment → Source</em>.</p>
-<p>Set:
-- Source: <code>Deploy from a branch</code>
-- Branch: <code>gh-pages</code>
-- Folder: <code>/ (root)</code></p>
-<p>Save. GitHub Pages will begin serving from <code>https://griffinskudder.github.io/updater/</code>.</p>
-<p><strong>Step 4: Verify</strong></p>
-<p>Visit <code>https://griffinskudder.github.io/updater/</code>. The site should load and show the <code>dev</code> docs (there are no tagged releases yet, so <code>latest</code> does not exist; the <code>dev</code> docs will be visible directly).</p>
-<p>Once a <code>v*</code> tag is pushed, the <code>latest</code> alias will be created and the default will switch to the tagged version.</p>
 
 
 
@@ -1606,10 +1665,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.path", "navigation.top", "search.highlight", "search.share", "toc.follow", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "latest", "provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.path", "navigation.top", "search.highlight", "search.share", "toc.follow", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "latest", "provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
       
     
   </body>

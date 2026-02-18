@@ -471,11 +471,11 @@
     
     
       <li class="md-tabs__item">
-        <a href="../plans/2026-02-15-application-management-api-design/" class="md-tabs__link">
+        <a href="../db/" class="md-tabs__link">
           
   
   
-  Plans
+  Database
 
         </a>
       </li>
@@ -1005,22 +1005,55 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#configuration-security" class="md-nav__link">
+  <a href="#api-key-management" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Configuration Security
+        API Key Management
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Configuration Security">
+    <nav class="md-nav" aria-label="API Key Management">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#api-key-configuration" class="md-nav__link">
+  <a href="#bootstrap-key" class="md-nav__link">
     <span class="md-ellipsis">
       
-        API Key Configuration
+        Bootstrap Key
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#key-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Format
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#key-lifecycle-rest-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Lifecycle (REST API)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#permission-model_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Permission Model
       
     </span>
   </a>
@@ -1040,6 +1073,17 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration-security" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration Security
+      
+    </span>
+  </a>
   
 </li>
       
@@ -1673,126 +1717,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../models/version-models/" class="md-nav__link">
+      <a href="../models/auto/models/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Version Models
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../models/platform-models/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Platform & Application Models
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../models/release-models/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Release Models
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../models/api-models/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    API Models
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../models/config-models/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Configuration Models
+    Reference
   
 
     
@@ -1845,7 +1777,7 @@
   <span class="md-ellipsis">
     
   
-    Plans
+    Database
   
 
     
@@ -1861,7 +1793,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    Plans
+    Database
   
 
           </label>
@@ -1874,14 +1806,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../plans/2026-02-15-application-management-api-design/" class="md-nav__link">
+      <a href="../db/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Application Management API Design
+    Overview
   
 
     
@@ -1902,14 +1834,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../plans/2026-02-15-application-management-api-implementation/" class="md-nav__link">
+      <a href="../db/public.applications/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Application Management API Implementation
+    applications
   
 
     
@@ -1930,14 +1862,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../plans/2026-02-15-makefile-restructure-design/" class="md-nav__link">
+      <a href="../db/public.releases/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Makefile Restructure Design
+    releases
   
 
     
@@ -1958,210 +1890,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../plans/2026-02-15-makefile-restructure-implementation/" class="md-nav__link">
+      <a href="../db/public.api_keys/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Makefile Restructure Implementation
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../plans/2026-02-15-rate-limiter-design/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Rate Limiter Design
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../plans/2026-02-15-rate-limiter-implementation/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Rate Limiter Implementation
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../plans/2026-02-16-admin-frontend/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Admin Frontend
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../plans/2026-02-16-github-ci-design/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    GitHub CI Design
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../plans/2026-02-16-github-ci-implementation/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    GitHub CI Implementation
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../plans/2026-02-16-github-pages-design/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    GitHub Pages Design
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../plans/2026-02-16-github-pages-implementation/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    GitHub Pages Implementation
+    api_keys
   
 
     
@@ -2309,22 +2045,55 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#configuration-security" class="md-nav__link">
+  <a href="#api-key-management" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Configuration Security
+        API Key Management
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Configuration Security">
+    <nav class="md-nav" aria-label="API Key Management">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#api-key-configuration" class="md-nav__link">
+  <a href="#bootstrap-key" class="md-nav__link">
     <span class="md-ellipsis">
       
-        API Key Configuration
+        Bootstrap Key
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#key-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Format
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#key-lifecycle-rest-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Lifecycle (REST API)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#permission-model_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Permission Model
       
     </span>
   </a>
@@ -2344,6 +2113,17 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration-security" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration Security
+      
+    </span>
+  </a>
   
 </li>
       
@@ -2870,59 +2650,108 @@
 <li><code>write</code> permission includes <code>read</code> operations</li>
 <li><code>read</code> permission grants only query access</li>
 </ul>
-<h2 id="configuration-security">Configuration Security<a class="headerlink" href="#configuration-security" title="Permanent link">&para;</a></h2>
-<h3 id="api-key-configuration">API Key Configuration<a class="headerlink" href="#api-key-configuration" title="Permanent link">&para;</a></h3>
+<h2 id="api-key-management">API Key Management<a class="headerlink" href="#api-key-management" title="Permanent link">&para;</a></h2>
+<p>API keys are stored in the service database, not in the configuration file.</p>
+<h3 id="bootstrap-key">Bootstrap Key<a class="headerlink" href="#bootstrap-key" title="Permanent link">&para;</a></h3>
+<p>The <code>security.bootstrap_key</code> config field (or <code>UPDATER_BOOTSTRAP_KEY</code> env var)
+seeds a single <code>admin</code>-permission key into an empty database on first startup.
+This key is the entry point for all subsequent key management.</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">security</span><span class="p">:</span>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">enable_auth</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">api_keys</span><span class="p">:</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="c1"># Production Admin Key</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;${ADMIN_API_KEY}&quot;</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Production</span><span class="nv"> </span><span class="s">Admin&quot;</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">      </span><span class="nt">permissions</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;admin&quot;</span><span class="p p-Indicator">]</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">    </span><span class="c1"># Release Management Key</span>
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;${RELEASE_API_KEY}&quot;</span>
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Release</span><span class="nv"> </span><span class="s">Publisher&quot;</span>
-</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">      </span><span class="nt">permissions</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;read&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;write&quot;</span><span class="p p-Indicator">]</span>
-</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>
-</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="w">    </span><span class="c1"># Read-Only Integration Key</span>
-</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;${READONLY_API_KEY}&quot;</span>
-</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Monitoring</span><span class="nv"> </span><span class="s">System&quot;</span>
-</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="w">      </span><span class="nt">permissions</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;read&quot;</span><span class="p p-Indicator">]</span>
-</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">bootstrap_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;${UPDATER_BOOTSTRAP_KEY}&quot;</span>
 </span></code></pre></div>
+<p>Generate a bootstrap key:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>openssl<span class="w"> </span>rand<span class="w"> </span>-base64<span class="w"> </span><span class="m">32</span>
+</span></code></pre></div>
+<h3 id="key-format">Key Format<a class="headerlink" href="#key-format" title="Permanent link">&para;</a></h3>
+<p>Generated keys use the format <code>upd_&lt;44-char base64url&gt;</code>, providing 256 bits of
+entropy. The raw key value is returned exactly once — at creation time — and is
+never stored. Only the SHA-256 hex digest (<code>key_hash</code>) and an 8-character
+display prefix are persisted.</p>
+<h3 id="key-lifecycle-rest-api">Key Lifecycle (REST API)<a class="headerlink" href="#key-lifecycle-rest-api" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/admin/keys</code></td>
+<td>List all keys (hash and raw key never returned)</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/api/v1/admin/keys</code></td>
+<td>Create a key; raw value returned once in response</td>
+</tr>
+<tr>
+<td><code>PATCH</code></td>
+<td><code>/api/v1/admin/keys/{id}</code></td>
+<td>Update name, permissions, or enabled status</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td><code>/api/v1/admin/keys/{id}</code></td>
+<td>Permanently revoke a key</td>
+</tr>
+</tbody>
+</table>
+<p>All key management endpoints require <code>admin</code> permission. The admin UI at
+<code>/admin/keys</code> and <code>/admin/keys/new</code> provides a browser-based interface for the
+same operations.</p>
+<h3 id="permission-model_1">Permission Model<a class="headerlink" href="#permission-model_1" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Permission</th>
+<th>Grants access to</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>read</code></td>
+<td>Read-only query endpoints</td>
+</tr>
+<tr>
+<td><code>write</code></td>
+<td><code>read</code> + release and application creation</td>
+</tr>
+<tr>
+<td><code>admin</code></td>
+<td><code>write</code> + updates, deletes, and key management</td>
+</tr>
+<tr>
+<td><code>*</code></td>
+<td>Alias for <code>admin</code> — full access</td>
+</tr>
+</tbody>
+</table>
+<p>Permissions are cumulative: <code>admin</code> includes <code>write</code>, <code>write</code> includes <code>read</code>.</p>
 <h3 id="security-best-practices">Security Best Practices<a class="headerlink" href="#security-best-practices" title="Permanent link">&para;</a></h3>
-<h4 id="api-key-management">API Key Management<a class="headerlink" href="#api-key-management" title="Permanent link">&para;</a></h4>
 <ol>
 <li>
-<p><strong>Key Generation</strong>
-   <div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Generate cryptographically secure API keys</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>openssl<span class="w"> </span>rand<span class="w"> </span>-base64<span class="w"> </span><span class="m">32</span>
-</span></code></pre></div></p>
+<p><strong>Key Rotation</strong>: Rotate keys regularly (recommended: every 90 days). Create
+   the replacement key before revoking the old one for zero-downtime rotation.</p>
 </li>
 <li>
-<p><strong>Key Rotation</strong></p>
-</li>
-<li>Rotate API keys regularly (recommended: every 90 days)</li>
-<li>Use environment variables, never hardcode keys</li>
-<li>
-<p>Implement key versioning for zero-downtime rotation</p>
+<p><strong>Least Privilege</strong>: Assign the minimum permission required. Read-only
+   integrations should use <code>read</code>; release publishers should use <code>write</code>.</p>
 </li>
 <li>
-<p><strong>Key Storage</strong></p>
+<p><strong>Bootstrap Key Storage</strong>: Store the bootstrap key in a secret manager
+   (HashiCorp Vault, AWS Secrets Manager, Kubernetes Secrets). Never commit it
+   to version control.</p>
 </li>
-<li>Store keys in secure environment variables</li>
-<li>Use secret management systems (HashiCorp Vault, AWS Secrets Manager)</li>
-<li>Never commit keys to version control</li>
+<li>
+<p><strong>Revocation</strong>: Revoke compromised keys immediately via <code>DELETE
+   /api/v1/admin/keys/{id}</code> or the <code>/admin/keys</code> UI.</p>
+</li>
 </ol>
-<h4 id="minimum-key-length-requirements">Minimum Key Length Requirements<a class="headerlink" href="#minimum-key-length-requirements" title="Permanent link">&para;</a></h4>
-<ul>
-<li><strong>API Keys</strong>: Minimum 32 characters (256 bits of entropy)</li>
-<li><strong>JWT Secrets</strong>: Minimum 32 characters</li>
-<li><strong>Production</strong>: Use 64+ character keys</li>
-</ul>
+<h2 id="configuration-security">Configuration Security<a class="headerlink" href="#configuration-security" title="Permanent link">&para;</a></h2>
 <h2 id="threat-model">Threat Model<a class="headerlink" href="#threat-model" title="Permanent link">&para;</a></h2>
 <h3 id="identified-threats">Identified Threats<a class="headerlink" href="#identified-threats" title="Permanent link">&para;</a></h3>
 <table>
@@ -3007,9 +2836,10 @@
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">rate_limit</span><span class="p">:</span>
 </span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 </span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">    </span><span class="nt">requests_per_minute</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">60</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">    </span><span class="nt">requests_per_hour</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1000</span>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">    </span><span class="nt">burst_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">    </span><span class="nt">cleanup_interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">300s</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">    </span><span class="nt">burst_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">    </span><span class="nt">authenticated_requests_per_minute</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">300</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">    </span><span class="nt">authenticated_burst_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">50</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">    </span><span class="nt">cleanup_interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">300s</span>
 </span></code></pre></div>
 <h3 id="reverse-proxy-security">Reverse Proxy Security<a class="headerlink" href="#reverse-proxy-security" title="Permanent link">&para;</a></h3>
 <p>When using reverse proxies (nginx, Cloudflare):</p>
@@ -3105,13 +2935,18 @@
 <li>Enhance monitoring rules</li>
 </ol>
 <h3 id="emergency-api-key-revocation">Emergency API Key Revocation<a class="headerlink" href="#emergency-api-key-revocation" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># Emergency key disable via environment variable</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">UPDATER_SECURITY_DISABLE_KEY</span><span class="o">=</span><span class="s2">&quot;compromised-key-value&quot;</span>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="c1"># Or through configuration update</span>
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>kubectl<span class="w"> </span>patch<span class="w"> </span>configmap<span class="w"> </span>updater-config<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="w">  </span>-p<span class="w"> </span><span class="s1">&#39;{&quot;data&quot;:{&quot;security.api_keys[0].enabled&quot;:&quot;false&quot;}}&#39;</span>
+<p>Revoke a key immediately via the REST API (requires an active <code>admin</code> key):</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># Permanently delete a key by ID</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>curl<span class="w"> </span>-X<span class="w"> </span>DELETE<span class="w"> </span>https://updater.example.com/api/v1/admin/keys/&lt;key-id&gt;<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Authorization: Bearer &lt;admin-api-key&gt;&quot;</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="c1"># Or disable without deleting (can be re-enabled later)</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>curl<span class="w"> </span>-X<span class="w"> </span>PATCH<span class="w"> </span>https://updater.example.com/api/v1/admin/keys/&lt;key-id&gt;<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Authorization: Bearer &lt;admin-api-key&gt;&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;enabled&quot;: false}&#39;</span>
 </span></code></pre></div>
+<p>Key IDs are visible in <code>GET /api/v1/admin/keys</code> or the <code>/admin/keys</code> admin UI.</p>
 <h2 id="security-testing">Security Testing<a class="headerlink" href="#security-testing" title="Permanent link">&para;</a></h2>
 <h3 id="security-validation-checklist">Security Validation Checklist<a class="headerlink" href="#security-validation-checklist" title="Permanent link">&para;</a></h3>
 <ul>

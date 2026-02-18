@@ -9,10 +9,6 @@
          <lastmod>2026-02-18</lastmod>
     </url>
     <url>
-         <loc>https://griffinskudder.github.io/updater/dev/CONTAINER_SECURITY/</loc>
-         <lastmod>2026-02-18</lastmod>
-    </url>
-    <url>
          <loc>https://griffinskudder.github.io/updater/dev/DEPLOYMENT_SECURITY/</loc>
          <lastmod>2026-02-18</lastmod>
     </url>
@@ -61,27 +57,27 @@
          <lastmod>2026-02-18</lastmod>
     </url>
     <url>
+         <loc>https://griffinskudder.github.io/updater/dev/db/</loc>
+         <lastmod>2026-02-18</lastmod>
+    </url>
+    <url>
+         <loc>https://griffinskudder.github.io/updater/dev/db/public.api_keys/</loc>
+         <lastmod>2026-02-18</lastmod>
+    </url>
+    <url>
+         <loc>https://griffinskudder.github.io/updater/dev/db/public.applications/</loc>
+         <lastmod>2026-02-18</lastmod>
+    </url>
+    <url>
+         <loc>https://griffinskudder.github.io/updater/dev/db/public.releases/</loc>
+         <lastmod>2026-02-18</lastmod>
+    </url>
+    <url>
          <loc>https://griffinskudder.github.io/updater/dev/models/</loc>
          <lastmod>2026-02-18</lastmod>
     </url>
     <url>
-         <loc>https://griffinskudder.github.io/updater/dev/models/api-models/</loc>
-         <lastmod>2026-02-18</lastmod>
-    </url>
-    <url>
-         <loc>https://griffinskudder.github.io/updater/dev/models/config-models/</loc>
-         <lastmod>2026-02-18</lastmod>
-    </url>
-    <url>
-         <loc>https://griffinskudder.github.io/updater/dev/models/platform-models/</loc>
-         <lastmod>2026-02-18</lastmod>
-    </url>
-    <url>
-         <loc>https://griffinskudder.github.io/updater/dev/models/release-models/</loc>
-         <lastmod>2026-02-18</lastmod>
-    </url>
-    <url>
-         <loc>https://griffinskudder.github.io/updater/dev/models/version-models/</loc>
+         <loc>https://griffinskudder.github.io/updater/dev/models/auto/models/</loc>
          <lastmod>2026-02-18</lastmod>
     </url>
     <url>
