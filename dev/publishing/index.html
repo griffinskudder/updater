@@ -12,13 +12,13 @@
         <meta name="author" content="Updater Service Team">
       
       
-        <link rel="canonical" href="https://griffinskudder.github.io/updater/dev/rate-limiting/">
+        <link rel="canonical" href="https://griffinskudder.github.io/updater/dev/publishing/">
       
       
-        <link rel="prev" href="../DEPLOYMENT_SECURITY/">
+        <link rel="prev" href="../observability/">
       
       
-        <link rel="next" href="../logging/">
+        <link rel="next" href="../makefile/">
       
       
         
@@ -29,7 +29,7 @@
     
     
       
-        <title>Rate Limiting - Updater Service Documentation</title>
+        <title>Publishing - Updater Service Documentation</title>
       
     
     
@@ -82,7 +82,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#rate-limiting" class="md-skip">
+        <a href="#publishing" class="md-skip">
           Skip to content
         </a>
       
@@ -120,7 +120,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Rate Limiting
+              Publishing
             
           </span>
         </div>
@@ -350,11 +350,9 @@
   
   
   
-    
   
-  
-    <li class="md-tabs__item md-tabs__item--active">
-      <a href="./" class="md-tabs__link">
+    <li class="md-tabs__item">
+      <a href="../rate-limiting/" class="md-tabs__link">
         
   
   
@@ -447,9 +445,11 @@
   
   
   
+    
   
-    <li class="md-tabs__item">
-      <a href="../publishing/" class="md-tabs__link">
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
         
   
   
@@ -940,19 +940,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../rate-limiting/" class="md-nav__link">
         
   
   
@@ -968,7 +959,6 @@
   
 
       </a>
-      
     </li>
   
 
@@ -1085,10 +1075,37 @@
       
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../publishing/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Publishing
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1104,6 +1121,148 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#triggers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Triggers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#workflows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workflows
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Workflows">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#push-to-main" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Push to main
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tag-push" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tag push
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#permissions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Permissions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#image-naming" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Image naming
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Image naming">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#push-to-main_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Push to main
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tag-push_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tag push
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#creating-a-release" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Creating a release
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#image-visibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Image visibility
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1445,6 +1604,136 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#triggers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Triggers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#workflows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workflows
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Workflows">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#push-to-main" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Push to main
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tag-push" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tag push
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#permissions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Permissions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#image-naming" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Image naming
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Image naming">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#push-to-main_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Push to main
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tag-push_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tag push
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#creating-a-release" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Creating a release
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#image-visibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Image visibility
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1471,11 +1760,100 @@
   
 
 
-<h1 id="rate-limiting">Rate Limiting<a class="headerlink" href="#rate-limiting" title="Permanent link">&para;</a></h1>
-<p>Rate limiting is no longer handled by the updater service itself.
-It is the responsibility of the reverse proxy that sits in front of the service.</p>
-<p>See <a href="../reverse-proxy/">Reverse Proxy</a> for nginx and Traefik examples that configure
-IP-based rate limiting at the proxy layer.</p>
+<h1 id="publishing">Publishing<a class="headerlink" href="#publishing" title="Permanent link">&para;</a></h1>
+<p>The <code>publish</code> CI workflow builds the Docker image and pushes it to the <a href="https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry">GitHub Container Registry (GHCR)</a> on every push to <code>main</code> and on every <code>v*</code> tag. Tagged pushes also create a GitHub release.</p>
+<h2 id="triggers">Triggers<a class="headerlink" href="#triggers" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Job</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Push to <code>main</code></td>
+<td><code>publish</code></td>
+<td>Image tagged with short SHA and <code>latest</code></td>
+</tr>
+<tr>
+<td>Push of <code>v*</code> tag</td>
+<td><code>release</code></td>
+<td>Image tagged with version and <code>latest</code>, GitHub release created</td>
+</tr>
+</tbody>
+</table>
+<h2 id="workflows">Workflows<a class="headerlink" href="#workflows" title="Permanent link">&para;</a></h2>
+<h3 id="push-to-main">Push to main<a class="headerlink" href="#push-to-main" title="Permanent link">&para;</a></h3>
+<pre class="mermaid"><code>flowchart LR
+    push[Push to main] --&gt; login[Log in to GHCR]
+    login --&gt; build[make docker-push]
+    build --&gt; ghcr[(ghcr.io/OWNER/updater:SHA\nghcr.io/OWNER/updater:latest)]</code></pre>
+<h3 id="tag-push">Tag push<a class="headerlink" href="#tag-push" title="Permanent link">&para;</a></h3>
+<pre class="mermaid"><code>flowchart LR
+    tag[Push v* tag] --&gt; login[Log in to GHCR]
+    login --&gt; build[make docker-push]
+    build --&gt; ghcr[(ghcr.io/OWNER/updater:v1.2.3\nghcr.io/OWNER/updater:latest)]
+    build --&gt; rel[gh release create]
+    rel --&gt; release[GitHub release with auto-generated notes]</code></pre>
+<p>Both jobs use the built-in <code>GITHUB_TOKEN</code> for authentication — no secrets or external service accounts are needed.</p>
+<h2 id="permissions">Permissions<a class="headerlink" href="#permissions" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Job</th>
+<th>Permission</th>
+<th>Reason</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>publish</code></td>
+<td><code>contents: read</code></td>
+<td>Checkout the repository</td>
+</tr>
+<tr>
+<td><code>publish</code></td>
+<td><code>packages: write</code></td>
+<td>Push images to GHCR</td>
+</tr>
+<tr>
+<td><code>release</code></td>
+<td><code>contents: write</code></td>
+<td>Create GitHub releases</td>
+</tr>
+<tr>
+<td><code>release</code></td>
+<td><code>packages: write</code></td>
+<td>Push images to GHCR</td>
+</tr>
+</tbody>
+</table>
+<h2 id="image-naming">Image naming<a class="headerlink" href="#image-naming" title="Permanent link">&para;</a></h2>
+<p>The <code>make docker-push</code> target delegates to <code>scripts/docker-build.sh --push</code>, which reads <code>DOCKER_REGISTRY</code> and <code>VERSION</code> from the environment.</p>
+<h3 id="push-to-main_1">Push to main<a class="headerlink" href="#push-to-main_1" title="Permanent link">&para;</a></h3>
+<p><code>VERSION</code> is not set, so the script defaults to <code>git rev-parse --short HEAD</code>:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>ghcr.io/griffinskudder/updater:abc1234
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>ghcr.io/griffinskudder/updater:latest
+</span></code></pre></div>
+<h3 id="tag-push_1">Tag push<a class="headerlink" href="#tag-push_1" title="Permanent link">&para;</a></h3>
+<p><code>VERSION</code> is set to <code>github.ref_name</code> (e.g. <code>v1.2.3</code>):</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>ghcr.io/griffinskudder/updater:v1.2.3
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>ghcr.io/griffinskudder/updater:latest
+</span></code></pre></div>
+<h2 id="creating-a-release">Creating a release<a class="headerlink" href="#creating-a-release" title="Permanent link">&para;</a></h2>
+<p>Push a tag that starts with <code>v</code> to trigger the <code>release</code> job:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>git<span class="w"> </span>tag<span class="w"> </span>v1.2.3
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </span>v1.2.3
+</span></code></pre></div>
+<p>The job will:</p>
+<ol>
+<li>Build and push the image tagged <code>v1.2.3</code> and <code>latest</code>.</li>
+<li>Create a GitHub release named <code>v1.2.3</code> with auto-generated notes summarising the pull requests merged since the previous tag.</li>
+</ol>
+<h2 id="image-visibility">Image visibility<a class="headerlink" href="#image-visibility" title="Permanent link">&para;</a></h2>
+<p>By default, packages pushed by a workflow inherit the visibility of the repository. Visibility can be changed in <strong>Settings &gt; Packages</strong> on GitHub.</p>
 
 
 
