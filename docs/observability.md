@@ -206,6 +206,8 @@ docker build \
   -t updater:latest .
 ```
 
+**Note**: The `scripts/docker-build.sh` script and `make docker-build` target handle build argument injection automatically.
+
 Local development builds will show "unknown" for these values, which is expected. CI/CD pipelines should always inject proper values.
 
 #### Environment Detection
