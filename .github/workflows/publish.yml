@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
     tags: ['v*']
+  pull_request:
 
 permissions: {}
 
@@ -29,7 +30,10 @@ jobs:
       - name: Build and push
         env:
           DOCKER_REGISTRY: ghcr.io/${{ github.repository_owner }}
-        run: make docker-push
+          LATEST_TAG: latest-dev
+        run: |
+          chmod +x ./scripts/docker-build.sh
+          make docker-push
 
   release:
     name: Build, push, and release
@@ -53,7 +57,9 @@ jobs:
         env:
           DOCKER_REGISTRY: ghcr.io/${{ github.repository_owner }}
           VERSION: ${{ github.ref_name }}
-        run: make docker-push
+        run: |
+          chmod +x ./scripts/docker-build.sh
+          make docker-push
 
       - name: Create GitHub release
         env:

@@ -9,6 +9,7 @@ set -e
 REGISTRY="${DOCKER_REGISTRY:-localhost}"
 IMAGE_NAME="${IMAGE_NAME:-updater}"
 VERSION="${VERSION:-$(git rev-parse --short HEAD)}"
+LATEST_TAG="${LATEST_TAG:-latest}"
 BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
 
 # Colors for output
@@ -39,7 +40,7 @@ build_image() {
         --build-arg VERSION="${VERSION}" \
         --build-arg VCS_REF="$(git rev-parse HEAD)" \
         -t "${REGISTRY}/${IMAGE_NAME}:${VERSION}${tag_suffix}" \
-        -t "${REGISTRY}/${IMAGE_NAME}:latest${tag_suffix}" \
+        -t "${REGISTRY}/${IMAGE_NAME}:${LATEST_TAG}${tag_suffix}" \
         .
 
     echo -e "${GREEN}✅ Built ${description} successfully${NC}"
@@ -116,6 +117,7 @@ while [[ $# -gt 0 ]]; do
             echo "  DOCKER_REGISTRY   Docker registry (default: localhost)"
             echo "  IMAGE_NAME        Image name (default: updater)"
             echo "  VERSION           Image version (default: git short hash)"
+            echo "  LATEST_TAG        Tag for latest image (default: latest)"
             echo ""
             exit 0
             ;;
@@ -148,7 +150,7 @@ fi
 if [[ "${PUSH_IMAGE}" == "true" ]]; then
     echo -e "${BLUE}📤 Pushing ${IMAGE_TAG} to registry...${NC}"
     docker push "${IMAGE_TAG}"
-    docker push "${REGISTRY}/${IMAGE_NAME}:latest"
+    docker push "${REGISTRY}/${IMAGE_NAME}:${LATEST_TAG}"
     echo -e "${GREEN}✅ Image pushed successfully${NC}"
 fi
 
@@ -156,7 +158,7 @@ echo -e "${GREEN}🎉 Build process completed successfully!${NC}"
 echo ""
 echo "Built images:"
 echo "  • ${REGISTRY}/${IMAGE_NAME}:${VERSION}"
-echo "  • ${REGISTRY}/${IMAGE_NAME}:latest"
+echo "  • ${REGISTRY}/${IMAGE_NAME}:${LATEST_TAG}"
 echo ""
 echo "Run the image:"
 echo "  # Development"
