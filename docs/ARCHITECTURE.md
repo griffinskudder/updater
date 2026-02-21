@@ -508,7 +508,7 @@ security:
   bootstrap_key: "${UPDATER_BOOTSTRAP_KEY}"
 ```
 
-CORS, rate limiting, and TLS are configured at the reverse proxy. See [Reverse Proxy](../reverse-proxy.md) for examples.
+CORS, rate limiting, and TLS are configured at the reverse proxy. See [Reverse Proxy](./reverse-proxy.md) for examples.
 
 ### Threat Mitigation
 
@@ -651,7 +651,7 @@ Configuration is loaded from a YAML file (via `-config` CLI flag) and overridden
 **Security:**
 - `UPDATER_ENABLE_AUTH`: Enable API key authentication (default: false)
 - `UPDATER_BOOTSTRAP_KEY`: Initial admin API key seeded on first startup
-- CORS, rate limiting, and TLS are handled by the reverse proxy (see [Reverse Proxy](../reverse-proxy.md))
+- CORS, rate limiting, and TLS are handled by the reverse proxy (see [Reverse Proxy](./reverse-proxy.md))
 
 **Logging:**
 - `UPDATER_LOG_LEVEL`: Log level (debug, info, warn, error)
