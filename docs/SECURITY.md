@@ -371,9 +371,7 @@ curl -X POST http://localhost:8080/api/v1/updates/test/register \
 
 For security issues and responsible disclosure:
 
-- **Security Email**: security@yourcompany.com
-- **Response Time**: 24-48 hours for initial response
-- **Encryption**: PGP key available on company website
+- Use the Github private security advisory process: https://docs.github.com/en/code-security/how-tos/report-and-fix-vulnerabilities/report-a-vulnerability/privately-reporting-a-security-vulnerability
 
 ### Responsible Disclosure
 

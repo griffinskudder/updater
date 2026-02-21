@@ -87,7 +87,7 @@ EXPOSE 8080
 LABEL \
     org.opencontainers.image.title="Updater Service" \
     org.opencontainers.image.description="Secure update service for desktop applications" \
-    org.opencontainers.image.vendor="Your Company" \
+    org.opencontainers.image.vendor="griffinskudder" \
     org.opencontainers.image.version="1.0.0" \
     org.opencontainers.image.created="2024-01-01T00:00:00Z" \
     org.opencontainers.image.source="https://github.com/griffinskudder/updater" \
