@@ -1,13 +1,13 @@
 package observability
 
 import (
-	"updater/internal/version"
 	"context"
 	"fmt"
 	"testing"
 	"time"
 	"updater/internal/models"
 	"updater/internal/storage"
+	"updater/internal/version"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -17,7 +17,7 @@ func setupTestProvider(t *testing.T) *Provider {
 	t.Helper()
 	metrics := models.MetricsConfig{Enabled: true, Path: "/metrics", Port: 9090}
 	obs := models.ObservabilityConfig{
-		ServiceName:    "test",
+		ServiceName: "test",
 		Tracing: models.TracingConfig{
 			Enabled:    true,
 			Exporter:   "stdout",

@@ -1,12 +1,12 @@
 package observability
 
 import (
-	"updater/internal/version"
 	"context"
 	"net/http"
 	"testing"
 	"time"
 	"updater/internal/models"
+	"updater/internal/version"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -19,8 +19,8 @@ func TestNewMetricsServer(t *testing.T) {
 		Port:    9090,
 	}
 	obs := models.ObservabilityConfig{
-		ServiceName:    "test",
-		Tracing:        models.TracingConfig{Enabled: false},
+		ServiceName: "test",
+		Tracing:     models.TracingConfig{Enabled: false},
 	}
 
 	provider, err := Setup(metrics, obs, version.Info{})
@@ -39,8 +39,8 @@ func TestMetricsServer_StartAndShutdown(t *testing.T) {
 		Port:    0, // Will use a random port
 	}
 	obs := models.ObservabilityConfig{
-		ServiceName:    "test",
-		Tracing:        models.TracingConfig{Enabled: false},
+		ServiceName: "test",
+		Tracing:     models.TracingConfig{Enabled: false},
 	}
 
 	provider, err := Setup(metrics, obs, version.Info{})
