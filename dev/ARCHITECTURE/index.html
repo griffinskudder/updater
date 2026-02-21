@@ -958,6 +958,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#7-version-metadata-internalversion-complete" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Version Metadata (internal/version/) ✅ COMPLETE
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2109,6 +2120,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#7-version-metadata-internalversion-complete" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Version Metadata (internal/version/) ✅ COMPLETE
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2688,7 +2710,31 @@
 - JSON and text output formats
 - Configurable log levels (debug, info, warn, error)
 - File output with configurable permissions
-- Security audit events tagged with <code>"event", "security_audit"</code></p>
+- Security audit events tagged with <code>"event", "security_audit"</code>
+- Global fields automatically included on all log messages (version, git_commit, build_date)</p>
+<h3 id="7-version-metadata-internalversion-complete">7. Version Metadata (<code>internal/version/</code>) ✅ <strong>COMPLETE</strong><a class="headerlink" href="#7-version-metadata-internalversion-complete" title="Permanent link">&para;</a></h3>
+<p>Build-time metadata injection and runtime version information.</p>
+<p><strong>Core Components:</strong>
+- <strong>Version Package</strong> (<code>version.go</code>): Build metadata storage, instance ID generation, and thread-safe caching</p>
+<p><strong>Features:</strong>
+- Build metadata injected via ldflags at compile time (VERSION, GIT_COMMIT, BUILD_DATE)
+- Runtime metadata generation (instance ID, hostname)
+- Thread-safe caching using <code>sync.Once</code> pattern
+- Global version fields on all log messages
+- OpenTelemetry resource attributes for traces and metrics
+- CLI <code>--version</code> flag for version display
+- HTTP <code>/version</code> endpoint for programmatic access</p>
+<p><strong>Key Design:</strong>
+- Package-level variables populated by linker flags: <code>-X 'updater/internal/version.Version=$(VERSION)'</code>
+- <code>GetInfo()</code> function returns cached <code>Info</code> struct with all metadata
+- Instance ID generated once per process using UUID v4
+- Hostname retrieved with fallback to "unknown" if unavailable
+- "unknown" values used for local development builds (CI injects proper values)</p>
+<p><strong>Integration Points:</strong>
+- Logger: Version fields added as global fields via <code>slog.With()</code>
+- Observability: Version metadata added to OpenTelemetry resource attributes
+- API: <code>/version</code> endpoint serves version information as JSON
+- CLI: <code>--version</code> flag displays version in human-readable format</p>
 <h2 id="api-design">API Design<a class="headerlink" href="#api-design" title="Permanent link">&para;</a></h2>
 <h3 id="core-endpoints">Core Endpoints<a class="headerlink" href="#core-endpoints" title="Permanent link">&para;</a></h3>
 <h4 id="check-for-updates">Check for Updates<a class="headerlink" href="#check-for-updates" title="Permanent link">&para;</a></h4>
@@ -3002,7 +3048,7 @@
 </span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="w">  </span><span class="nt">enable_auth</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 </span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="w">  </span><span class="nt">bootstrap_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;${UPDATER_BOOTSTRAP_KEY}&quot;</span>
 </span></code></pre></div>
-<p>CORS, rate limiting, and TLS are configured at the reverse proxy. See <a href="../reverse-proxy.md">Reverse Proxy</a> for examples.</p>
+<p>CORS, rate limiting, and TLS are configured at the reverse proxy. See <a href="../reverse-proxy/">Reverse Proxy</a> for examples.</p>
 <h3 id="threat-mitigation">Threat Mitigation<a class="headerlink" href="#threat-mitigation" title="Permanent link">&para;</a></h3>
 <h4 id="identified-threats-and-countermeasures">Identified Threats and Countermeasures<a class="headerlink" href="#identified-threats-and-countermeasures" title="Permanent link">&para;</a></h4>
 <ol>
@@ -3136,7 +3182,7 @@
 <p><strong>Security:</strong>
 - <code>UPDATER_ENABLE_AUTH</code>: Enable API key authentication (default: false)
 - <code>UPDATER_BOOTSTRAP_KEY</code>: Initial admin API key seeded on first startup
-- CORS, rate limiting, and TLS are handled by the reverse proxy (see <a href="../reverse-proxy.md">Reverse Proxy</a>)</p>
+- CORS, rate limiting, and TLS are handled by the reverse proxy (see <a href="../reverse-proxy/">Reverse Proxy</a>)</p>
 <p><strong>Logging:</strong>
 - <code>UPDATER_LOG_LEVEL</code>: Log level (debug, info, warn, error)
 - <code>UPDATER_LOG_FORMAT</code>: Output format (json, text)

@@ -4578,7 +4578,7 @@
 <div class="language-go highlight"><pre><span></span><code><span id="__span-27-1"><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="kd">func</span><span class="w"> </span><span class="p">(</span><span class="nx">as</span><span class="w"> </span><span class="o">*</span><span class="nx">ApplicationSummary</span><span class="p">)</span><span class="w"> </span><span class="nx">FromApplication</span><span class="p">(</span><span class="nx">app</span><span class="w"> </span><span class="o">*</span><span class="nx">Application</span><span class="p">)</span>
 </span></code></pre></div>
 <p><a name="CacheConfig"></a></p>
-<h2 id="type-cacheconfig">type <a href="https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L103-L109">CacheConfig</a><a class="headerlink" href="#type-cacheconfig" title="Permanent link">&para;</a></h2>
+<h2 id="type-cacheconfig">type <a href="https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L101-L107">CacheConfig</a><a class="headerlink" href="#type-cacheconfig" title="Permanent link">&para;</a></h2>
 <div class="language-go highlight"><pre><span></span><code><span id="__span-28-1"><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="kd">type</span><span class="w"> </span><span class="nx">CacheConfig</span><span class="w"> </span><span class="kd">struct</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-28-2"><a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="w">    </span><span class="nx">Enabled</span><span class="w"> </span><span class="kt">bool</span><span class="w">          </span><span class="s">`yaml:&quot;enabled&quot; json:&quot;enabled&quot;`</span>
 </span><span id="__span-28-3"><a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a><span class="w">    </span><span class="nx">Type</span><span class="w">    </span><span class="kt">string</span><span class="w">        </span><span class="s">`yaml:&quot;type&quot; json:&quot;type&quot;`</span>
@@ -4588,7 +4588,7 @@
 </span><span id="__span-28-7"><a id="__codelineno-28-7" name="__codelineno-28-7" href="#__codelineno-28-7"></a><span class="p">}</span>
 </span></code></pre></div>
 <p><a name="CacheConfig.Validate"></a></p>
-<h3 id="func-cacheconfig-validate">func (*CacheConfig) <a href="https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L366">Validate</a><a class="headerlink" href="#func-cacheconfig-validate" title="Permanent link">&para;</a></h3>
+<h3 id="func-cacheconfig-validate">func (*CacheConfig) <a href="https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L363">Validate</a><a class="headerlink" href="#func-cacheconfig-validate" title="Permanent link">&para;</a></h3>
 <div class="language-go highlight"><pre><span></span><code><span id="__span-29-1"><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="kd">func</span><span class="w"> </span><span class="p">(</span><span class="nx">cc</span><span class="w"> </span><span class="o">*</span><span class="nx">CacheConfig</span><span class="p">)</span><span class="w"> </span><span class="nx">Validate</span><span class="p">()</span><span class="w"> </span><span class="kt">error</span>
 </span></code></pre></div>
 <p><a name="ComponentHealth"></a></p>
@@ -4616,14 +4616,14 @@
 </span><span id="__span-31-9"><a id="__codelineno-31-9" name="__codelineno-31-9" href="#__codelineno-31-9"></a><span class="p">}</span>
 </span></code></pre></div>
 <p><a name="NewDefaultConfig"></a></p>
-<h3 id="func-newdefaultconfig">func <a href="https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L160">NewDefaultConfig</a><a class="headerlink" href="#func-newdefaultconfig" title="Permanent link">&para;</a></h3>
+<h3 id="func-newdefaultconfig">func <a href="https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L158">NewDefaultConfig</a><a class="headerlink" href="#func-newdefaultconfig" title="Permanent link">&para;</a></h3>
 <div class="language-go highlight"><pre><span></span><code><span id="__span-32-1"><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a><span class="kd">func</span><span class="w"> </span><span class="nx">NewDefaultConfig</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="nx">Config</span>
 </span></code></pre></div>
 <p>NewDefaultConfig creates a configuration with production-ready defaults.</p>
 <p>Default Configuration Principles: - Security-first: Authentication disabled but ready, HTTPS preferred - Performance: Reasonable timeouts and connection limits - Reliability: Conservative rate limits, structured logging - Observability: Metrics enabled by default for monitoring - Development-friendly: JSON file storage, permissive CORS for testing - Production-ready: Easy to override for deployment-specific needs</p>
 <p>Default Values Rationale: - Port 8080: Standard non-privileged HTTP port - 30-second timeouts: Balance between user experience and resource protection - JSON storage: Simple setup without external dependencies - Structured logging: Better for log aggregation and analysis - Memory caching: Good performance without external dependencies</p>
 <p><a name="Config.Validate"></a></p>
-<h3 id="func-config-validate">func (*Config) <a href="https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L220">Validate</a><a class="headerlink" href="#func-config-validate" title="Permanent link">&para;</a></h3>
+<h3 id="func-config-validate">func (*Config) <a href="https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L217">Validate</a><a class="headerlink" href="#func-config-validate" title="Permanent link">&para;</a></h3>
 <div class="language-go highlight"><pre><span></span><code><span id="__span-33-1"><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a><span class="kd">func</span><span class="w"> </span><span class="p">(</span><span class="nx">c</span><span class="w"> </span><span class="o">*</span><span class="nx">Config</span><span class="p">)</span><span class="w"> </span><span class="nx">Validate</span><span class="p">()</span><span class="w"> </span><span class="kt">error</span>
 </span></code></pre></div>
 <p><a name="CreateApplicationRequest"></a></p>
@@ -4653,7 +4653,7 @@
 </span><span id="__span-37-5"><a id="__codelineno-37-5" name="__codelineno-37-5" href="#__codelineno-37-5"></a><span class="p">}</span>
 </span></code></pre></div>
 <p><a name="DatabaseConfig"></a></p>
-<h2 id="type-databaseconfig">type <a href="https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L71-L78">DatabaseConfig</a><a class="headerlink" href="#type-databaseconfig" title="Permanent link">&para;</a></h2>
+<h2 id="type-databaseconfig">type <a href="https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L70-L77">DatabaseConfig</a><a class="headerlink" href="#type-databaseconfig" title="Permanent link">&para;</a></h2>
 <div class="language-go highlight"><pre><span></span><code><span id="__span-38-1"><a id="__codelineno-38-1" name="__codelineno-38-1" href="#__codelineno-38-1"></a><span class="kd">type</span><span class="w"> </span><span class="nx">DatabaseConfig</span><span class="w"> </span><span class="kd">struct</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-38-2"><a id="__codelineno-38-2" name="__codelineno-38-2" href="#__codelineno-38-2"></a><span class="w">    </span><span class="nx">Driver</span><span class="w">          </span><span class="kt">string</span><span class="w">        </span><span class="s">`yaml:&quot;driver&quot; json:&quot;driver&quot;`</span>
 </span><span id="__span-38-3"><a id="__codelineno-38-3" name="__codelineno-38-3" href="#__codelineno-38-3"></a><span class="w">    </span><span class="nx">DSN</span><span class="w">             </span><span class="kt">string</span><span class="w">        </span><span class="s">`yaml:&quot;dsn&quot; json:&quot;dsn&quot;`</span>
@@ -4805,7 +4805,7 @@
 </span><span id="__span-57-7"><a id="__codelineno-57-7" name="__codelineno-57-7" href="#__codelineno-57-7"></a><span class="p">}</span>
 </span></code></pre></div>
 <p><a name="LoggingConfig"></a></p>
-<h2 id="type-loggingconfig">type <a href="https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L92-L101">LoggingConfig</a><a class="headerlink" href="#type-loggingconfig" title="Permanent link">&para;</a></h2>
+<h2 id="type-loggingconfig">type <a href="https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L90-L99">LoggingConfig</a><a class="headerlink" href="#type-loggingconfig" title="Permanent link">&para;</a></h2>
 <div class="language-go highlight"><pre><span></span><code><span id="__span-58-1"><a id="__codelineno-58-1" name="__codelineno-58-1" href="#__codelineno-58-1"></a><span class="kd">type</span><span class="w"> </span><span class="nx">LoggingConfig</span><span class="w"> </span><span class="kd">struct</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-58-2"><a id="__codelineno-58-2" name="__codelineno-58-2" href="#__codelineno-58-2"></a><span class="w">    </span><span class="nx">Level</span><span class="w">      </span><span class="kt">string</span><span class="w"> </span><span class="s">`yaml:&quot;level&quot; json:&quot;level&quot;`</span>
 </span><span id="__span-58-3"><a id="__codelineno-58-3" name="__codelineno-58-3" href="#__codelineno-58-3"></a><span class="w">    </span><span class="nx">Format</span><span class="w">     </span><span class="kt">string</span><span class="w"> </span><span class="s">`yaml:&quot;format&quot; json:&quot;format&quot;`</span>
@@ -4818,18 +4818,18 @@
 </span><span id="__span-58-10"><a id="__codelineno-58-10" name="__codelineno-58-10" href="#__codelineno-58-10"></a><span class="p">}</span>
 </span></code></pre></div>
 <p><a name="LoggingConfig.Validate"></a></p>
-<h3 id="func-loggingconfig-validate">func (*LoggingConfig) <a href="https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L322">Validate</a><a class="headerlink" href="#func-loggingconfig-validate" title="Permanent link">&para;</a></h3>
+<h3 id="func-loggingconfig-validate">func (*LoggingConfig) <a href="https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L319">Validate</a><a class="headerlink" href="#func-loggingconfig-validate" title="Permanent link">&para;</a></h3>
 <div class="language-go highlight"><pre><span></span><code><span id="__span-59-1"><a id="__codelineno-59-1" name="__codelineno-59-1" href="#__codelineno-59-1"></a><span class="kd">func</span><span class="w"> </span><span class="p">(</span><span class="nx">lc</span><span class="w"> </span><span class="o">*</span><span class="nx">LoggingConfig</span><span class="p">)</span><span class="w"> </span><span class="nx">Validate</span><span class="p">()</span><span class="w"> </span><span class="kt">error</span>
 </span></code></pre></div>
 <p><a name="MemoryConfig"></a></p>
-<h2 id="type-memoryconfig">type <a href="https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L118-L121">MemoryConfig</a><a class="headerlink" href="#type-memoryconfig" title="Permanent link">&para;</a></h2>
+<h2 id="type-memoryconfig">type <a href="https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L116-L119">MemoryConfig</a><a class="headerlink" href="#type-memoryconfig" title="Permanent link">&para;</a></h2>
 <div class="language-go highlight"><pre><span></span><code><span id="__span-60-1"><a id="__codelineno-60-1" name="__codelineno-60-1" href="#__codelineno-60-1"></a><span class="kd">type</span><span class="w"> </span><span class="nx">MemoryConfig</span><span class="w"> </span><span class="kd">struct</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-60-2"><a id="__codelineno-60-2" name="__codelineno-60-2" href="#__codelineno-60-2"></a><span class="w">    </span><span class="nx">MaxSize</span><span class="w">         </span><span class="kt">int</span><span class="w">           </span><span class="s">`yaml:&quot;max_size&quot; json:&quot;max_size&quot;`</span>
 </span><span id="__span-60-3"><a id="__codelineno-60-3" name="__codelineno-60-3" href="#__codelineno-60-3"></a><span class="w">    </span><span class="nx">CleanupInterval</span><span class="w"> </span><span class="nx">time</span><span class="p">.</span><span class="nx">Duration</span><span class="w"> </span><span class="s">`yaml:&quot;cleanup_interval&quot; json:&quot;cleanup_interval&quot;`</span>
 </span><span id="__span-60-4"><a id="__codelineno-60-4" name="__codelineno-60-4" href="#__codelineno-60-4"></a><span class="p">}</span>
 </span></code></pre></div>
 <p><a name="MetricsConfig"></a></p>
-<h2 id="type-metricsconfig">type <a href="https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L123-L127">MetricsConfig</a><a class="headerlink" href="#type-metricsconfig" title="Permanent link">&para;</a></h2>
+<h2 id="type-metricsconfig">type <a href="https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L121-L125">MetricsConfig</a><a class="headerlink" href="#type-metricsconfig" title="Permanent link">&para;</a></h2>
 <div class="language-go highlight"><pre><span></span><code><span id="__span-61-1"><a id="__codelineno-61-1" name="__codelineno-61-1" href="#__codelineno-61-1"></a><span class="kd">type</span><span class="w"> </span><span class="nx">MetricsConfig</span><span class="w"> </span><span class="kd">struct</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-61-2"><a id="__codelineno-61-2" name="__codelineno-61-2" href="#__codelineno-61-2"></a><span class="w">    </span><span class="nx">Enabled</span><span class="w"> </span><span class="kt">bool</span><span class="w">   </span><span class="s">`yaml:&quot;enabled&quot; json:&quot;enabled&quot;`</span>
 </span><span id="__span-61-3"><a id="__codelineno-61-3" name="__codelineno-61-3" href="#__codelineno-61-3"></a><span class="w">    </span><span class="nx">Path</span><span class="w">    </span><span class="kt">string</span><span class="w"> </span><span class="s">`yaml:&quot;path&quot; json:&quot;path&quot;`</span>
@@ -4837,20 +4837,19 @@
 </span><span id="__span-61-5"><a id="__codelineno-61-5" name="__codelineno-61-5" href="#__codelineno-61-5"></a><span class="p">}</span>
 </span></code></pre></div>
 <p><a name="MetricsConfig.Validate"></a></p>
-<h3 id="func-metricsconfig-validate">func (*MetricsConfig) <a href="https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L394">Validate</a><a class="headerlink" href="#func-metricsconfig-validate" title="Permanent link">&para;</a></h3>
+<h3 id="func-metricsconfig-validate">func (*MetricsConfig) <a href="https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L391">Validate</a><a class="headerlink" href="#func-metricsconfig-validate" title="Permanent link">&para;</a></h3>
 <div class="language-go highlight"><pre><span></span><code><span id="__span-62-1"><a id="__codelineno-62-1" name="__codelineno-62-1" href="#__codelineno-62-1"></a><span class="kd">func</span><span class="w"> </span><span class="p">(</span><span class="nx">mc</span><span class="w"> </span><span class="o">*</span><span class="nx">MetricsConfig</span><span class="p">)</span><span class="w"> </span><span class="nx">Validate</span><span class="p">()</span><span class="w"> </span><span class="kt">error</span>
 </span></code></pre></div>
 <p><a name="ObservabilityConfig"></a></p>
-<h2 id="type-observabilityconfig">type <a href="https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L130-L134">ObservabilityConfig</a><a class="headerlink" href="#type-observabilityconfig" title="Permanent link">&para;</a></h2>
-<p>ObservabilityConfig holds configuration for OpenTelemetry-based observability.</p>
+<h2 id="type-observabilityconfig">type <a href="https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L129-L132">ObservabilityConfig</a><a class="headerlink" href="#type-observabilityconfig" title="Permanent link">&para;</a></h2>
+<p>ObservabilityConfig holds configuration for OpenTelemetry-based observability. Note: ServiceVersion is now set at build time via ldflags, not via configuration.</p>
 <div class="language-go highlight"><pre><span></span><code><span id="__span-63-1"><a id="__codelineno-63-1" name="__codelineno-63-1" href="#__codelineno-63-1"></a><span class="kd">type</span><span class="w"> </span><span class="nx">ObservabilityConfig</span><span class="w"> </span><span class="kd">struct</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-63-2"><a id="__codelineno-63-2" name="__codelineno-63-2" href="#__codelineno-63-2"></a><span class="w">    </span><span class="nx">ServiceName</span><span class="w">    </span><span class="kt">string</span><span class="w">        </span><span class="s">`yaml:&quot;service_name&quot; json:&quot;service_name&quot;`</span>
-</span><span id="__span-63-3"><a id="__codelineno-63-3" name="__codelineno-63-3" href="#__codelineno-63-3"></a><span class="w">    </span><span class="nx">ServiceVersion</span><span class="w"> </span><span class="kt">string</span><span class="w">        </span><span class="s">`yaml:&quot;service_version&quot; json:&quot;service_version&quot;`</span>
-</span><span id="__span-63-4"><a id="__codelineno-63-4" name="__codelineno-63-4" href="#__codelineno-63-4"></a><span class="w">    </span><span class="nx">Tracing</span><span class="w">        </span><span class="nx">TracingConfig</span><span class="w"> </span><span class="s">`yaml:&quot;tracing&quot; json:&quot;tracing&quot;`</span>
-</span><span id="__span-63-5"><a id="__codelineno-63-5" name="__codelineno-63-5" href="#__codelineno-63-5"></a><span class="p">}</span>
+</span><span id="__span-63-2"><a id="__codelineno-63-2" name="__codelineno-63-2" href="#__codelineno-63-2"></a><span class="w">    </span><span class="nx">ServiceName</span><span class="w"> </span><span class="kt">string</span><span class="w">        </span><span class="s">`yaml:&quot;service_name&quot; json:&quot;service_name&quot;`</span>
+</span><span id="__span-63-3"><a id="__codelineno-63-3" name="__codelineno-63-3" href="#__codelineno-63-3"></a><span class="w">    </span><span class="nx">Tracing</span><span class="w">     </span><span class="nx">TracingConfig</span><span class="w"> </span><span class="s">`yaml:&quot;tracing&quot; json:&quot;tracing&quot;`</span>
+</span><span id="__span-63-4"><a id="__codelineno-63-4" name="__codelineno-63-4" href="#__codelineno-63-4"></a><span class="p">}</span>
 </span></code></pre></div>
 <p><a name="ObservabilityConfig.Validate"></a></p>
-<h3 id="func-observabilityconfig-validate">func (*ObservabilityConfig) <a href="https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L410">Validate</a><a class="headerlink" href="#func-observabilityconfig-validate" title="Permanent link">&para;</a></h3>
+<h3 id="func-observabilityconfig-validate">func (*ObservabilityConfig) <a href="https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L407">Validate</a><a class="headerlink" href="#func-observabilityconfig-validate" title="Permanent link">&para;</a></h3>
 <div class="language-go highlight"><pre><span></span><code><span id="__span-64-1"><a id="__codelineno-64-1" name="__codelineno-64-1" href="#__codelineno-64-1"></a><span class="kd">func</span><span class="w"> </span><span class="p">(</span><span class="nx">oc</span><span class="w"> </span><span class="o">*</span><span class="nx">ObservabilityConfig</span><span class="p">)</span><span class="w"> </span><span class="nx">Validate</span><span class="p">()</span><span class="w"> </span><span class="kt">error</span>
 </span></code></pre></div>
 <p><a name="PlatformInfo"></a></p>
@@ -4872,7 +4871,7 @@
 <div class="language-go highlight"><pre><span></span><code><span id="__span-67-1"><a id="__codelineno-67-1" name="__codelineno-67-1" href="#__codelineno-67-1"></a><span class="kd">func</span><span class="w"> </span><span class="p">(</span><span class="nx">pi</span><span class="w"> </span><span class="o">*</span><span class="nx">PlatformInfo</span><span class="p">)</span><span class="w"> </span><span class="nx">Validate</span><span class="p">()</span><span class="w"> </span><span class="kt">error</span>
 </span></code></pre></div>
 <p><a name="RedisConfig"></a></p>
-<h2 id="type-redisconfig">type <a href="https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L111-L116">RedisConfig</a><a class="headerlink" href="#type-redisconfig" title="Permanent link">&para;</a></h2>
+<h2 id="type-redisconfig">type <a href="https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L109-L114">RedisConfig</a><a class="headerlink" href="#type-redisconfig" title="Permanent link">&para;</a></h2>
 <div class="language-go highlight"><pre><span></span><code><span id="__span-68-1"><a id="__codelineno-68-1" name="__codelineno-68-1" href="#__codelineno-68-1"></a><span class="kd">type</span><span class="w"> </span><span class="nx">RedisConfig</span><span class="w"> </span><span class="kd">struct</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-68-2"><a id="__codelineno-68-2" name="__codelineno-68-2" href="#__codelineno-68-2"></a><span class="w">    </span><span class="nx">Addr</span><span class="w">     </span><span class="kt">string</span><span class="w"> </span><span class="s">`yaml:&quot;addr&quot; json:&quot;addr&quot;`</span>
 </span><span id="__span-68-3"><a id="__codelineno-68-3" name="__codelineno-68-3" href="#__codelineno-68-3"></a><span class="w">    </span><span class="nx">Password</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="s">`yaml:&quot;password&quot; json:&quot;password&quot;`</span>
@@ -5050,7 +5049,7 @@
 </span><span id="__span-90-7"><a id="__codelineno-90-7" name="__codelineno-90-7" href="#__codelineno-90-7"></a><span class="p">}</span>
 </span></code></pre></div>
 <p><a name="SecurityConfig"></a></p>
-<h2 id="type-securityconfig">type <a href="https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L81-L89">SecurityConfig</a><a class="headerlink" href="#type-securityconfig" title="Permanent link">&para;</a></h2>
+<h2 id="type-securityconfig">type <a href="https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L80-L88">SecurityConfig</a><a class="headerlink" href="#type-securityconfig" title="Permanent link">&para;</a></h2>
 <p>SecurityConfig holds authentication and authorisation settings.</p>
 <div class="language-go highlight"><pre><span></span><code><span id="__span-91-1"><a id="__codelineno-91-1" name="__codelineno-91-1" href="#__codelineno-91-1"></a><span class="kd">type</span><span class="w"> </span><span class="nx">SecurityConfig</span><span class="w"> </span><span class="kd">struct</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-91-2"><a id="__codelineno-91-2" name="__codelineno-91-2" href="#__codelineno-91-2"></a><span class="w">    </span><span class="c1">// BootstrapKey is the initial admin API key seeded into storage on first startup</span>
@@ -5063,7 +5062,7 @@
 </span><span id="__span-91-9"><a id="__codelineno-91-9" name="__codelineno-91-9" href="#__codelineno-91-9"></a><span class="p">}</span>
 </span></code></pre></div>
 <p><a name="SecurityConfig.Validate"></a></p>
-<h3 id="func-securityconfig-validate">func (*SecurityConfig) <a href="https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L314">Validate</a><a class="headerlink" href="#func-securityconfig-validate" title="Permanent link">&para;</a></h3>
+<h3 id="func-securityconfig-validate">func (*SecurityConfig) <a href="https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L311">Validate</a><a class="headerlink" href="#func-securityconfig-validate" title="Permanent link">&para;</a></h3>
 <div class="language-go highlight"><pre><span></span><code><span id="__span-92-1"><a id="__codelineno-92-1" name="__codelineno-92-1" href="#__codelineno-92-1"></a><span class="kd">func</span><span class="w"> </span><span class="p">(</span><span class="nx">sec</span><span class="w"> </span><span class="o">*</span><span class="nx">SecurityConfig</span><span class="p">)</span><span class="w"> </span><span class="nx">Validate</span><span class="p">()</span><span class="w"> </span><span class="kt">error</span>
 </span></code></pre></div>
 <p><a name="ServerConfig"></a></p>
@@ -5080,7 +5079,7 @@
 </span><span id="__span-93-10"><a id="__codelineno-93-10" name="__codelineno-93-10" href="#__codelineno-93-10"></a><span class="p">}</span>
 </span></code></pre></div>
 <p><a name="ServerConfig.Validate"></a></p>
-<h3 id="func-serverconfig-validate">func (*ServerConfig) <a href="https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L252">Validate</a><a class="headerlink" href="#func-serverconfig-validate" title="Permanent link">&para;</a></h3>
+<h3 id="func-serverconfig-validate">func (*ServerConfig) <a href="https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L249">Validate</a><a class="headerlink" href="#func-serverconfig-validate" title="Permanent link">&para;</a></h3>
 <div class="language-go highlight"><pre><span></span><code><span id="__span-94-1"><a id="__codelineno-94-1" name="__codelineno-94-1" href="#__codelineno-94-1"></a><span class="kd">func</span><span class="w"> </span><span class="p">(</span><span class="nx">sc</span><span class="w"> </span><span class="o">*</span><span class="nx">ServerConfig</span><span class="p">)</span><span class="w"> </span><span class="nx">Validate</span><span class="p">()</span><span class="w"> </span><span class="kt">error</span>
 </span></code></pre></div>
 <p><a name="StatsResponse"></a></p>
@@ -5095,7 +5094,7 @@
 </span><span id="__span-95-8"><a id="__codelineno-95-8" name="__codelineno-95-8" href="#__codelineno-95-8"></a><span class="p">}</span>
 </span></code></pre></div>
 <p><a name="StorageConfig"></a></p>
-<h2 id="type-storageconfig">type <a href="https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L64-L69">StorageConfig</a><a class="headerlink" href="#type-storageconfig" title="Permanent link">&para;</a></h2>
+<h2 id="type-storageconfig">type <a href="https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L63-L68">StorageConfig</a><a class="headerlink" href="#type-storageconfig" title="Permanent link">&para;</a></h2>
 <div class="language-go highlight"><pre><span></span><code><span id="__span-96-1"><a id="__codelineno-96-1" name="__codelineno-96-1" href="#__codelineno-96-1"></a><span class="kd">type</span><span class="w"> </span><span class="nx">StorageConfig</span><span class="w"> </span><span class="kd">struct</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-96-2"><a id="__codelineno-96-2" name="__codelineno-96-2" href="#__codelineno-96-2"></a><span class="w">    </span><span class="nx">Type</span><span class="w">     </span><span class="kt">string</span><span class="w">            </span><span class="s">`yaml:&quot;type&quot; json:&quot;type&quot;`</span>
 </span><span id="__span-96-3"><a id="__codelineno-96-3" name="__codelineno-96-3" href="#__codelineno-96-3"></a><span class="w">    </span><span class="nx">Path</span><span class="w">     </span><span class="kt">string</span><span class="w">            </span><span class="s">`yaml:&quot;path&quot; json:&quot;path&quot;`</span>
@@ -5104,11 +5103,11 @@
 </span><span id="__span-96-6"><a id="__codelineno-96-6" name="__codelineno-96-6" href="#__codelineno-96-6"></a><span class="p">}</span>
 </span></code></pre></div>
 <p><a name="StorageConfig.Validate"></a></p>
-<h3 id="func-storageconfig-validate">func (*StorageConfig) <a href="https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L285">Validate</a><a class="headerlink" href="#func-storageconfig-validate" title="Permanent link">&para;</a></h3>
+<h3 id="func-storageconfig-validate">func (*StorageConfig) <a href="https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L282">Validate</a><a class="headerlink" href="#func-storageconfig-validate" title="Permanent link">&para;</a></h3>
 <div class="language-go highlight"><pre><span></span><code><span id="__span-97-1"><a id="__codelineno-97-1" name="__codelineno-97-1" href="#__codelineno-97-1"></a><span class="kd">func</span><span class="w"> </span><span class="p">(</span><span class="nx">stc</span><span class="w"> </span><span class="o">*</span><span class="nx">StorageConfig</span><span class="p">)</span><span class="w"> </span><span class="nx">Validate</span><span class="p">()</span><span class="w"> </span><span class="kt">error</span>
 </span></code></pre></div>
 <p><a name="TracingConfig"></a></p>
-<h2 id="type-tracingconfig">type <a href="https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L137-L142">TracingConfig</a><a class="headerlink" href="#type-tracingconfig" title="Permanent link">&para;</a></h2>
+<h2 id="type-tracingconfig">type <a href="https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L135-L140">TracingConfig</a><a class="headerlink" href="#type-tracingconfig" title="Permanent link">&para;</a></h2>
 <p>TracingConfig holds configuration for distributed tracing.</p>
 <div class="language-go highlight"><pre><span></span><code><span id="__span-98-1"><a id="__codelineno-98-1" name="__codelineno-98-1" href="#__codelineno-98-1"></a><span class="kd">type</span><span class="w"> </span><span class="nx">TracingConfig</span><span class="w"> </span><span class="kd">struct</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-98-2"><a id="__codelineno-98-2" name="__codelineno-98-2" href="#__codelineno-98-2"></a><span class="w">    </span><span class="nx">Enabled</span><span class="w">      </span><span class="kt">bool</span><span class="w">    </span><span class="s">`yaml:&quot;enabled&quot; json:&quot;enabled&quot;`</span>

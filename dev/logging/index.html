@@ -1103,6 +1103,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#global-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Global Fields
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#http-request-logging" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1745,6 +1756,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#global-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Global Fields
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#http-request-logging" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2012,6 +2034,46 @@
 </table>
 <h2 id="structured-fields">Structured Fields<a class="headerlink" href="#structured-fields" title="Permanent link">&para;</a></h2>
 <p>All log messages include structured key-value pairs for consistent parsing and filtering.</p>
+<h3 id="global-fields">Global Fields<a class="headerlink" href="#global-fields" title="Permanent link">&para;</a></h3>
+<p>The following fields are automatically included on <strong>every log message</strong> throughout the application:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Source</th>
+<th>Example</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>version</code></td>
+<td>Build metadata</td>
+<td><code>v1.0.0</code></td>
+<td>Service version from git tags</td>
+</tr>
+<tr>
+<td><code>git_commit</code></td>
+<td>Build metadata</td>
+<td><code>a1b2c3d</code></td>
+<td>Short git commit hash</td>
+</tr>
+<tr>
+<td><code>build_date</code></td>
+<td>Build metadata</td>
+<td><code>2026-02-21T10:00:00Z</code></td>
+<td>Build timestamp in RFC 3339 format</td>
+</tr>
+</tbody>
+</table>
+<p>These fields are injected via <code>slog.With()</code> during logger initialization, ensuring they appear on all log entries without requiring manual inclusion in each log call.</p>
+<h4 id="build-metadata-injection">Build Metadata Injection<a class="headerlink" href="#build-metadata-injection" title="Permanent link">&para;</a></h4>
+<p>Build-time fields are injected via ldflags during compilation. Local development builds will show "unknown" for these values; CI/CD pipelines inject proper values:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>go<span class="w"> </span>build<span class="w"> </span>-ldflags<span class="w"> </span><span class="s2">&quot;-X &#39;updater/internal/version.Version=v1.0.0&#39; \</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="s2">                   -X &#39;updater/internal/version.GitCommit=a1b2c3d&#39; \</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="s2">                   -X &#39;updater/internal/version.BuildDate=2026-02-21T10:00:00Z&#39;&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">         </span>./cmd/updater
+</span></code></pre></div>
 <h3 id="http-request-logging">HTTP Request Logging<a class="headerlink" href="#http-request-logging" title="Permanent link">&para;</a></h3>
 <p>Every HTTP request is logged with the following fields:</p>
 <table>
@@ -2128,11 +2190,12 @@ The fields present depend on which operation triggered the event.</p>
 <h2 id="output-formats">Output Formats<a class="headerlink" href="#output-formats" title="Permanent link">&para;</a></h2>
 <h3 id="json-format">JSON Format<a class="headerlink" href="#json-format" title="Permanent link">&para;</a></h3>
 <p>Produces machine-parseable JSON output, suitable for log aggregation systems (ELK, Datadog, CloudWatch):</p>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p">{</span><span class="nt">&quot;time&quot;</span><span class="p">:</span><span class="s2">&quot;2026-02-15T10:30:00Z&quot;</span><span class="p">,</span><span class="nt">&quot;level&quot;</span><span class="p">:</span><span class="s2">&quot;INFO&quot;</span><span class="p">,</span><span class="nt">&quot;msg&quot;</span><span class="p">:</span><span class="s2">&quot;HTTP request&quot;</span><span class="p">,</span><span class="nt">&quot;method&quot;</span><span class="p">:</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span><span class="nt">&quot;path&quot;</span><span class="p">:</span><span class="s2">&quot;/api/v1/updates/myapp/check&quot;</span><span class="p">,</span><span class="nt">&quot;remote_addr&quot;</span><span class="p">:</span><span class="s2">&quot;192.168.1.1:54321&quot;</span><span class="p">}</span>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="p">{</span><span class="nt">&quot;time&quot;</span><span class="p">:</span><span class="s2">&quot;2026-02-15T10:30:00Z&quot;</span><span class="p">,</span><span class="nt">&quot;level&quot;</span><span class="p">:</span><span class="s2">&quot;INFO&quot;</span><span class="p">,</span><span class="nt">&quot;msg&quot;</span><span class="p">:</span><span class="s2">&quot;HTTP request&quot;</span><span class="p">,</span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="s2">&quot;v1.0.0&quot;</span><span class="p">,</span><span class="nt">&quot;git_commit&quot;</span><span class="p">:</span><span class="s2">&quot;a1b2c3d&quot;</span><span class="p">,</span><span class="nt">&quot;build_date&quot;</span><span class="p">:</span><span class="s2">&quot;2026-02-21T10:00:00Z&quot;</span><span class="p">,</span><span class="nt">&quot;method&quot;</span><span class="p">:</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span><span class="nt">&quot;path&quot;</span><span class="p">:</span><span class="s2">&quot;/api/v1/updates/myapp/check&quot;</span><span class="p">,</span><span class="nt">&quot;remote_addr&quot;</span><span class="p">:</span><span class="s2">&quot;192.168.1.1:54321&quot;</span><span class="p">}</span>
 </span></code></pre></div>
+<p>Note the global fields (<code>version</code>, <code>git_commit</code>, <code>build_date</code>) automatically included in every log message.</p>
 <h3 id="text-format">Text Format<a class="headerlink" href="#text-format" title="Permanent link">&para;</a></h3>
 <p>Produces human-readable text output, suitable for development:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>time=2026-02-15T10:30:00Z level=INFO msg=&quot;HTTP request&quot; method=GET path=/api/v1/updates/myapp/check remote_addr=192.168.1.1:54321
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>time=2026-02-15T10:30:00Z level=INFO msg=&quot;HTTP request&quot; version=v1.0.0 git_commit=a1b2c3d build_date=2026-02-21T10:00:00Z method=GET path=/api/v1/updates/myapp/check remote_addr=192.168.1.1:54321
 </span></code></pre></div>
 <h2 id="request-flow">Request Flow<a class="headerlink" href="#request-flow" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>sequenceDiagram
