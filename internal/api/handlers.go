@@ -13,6 +13,7 @@ import (
 	"updater/internal/models"
 	"updater/internal/storage"
 	"updater/internal/update"
+	"updater/internal/version"
 
 	"github.com/gorilla/mux"
 )
@@ -23,12 +24,14 @@ type Handlers struct {
 	storage        storage.Storage
 	adminTmpl      *template.Template
 	securityConfig models.SecurityConfig
+	versionInfo    version.Info
 }
 
 // NewHandlers creates a new handlers instance
 func NewHandlers(updateService update.ServiceInterface, opts ...HandlersOption) *Handlers {
 	h := &Handlers{
 		updateService: updateService,
+		versionInfo:   version.GetInfo(), // Default to current version info
 	}
 	for _, opt := range opts {
 		opt(h)
@@ -54,6 +57,11 @@ func WithAdminTemplates(tmpl *template.Template) HandlersOption {
 // WithSecurityConfig stores the security config for admin session validation.
 func WithSecurityConfig(cfg models.SecurityConfig) HandlersOption {
 	return func(h *Handlers) { h.securityConfig = cfg }
+}
+
+// WithVersionInfo sets the version information for health and version endpoints.
+func WithVersionInfo(info version.Info) HandlersOption {
+	return func(h *Handlers) { h.versionInfo = info }
 }
 
 // CheckForUpdates handles update check requests
@@ -252,7 +260,7 @@ func (h *Handlers) RegisterRelease(w http.ResponseWriter, r *http.Request) {
 // Provides basic health info publicly, enhanced details with authentication
 func (h *Handlers) HealthCheck(w http.ResponseWriter, r *http.Request) {
 	response := models.NewHealthCheckResponse(models.StatusHealthy)
-	response.Version = "1.0.0" // This could be injected from build info
+	response.Version = h.versionInfo.Version
 
 	// Verify storage connectivity with a short timeout
 	storageStatus := models.StatusHealthy
@@ -294,6 +302,13 @@ func (h *Handlers) HealthCheck(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.writeJSONResponse(w, http.StatusOK, response)
+}
+
+// VersionInfo handles version information requests
+// GET /version
+// Returns build metadata and runtime information
+func (h *Handlers) VersionInfo(w http.ResponseWriter, r *http.Request) {
+	h.writeJSONResponse(w, http.StatusOK, h.versionInfo)
 }
 
 // writeJSONResponse writes a JSON response

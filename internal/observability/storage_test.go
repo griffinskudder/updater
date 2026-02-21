@@ -7,6 +7,7 @@ import (
 	"time"
 	"updater/internal/models"
 	"updater/internal/storage"
+	"updater/internal/version"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -16,15 +17,14 @@ func setupTestProvider(t *testing.T) *Provider {
 	t.Helper()
 	metrics := models.MetricsConfig{Enabled: true, Path: "/metrics", Port: 9090}
 	obs := models.ObservabilityConfig{
-		ServiceName:    "test",
-		ServiceVersion: "1.0.0",
+		ServiceName: "test",
 		Tracing: models.TracingConfig{
 			Enabled:    true,
 			Exporter:   "stdout",
 			SampleRate: 1.0,
 		},
 	}
-	provider, err := Setup(metrics, obs)
+	provider, err := Setup(metrics, obs, version.Info{})
 	require.NoError(t, err)
 	t.Cleanup(func() { provider.Shutdown(context.Background()) })
 	return provider

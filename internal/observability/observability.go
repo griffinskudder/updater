@@ -6,9 +6,12 @@ package observability
 import (
 	"context"
 	"fmt"
+	"os"
 	"updater/internal/models"
+	"updater/internal/version"
 
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/exporters/prometheus"
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
@@ -54,13 +57,18 @@ func (p *Provider) Shutdown(ctx context.Context) error {
 
 // Setup initializes OpenTelemetry tracing and metrics providers based on configuration.
 // It returns a Provider that must be shut down on application exit.
-func Setup(metrics models.MetricsConfig, obs models.ObservabilityConfig) (*Provider, error) {
+func Setup(metrics models.MetricsConfig, obs models.ObservabilityConfig, ver version.Info) (*Provider, error) {
 	p := &Provider{}
 
 	res, err := resource.New(context.Background(),
 		resource.WithAttributes(
 			semconv.ServiceName(obs.ServiceName),
-			semconv.ServiceVersion(obs.ServiceVersion),
+			semconv.ServiceVersion(ver.Version),
+			attribute.String("service.instance.id", ver.InstanceID),
+			attribute.String("host.name", ver.Hostname),
+			attribute.String("git.commit", ver.GitCommit),
+			attribute.String("build.date", ver.BuildDate),
+			attribute.String("deployment.environment", getEnvironment()),
 		),
 	)
 	if err != nil {
@@ -133,4 +141,16 @@ func setupTracing(res *resource.Resource, cfg models.TracingConfig) (*sdktrace.T
 	)
 
 	return tp, nil
+}
+
+// getEnvironment returns the deployment environment from environment variables,
+// falling back to "development" if not set.
+func getEnvironment() string {
+	if env := os.Getenv("ENVIRONMENT"); env != "" {
+		return env
+	}
+	if env := os.Getenv("DEPLOYMENT_ENV"); env != "" {
+		return env
+	}
+	return "development"
 }

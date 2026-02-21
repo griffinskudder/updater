@@ -125,10 +125,10 @@ type MetricsConfig struct {
 }
 
 // ObservabilityConfig holds configuration for OpenTelemetry-based observability.
+// Note: ServiceVersion is now set at build time via ldflags, not via configuration.
 type ObservabilityConfig struct {
-	ServiceName    string        `yaml:"service_name" json:"service_name"`
-	ServiceVersion string        `yaml:"service_version" json:"service_version"`
-	Tracing        TracingConfig `yaml:"tracing" json:"tracing"`
+	ServiceName string        `yaml:"service_name" json:"service_name"`
+	Tracing     TracingConfig `yaml:"tracing" json:"tracing"`
 }
 
 // TracingConfig holds configuration for distributed tracing.
@@ -204,8 +204,7 @@ func NewDefaultConfig() *Config {
 			Port:    9090,
 		},
 		Observability: ObservabilityConfig{
-			ServiceName:    "updater",
-			ServiceVersion: "1.0.0",
+			ServiceName: "updater",
 			Tracing: TracingConfig{
 				Enabled:    false,
 				Exporter:   "stdout",

@@ -498,7 +498,7 @@ func (as *ApplicationSummary) FromApplication(app *Application)
 
 
 <a name="CacheConfig"></a>
-## type [CacheConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L103-L109>)
+## type [CacheConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L101-L107>)
 
 
 
@@ -513,7 +513,7 @@ type CacheConfig struct {
 ```
 
 <a name="CacheConfig.Validate"></a>
-### func \(\*CacheConfig\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L366>)
+### func \(\*CacheConfig\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L363>)
 
 ```go
 func (cc *CacheConfig) Validate() error
@@ -557,7 +557,7 @@ type Config struct {
 ```
 
 <a name="NewDefaultConfig"></a>
-### func [NewDefaultConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L160>)
+### func [NewDefaultConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L158>)
 
 ```go
 func NewDefaultConfig() *Config
@@ -570,7 +570,7 @@ Default Configuration Principles: \- Security\-first: Authentication disabled bu
 Default Values Rationale: \- Port 8080: Standard non\-privileged HTTP port \- 30\-second timeouts: Balance between user experience and resource protection \- JSON storage: Simple setup without external dependencies \- Structured logging: Better for log aggregation and analysis \- Memory caching: Good performance without external dependencies
 
 <a name="Config.Validate"></a>
-### func \(\*Config\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L220>)
+### func \(\*Config\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L217>)
 
 ```go
 func (c *Config) Validate() error
@@ -625,7 +625,7 @@ type CreateApplicationResponse struct {
 ```
 
 <a name="DatabaseConfig"></a>
-## type [DatabaseConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L71-L78>)
+## type [DatabaseConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L70-L77>)
 
 
 
@@ -878,7 +878,7 @@ type ListReleasesResponse struct {
 ```
 
 <a name="LoggingConfig"></a>
-## type [LoggingConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L92-L101>)
+## type [LoggingConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L90-L99>)
 
 
 
@@ -896,7 +896,7 @@ type LoggingConfig struct {
 ```
 
 <a name="LoggingConfig.Validate"></a>
-### func \(\*LoggingConfig\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L322>)
+### func \(\*LoggingConfig\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L319>)
 
 ```go
 func (lc *LoggingConfig) Validate() error
@@ -905,7 +905,7 @@ func (lc *LoggingConfig) Validate() error
 
 
 <a name="MemoryConfig"></a>
-## type [MemoryConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L118-L121>)
+## type [MemoryConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L116-L119>)
 
 
 
@@ -917,7 +917,7 @@ type MemoryConfig struct {
 ```
 
 <a name="MetricsConfig"></a>
-## type [MetricsConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L123-L127>)
+## type [MetricsConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L121-L125>)
 
 
 
@@ -930,7 +930,7 @@ type MetricsConfig struct {
 ```
 
 <a name="MetricsConfig.Validate"></a>
-### func \(\*MetricsConfig\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L394>)
+### func \(\*MetricsConfig\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L391>)
 
 ```go
 func (mc *MetricsConfig) Validate() error
@@ -939,20 +939,19 @@ func (mc *MetricsConfig) Validate() error
 
 
 <a name="ObservabilityConfig"></a>
-## type [ObservabilityConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L130-L134>)
+## type [ObservabilityConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L129-L132>)
 
-ObservabilityConfig holds configuration for OpenTelemetry\-based observability.
+ObservabilityConfig holds configuration for OpenTelemetry\-based observability. Note: ServiceVersion is now set at build time via ldflags, not via configuration.
 
 ```go
 type ObservabilityConfig struct {
-    ServiceName    string        `yaml:"service_name" json:"service_name"`
-    ServiceVersion string        `yaml:"service_version" json:"service_version"`
-    Tracing        TracingConfig `yaml:"tracing" json:"tracing"`
+    ServiceName string        `yaml:"service_name" json:"service_name"`
+    Tracing     TracingConfig `yaml:"tracing" json:"tracing"`
 }
 ```
 
 <a name="ObservabilityConfig.Validate"></a>
-### func \(\*ObservabilityConfig\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L410>)
+### func \(\*ObservabilityConfig\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L407>)
 
 ```go
 func (oc *ObservabilityConfig) Validate() error
@@ -995,7 +994,7 @@ func (pi *PlatformInfo) Validate() error
 
 
 <a name="RedisConfig"></a>
-## type [RedisConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L111-L116>)
+## type [RedisConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L109-L114>)
 
 
 
@@ -1289,7 +1288,7 @@ type ReleaseStats struct {
 ```
 
 <a name="SecurityConfig"></a>
-## type [SecurityConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L81-L89>)
+## type [SecurityConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L80-L88>)
 
 SecurityConfig holds authentication and authorisation settings.
 
@@ -1306,7 +1305,7 @@ type SecurityConfig struct {
 ```
 
 <a name="SecurityConfig.Validate"></a>
-### func \(\*SecurityConfig\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L314>)
+### func \(\*SecurityConfig\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L311>)
 
 ```go
 func (sec *SecurityConfig) Validate() error
@@ -1333,7 +1332,7 @@ type ServerConfig struct {
 ```
 
 <a name="ServerConfig.Validate"></a>
-### func \(\*ServerConfig\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L252>)
+### func \(\*ServerConfig\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L249>)
 
 ```go
 func (sc *ServerConfig) Validate() error
@@ -1358,7 +1357,7 @@ type StatsResponse struct {
 ```
 
 <a name="StorageConfig"></a>
-## type [StorageConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L64-L69>)
+## type [StorageConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L63-L68>)
 
 
 
@@ -1372,7 +1371,7 @@ type StorageConfig struct {
 ```
 
 <a name="StorageConfig.Validate"></a>
-### func \(\*StorageConfig\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L285>)
+### func \(\*StorageConfig\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L282>)
 
 ```go
 func (stc *StorageConfig) Validate() error
@@ -1381,7 +1380,7 @@ func (stc *StorageConfig) Validate() error
 
 
 <a name="TracingConfig"></a>
-## type [TracingConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L137-L142>)
+## type [TracingConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L135-L140>)
 
 TracingConfig holds configuration for distributed tracing.
 

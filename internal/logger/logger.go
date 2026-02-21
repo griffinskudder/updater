@@ -11,14 +11,15 @@ import (
 	"os"
 	"strings"
 	"updater/internal/models"
+	"updater/internal/version"
 )
 
 // Setup creates and configures a structured logger based on the provided LoggingConfig.
-// It returns the configured logger, an io.Closer for file handles (nil for stdout/stderr),
-// and any error encountered during setup.
+// It returns the configured logger with global version fields, an io.Closer for file
+// handles (nil for stdout/stderr), and any error encountered during setup.
 //
 // The caller is responsible for closing the returned Closer when done (if non-nil).
-func Setup(cfg models.LoggingConfig) (*slog.Logger, io.Closer, error) {
+func Setup(cfg models.LoggingConfig, ver version.Info) (*slog.Logger, io.Closer, error) {
 	level, err := parseLevel(cfg.Level)
 	if err != nil {
 		return nil, nil, fmt.Errorf("invalid log level: %w", err)
@@ -40,7 +41,14 @@ func Setup(cfg models.LoggingConfig) (*slog.Logger, io.Closer, error) {
 		handler = slog.NewTextHandler(writer, opts)
 	}
 
-	return slog.New(handler), closer, nil
+	// Add global version fields to all log messages
+	logger := slog.New(handler).With(
+		slog.String("version", ver.Version),
+		slog.String("git_commit", ver.GitCommit),
+		slog.String("build_date", ver.BuildDate),
+	)
+
+	return logger, closer, nil
 }
 
 // parseLevel converts a level string to an slog.Level.

@@ -17,12 +17,25 @@ import (
 	"updater/internal/observability"
 	"updater/internal/storage"
 	"updater/internal/update"
+	"updater/internal/version"
 )
 
-var configFile = flag.String("config", "", "Path to configuration file")
+var (
+	configFile  = flag.String("config", "", "Path to configuration file")
+	showVersion = flag.Bool("version", false, "Show version information and exit")
+)
 
 func main() {
 	flag.Parse()
+
+	// Get version info for CLI and service initialization
+	versionInfo := version.GetInfo()
+
+	// Handle --version flag
+	if *showVersion {
+		fmt.Println(versionInfo)
+		os.Exit(0)
+	}
 
 	// Load configuration
 	cfg, err := config.Load(*configFile)
@@ -31,8 +44,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Initialize structured logging
-	log, closer, err := logger.Setup(cfg.Logging)
+	// Initialize structured logging with version metadata
+	log, closer, err := logger.Setup(cfg.Logging, versionInfo)
 	if err != nil {
 		slog.Error("Failed to initialize logger", "error", err)
 		os.Exit(1)
@@ -42,8 +55,8 @@ func main() {
 	}
 	slog.SetDefault(log)
 
-	// Initialize observability (OpenTelemetry)
-	otelProvider, err := observability.Setup(cfg.Metrics, cfg.Observability)
+	// Initialize observability (OpenTelemetry) with version metadata
+	otelProvider, err := observability.Setup(cfg.Metrics, cfg.Observability, versionInfo)
 	if err != nil {
 		slog.Error("Failed to initialize observability", "error", err)
 		os.Exit(1)
@@ -95,6 +108,7 @@ func main() {
 		api.WithStorage(activeStorage),
 		api.WithAdminTemplates(adminTmpl),
 		api.WithSecurityConfig(cfg.Security),
+		api.WithVersionInfo(versionInfo),
 	)
 
 	// Setup routes with middleware

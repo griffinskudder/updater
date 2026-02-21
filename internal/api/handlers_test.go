@@ -546,7 +546,7 @@ func TestHandlers_HealthCheck(t *testing.T) {
 
 	assert.Equal(t, "healthy", response["status"])
 	assert.NotEmpty(t, response["timestamp"])
-	assert.Equal(t, "1.0.0", response["version"])
+	assert.NotEmpty(t, response["version"])
 }
 
 func TestHandlers_HealthCheck_WithStorage(t *testing.T) {
@@ -592,6 +592,29 @@ func TestHandlers_HealthCheck_StorageDegraded(t *testing.T) {
 	storageComp := components["storage"].(map[string]interface{})
 	assert.Equal(t, "unhealthy", storageComp["status"])
 	assert.Contains(t, storageComp["message"], "connection refused")
+}
+
+func TestHandlers_VersionInfo(t *testing.T) {
+	mockService := &MockUpdateService{}
+	handlers := NewHandlers(mockService)
+
+	req := httptest.NewRequest(http.MethodGet, "/version", nil)
+	recorder := httptest.NewRecorder()
+
+	handlers.VersionInfo(recorder, req)
+
+	assert.Equal(t, http.StatusOK, recorder.Code)
+	assert.Equal(t, "application/json", recorder.Header().Get("Content-Type"))
+
+	var response map[string]interface{}
+	err := json.Unmarshal(recorder.Body.Bytes(), &response)
+	require.NoError(t, err)
+
+	assert.NotEmpty(t, response["version"])
+	assert.NotEmpty(t, response["git_commit"])
+	assert.NotEmpty(t, response["build_date"])
+	assert.NotEmpty(t, response["instance_id"])
+	assert.NotEmpty(t, response["hostname"])
 }
 
 func TestHandlers_HTTPMethodNotAllowed(t *testing.T) {

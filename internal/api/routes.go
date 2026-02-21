@@ -19,16 +19,36 @@ type RouteOption func(*mux.Router)
 // WithOTelMiddleware adds OpenTelemetry HTTP instrumentation middleware.
 func WithOTelMiddleware(serviceName string) RouteOption {
 	return func(r *mux.Router) {
+		// Paths to exclude from OpenTelemetry tracing
+		excludedPaths := []string{
+			"/health",
+			"/api/v1/health",
+			"/version",
+			"/api/v1/version",
+			"/metrics",
+			"/api/v1/openapi.yaml",
+			"/api/v1/docs",
+		}
+
 		r.Use(otelmux.Middleware(serviceName,
 			otelmux.WithFilter(func(r *http.Request) bool {
-				return r.URL.Path != "/health" &&
-					r.URL.Path != "/api/v1/health" &&
-					r.URL.Path != "/metrics" &&
-					r.URL.Path != "/api/v1/openapi.yaml" &&
-					r.URL.Path != "/api/v1/docs"
+				for _, path := range excludedPaths {
+					if r.URL.Path == path {
+						return false
+					}
+				}
+				return true
 			}),
 		))
 	}
+}
+
+// registerPublicEndpoint registers a handler at both root and /api/v1 paths.
+// This is used for public endpoints like /health and /version that should be
+// accessible at both the root level and under the versioned API prefix.
+func registerPublicEndpoint(router *mux.Router, path string, handler http.HandlerFunc) {
+	router.HandleFunc(path, handler).Methods("GET")
+	router.HandleFunc("/api/v1"+path, handler).Methods("GET")
 }
 
 // SetupRoutes configures the HTTP routes for the API
@@ -77,8 +97,8 @@ func SetupRoutes(handlers *Handlers, config *models.Config, opts ...RouteOption)
 	adminRouter.HandleFunc("/keys/{id}", handlers.AdminDeleteKey).Methods("DELETE")
 	adminRouter.HandleFunc("/keys/{id}/toggle", handlers.AdminToggleKey).Methods("POST")
 
-	router.HandleFunc("/health", handlers.HealthCheck).Methods("GET")
-	router.HandleFunc("/api/v1/health", handlers.HealthCheck).Methods("GET")
+	registerPublicEndpoint(router, "/health", handlers.HealthCheck)
+	registerPublicEndpoint(router, "/version", handlers.VersionInfo)
 
 	api.PathPrefix("").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "OPTIONS" {

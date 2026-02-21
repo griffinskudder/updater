@@ -6,6 +6,11 @@
 # =============================================================================
 FROM golang:1.25-alpine AS builder
 
+# Accept build-time metadata
+ARG VERSION=unknown
+ARG BUILD_DATE=unknown
+ARG VCS_REF=unknown
+
 # Security: Create non-root user for build process
 RUN adduser -D -s /bin/sh -u 1001 appuser
 
@@ -34,14 +39,17 @@ RUN go mod download && go mod verify
 # Copy source code
 COPY --chown=appuser:appuser . .
 
-# Security: Build with security flags and static linking
+# Security: Build with security flags, static linking, and version metadata
 RUN CGO_ENABLED=0 \
     GOOS=linux \
     GOARCH=amd64 \
     go build \
     -a \
     -installsuffix cgo \
-    -ldflags='-w -s -extldflags "-static"' \
+    -ldflags="-w -s -extldflags '-static' \
+             -X 'updater/internal/version.Version=${VERSION}' \
+             -X 'updater/internal/version.GitCommit=${VCS_REF}' \
+             -X 'updater/internal/version.BuildDate=${BUILD_DATE}'" \
     -tags netgo \
     -o updater \
     ./cmd/updater
