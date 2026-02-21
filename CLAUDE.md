@@ -139,3 +139,7 @@ See `docs/ARCHITECTURE.md` for full design details and rationales.
 - **`docs-build` has three pre-build steps**: `openapi-validate` (Redocly), `docs-generate` (gomarkdoc), and `docs-db` (tbls + ephemeral PostgreSQL). Any failure aborts the build.
 - **Windows `$(CURDIR)` in Make loops**: Shell loops using `ls $(CURDIR)/...` fail on Windows (path isn't POSIX). Mount the directory into the container and use the container-internal path instead.
 - **`pg_isready` race**: `pg_isready` can pass while psql connections still fail during PostgreSQL startup. Use `psql -c "SELECT 1"` as the readiness check.
+- **Docker `LATEST_TAG` env var**: `scripts/docker-build.sh` uses `LATEST_TAG` env var (defaults to `latest`). GitHub Actions sets `LATEST_TAG=latest-dev` for non-release builds.
+- **Distroless containers have no shell utilities**: The distroless base image has no `wget`, `curl`, or shell. Healthchecks must use application endpoints or be removed entirely.
+- **Structured logging tests capture attributes**: When testing `slog` output, capture and assert on `slog.Attr` values, not message strings. See `internal/config/config_test.go` for the `capturingSlogHandler` pattern.
+- **Config field removals require test updates**: When removing config fields, update integration test YAML blocks and remove assertions that reference the deleted fields (see `internal/integration/integration_test.go`).
