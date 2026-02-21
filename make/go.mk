@@ -2,8 +2,15 @@
 
 .PHONY: build run test integration-test cover fmt fmt-check vet clean tidy check security secrets
 
+VERSION    := $(shell git describe --tags --always --dirty 2>/dev/null || echo "unknown")
+GIT_COMMIT := $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+BUILD_DATE := $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
+LDFLAGS    := -X 'updater/internal/version.Version=$(VERSION)' \
+              -X 'updater/internal/version.GitCommit=$(GIT_COMMIT)' \
+              -X 'updater/internal/version.BuildDate=$(BUILD_DATE)'
+
 build: ## Build the application to bin/updater
-	$(GO_DOCKER) go build -o $(BIN_DIR)/$(APP_NAME) ./cmd/$(APP_NAME)
+	$(GO_DOCKER) go build -ldflags "$(LDFLAGS)" -o $(BIN_DIR)/$(APP_NAME) ./cmd/$(APP_NAME)
 
 run: ## Run the application
 	$(GO_DOCKER) go run ./cmd/$(APP_NAME)

@@ -1,6 +1,7 @@
 package observability
 
 import (
+	"updater/internal/version"
 	"context"
 	"net/http"
 	"testing"
@@ -19,11 +20,10 @@ func TestNewMetricsServer(t *testing.T) {
 	}
 	obs := models.ObservabilityConfig{
 		ServiceName:    "test",
-		ServiceVersion: "1.0.0",
 		Tracing:        models.TracingConfig{Enabled: false},
 	}
 
-	provider, err := Setup(metrics, obs)
+	provider, err := Setup(metrics, obs, version.Info{})
 	require.NoError(t, err)
 	defer provider.Shutdown(context.Background())
 
@@ -40,11 +40,10 @@ func TestMetricsServer_StartAndShutdown(t *testing.T) {
 	}
 	obs := models.ObservabilityConfig{
 		ServiceName:    "test",
-		ServiceVersion: "1.0.0",
 		Tracing:        models.TracingConfig{Enabled: false},
 	}
 
-	provider, err := Setup(metrics, obs)
+	provider, err := Setup(metrics, obs, version.Info{})
 	require.NoError(t, err)
 	defer provider.Shutdown(context.Background())
 

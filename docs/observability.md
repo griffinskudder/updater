@@ -59,13 +59,14 @@ metrics:
 
 observability:
   service_name: "updater"
-  service_version: "1.0.0"
   tracing:
     enabled: true
     exporter: "stdout"        # stdout | otlp
     sample_rate: 1.0
     otlp_endpoint: ""         # e.g., "localhost:4317"
 ```
+
+**Note:** Service version is no longer configured here. It is automatically set from build-time metadata injected via ldflags. See the [Version Metadata](#resource-attributes) section below.
 
 ### Configuration Reference
 
@@ -75,7 +76,6 @@ observability:
 | `metrics.path` | string | `/metrics` | HTTP path for Prometheus scraping |
 | `metrics.port` | int | `9090` | Port for the metrics HTTP server |
 | `observability.service_name` | string | `updater` | OpenTelemetry service name resource attribute |
-| `observability.service_version` | string | `1.0.0` | OpenTelemetry service version resource attribute |
 | `observability.tracing.enabled` | bool | `false` | Enable distributed tracing |
 | `observability.tracing.exporter` | string | `stdout` | Trace exporter type: `stdout` or `otlp` |
 | `observability.tracing.sample_rate` | float | `1.0` | Sampling rate (0.0 to 1.0) |
@@ -159,6 +159,65 @@ The `sample_rate` controls what fraction of traces are recorded:
 - `0.1` -- Sample 10% of traces (production)
 - `0.0` -- Disable sampling (no traces recorded)
 
+### Resource Attributes
+
+OpenTelemetry resource attributes provide context about the service instance. These attributes are automatically attached to all metrics and traces.
+
+#### Standard Attributes (OpenTelemetry Semantic Conventions)
+
+| Attribute | Source | Example | Description |
+|-----------|--------|---------|-------------|
+| `service.name` | Configuration | `updater` | Service identifier from `observability.service_name` |
+| `service.version` | Build metadata | `v1.0.0` | Version from git tags, injected at build time |
+
+#### Custom Attributes
+
+| Attribute | Source | Example | Description |
+|-----------|--------|---------|-------------|
+| `service.instance.id` | Runtime | `550e8400-e29b-41d4-a716-446655440000` | Unique UUID generated at startup |
+| `host.name` | Runtime | `updater-prod-01` | System hostname from `os.Hostname()` |
+| `git.commit` | Build metadata | `a1b2c3d` | Short git commit hash, injected at build time |
+| `build.date` | Build metadata | `2026-02-21T10:00:00Z` | Build timestamp in RFC 3339 format |
+| `deployment.environment` | Environment | `production` | Deployment environment from `ENVIRONMENT` or `DEPLOYMENT_ENV` env var (defaults to `development`) |
+
+#### Build Metadata Injection
+
+Build-time attributes (version, git.commit, build.date) are injected via ldflags during compilation:
+
+```makefile
+VERSION := $(shell git describe --tags --always --dirty)
+GIT_COMMIT := $(shell git rev-parse --short HEAD)
+BUILD_DATE := $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+LDFLAGS := -X 'updater/internal/version.Version=$(VERSION)' \
+           -X 'updater/internal/version.GitCommit=$(GIT_COMMIT)' \
+           -X 'updater/internal/version.BuildDate=$(BUILD_DATE)'
+
+go build -ldflags "$(LDFLAGS)" ./cmd/updater
+```
+
+For Docker builds, pass build arguments:
+
+```bash
+docker build \
+  --build-arg VERSION=$(git describe --tags --always) \
+  --build-arg VCS_REF=$(git rev-parse --short HEAD) \
+  --build-arg BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
+  -t updater:latest .
+```
+
+Local development builds will show "unknown" for these values, which is expected. CI/CD pipelines should always inject proper values.
+
+#### Environment Detection
+
+The `deployment.environment` attribute is determined from environment variables:
+
+1. `ENVIRONMENT` environment variable (if set)
+2. `DEPLOYMENT_ENV` environment variable (if set)
+3. Defaults to `development` if neither is set
+
+This allows easy differentiation between development, staging, and production traces.
+
 ## Health Checks
 
 The `/health` endpoint performs real storage connectivity verification by calling `Ping()` on the storage backend.
@@ -191,7 +250,7 @@ stateDiagram-v2
 {
   "status": "healthy",
   "timestamp": "2026-02-15T10:30:00Z",
-  "version": "1.0.0",
+  "version": "v1.0.0",
   "components": {
     "storage": {
       "status": "healthy",

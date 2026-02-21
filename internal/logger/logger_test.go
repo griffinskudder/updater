@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 	"updater/internal/models"
+	"updater/internal/version"
 )
 
 func TestParseLevel(t *testing.T) {
@@ -54,7 +55,7 @@ func TestSetupJSONFormat(t *testing.T) {
 		Output: "stdout",
 	}
 
-	logger, closer, err := Setup(cfg)
+	logger, closer, err := Setup(cfg, version.Info{})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -73,7 +74,7 @@ func TestSetupTextFormat(t *testing.T) {
 		Output: "stdout",
 	}
 
-	logger, closer, err := Setup(cfg)
+	logger, closer, err := Setup(cfg, version.Info{})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -92,7 +93,7 @@ func TestSetupStderrOutput(t *testing.T) {
 		Output: "stderr",
 	}
 
-	logger, closer, err := Setup(cfg)
+	logger, closer, err := Setup(cfg, version.Info{})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -115,7 +116,7 @@ func TestSetupFileOutput(t *testing.T) {
 		FilePath: logFile,
 	}
 
-	logger, closer, err := Setup(cfg)
+	logger, closer, err := Setup(cfg, version.Info{})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -152,7 +153,7 @@ func TestSetupFileOutputMissingPath(t *testing.T) {
 		Output: "file",
 	}
 
-	_, _, err := Setup(cfg)
+	_, _, err := Setup(cfg, version.Info{})
 	if err == nil {
 		t.Error("expected error for file output without path")
 	}
@@ -166,7 +167,7 @@ func TestSetupInvalidFilePath(t *testing.T) {
 		FilePath: "/nonexistent/directory/path/test.log",
 	}
 
-	_, _, err := Setup(cfg)
+	_, _, err := Setup(cfg, version.Info{})
 	if err == nil {
 		t.Error("expected error for invalid file path")
 	}
@@ -179,7 +180,7 @@ func TestSetupInvalidLevel(t *testing.T) {
 		Output: "stdout",
 	}
 
-	_, _, err := Setup(cfg)
+	_, _, err := Setup(cfg, version.Info{})
 	if err == nil {
 		t.Error("expected error for invalid log level")
 	}

@@ -156,6 +156,35 @@ Structured logging using Go's standard `log/slog` package.
 - Configurable log levels (debug, info, warn, error)
 - File output with configurable permissions
 - Security audit events tagged with `"event", "security_audit"`
+- Global fields automatically included on all log messages (version, git_commit, build_date)
+
+### 7. Version Metadata (`internal/version/`) ✅ **COMPLETE**
+Build-time metadata injection and runtime version information.
+
+**Core Components:**
+- **Version Package** (`version.go`): Build metadata storage, instance ID generation, and thread-safe caching
+
+**Features:**
+- Build metadata injected via ldflags at compile time (VERSION, GIT_COMMIT, BUILD_DATE)
+- Runtime metadata generation (instance ID, hostname)
+- Thread-safe caching using `sync.Once` pattern
+- Global version fields on all log messages
+- OpenTelemetry resource attributes for traces and metrics
+- CLI `--version` flag for version display
+- HTTP `/version` endpoint for programmatic access
+
+**Key Design:**
+- Package-level variables populated by linker flags: `-X 'updater/internal/version.Version=$(VERSION)'`
+- `GetInfo()` function returns cached `Info` struct with all metadata
+- Instance ID generated once per process using UUID v4
+- Hostname retrieved with fallback to "unknown" if unavailable
+- "unknown" values used for local development builds (CI injects proper values)
+
+**Integration Points:**
+- Logger: Version fields added as global fields via `slog.With()`
+- Observability: Version metadata added to OpenTelemetry resource attributes
+- API: `/version` endpoint serves version information as JSON
+- CLI: `--version` flag displays version in human-readable format
 
 ## API Design
 

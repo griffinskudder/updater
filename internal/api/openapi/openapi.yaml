@@ -656,6 +656,31 @@ components:
           additionalProperties: true
           description: Operational metrics (present for authenticated requests)
 
+    VersionInfo:
+      type: object
+      required: [version, git_commit, build_date, instance_id, hostname]
+      properties:
+        version:
+          type: string
+          description: Service version from git tags or "unknown" for local builds
+          example: "v1.0.0"
+        git_commit:
+          type: string
+          description: Short git commit hash or "unknown" for local builds
+          example: "a1b2c3d"
+        build_date:
+          type: string
+          format: date-time
+          description: Build timestamp in RFC 3339 format or "unknown" for local builds
+          example: "2026-02-21T10:00:00Z"
+        instance_id:
+          type: string
+          format: uuid
+          description: Unique instance identifier generated at startup
+        hostname:
+          type: string
+          description: System hostname or "unknown" if unavailable
+
     APIKeyMeta:
       type: object
       required: [id, name, prefix, permissions, enabled, created_at, updated_at]
@@ -1635,3 +1660,33 @@ paths:
                       memory_alloc_mb: 8.5
         "500":
           $ref: "#/components/responses/InternalError"
+
+  /version:
+    get:
+      tags: [health]
+      summary: Get version information
+      description: |
+        Returns build metadata and runtime information including version, git commit,
+        build date, instance ID, and hostname.
+
+        Available at both `/version` and `/api/v1/version`.
+      operationId: versionInfo
+      security: []
+      servers:
+        - url: /
+          description: Root prefix
+        - url: /api/v1
+          description: Versioned API prefix
+      responses:
+        "200":
+          description: Version information
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VersionInfo"
+              example:
+                version: "v1.0.0"
+                git_commit: "a1b2c3d"
+                build_date: "2026-02-21T10:00:00Z"
+                instance_id: "550e8400-e29b-41d4-a716-446655440000"
+                hostname: "updater-prod-01"

@@ -46,6 +46,9 @@ type deprecatedConfig struct {
 		TrustedProxies interface{} `yaml:"trusted_proxies"`
 		RateLimit      interface{} `yaml:"rate_limit"`
 	} `yaml:"security"`
+	Observability struct {
+		ServiceVersion string `yaml:"service_version"`
+	} `yaml:"observability"`
 }
 
 // warnDeprecatedKeys logs a warning for each removed config key found in the YAML data.
@@ -66,6 +69,9 @@ func warnDeprecatedKeys(data []byte) {
 	}
 	if dep.Security.RateLimit != nil {
 		slog.Warn("Config key is no longer supported; configure rate limiting at your reverse proxy. See docs/reverse-proxy.md.", "config_key", "security.rate_limit")
+	}
+	if dep.Observability.ServiceVersion != "" {
+		slog.Warn("Config key is no longer supported; version is now set at build time via ldflags. See docs/ARCHITECTURE.md.", "config_key", "observability.service_version")
 	}
 }
 

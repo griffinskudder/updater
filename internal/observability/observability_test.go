@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 	"updater/internal/models"
+	"updater/internal/version"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -17,13 +18,12 @@ func TestSetup_MetricsOnly(t *testing.T) {
 	}
 	obs := models.ObservabilityConfig{
 		ServiceName:    "test-service",
-		ServiceVersion: "0.1.0",
 		Tracing: models.TracingConfig{
 			Enabled: false,
 		},
 	}
 
-	provider, err := Setup(metrics, obs)
+	provider, err := Setup(metrics, obs, version.Info{})
 	require.NoError(t, err)
 	require.NotNil(t, provider)
 	assert.NotNil(t, provider.promExporter)
@@ -39,7 +39,6 @@ func TestSetup_TracingStdout(t *testing.T) {
 	}
 	obs := models.ObservabilityConfig{
 		ServiceName:    "test-service",
-		ServiceVersion: "0.1.0",
 		Tracing: models.TracingConfig{
 			Enabled:    true,
 			Exporter:   "stdout",
@@ -47,7 +46,7 @@ func TestSetup_TracingStdout(t *testing.T) {
 		},
 	}
 
-	provider, err := Setup(metrics, obs)
+	provider, err := Setup(metrics, obs, version.Info{})
 	require.NoError(t, err)
 	require.NotNil(t, provider)
 	assert.NotNil(t, provider.tracerProvider)
@@ -65,7 +64,6 @@ func TestSetup_BothEnabled(t *testing.T) {
 	}
 	obs := models.ObservabilityConfig{
 		ServiceName:    "test-service",
-		ServiceVersion: "0.1.0",
 		Tracing: models.TracingConfig{
 			Enabled:    true,
 			Exporter:   "stdout",
@@ -73,7 +71,7 @@ func TestSetup_BothEnabled(t *testing.T) {
 		},
 	}
 
-	provider, err := Setup(metrics, obs)
+	provider, err := Setup(metrics, obs, version.Info{})
 	require.NoError(t, err)
 	require.NotNil(t, provider)
 	assert.NotNil(t, provider.tracerProvider)
@@ -93,7 +91,7 @@ func TestSetup_BothDisabled(t *testing.T) {
 		},
 	}
 
-	provider, err := Setup(metrics, obs)
+	provider, err := Setup(metrics, obs, version.Info{})
 	require.NoError(t, err)
 	require.NotNil(t, provider)
 	assert.Nil(t, provider.tracerProvider)
@@ -107,7 +105,6 @@ func TestSetup_InvalidExporter(t *testing.T) {
 	metrics := models.MetricsConfig{Enabled: false}
 	obs := models.ObservabilityConfig{
 		ServiceName:    "test-service",
-		ServiceVersion: "0.1.0",
 		Tracing: models.TracingConfig{
 			Enabled:    true,
 			Exporter:   "invalid",
@@ -115,7 +112,7 @@ func TestSetup_InvalidExporter(t *testing.T) {
 		},
 	}
 
-	provider, err := Setup(metrics, obs)
+	provider, err := Setup(metrics, obs, version.Info{})
 	assert.Error(t, err)
 	assert.Nil(t, provider)
 	assert.Contains(t, err.Error(), "unsupported trace exporter")
@@ -136,7 +133,6 @@ func TestSetup_SamplerConfigurations(t *testing.T) {
 			metrics := models.MetricsConfig{Enabled: false}
 			obs := models.ObservabilityConfig{
 				ServiceName:    "test",
-				ServiceVersion: "1.0.0",
 				Tracing: models.TracingConfig{
 					Enabled:    true,
 					Exporter:   "stdout",
@@ -144,7 +140,7 @@ func TestSetup_SamplerConfigurations(t *testing.T) {
 				},
 			}
 
-			provider, err := Setup(metrics, obs)
+			provider, err := Setup(metrics, obs, version.Info{})
 			require.NoError(t, err)
 			require.NotNil(t, provider)
 

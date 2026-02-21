@@ -72,6 +72,29 @@ logging:
 
 All log messages include structured key-value pairs for consistent parsing and filtering.
 
+### Global Fields
+
+The following fields are automatically included on **every log message** throughout the application:
+
+| Field | Source | Example | Description |
+|-------|--------|---------|-------------|
+| `version` | Build metadata | `v1.0.0` | Service version from git tags |
+| `git_commit` | Build metadata | `a1b2c3d` | Short git commit hash |
+| `build_date` | Build metadata | `2026-02-21T10:00:00Z` | Build timestamp in RFC 3339 format |
+
+These fields are injected via `slog.With()` during logger initialization, ensuring they appear on all log entries without requiring manual inclusion in each log call.
+
+#### Build Metadata Injection
+
+Build-time fields are injected via ldflags during compilation. Local development builds will show "unknown" for these values; CI/CD pipelines inject proper values:
+
+```bash
+go build -ldflags "-X 'updater/internal/version.Version=v1.0.0' \
+                   -X 'updater/internal/version.GitCommit=a1b2c3d' \
+                   -X 'updater/internal/version.BuildDate=2026-02-21T10:00:00Z'" \
+         ./cmd/updater
+```
+
 ### HTTP Request Logging
 
 Every HTTP request is logged with the following fields:
@@ -124,15 +147,17 @@ Error logs include contextual information:
 Produces machine-parseable JSON output, suitable for log aggregation systems (ELK, Datadog, CloudWatch):
 
 ```json
-{"time":"2026-02-15T10:30:00Z","level":"INFO","msg":"HTTP request","method":"GET","path":"/api/v1/updates/myapp/check","remote_addr":"192.168.1.1:54321"}
+{"time":"2026-02-15T10:30:00Z","level":"INFO","msg":"HTTP request","version":"v1.0.0","git_commit":"a1b2c3d","build_date":"2026-02-21T10:00:00Z","method":"GET","path":"/api/v1/updates/myapp/check","remote_addr":"192.168.1.1:54321"}
 ```
+
+Note the global fields (`version`, `git_commit`, `build_date`) automatically included in every log message.
 
 ### Text Format
 
 Produces human-readable text output, suitable for development:
 
 ```
-time=2026-02-15T10:30:00Z level=INFO msg="HTTP request" method=GET path=/api/v1/updates/myapp/check remote_addr=192.168.1.1:54321
+time=2026-02-15T10:30:00Z level=INFO msg="HTTP request" version=v1.0.0 git_commit=a1b2c3d build_date=2026-02-21T10:00:00Z method=GET path=/api/v1/updates/myapp/check remote_addr=192.168.1.1:54321
 ```
 
 ## Request Flow

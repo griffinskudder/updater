@@ -53,7 +53,6 @@ func TestNewDefaultConfig(t *testing.T) {
 
 	// Test observability defaults
 	assert.Equal(t, "updater", config.Observability.ServiceName)
-	assert.Equal(t, "1.0.0", config.Observability.ServiceVersion)
 	assert.False(t, config.Observability.Tracing.Enabled)
 	assert.Equal(t, "stdout", config.Observability.Tracing.Exporter)
 	assert.Equal(t, 1.0, config.Observability.Tracing.SampleRate)
