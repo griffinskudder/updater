@@ -19,15 +19,25 @@ type RouteOption func(*mux.Router)
 // WithOTelMiddleware adds OpenTelemetry HTTP instrumentation middleware.
 func WithOTelMiddleware(serviceName string) RouteOption {
 	return func(r *mux.Router) {
+		// Paths to exclude from OpenTelemetry tracing
+		excludedPaths := []string{
+			"/health",
+			"/api/v1/health",
+			"/version",
+			"/api/v1/version",
+			"/metrics",
+			"/api/v1/openapi.yaml",
+			"/api/v1/docs",
+		}
+
 		r.Use(otelmux.Middleware(serviceName,
 			otelmux.WithFilter(func(r *http.Request) bool {
-				return r.URL.Path != "/health" &&
-					r.URL.Path != "/api/v1/health" &&
-					r.URL.Path != "/version" &&
-					r.URL.Path != "/api/v1/version" &&
-					r.URL.Path != "/metrics" &&
-					r.URL.Path != "/api/v1/openapi.yaml" &&
-					r.URL.Path != "/api/v1/docs"
+				for _, path := range excludedPaths {
+					if r.URL.Path == path {
+						return false
+					}
+				}
+				return true
 			}),
 		))
 	}
