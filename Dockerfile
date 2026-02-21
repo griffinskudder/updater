@@ -83,13 +83,19 @@ WORKDIR /app
 # Security: Expose only necessary port
 EXPOSE 8080
 
+# Accept build-time metadata
+ARG VERSION=dev
+ARG BUILD_DATE=unknown
+ARG VCS_REF=unknown
+
 # Security: Set resource limits and security options via labels
 LABEL \
     org.opencontainers.image.title="Updater Service" \
     org.opencontainers.image.description="Secure update service for desktop applications" \
-    org.opencontainers.image.vendor="Your Company" \
-    org.opencontainers.image.version="1.0.0" \
-    org.opencontainers.image.created="2024-01-01T00:00:00Z" \
+    org.opencontainers.image.vendor="griffinskudder" \
+    org.opencontainers.image.version="${VERSION}" \
+    org.opencontainers.image.created="${BUILD_DATE}" \
+    org.opencontainers.image.revision="${VCS_REF}" \
     org.opencontainers.image.source="https://github.com/griffinskudder/updater" \
     org.opencontainers.image.licenses="Apache-2.0" \
     security.scan.enabled="true" \
