@@ -10,54 +10,6 @@ import (
 	"database/sql"
 )
 
-const createRelease = `-- name: CreateRelease :exec
-INSERT INTO releases (
-    id, application_id, version, platform, architecture, download_url,
-    checksum, checksum_type, file_size, release_notes, release_date,
-    required, minimum_version, metadata, created_at
-)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-`
-
-type CreateReleaseParams struct {
-	ID             string         `json:"id"`
-	ApplicationID  string         `json:"application_id"`
-	Version        string         `json:"version"`
-	Platform       string         `json:"platform"`
-	Architecture   string         `json:"architecture"`
-	DownloadUrl    string         `json:"download_url"`
-	Checksum       string         `json:"checksum"`
-	ChecksumType   string         `json:"checksum_type"`
-	FileSize       int64          `json:"file_size"`
-	ReleaseNotes   sql.NullString `json:"release_notes"`
-	ReleaseDate    string         `json:"release_date"`
-	Required       bool           `json:"required"`
-	MinimumVersion sql.NullString `json:"minimum_version"`
-	Metadata       sql.NullString `json:"metadata"`
-	CreatedAt      string         `json:"created_at"`
-}
-
-func (q *Queries) CreateRelease(ctx context.Context, arg CreateReleaseParams) error {
-	_, err := q.db.ExecContext(ctx, createRelease,
-		arg.ID,
-		arg.ApplicationID,
-		arg.Version,
-		arg.Platform,
-		arg.Architecture,
-		arg.DownloadUrl,
-		arg.Checksum,
-		arg.ChecksumType,
-		arg.FileSize,
-		arg.ReleaseNotes,
-		arg.ReleaseDate,
-		arg.Required,
-		arg.MinimumVersion,
-		arg.Metadata,
-		arg.CreatedAt,
-	)
-	return err
-}
-
 const deleteRelease = `-- name: DeleteRelease :exec
 DELETE FROM releases
 WHERE application_id = ? AND version = ? AND platform = ? AND architecture = ?
@@ -256,14 +208,32 @@ func (q *Queries) GetReleasesByPlatformArch(ctx context.Context, arg GetReleases
 	return items, nil
 }
 
-const updateRelease = `-- name: UpdateRelease :exec
-UPDATE releases
-SET download_url = ?, checksum = ?, checksum_type = ?, file_size = ?,
-    release_notes = ?, release_date = ?, required = ?, minimum_version = ?, metadata = ?
-WHERE id = ?
+const upsertRelease = `-- name: UpsertRelease :exec
+INSERT INTO releases (
+    id, application_id, version, platform, architecture, download_url,
+    checksum, checksum_type, file_size, release_notes, release_date,
+    required, minimum_version, metadata, created_at
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT (application_id, version, platform, architecture) DO UPDATE SET
+    id = excluded.id,
+    download_url = excluded.download_url,
+    checksum = excluded.checksum,
+    checksum_type = excluded.checksum_type,
+    file_size = excluded.file_size,
+    release_notes = excluded.release_notes,
+    release_date = excluded.release_date,
+    required = excluded.required,
+    minimum_version = excluded.minimum_version,
+    metadata = excluded.metadata
 `
 
-type UpdateReleaseParams struct {
+type UpsertReleaseParams struct {
+	ID             string         `json:"id"`
+	ApplicationID  string         `json:"application_id"`
+	Version        string         `json:"version"`
+	Platform       string         `json:"platform"`
+	Architecture   string         `json:"architecture"`
 	DownloadUrl    string         `json:"download_url"`
 	Checksum       string         `json:"checksum"`
 	ChecksumType   string         `json:"checksum_type"`
@@ -273,11 +243,16 @@ type UpdateReleaseParams struct {
 	Required       bool           `json:"required"`
 	MinimumVersion sql.NullString `json:"minimum_version"`
 	Metadata       sql.NullString `json:"metadata"`
-	ID             string         `json:"id"`
+	CreatedAt      string         `json:"created_at"`
 }
 
-func (q *Queries) UpdateRelease(ctx context.Context, arg UpdateReleaseParams) error {
-	_, err := q.db.ExecContext(ctx, updateRelease,
+func (q *Queries) UpsertRelease(ctx context.Context, arg UpsertReleaseParams) error {
+	_, err := q.db.ExecContext(ctx, upsertRelease,
+		arg.ID,
+		arg.ApplicationID,
+		arg.Version,
+		arg.Platform,
+		arg.Architecture,
 		arg.DownloadUrl,
 		arg.Checksum,
 		arg.ChecksumType,
@@ -287,7 +262,7 @@ func (q *Queries) UpdateRelease(ctx context.Context, arg UpdateReleaseParams) er
 		arg.Required,
 		arg.MinimumVersion,
 		arg.Metadata,
-		arg.ID,
+		arg.CreatedAt,
 	)
 	return err
 }
