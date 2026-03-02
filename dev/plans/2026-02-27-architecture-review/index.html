@@ -12,7 +12,7 @@
         <meta name="author" content="Updater Service Team">
       
       
-        <link rel="canonical" href="https://griffinskudder.github.io/updater/dev/plans/2026-02-18-proxy-delegation-design/">
+        <link rel="canonical" href="https://griffinskudder.github.io/updater/dev/plans/2026-02-27-architecture-review/">
       
       
       
@@ -25,7 +25,7 @@
     
     
       
-        <title>Proxy Delegation Design - Updater Service Documentation</title>
+        <title>Architecture Review: Over-Engineering Assessment - Updater Service Documentation</title>
       
     
     
@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#proxy-delegation-design" class="md-skip">
+        <a href="#architecture-review-over-engineering-assessment" class="md-skip">
           Skip to content
         </a>
       
@@ -116,7 +116,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Proxy Delegation Design
+              Architecture Review: Over-Engineering Assessment
             
           </span>
         </div>
@@ -1436,10 +1436,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#problem" class="md-nav__link">
+  <a href="#summary" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Problem
+        Summary
       
     </span>
   </a>
@@ -1447,33 +1447,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#decision" class="md-nav__link">
+  <a href="#what-is-well-engineered" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Decision
+        What is Well-Engineered
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#scope" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Scope
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Scope">
+    <nav class="md-nav" aria-label="What is Well-Engineered">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#removed-from-the-application" class="md-nav__link">
+  <a href="#business-logic-internalupdate" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Removed from the application
+        Business Logic (internal/update/)
       
     </span>
   </a>
@@ -1481,10 +1470,43 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#unchanged" class="md-nav__link">
+  <a href="#rate-limiting-removal" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Unchanged
+        Rate Limiting Removal
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#model-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Model Validation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#docker-and-deployment-hardening" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Docker and Deployment Hardening
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API Design
       
     </span>
   </a>
@@ -1497,55 +1519,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#deprecation-warning" class="md-nav__link">
+  <a href="#areas-of-concern" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Deprecation Warning
+        Areas of Concern
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#new-files" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        New Files
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#updated-files" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Updated Files
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#proxy-responsibilities" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Proxy Responsibilities
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Proxy Responsibilities">
+    <nav class="md-nav" aria-label="Areas of Concern">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#cors" class="md-nav__link">
+  <a href="#1-admin-ui-high" class="md-nav__link">
     <span class="md-ellipsis">
       
-        CORS
+        1. Admin UI (High)
       
     </span>
   </a>
@@ -1553,10 +1542,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#rate-limiting" class="md-nav__link">
+  <a href="#2-four-storage-providers-medium" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Rate limiting
+        2. Four Storage Providers (Medium)
       
     </span>
   </a>
@@ -1564,10 +1553,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#tls" class="md-nav__link">
+  <a href="#3-factory-pattern-is-unused-in-production-medium" class="md-nav__link">
     <span class="md-ellipsis">
       
-        TLS
+        3. Factory Pattern Is Unused in Production (Medium)
       
     </span>
   </a>
@@ -1575,10 +1564,54 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#real-client-ip" class="md-nav__link">
+  <a href="#4-unused-configuration-surface-area-medium" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Real client IP
+        4. Unused Configuration Surface Area (Medium)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-unused-model-types-low-medium" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Unused Model Types (Low-Medium)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-observability-infrastructure-without-application-metrics-low-medium" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Observability Infrastructure Without Application Metrics (Low-Medium)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-permission-checking-duplication-low" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Permission Checking Duplication (Low)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8-saveapplication-saverelease-do-a-select-before-every-write-low" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. SaveApplication / SaveRelease Do a SELECT Before Every Write (Low)
       
     </span>
   </a>
@@ -1591,10 +1624,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#breaking-config-change" class="md-nav__link">
+  <a href="#quantified-impact" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Breaking Config Change
+        Quantified Impact
       
     </span>
   </a>
@@ -1602,10 +1635,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#out-of-scope" class="md-nav__link">
+  <a href="#claudemd-corrections-needed" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Out of Scope
+        CLAUDE.md Corrections Needed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conclusion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conclusion
       
     </span>
   </a>
@@ -1640,174 +1684,326 @@
   
 
 
-<h1 id="proxy-delegation-design">Proxy Delegation Design<a class="headerlink" href="#proxy-delegation-design" title="Permanent link">&para;</a></h1>
-<p><strong>Date:</strong> 2026-02-18
-<strong>Status:</strong> Approved</p>
-<h2 id="problem">Problem<a class="headerlink" href="#problem" title="Permanent link">&para;</a></h2>
-<p>The updater service currently implements CORS, rate limiting, trusted proxy handling, and a JWT secret field in its own application layer. These concerns are better owned by a reverse proxy (nginx, Traefik) that sits in front of the service in every production deployment. Keeping them in the application adds configuration surface, code to maintain, and test coverage obligations without providing value that the proxy layer does not already supply.</p>
-<h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
-<p>Remove the four features from the application entirely. The service will document which proxy configuration replaces each removed feature and will emit startup warnings if deprecated config keys are still present in the YAML.</p>
-<h2 id="scope">Scope<a class="headerlink" href="#scope" title="Permanent link">&para;</a></h2>
-<h3 id="removed-from-the-application">Removed from the application<a class="headerlink" href="#removed-from-the-application" title="Permanent link">&para;</a></h3>
+<h1 id="architecture-review-over-engineering-assessment">Architecture Review: Over-Engineering Assessment<a class="headerlink" href="#architecture-review-over-engineering-assessment" title="Permanent link">&para;</a></h1>
+<p><strong>Date:</strong> 2026-03-02 (updated from 2026-02-27)
+<strong>Scope:</strong> Full codebase review — every production file read
+<strong>Codebase:</strong> ~21,800 lines of Go (12,400 test, 9,400 production, ~1,300 sqlc-generated)</p>
+<h2 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">&para;</a></h2>
+<p>The core business logic is simple and well-implemented: clients ask "is there a
+newer version?" and get back download metadata. The surrounding infrastructure
+has grown beyond what the domain complexity warrants.</p>
+<p><strong>Verdict:</strong> Moderately over-engineered. The architecture itself is sound but
+scope has expanded beyond current needs, and several structures are defined but
+never consumed.</p>
+<h2 id="what-is-well-engineered">What is Well-Engineered<a class="headerlink" href="#what-is-well-engineered" title="Permanent link">&para;</a></h2>
+<h3 id="business-logic-internalupdate">Business Logic (<code>internal/update/</code>)<a class="headerlink" href="#business-logic-internalupdate" title="Permanent link">&para;</a></h3>
+<p>652 lines of production code, 1,225 lines of tests. Semver comparison, release
+filtering, pre-release handling, minimum-version enforcement, pagination. No
+unnecessary abstractions. 1.9:1 test-to-code ratio. This is the heart of the
+service and it is appropriately scoped.</p>
+<h3 id="rate-limiting-removal">Rate Limiting Removal<a class="headerlink" href="#rate-limiting-removal" title="Permanent link">&para;</a></h3>
+<p>The CLAUDE.md still references a custom token bucket in <code>internal/ratelimit/</code>,
+but that directory no longer exists. Rate limiting has been correctly delegated
+to the reverse proxy. This was a good architectural decision.</p>
+<h3 id="model-validation">Model Validation<a class="headerlink" href="#model-validation" title="Permanent link">&para;</a></h3>
+<p>Multi-layer validation: struct-level <code>Validate()</code> methods, request
+<code>Normalize()</code> + <code>Validate()</code>, and cascading config validation. Thorough without
+being excessive. 1.8:1 test-to-code ratio on models.</p>
+<h3 id="docker-and-deployment-hardening">Docker and Deployment Hardening<a class="headerlink" href="#docker-and-deployment-hardening" title="Permanent link">&para;</a></h3>
+<p>Distroless image, non-root user, read-only filesystem, capability dropping, a
+dedicated health check binary (<code>cmd/healthcheck/</code>), resource limits in
+Kubernetes manifests. Proportionate security for a service that manages software
+distribution.</p>
+<h3 id="api-design">API Design<a class="headerlink" href="#api-design" title="Permanent link">&para;</a></h3>
+<p>Clean REST API with versioned paths (<code>/api/v1</code>), proper error types
+(<code>ServiceError</code> mapped to HTTP status codes), consistent JSON response formats,
+and an OpenAPI 3.0.3 specification. The middleware chain (auth -&gt; permissions -&gt;
+handler) is straightforward.</p>
+<h2 id="areas-of-concern">Areas of Concern<a class="headerlink" href="#areas-of-concern" title="Permanent link">&para;</a></h2>
+<h3 id="1-admin-ui-high">1. Admin UI (High)<a class="headerlink" href="#1-admin-ui-high" title="Permanent link">&para;</a></h3>
+<p><strong>580 lines</strong> of handler code (<code>handlers_admin.go</code>), HTML templates with HTMX
+partials, and cookie-based session authentication alongside the API's Bearer
+token auth.</p>
+<p>Impact:</p>
+<ul>
+<li>18 admin-specific handler functions that parallel the 15 REST API handlers</li>
+<li>A second authentication mechanism (cookie sessions vs Bearer tokens), including
+  a separate <code>adminSessionMiddleware</code> and <code>isValidAdminKey</code> function</li>
+<li>Template rendering, flash messages, form handling</li>
+<li><code>allPlatforms</code> and <code>allArchitectures</code> slice literals duplicated from <code>models</code></li>
+</ul>
+<p>The admin UI roughly doubles the API layer's surface area. For an update service
+managed by developers, Swagger UI (already served at <code>/api/v1/docs</code>) covers
+interactive API exploration. A custom web UI is hard to justify.</p>
+<p><strong>Recommendation:</strong> Remove the admin UI entirely, or break it into a separate
+repository so it does not add complexity to the API server.</p>
+<h3 id="2-four-storage-providers-medium">2. Four Storage Providers (Medium)<a class="headerlink" href="#2-four-storage-providers-medium" title="Permanent link">&para;</a></h3>
+<p>The storage interface has <strong>18 methods</strong> implemented <strong>4 times</strong>:</p>
 <table>
 <thead>
 <tr>
-<th>Feature</th>
-<th>Location</th>
-<th>Notes</th>
+<th>Provider</th>
+<th>LOC</th>
+<th>Use Case</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>CORSConfig</code> type + <code>server.cors</code> block</td>
-<td><code>internal/models/config.go</code></td>
-<td>Proxy sets <code>Access-Control-Allow-*</code> headers</td>
+<td>Memory</td>
+<td>356</td>
+<td>Testing only</td>
 </tr>
 <tr>
-<td><code>RateLimitConfig</code> type + <code>security.rate_limit</code> block</td>
-<td><code>internal/models/config.go</code></td>
-<td>Proxy enforces request limits</td>
+<td>JSON</td>
+<td>510</td>
+<td>Simple deployments</td>
 </tr>
 <tr>
-<td><code>SecurityConfig.TrustedProxies</code></td>
-<td><code>internal/models/config.go</code></td>
-<td>Proxy is unconditionally trusted</td>
+<td>PostgreSQL</td>
+<td>587</td>
+<td>Production at scale</td>
 </tr>
 <tr>
-<td><code>SecurityConfig.JWTSecret</code></td>
-<td><code>internal/models/config.go</code></td>
-<td>Unused in the current codebase</td>
-</tr>
-<tr>
-<td><code>corsMiddleware</code> + <code>WithRateLimiter</code> wiring</td>
-<td><code>internal/api/routes.go</code></td>
-<td>~30 lines</td>
-</tr>
-<tr>
-<td><code>internal/ratelimit/</code> package</td>
-<td>entire directory</td>
-<td><code>limiter.go</code>, <code>memory.go</code>, <code>middleware.go</code> + tests</td>
-</tr>
-<tr>
-<td>Rate limiter wiring</td>
-<td><code>cmd/updater/updater.go</code></td>
-<td>~8 lines</td>
-</tr>
-<tr>
-<td>CORS + rate limit tests</td>
-<td><code>internal/api/security_test.go</code>, <code>internal/models/config_test.go</code></td>
-<td>Remove only the cases for removed features</td>
+<td>SQLite</td>
+<td>657</td>
+<td>Lightweight production</td>
 </tr>
 </tbody>
 </table>
-<h3 id="unchanged">Unchanged<a class="headerlink" href="#unchanged" title="Permanent link">&para;</a></h3>
+<p>Plus <strong>~1,300 lines</strong> of sqlc-generated code across both database providers,
+plus <code>dbconvert.go</code> (113 lines of marshal/unmarshal helpers that exist partly
+because two different DB drivers use different type conventions).</p>
+<p>The Memory provider is justified as a test double. JSON and SQLite serve the
+same niche (simple, file-based single-node deployment). Maintaining both means
+two SQL schemas, two sqlc configurations, and parallel type-conversion code —
+including thin wrapper functions like <code>unmarshalPlatformsFromString</code> that exist
+solely because SQLite returns <code>string</code> where Postgres returns <code>[]byte</code>.</p>
+<p><strong>Recommendation:</strong> Drop JSON or SQLite (SQLite is the better file-based option
+as it supports concurrent readers and atomic writes). Keep PostgreSQL for
+production. This removes an entire sqlc target and ~550–650 lines.</p>
+<h3 id="3-factory-pattern-is-unused-in-production-medium">3. Factory Pattern Is Unused in Production (Medium)<a class="headerlink" href="#3-factory-pattern-is-unused-in-production-medium" title="Permanent link">&para;</a></h3>
+<p><code>internal/storage/factory.go</code> defines a <code>Factory</code> struct with <code>Create()</code>,
+<code>ValidateConfig()</code>, and <code>GetSupportedProviders()</code>. <code>initializeStorage()</code> in
+<code>cmd/updater/updater.go</code> implements the same switch statement independently,
+bypassing the factory entirely. The factory is only exercised in tests.</p>
+<p>There is also a dual-config problem: <code>storage.Config</code> (in <code>interface.go</code>) and
+<code>models.StorageConfig</code> (in <code>models/config.go</code>) both describe storage
+configuration. The factory converts between them; main.go constructs
+<code>storage.Config</code> directly, which makes <code>models.StorageConfig</code> a transport-only
+type and <code>storage.Config</code> partially redundant.</p>
+<p><strong>Recommendation:</strong> Either use the factory in main (and delete <code>initializeStorage</code>),
+or delete the factory and consolidate on a single config type. There is no reason
+to maintain both.</p>
+<h3 id="4-unused-configuration-surface-area-medium">4. Unused Configuration Surface Area (Medium)<a class="headerlink" href="#4-unused-configuration-surface-area-medium" title="Permanent link">&para;</a></h3>
+<p>The config system defines ~50 fields across 12 structs. Several are fully
+defined, validated, and tested but never consumed:</p>
 <ul>
-<li>API key authentication (<code>authMiddleware</code>, <code>OptionalAuth</code>)</li>
-<li>Permission enforcement (<code>RequirePermission</code>, read/write/admin hierarchy)</li>
-<li>Admin cookie session middleware (<code>adminSessionMiddleware</code>)</li>
-<li><code>EnableAuth</code> config toggle</li>
-<li>All HTTP handlers, OpenAPI spec, request/response models</li>
-<li>Logging middleware, panic recovery middleware</li>
+<li><strong>CacheConfig, RedisConfig, MemoryConfig</strong> (~11 fields): No caching layer
+  exists anywhere in the handlers or service. The config, its defaults, and its
+  validation are pure scaffolding for a feature that does not exist.</li>
+<li><strong>LoggingConfig rotation fields</strong> (<code>max_size</code>, <code>max_backups</code>, <code>max_age</code>,
+  <code>compress</code>): Defined in config but the logger package (<code>internal/logger/</code>)
+  never reads them. No log rotation library is imported.</li>
+<li><strong>ApplicationConfig</strong> (9 fields): <code>UpdateCheckURL</code>, <code>NotificationURL</code>,
+  <code>AnalyticsEnabled</code>, <code>AutoUpdate</code>, <code>UpdateInterval</code>, <code>RequiredUpdate</code>,
+  <code>AllowPrerelease</code>, <code>MinVersion</code>, <code>MaxVersion</code>. These are stored and returned in
+  API responses, but the update service never reads any of them to alter
+  behavior. <code>ApplicationConfig</code> is a data bag with no runtime effect. The only
+  field that actually matters for the service is <code>Platforms</code> on <code>Application</code>
+  itself, which is checked in <code>SupportsPlatform()</code>.</li>
 </ul>
-<h2 id="deprecation-warning">Deprecation Warning<a class="headerlink" href="#deprecation-warning" title="Permanent link">&para;</a></h2>
-<p>On startup, <code>LoadConfig</code> will perform a second decode into a <code>deprecatedConfig</code> struct that retains the old fields:</p>
-<div class="language-go highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kd">type</span><span class="w"> </span><span class="nx">deprecatedConfig</span><span class="w"> </span><span class="kd">struct</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="nx">Server</span><span class="w">   </span><span class="kd">struct</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">CORS</span><span class="w"> </span><span class="kd">interface</span><span class="p">{}</span><span class="w"> </span><span class="s">`yaml:&quot;cors&quot;`</span><span class="w"> </span><span class="p">}</span><span class="w">         </span><span class="s">`yaml:&quot;server&quot;`</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="nx">Security</span><span class="w"> </span><span class="kd">struct</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">        </span><span class="nx">JWTSecret</span><span class="w">      </span><span class="kt">string</span><span class="w">      </span><span class="s">`yaml:&quot;jwt_secret&quot;`</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">        </span><span class="nx">TrustedProxies</span><span class="w"> </span><span class="kd">interface</span><span class="p">{}</span><span class="w"> </span><span class="s">`yaml:&quot;trusted_proxies&quot;`</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">        </span><span class="nx">RateLimit</span><span class="w">      </span><span class="kd">interface</span><span class="p">{}</span><span class="w"> </span><span class="s">`yaml:&quot;rate_limit&quot;`</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="s">`yaml:&quot;security&quot;`</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="p">}</span>
-</span></code></pre></div>
-<p>If any field is non-zero, a <code>slog.Warn</code> is emitted naming the offending key and pointing to <code>docs/reverse-proxy.md</code>. The service continues to start normally — no fatal error.</p>
-<h2 id="new-files">New Files<a class="headerlink" href="#new-files" title="Permanent link">&para;</a></h2>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>examples/
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>  nginx/
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    nginx.conf          # TLS termination, CORS, rate limiting, X-Forwarded-For
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    docker-compose.yml  # nginx + updater compose
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>  traefik/
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    docker-compose.yml  # Traefik v3 + updater with CORS middleware, rate limiting, Let&#39;s Encrypt TLS
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>docs/
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>  reverse-proxy.md      # Overview: what the proxy must handle, links to examples
-</span></code></pre></div>
-<h2 id="updated-files">Updated Files<a class="headerlink" href="#updated-files" title="Permanent link">&para;</a></h2>
+<p><strong>Recommendation:</strong> Remove CacheConfig, RedisConfig, MemoryConfig. Remove unused
+log rotation fields. Either remove ApplicationConfig or implement the fields that
+matter (e.g., <code>AllowPrerelease</code> per application, <code>MinVersion</code> enforcement).</p>
+<h3 id="5-unused-model-types-low-medium">5. Unused Model Types (Low-Medium)<a class="headerlink" href="#5-unused-model-types-low-medium" title="Permanent link">&para;</a></h3>
+<p>Several types are defined but never instantiated or returned by any handler:</p>
 <table>
 <thead>
 <tr>
+<th>Type</th>
 <th>File</th>
-<th>Change</th>
+<th>Issue</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>docker/nginx/nginx.conf</code></td>
-<td>Add <code>Access-Control-Allow-*</code> headers; update comments</td>
+<td><code>ReleaseMetadata</code></td>
+<td><code>models/release.go:100</code></td>
+<td>Defined but nothing creates or reads it</td>
 </tr>
 <tr>
-<td><code>examples/config.yaml</code></td>
-<td>Remove <code>cors</code>, <code>jwt_secret</code>, <code>rate_limit</code>, <code>trusted_proxies</code>, stale <code>api_keys</code></td>
+<td><code>ReleaseFilter</code></td>
+<td><code>models/release.go:80</code></td>
+<td><code>ListReleasesRequest</code> is used instead</td>
 </tr>
 <tr>
-<td><code>docs/SECURITY.md</code></td>
-<td>Remove CORS and rate limiting sections; add "Proxy Layer" section</td>
+<td><code>ReleaseStats</code></td>
+<td><code>models/release.go:297</code></td>
+<td><code>ApplicationStats</code> is used instead</td>
 </tr>
 <tr>
-<td><code>docs/ARCHITECTURE.md</code></td>
-<td>Update security features list</td>
+<td><code>StatsResponse</code></td>
+<td><code>models/response.go:183</code></td>
+<td>No endpoint returns it</td>
 </tr>
 <tr>
-<td><code>mkdocs.yml</code></td>
-<td>Add <code>reverse-proxy.md</code> to nav</td>
+<td><code>ActivityItem</code></td>
+<td><code>models/response.go:192</code></td>
+<td>No endpoint returns it</td>
 </tr>
 <tr>
-<td><code>internal/models/config.go</code></td>
-<td>Remove four config types/fields and their defaults</td>
+<td><code>ValidationErrorResponse</code></td>
+<td><code>models/response.go:199</code></td>
+<td><code>NewValidationErrorResponse</code> exists but is never called</td>
 </tr>
 <tr>
-<td><code>internal/models/config_test.go</code></td>
-<td>Remove <code>RateLimitConfig</code> and <code>CORSConfig</code> test cases</td>
-</tr>
-<tr>
-<td><code>internal/api/routes.go</code></td>
-<td>Remove <code>corsMiddleware</code>, <code>WithRateLimiter</code>; remove CORS opt-in block</td>
-</tr>
-<tr>
-<td><code>internal/api/security_test.go</code></td>
-<td>Remove CORS header assertion tests</td>
-</tr>
-<tr>
-<td><code>cmd/updater/updater.go</code></td>
-<td>Remove <code>ratelimit</code> import and limiter construction</td>
-</tr>
-<tr>
-<td><code>internal/config/</code></td>
-<td>Add <code>checkDeprecatedKeys</code> function</td>
+<td><code>HealthCheckRequest</code></td>
+<td><code>models/request.go:115</code></td>
+<td>No handler parses it</td>
 </tr>
 </tbody>
 </table>
-<h2 id="proxy-responsibilities">Proxy Responsibilities<a class="headerlink" href="#proxy-responsibilities" title="Permanent link">&para;</a></h2>
-<h3 id="cors">CORS<a class="headerlink" href="#cors" title="Permanent link">&para;</a></h3>
-<p>nginx sets <code>Access-Control-Allow-*</code> response headers on all proxied requests. The service no longer handles preflight OPTIONS responses for CORS purposes (the existing OPTIONS handler for unknown routes returns 204 and is unrelated to CORS).</p>
-<h3 id="rate-limiting">Rate limiting<a class="headerlink" href="#rate-limiting" title="Permanent link">&para;</a></h3>
-<p>nginx uses two <code>limit_req_zone</code> zones keyed on <code>$binary_remote_addr</code> to approximate the app's two-tier behaviour:</p>
-<ul>
-<li>Anonymous zone: lower rate (equivalent to the former <code>requests_per_minute</code> / <code>burst_size</code>)</li>
-<li>A separate zone for the <code>/api/</code> path at a higher rate reflects the former <code>authenticated_requests_per_minute</code></li>
-</ul>
-<p>A true per-key authenticated rate limit requires custom logic (e.g., <code>auth_request</code> + Redis) and is out of scope.</p>
-<h3 id="tls">TLS<a class="headerlink" href="#tls" title="Permanent link">&para;</a></h3>
-<p>Both nginx and Traefik examples terminate TLS externally and forward plain HTTP to the service on port 8080.</p>
-<h3 id="real-client-ip">Real client IP<a class="headerlink" href="#real-client-ip" title="Permanent link">&para;</a></h3>
-<p><code>X-Forwarded-For</code> and <code>X-Real-IP</code> are forwarded by the proxy. The service's request logging reads <code>r.RemoteAddr</code> which will be the proxy's IP. If real client IPs are needed in logs, handlers should read <code>X-Real-IP</code>. This is a known trade-off — no logging change is in scope for this PR.</p>
-<h2 id="breaking-config-change">Breaking Config Change<a class="headerlink" href="#breaking-config-change" title="Permanent link">&para;</a></h2>
-<p>Operators using <code>server.cors</code>, <code>security.rate_limit</code>, <code>security.jwt_secret</code>, or <code>security.trusted_proxies</code> in their YAML files will see startup warnings but no crash. They should migrate those concerns to their reverse proxy and remove the deprecated keys from their config.</p>
-<h2 id="out-of-scope">Out of Scope<a class="headerlink" href="#out-of-scope" title="Permanent link">&para;</a></h2>
-<ul>
-<li>Updating request logging to use the forwarded real IP</li>
-<li>Distributed rate limiting (Redis-backed) for HA deployments — this is tracked in roadmap item 3.2</li>
-<li>Multi-tenancy changes</li>
-</ul>
+<p><strong>Recommendation:</strong> Delete all of these. They are dead code that makes the
+models package harder to understand.</p>
+<h3 id="6-observability-infrastructure-without-application-metrics-low-medium">6. Observability Infrastructure Without Application Metrics (Low-Medium)<a class="headerlink" href="#6-observability-infrastructure-without-application-metrics-low-medium" title="Permanent link">&para;</a></h3>
+<p>A Prometheus metrics server starts on a dedicated port (9090) and the OTel
+<code>MeterProvider</code> is configured. The storage instrumentation wrapper
+(<code>internal/observability/storage.go</code>, 240 lines) records latency histograms and
+error counters for every storage call. But <strong>zero application-level metrics are
+emitted</strong> — no request counters, no update-check latency, no version
+distribution histograms.</p>
+<p>The result is a metrics endpoint that publishes Go runtime metrics and
+storage-operation latency, but nothing about the service's own behavior.</p>
+<p><strong>Recommendation:</strong> Either add meaningful application metrics (HTTP request
+count/latency, update-check hits/misses) to justify the infrastructure, or
+remove the Prometheus server and keep only the <code>/health</code> endpoint. The OTel
+tracing wrapper is useful to retain if distributed tracing is actively used.</p>
+<h3 id="7-permission-checking-duplication-low">7. Permission Checking Duplication (Low)<a class="headerlink" href="#7-permission-checking-duplication-low" title="Permanent link">&para;</a></h3>
+<p><code>models.APIKey.HasPermission()</code> and <code>api.SecurityContext.HasPermission()</code> both
+implement the same permission hierarchy (admin &gt; write &gt; read). They differ
+slightly in style but implement identical logic. <code>SecurityContext</code> exists solely
+to wrap <code>*models.APIKey</code> with a slightly different call signature.</p>
+<p><strong>Recommendation:</strong> Remove <code>SecurityContext.HasPermission</code> and call
+<code>APIKey.HasPermission</code> directly from middleware, or remove <code>SecurityContext</code>
+entirely and use <code>*models.APIKey</code> from the request context.</p>
+<h3 id="8-saveapplication-saverelease-do-a-select-before-every-write-low">8. SaveApplication / SaveRelease Do a SELECT Before Every Write (Low)<a class="headerlink" href="#8-saveapplication-saverelease-do-a-select-before-every-write-low" title="Permanent link">&para;</a></h3>
+<p>Both Postgres and SQLite implementations of <code>SaveApplication</code> and <code>SaveRelease</code>
+issue a <code>GET</code> query to decide between <code>INSERT</code> and <code>UPDATE</code>. This is a
+read-then-write pattern that adds an extra round-trip on every save and has
+a TOCTOU window (between the check and the write, another request could
+create the record). Databases support <code>INSERT ... ON CONFLICT DO UPDATE</code>
+(upsert) natively.</p>
+<p><strong>Recommendation:</strong> Replace the SELECT + conditional INSERT/UPDATE pattern with
+a single SQL <code>UPSERT</code> in each provider. This simplifies the code and removes the
+race condition.</p>
+<h2 id="quantified-impact">Quantified Impact<a class="headerlink" href="#quantified-impact" title="Permanent link">&para;</a></h2>
+<p>If the recommendations above were followed:</p>
+<table>
+<thead>
+<tr>
+<th>Change</th>
+<th style="text-align: right;">LOC Removed (est.)</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Remove admin UI</td>
+<td style="text-align: right;">~800</td>
+<td>Eliminates parallel auth, 18 handlers, templates</td>
+</tr>
+<tr>
+<td>Drop JSON or SQLite provider</td>
+<td style="text-align: right;">~550–650</td>
+<td>One fewer provider + sqlc target</td>
+</tr>
+<tr>
+<td>Remove factory or use it consistently</td>
+<td style="text-align: right;">~80</td>
+<td>Eliminates dead code and config duplication</td>
+</tr>
+<tr>
+<td>Remove unused config (cache, log rotation)</td>
+<td style="text-align: right;">~150</td>
+<td>Fewer structs, simpler validation</td>
+</tr>
+<tr>
+<td>Remove unused model types</td>
+<td style="text-align: right;">~80</td>
+<td>Cleaner models package</td>
+</tr>
+<tr>
+<td>Remove ApplicationConfig unused fields</td>
+<td style="text-align: right;">~60</td>
+<td>Config reflects reality</td>
+</tr>
+<tr>
+<td>Fix permission duplication</td>
+<td style="text-align: right;">~30</td>
+<td>One source of truth</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td style="text-align: right;"><strong>~1,750–1,850</strong></td>
+<td><strong>~19–20% of production code</strong></td>
+</tr>
+</tbody>
+</table>
+<h2 id="claudemd-corrections-needed">CLAUDE.md Corrections Needed<a class="headerlink" href="#claudemd-corrections-needed" title="Permanent link">&para;</a></h2>
+<ol>
+<li>States rate limiting uses "Token bucket algorithm (<code>internal/ratelimit/</code>)" --
+   this directory does not exist.</li>
+<li>Does not mention the admin UI.</li>
+<li>Mentions <code>CacheConfig</code> / cache without noting it is entirely unused.</li>
+</ol>
+<h2 id="conclusion">Conclusion<a class="headerlink" href="#conclusion" title="Permanent link">&para;</a></h2>
+<p>The core architecture (layered design, clean interfaces, good test coverage) is
+sound. The over-engineering is in <strong>scope creep and dead code</strong>: features and
+infrastructure were built before they were needed (caching config, admin UI,
+multiple storage backends for the same tier, unused model types). The
+<code>ApplicationConfig</code> struct is the clearest example: 9 fields stored and
+validated but none of them alter service behavior.</p>
+<p>The service would benefit most from trimming unused code and converging on fewer,
+better-supported paths. The highest-value changes are removing the admin UI and
+consolidating to two storage providers (Memory + PostgreSQL, or Memory + SQLite).</p>
+<pre class="mermaid"><code>graph LR
+    subgraph Keep["Keep As-Is"]
+        A[Business Logic]
+        B[Model Validation]
+        C[Docker Hardening]
+        D[API Design]
+        E[OTel Tracing]
+    end
+
+    subgraph Simplify["Simplify"]
+        F[Storage: 4 -&gt; 2 providers]
+        G[Config: remove unused fields]
+        H[Metrics: add real metrics or remove server]
+        I[Factory: use it or lose it]
+        J[Permission check: one impl]
+        K[SaveRelease/App: use upsert]
+    end
+
+    subgraph Remove["Remove"]
+        L[Admin UI]
+        M[Unused model types]
+        N[ApplicationConfig unused fields]
+    end
+
+    style A fill:#d4edda
+    style B fill:#d4edda
+    style C fill:#d4edda
+    style D fill:#d4edda
+    style E fill:#d4edda
+    style F fill:#fff3cd
+    style G fill:#fff3cd
+    style H fill:#fff3cd
+    style I fill:#fff3cd
+    style J fill:#fff3cd
+    style K fill:#fff3cd
+    style L fill:#f8d7da
+    style M fill:#f8d7da
+    style N fill:#f8d7da</code></pre>
 
 
 
