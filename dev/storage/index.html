@@ -757,34 +757,6 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../admin-ui/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Admin UI
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -1102,17 +1074,6 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#json-storage" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        JSON Storage
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#memory-storage" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1161,17 +1122,6 @@
   
     <nav class="md-nav" aria-label="Provider Details">
       <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#json-file-storage" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        JSON File Storage
-      
-    </span>
-  </a>
-  
-</li>
         
           <li class="md-nav__item">
   <a href="#memory-storage_1" class="md-nav__link">
@@ -1244,17 +1194,6 @@
     <span class="md-ellipsis">
       
         Type Conversion
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#factory-pattern" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Factory Pattern
       
     </span>
   </a>
@@ -1761,17 +1700,6 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#json-storage" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        JSON Storage
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#memory-storage" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1820,17 +1748,6 @@
   
     <nav class="md-nav" aria-label="Provider Details">
       <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#json-file-storage" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        JSON File Storage
-      
-    </span>
-  </a>
-  
-</li>
         
           <li class="md-nav__item">
   <a href="#memory-storage_1" class="md-nav__link">
@@ -1910,17 +1827,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#factory-pattern" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Factory Pattern
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#database-schema-docs" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1974,12 +1880,10 @@
 <p>The updater service uses a pluggable storage layer that supports multiple backends for persisting application and release metadata. All providers implement the same <code>Storage</code> interface, enabling seamless switching between backends based on deployment needs.</p>
 <h2 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>graph TD
-    A[Storage Interface] --&gt; B[JSON File Storage]
-    A --&gt; C[Memory Storage]
+    A[Storage Interface] --&gt; C[Memory Storage]
     A --&gt; D[PostgreSQL Storage]
     A --&gt; E[SQLite Storage]
-    F[Factory] --&gt; A
-    G[Configuration] --&gt; F
+    G[Configuration] --&gt; A
     D --&gt; H[sqlc Generated Queries]
     E --&gt; I[sqlc Generated Queries]
     H --&gt; J[PostgreSQL Database]
@@ -1989,7 +1893,6 @@
 <thead>
 <tr>
 <th>Feature</th>
-<th>JSON</th>
 <th>Memory</th>
 <th>SQLite</th>
 <th>PostgreSQL</th>
@@ -1998,35 +1901,30 @@
 <tbody>
 <tr>
 <td>Persistence</td>
-<td>File-based</td>
 <td>None (in-memory)</td>
 <td>File-based</td>
 <td>Server-based</td>
 </tr>
 <tr>
 <td>Concurrency</td>
-<td>Thread-safe with caching</td>
 <td>Thread-safe (RWMutex)</td>
 <td>Single writer (WAL mode)</td>
 <td>Full concurrent access</td>
 </tr>
 <tr>
 <td>Setup</td>
-<td>No external dependencies</td>
 <td>No setup needed</td>
 <td>No external dependencies</td>
 <td>Requires PostgreSQL server</td>
 </tr>
 <tr>
 <td>Performance</td>
-<td>Good for small datasets</td>
 <td>Fastest (no I/O)</td>
 <td>Good for medium datasets</td>
 <td>Best for large datasets</td>
 </tr>
 <tr>
 <td>Use Case</td>
-<td>Development, small deployments</td>
 <td>Testing, development</td>
 <td>Single-server deployments</td>
 <td>Production, multi-server</td>
@@ -2034,13 +1932,11 @@
 <tr>
 <td>CGO Required</td>
 <td>No</td>
-<td>No</td>
 <td>No (pure Go driver)</td>
 <td>No</td>
 </tr>
 <tr>
 <td>Schema Management</td>
-<td>Automatic</td>
 <td>Automatic</td>
 <td>Automatic (embedded DDL)</td>
 <td>Manual migration required</td>
@@ -2071,30 +1967,23 @@
         +DeleteAPIKey(ctx, id) error
     }</code></pre>
 <h2 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h2>
-<h3 id="json-storage">JSON Storage<a class="headerlink" href="#json-storage" title="Permanent link">&para;</a></h3>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">storage</span><span class="p">:</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">json</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data/releases.json</span>
-</span></code></pre></div>
 <h3 id="memory-storage">Memory Storage<a class="headerlink" href="#memory-storage" title="Permanent link">&para;</a></h3>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">storage</span><span class="p">:</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">memory</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">storage</span><span class="p">:</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">memory</span>
 </span></code></pre></div>
 <h3 id="sqlite-storage">SQLite Storage<a class="headerlink" href="#sqlite-storage" title="Permanent link">&para;</a></h3>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">storage</span><span class="p">:</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sqlite</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span><span class="nt">database</span><span class="p">:</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="nt">dsn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data/updater.db</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">storage</span><span class="p">:</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sqlite</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">database</span><span class="p">:</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="nt">dsn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data/updater.db</span>
 </span></code></pre></div>
 <h3 id="postgresql-storage">PostgreSQL Storage<a class="headerlink" href="#postgresql-storage" title="Permanent link">&para;</a></h3>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nt">storage</span><span class="p">:</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">postgres</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span><span class="nt">database</span><span class="p">:</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span><span class="nt">dsn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">postgres://user:password@localhost:5432/updater?sslmode=disable</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">storage</span><span class="p">:</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">postgres</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span><span class="nt">database</span><span class="p">:</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="nt">dsn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">postgres://user:password@localhost:5432/updater?sslmode=disable</span>
 </span></code></pre></div>
 <h2 id="provider-details">Provider Details<a class="headerlink" href="#provider-details" title="Permanent link">&para;</a></h2>
-<h3 id="json-file-storage">JSON File Storage<a class="headerlink" href="#json-file-storage" title="Permanent link">&para;</a></h3>
-<p>Stores all data in a single JSON file with an in-memory cache. Thread-safe using read-write mutexes with configurable cache TTL. Best suited for development and small deployments with limited data.</p>
 <h3 id="memory-storage_1">Memory Storage<a class="headerlink" href="#memory-storage_1" title="Permanent link">&para;</a></h3>
 <p>Stores data in Go maps protected by <code>sync.RWMutex</code>. Returns copies of all data to prevent external mutation. Data is lost on service restart. Ideal for testing and development environments.</p>
 <h3 id="sqlite-storage_1">SQLite Storage<a class="headerlink" href="#sqlite-storage_1" title="Permanent link">&para;</a></h3>
@@ -2104,7 +1993,7 @@
 <li><strong>Foreign keys</strong> enabled for referential integrity</li>
 <li><strong>Single connection</strong> to prevent concurrency issues with SQLite's single-writer model</li>
 <li><strong>Semantic version comparison</strong> performed in Go after fetching results</li>
-<li><strong>Upsert pattern</strong>: check-then-create/update for <code>SaveApplication</code> and <code>SaveRelease</code></li>
+<li><strong>Upsert pattern</strong>: SQL upserts (<code>INSERT ... ON CONFLICT</code>) for <code>SaveApplication</code> and <code>SaveRelease</code></li>
 </ul>
 <h3 id="postgresql-storage_1">PostgreSQL Storage<a class="headerlink" href="#postgresql-storage_1" title="Permanent link">&para;</a></h3>
 <p>Uses <code>pgx/v5</code> with connection pooling via <code>pgxpool</code>. All queries are generated by sqlc for type safety. Key characteristics:</p>
@@ -2114,7 +2003,7 @@
 <li><strong>Timestamptz</strong> for proper timezone-aware timestamps</li>
 <li><strong>Cascade deletes</strong> from applications to releases</li>
 <li><strong>Semantic version comparison</strong> performed in Go after fetching results</li>
-<li><strong>Upsert pattern</strong>: check-then-create/update for <code>SaveApplication</code> and <code>SaveRelease</code></li>
+<li><strong>Upsert pattern</strong>: SQL upserts (<code>INSERT ... ON CONFLICT</code>) for <code>SaveApplication</code> and <code>SaveRelease</code></li>
 </ul>
 <h2 id="database-schema">Database Schema<a class="headerlink" href="#database-schema" title="Permanent link">&para;</a></h2>
 <p>Both database providers share the same logical schema with engine-specific type differences:</p>
@@ -2197,22 +2086,15 @@
 <li><strong>Metadata</strong>: <code>map[string]string</code> to/from JSON</li>
 </ul>
 <p>Each provider has additional helpers for engine-specific type conversions (e.g., <code>pgtype.Text</code> for PostgreSQL, <code>sql.NullString</code> for SQLite).</p>
-<h2 id="factory-pattern">Factory Pattern<a class="headerlink" href="#factory-pattern" title="Permanent link">&para;</a></h2>
-<p>The <code>Factory</code> type provides centralized provider instantiation:</p>
-<div class="language-go highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nx">factory</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="nx">storage</span><span class="p">.</span><span class="nx">NewFactory</span><span class="p">()</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nx">store</span><span class="p">,</span><span class="w"> </span><span class="nx">err</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="nx">factory</span><span class="p">.</span><span class="nx">Create</span><span class="p">(</span><span class="nx">config</span><span class="p">.</span><span class="nx">Storage</span><span class="p">)</span>
-</span></code></pre></div>
-<p>The factory validates configuration before creating providers and supports all four backend types.</p>
 <h2 id="database-schema-docs">Database Schema Docs<a class="headerlink" href="#database-schema-docs" title="Permanent link">&para;</a></h2>
 <p>The auto-generated schema reference (including ER diagrams per table) lives in
 the <a href="../db/">Database</a> section. It is generated from the live
 PostgreSQL schema by running:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>make<span class="w"> </span>docs-db
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>make<span class="w"> </span>docs-db
 </span></code></pre></div>
 <h2 id="testing">Testing<a class="headerlink" href="#testing" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>Memory</strong>: Full CRUD tests with concurrency testing</li>
-<li><strong>JSON</strong>: File I/O tests with caching and concurrent access</li>
 <li><strong>SQLite</strong>: Full CRUD tests using <code>:memory:</code> (always runs, no external DB)</li>
 <li><strong>PostgreSQL</strong>: Full CRUD tests skipped unless <code>POSTGRES_TEST_DSN</code> env var is set</li>
 </ul>

@@ -21,10 +21,6 @@
          <lastmod>2026-03-02</lastmod>
     </url>
     <url>
-         <loc>https://griffinskudder.github.io/updater/dev/admin-ui/</loc>
-         <lastmod>2026-03-02</lastmod>
-    </url>
-    <url>
          <loc>https://griffinskudder.github.io/updater/dev/api/</loc>
          <lastmod>2026-03-02</lastmod>
     </url>
@@ -158,6 +154,14 @@
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/plans/2026-02-27-architecture-review/</loc>
+         <lastmod>2026-03-02</lastmod>
+    </url>
+    <url>
+         <loc>https://griffinskudder.github.io/updater/dev/plans/2026-03-02-architecture-cleanup-design/</loc>
+         <lastmod>2026-03-02</lastmod>
+    </url>
+    <url>
+         <loc>https://griffinskudder.github.io/updater/dev/plans/2026-03-02-architecture-cleanup-implementation/</loc>
          <lastmod>2026-03-02</lastmod>
     </url>
     <url>

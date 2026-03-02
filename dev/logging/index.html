@@ -757,34 +757,6 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../admin-ui/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Admin UI
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -1958,30 +1930,6 @@
 <td></td>
 <td>File path when output is <code>file</code></td>
 </tr>
-<tr>
-<td><code>max_size</code></td>
-<td>int</td>
-<td><code>100</code></td>
-<td>Maximum log file size in MB (for rotation)</td>
-</tr>
-<tr>
-<td><code>max_backups</code></td>
-<td>int</td>
-<td><code>3</code></td>
-<td>Maximum number of old log files to retain</td>
-</tr>
-<tr>
-<td><code>max_age</code></td>
-<td>int</td>
-<td><code>28</code></td>
-<td>Maximum days to retain old log files</td>
-</tr>
-<tr>
-<td><code>compress</code></td>
-<td>bool</td>
-<td><code>true</code></td>
-<td>Compress rotated log files</td>
-</tr>
 </tbody>
 </table>
 <h3 id="example-configuration">Example Configuration<a class="headerlink" href="#example-configuration" title="Permanent link">&para;</a></h3>
@@ -1989,16 +1937,6 @@
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">info</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">format</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">json</span>
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span><span class="nt">output</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">stdout</span>
-</span></code></pre></div>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">logging</span><span class="p">:</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">debug</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">format</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">text</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span><span class="nt">output</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">file</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">  </span><span class="nt">file_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/var/log/updater/service.log</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span><span class="nt">max_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">  </span><span class="nt">max_backups</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">  </span><span class="nt">max_age</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30</span>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">  </span><span class="nt">compress</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 </span></code></pre></div>
 <h2 id="log-levels">Log Levels<a class="headerlink" href="#log-levels" title="Permanent link">&para;</a></h2>
 <table>
@@ -2069,10 +2007,10 @@
 <p>These fields are injected via <code>slog.With()</code> during logger initialization, ensuring they appear on all log entries without requiring manual inclusion in each log call.</p>
 <h4 id="build-metadata-injection">Build Metadata Injection<a class="headerlink" href="#build-metadata-injection" title="Permanent link">&para;</a></h4>
 <p>Build-time fields are injected via ldflags during compilation. Local development builds will show "unknown" for these values; CI/CD pipelines inject proper values:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>go<span class="w"> </span>build<span class="w"> </span>-ldflags<span class="w"> </span><span class="s2">&quot;-X &#39;updater/internal/version.Version=v1.0.0&#39; \</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="s2">                   -X &#39;updater/internal/version.GitCommit=a1b2c3d&#39; \</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="s2">                   -X &#39;updater/internal/version.BuildDate=2026-02-21T10:00:00Z&#39;&quot;</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">         </span>./cmd/updater
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>go<span class="w"> </span>build<span class="w"> </span>-ldflags<span class="w"> </span><span class="s2">&quot;-X &#39;updater/internal/version.Version=v1.0.0&#39; \</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="s2">                   -X &#39;updater/internal/version.GitCommit=a1b2c3d&#39; \</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="s2">                   -X &#39;updater/internal/version.BuildDate=2026-02-21T10:00:00Z&#39;&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">         </span>./cmd/updater
 </span></code></pre></div>
 <h3 id="http-request-logging">HTTP Request Logging<a class="headerlink" href="#http-request-logging" title="Permanent link">&para;</a></h3>
 <p>Every HTTP request is logged with the following fields:</p>
@@ -2190,12 +2128,12 @@ The fields present depend on which operation triggered the event.</p>
 <h2 id="output-formats">Output Formats<a class="headerlink" href="#output-formats" title="Permanent link">&para;</a></h2>
 <h3 id="json-format">JSON Format<a class="headerlink" href="#json-format" title="Permanent link">&para;</a></h3>
 <p>Produces machine-parseable JSON output, suitable for log aggregation systems (ELK, Datadog, CloudWatch):</p>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="p">{</span><span class="nt">&quot;time&quot;</span><span class="p">:</span><span class="s2">&quot;2026-02-15T10:30:00Z&quot;</span><span class="p">,</span><span class="nt">&quot;level&quot;</span><span class="p">:</span><span class="s2">&quot;INFO&quot;</span><span class="p">,</span><span class="nt">&quot;msg&quot;</span><span class="p">:</span><span class="s2">&quot;HTTP request&quot;</span><span class="p">,</span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="s2">&quot;v1.0.0&quot;</span><span class="p">,</span><span class="nt">&quot;git_commit&quot;</span><span class="p">:</span><span class="s2">&quot;a1b2c3d&quot;</span><span class="p">,</span><span class="nt">&quot;build_date&quot;</span><span class="p">:</span><span class="s2">&quot;2026-02-21T10:00:00Z&quot;</span><span class="p">,</span><span class="nt">&quot;method&quot;</span><span class="p">:</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span><span class="nt">&quot;path&quot;</span><span class="p">:</span><span class="s2">&quot;/api/v1/updates/myapp/check&quot;</span><span class="p">,</span><span class="nt">&quot;remote_addr&quot;</span><span class="p">:</span><span class="s2">&quot;192.168.1.1:54321&quot;</span><span class="p">}</span>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p">{</span><span class="nt">&quot;time&quot;</span><span class="p">:</span><span class="s2">&quot;2026-02-15T10:30:00Z&quot;</span><span class="p">,</span><span class="nt">&quot;level&quot;</span><span class="p">:</span><span class="s2">&quot;INFO&quot;</span><span class="p">,</span><span class="nt">&quot;msg&quot;</span><span class="p">:</span><span class="s2">&quot;HTTP request&quot;</span><span class="p">,</span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="s2">&quot;v1.0.0&quot;</span><span class="p">,</span><span class="nt">&quot;git_commit&quot;</span><span class="p">:</span><span class="s2">&quot;a1b2c3d&quot;</span><span class="p">,</span><span class="nt">&quot;build_date&quot;</span><span class="p">:</span><span class="s2">&quot;2026-02-21T10:00:00Z&quot;</span><span class="p">,</span><span class="nt">&quot;method&quot;</span><span class="p">:</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span><span class="nt">&quot;path&quot;</span><span class="p">:</span><span class="s2">&quot;/api/v1/updates/myapp/check&quot;</span><span class="p">,</span><span class="nt">&quot;remote_addr&quot;</span><span class="p">:</span><span class="s2">&quot;192.168.1.1:54321&quot;</span><span class="p">}</span>
 </span></code></pre></div>
 <p>Note the global fields (<code>version</code>, <code>git_commit</code>, <code>build_date</code>) automatically included in every log message.</p>
 <h3 id="text-format">Text Format<a class="headerlink" href="#text-format" title="Permanent link">&para;</a></h3>
 <p>Produces human-readable text output, suitable for development:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>time=2026-02-15T10:30:00Z level=INFO msg=&quot;HTTP request&quot; version=v1.0.0 git_commit=a1b2c3d build_date=2026-02-21T10:00:00Z method=GET path=/api/v1/updates/myapp/check remote_addr=192.168.1.1:54321
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>time=2026-02-15T10:30:00Z level=INFO msg=&quot;HTTP request&quot; version=v1.0.0 git_commit=a1b2c3d build_date=2026-02-21T10:00:00Z method=GET path=/api/v1/updates/myapp/check remote_addr=192.168.1.1:54321
 </span></code></pre></div>
 <h2 id="request-flow">Request Flow<a class="headerlink" href="#request-flow" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>sequenceDiagram

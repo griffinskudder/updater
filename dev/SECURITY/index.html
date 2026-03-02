@@ -757,34 +757,6 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../admin-ui/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Admin UI
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -2782,9 +2754,7 @@ display prefix are persisted.</p>
 </tr>
 </tbody>
 </table>
-<p>All key management endpoints require <code>admin</code> permission. The admin UI at
-<code>/admin/keys</code> and <code>/admin/keys/new</code> provides a browser-based interface for the
-same operations.</p>
+<p>All key management endpoints require <code>admin</code> permission.</p>
 <h3 id="permission-model_1">Permission Model<a class="headerlink" href="#permission-model_1" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -2830,7 +2800,7 @@ same operations.</p>
 </li>
 <li>
 <p><strong>Revocation</strong>: Revoke compromised keys immediately via <code>DELETE
-   /api/v1/admin/keys/{id}</code> or the <code>/admin/keys</code> UI.</p>
+   /api/v1/admin/keys/{id}</code>.</p>
 </li>
 </ol>
 <h2 id="configuration-security">Configuration Security<a class="headerlink" href="#configuration-security" title="Permanent link">&para;</a></h2>
@@ -2996,7 +2966,7 @@ examples that terminate TLS and forward plain HTTP to the service on port 8080.<
 </span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
 </span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;enabled&quot;: false}&#39;</span>
 </span></code></pre></div>
-<p>Key IDs are visible in <code>GET /api/v1/admin/keys</code> or the <code>/admin/keys</code> admin UI.</p>
+<p>Key IDs are visible in <code>GET /api/v1/admin/keys</code>.</p>
 <h2 id="security-testing">Security Testing<a class="headerlink" href="#security-testing" title="Permanent link">&para;</a></h2>
 <h3 id="security-validation-checklist">Security Validation Checklist<a class="headerlink" href="#security-validation-checklist" title="Permanent link">&para;</a></h3>
 <ul>

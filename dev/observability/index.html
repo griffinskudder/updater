@@ -757,34 +757,6 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../admin-ui/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Admin UI
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -2133,6 +2105,7 @@
     subgraph "Updater Service"
         API["HTTP API&lt;br/&gt;(Gorilla Mux)"]
         OTelMux["otelmux Middleware"]
+        MetricsMW["Metrics Middleware"]
         Handlers["API Handlers"]
         IS["InstrumentedStorage"]
         Storage["Storage Backend"]
@@ -2155,11 +2128,13 @@
         Collector["OTel Collector"]
     end
 
-    API --&gt; OTelMux --&gt; Handlers
+    API --&gt; OTelMux --&gt; MetricsMW --&gt; Handlers
     Handlers --&gt; IS --&gt; Storage
     Health --&gt; Storage
 
     OTelMux --&gt; TP
+    MetricsMW --&gt; MP
+    Handlers --&gt; MP
     IS --&gt; TP
     IS --&gt; MP
 
@@ -2257,6 +2232,56 @@
 <li><code>http.server.request.duration</code> - Request duration histogram</li>
 <li><code>http.server.active_requests</code> - Currently active requests gauge</li>
 </ul>
+<h4 id="http-metrics-via-metricsmiddleware">HTTP Metrics (via MetricsMiddleware)<a class="headerlink" href="#http-metrics-via-metricsmiddleware" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Type</th>
+<th>Labels</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>updater_http_requests_total</code></td>
+<td>Counter</td>
+<td><code>method</code>, <code>path</code>, <code>status</code></td>
+<td>Total HTTP requests</td>
+</tr>
+<tr>
+<td><code>updater_http_request_duration_seconds</code></td>
+<td>Histogram</td>
+<td><code>method</code>, <code>path</code>, <code>status</code></td>
+<td>Request latency in seconds</td>
+</tr>
+</tbody>
+</table>
+<h4 id="application-metrics-via-appmetrics">Application Metrics (via AppMetrics)<a class="headerlink" href="#application-metrics-via-appmetrics" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Type</th>
+<th>Labels</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>updater_update_checks_total</code></td>
+<td>Counter</td>
+<td><code>app_id</code>, <code>result</code></td>
+<td>Update check outcomes (<code>update_available</code>, <code>no_update</code>, <code>error</code>)</td>
+</tr>
+<tr>
+<td><code>updater_releases_registered_total</code></td>
+<td>Counter</td>
+<td><code>app_id</code></td>
+<td>New releases registered</td>
+</tr>
+</tbody>
+</table>
 <h4 id="storage-metrics-via-instrumentedstorage">Storage Metrics (via InstrumentedStorage)<a class="headerlink" href="#storage-metrics-via-instrumentedstorage" title="Permanent link">&para;</a></h4>
 <p>Collected for every storage operation:</p>
 <ul>
@@ -2416,10 +2441,6 @@
 <td>Always returns nil (in-process)</td>
 </tr>
 <tr>
-<td>JSON</td>
-<td>Always returns nil (file verified at init)</td>
-</tr>
-<tr>
 <td>PostgreSQL</td>
 <td>Executes <code>db.PingContext()</code> on the connection pool</td>
 </tr>
@@ -2574,12 +2595,14 @@
 </span></code></pre></div>
 <h2 id="package-structure">Package Structure<a class="headerlink" href="#package-structure" title="Permanent link">&para;</a></h2>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>internal/observability/
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>    observability.go       # SDK setup: TracerProvider, MeterProvider, shutdown
-</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>    metrics.go             # Prometheus HTTP server on metrics port
-</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>    storage.go             # InstrumentedStorage wrapper with tracing and metrics
-</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>    observability_test.go  # Tests for SDK setup and shutdown
-</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>    metrics_test.go        # Tests for metrics server
-</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>    storage_test.go        # Tests for instrumented storage
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>    observability.go           # SDK setup: TracerProvider, MeterProvider, shutdown
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>    metrics.go                 # Prometheus HTTP server on metrics port
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>    httpmiddleware.go          # HTTP request metrics middleware and business metrics
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>    storage.go                 # InstrumentedStorage wrapper with tracing and metrics
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>    observability_test.go      # Tests for SDK setup and shutdown
+</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>    metrics_test.go            # Tests for metrics server
+</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>    httpmiddleware_test.go     # Tests for HTTP and app metrics
+</span><span id="__span-12-9"><a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>    storage_test.go            # Tests for instrumented storage
 </span></code></pre></div>
 <h2 id="graceful-shutdown">Graceful Shutdown<a class="headerlink" href="#graceful-shutdown" title="Permanent link">&para;</a></h2>
 <p>On application shutdown, the observability stack is cleaned up in order:</p>

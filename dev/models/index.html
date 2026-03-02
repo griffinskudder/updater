@@ -757,34 +757,6 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../admin-ui/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Admin UI
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -1990,15 +1962,11 @@ comments and always reflects the current code:</p>
 </tr>
 <tr>
 <td><code>ApplicationConfig</code></td>
-<td>Per-application update policy settings</td>
+<td>Per-application custom metadata</td>
 </tr>
 <tr>
 <td><code>Release</code></td>
 <td>Release metadata, checksum validation, filtering</td>
-</tr>
-<tr>
-<td><code>ReleaseFilter</code></td>
-<td>Criteria for filtering release queries</td>
 </tr>
 <tr>
 <td><code>APIKey</code></td>
@@ -2010,11 +1978,7 @@ comments and always reflects the current code:</p>
 </tr>
 <tr>
 <td><code>SecurityConfig</code></td>
-<td>Auth settings: bootstrap key, rate limiting, trusted proxies</td>
-</tr>
-<tr>
-<td><code>RateLimitConfig</code></td>
-<td>Two-tier token-bucket rate limiting (anonymous + authenticated)</td>
+<td>Auth settings: bootstrap key, enable/disable authentication</td>
 </tr>
 <tr>
 <td>Request types</td>
@@ -2035,7 +1999,7 @@ comments and always reflects the current code:</p>
 </ol>
 <h3 id="for-service-deployment">For Service Deployment<a class="headerlink" href="#for-service-deployment" title="Permanent link">&para;</a></h3>
 <ol>
-<li>Read the <code>Config</code>, <code>SecurityConfig</code>, and <code>RateLimitConfig</code> sections in the reference</li>
+<li>Read the <code>Config</code> and <code>SecurityConfig</code> sections in the reference</li>
 <li>See <a href="../SECURITY/">Security</a> for the API key management workflow</li>
 </ol>
 <h3 id="for-client-development">For Client Development<a class="headerlink" href="#for-client-development" title="Permanent link">&para;</a></h3>
