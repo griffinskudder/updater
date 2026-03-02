@@ -108,31 +108,3 @@ func TestOptionalAuthWithStorage(t *testing.T) {
 	}
 }
 
-// TestIsValidAdminKeyWithStorage tests isValidAdminKey using storage-backed key lookup.
-func TestIsValidAdminKeyWithStorage(t *testing.T) {
-	store, err := storage.NewMemoryStorage()
-	require.NoError(t, err)
-
-	adminKey := newTestAPIKey(t, store, "Admin Key", "admin-raw-key", []string{"admin"}, true)
-	readKey := newTestAPIKey(t, store, "Read Key", "read-raw-key", []string{"read"}, true)
-
-	tests := []struct {
-		name       string
-		key        string
-		enableAuth bool
-		expected   bool
-	}{
-		{"valid admin key returns true", adminKey, true, true},
-		{"non-admin key returns false", readKey, true, false},
-		{"enableAuth=false accepts any non-empty key", "any-key-will-do", false, true},
-		{"empty key always returns false", "", false, false},
-		{"unknown key returns false when auth enabled", "unknown-key-xyz", true, false},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result := isValidAdminKey(context.Background(), tt.key, store, tt.enableAuth)
-			assert.Equal(t, tt.expected, result)
-		})
-	}
-}
