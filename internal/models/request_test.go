@@ -573,7 +573,7 @@ func TestCreateApplicationRequest_Validate(t *testing.T) {
 				Name:        "Test App",
 				Description: "A test application",
 				Platforms:   []string{"windows", "linux"},
-				Config:      ApplicationConfig{UpdateInterval: 3600},
+				Config:      ApplicationConfig{},
 			},
 			expectError: false,
 		},
@@ -630,17 +630,6 @@ func TestCreateApplicationRequest_Validate(t *testing.T) {
 			expectError: true,
 			errorMsg:    "invalid platform: invalid",
 		},
-		{
-			name: "invalid config",
-			request: CreateApplicationRequest{
-				ID:        "test-app",
-				Name:      "Test App",
-				Platforms: []string{"windows"},
-				Config:    ApplicationConfig{UpdateInterval: -1},
-			},
-			expectError: true,
-			errorMsg:    "invalid config",
-		},
 	}
 
 	for _, tt := range tests {
@@ -684,7 +673,7 @@ func TestUpdateApplicationRequest_Validate(t *testing.T) {
 			name: "valid request",
 			request: UpdateApplicationRequest{
 				Platforms: []string{"windows", "linux"},
-				Config:    &ApplicationConfig{UpdateInterval: 3600},
+				Config:    &ApplicationConfig{},
 			},
 			expectError: false,
 		},
@@ -703,14 +692,6 @@ func TestUpdateApplicationRequest_Validate(t *testing.T) {
 			},
 			expectError: true,
 			errorMsg:    "invalid platform: invalid",
-		},
-		{
-			name: "invalid config",
-			request: UpdateApplicationRequest{
-				Config: &ApplicationConfig{UpdateInterval: -1},
-			},
-			expectError: true,
-			errorMsg:    "invalid config",
 		},
 		{
 			name: "nil platforms and config is valid",

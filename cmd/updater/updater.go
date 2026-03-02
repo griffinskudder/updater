@@ -194,7 +194,6 @@ func initializeStorage(cfg *models.Config) (storage.Storage, error) {
 		Type:             cfg.Storage.Type,
 		Path:             cfg.Storage.Path,
 		ConnectionString: cfg.Storage.Database.DSN,
-		CacheTTL:         cfg.Cache.TTL.String(),
 	}
 
 	switch cfg.Storage.Type {

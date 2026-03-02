@@ -18,11 +18,6 @@ func TestNewApplication(t *testing.T) {
 	assert.Equal(t, platforms, app.Platforms)
 
 	// Check default configuration
-	assert.False(t, app.Config.AutoUpdate)
-	assert.Equal(t, 3600, app.Config.UpdateInterval)
-	assert.False(t, app.Config.RequiredUpdate)
-	assert.False(t, app.Config.AllowPrerelease)
-	assert.False(t, app.Config.AnalyticsEnabled)
 	assert.NotNil(t, app.Config.CustomFields)
 	assert.Empty(t, app.Config.CustomFields)
 }
@@ -40,9 +35,7 @@ func TestApplication_Validate(t *testing.T) {
 				ID:        "valid-app-id",
 				Name:      "Valid App",
 				Platforms: []string{"windows", "linux"},
-				Config: ApplicationConfig{
-					UpdateInterval: 3600,
-				},
+				Config:    ApplicationConfig{},
 			},
 			expectError: false,
 		},
@@ -101,19 +94,6 @@ func TestApplication_Validate(t *testing.T) {
 			expectError: true,
 			errorMsg:    "invalid platform: invalid-platform",
 		},
-		{
-			name: "invalid config",
-			app: &Application{
-				ID:        "valid-app-id",
-				Name:      "Valid App",
-				Platforms: []string{"windows"},
-				Config: ApplicationConfig{
-					UpdateInterval: -1, // Invalid negative interval
-				},
-			},
-			expectError: true,
-			errorMsg:    "invalid config: update interval cannot be negative",
-		},
 	}
 
 	for _, tt := range tests {
@@ -159,87 +139,14 @@ func TestApplication_SupportsArchitecture(t *testing.T) {
 }
 
 func TestApplicationConfig_Validate(t *testing.T) {
-	tests := []struct {
-		name        string
-		config      ApplicationConfig
-		expectError bool
-		errorMsg    string
-	}{
-		{
-			name: "valid config",
-			config: ApplicationConfig{
-				UpdateInterval: 3600,
-				MinVersion:     "1.0.0",
-				MaxVersion:     "2.0.0",
-			},
-			expectError: false,
-		},
-		{
-			name: "negative update interval",
-			config: ApplicationConfig{
-				UpdateInterval: -1,
-			},
-			expectError: true,
-			errorMsg:    "update interval cannot be negative",
-		},
-		{
-			name: "invalid min version",
-			config: ApplicationConfig{
-				UpdateInterval: 3600,
-				MinVersion:     "invalid-version",
-			},
-			expectError: true,
-			errorMsg:    "invalid min version",
-		},
-		{
-			name: "invalid max version",
-			config: ApplicationConfig{
-				UpdateInterval: 3600,
-				MaxVersion:     "invalid-version",
-			},
-			expectError: true,
-			errorMsg:    "invalid max version",
-		},
-		{
-			name: "min version greater than max version",
-			config: ApplicationConfig{
-				UpdateInterval: 3600,
-				MinVersion:     "2.0.0",
-				MaxVersion:     "1.0.0",
-			},
-			expectError: true,
-			errorMsg:    "min version cannot be greater than max version",
-		},
-		{
-			name: "empty version strings are valid",
-			config: ApplicationConfig{
-				UpdateInterval: 3600,
-				MinVersion:     "",
-				MaxVersion:     "",
-			},
-			expectError: false,
-		},
-		{
-			name: "zero update interval is valid",
-			config: ApplicationConfig{
-				UpdateInterval: 0,
-			},
-			expectError: false,
-		},
+	// ApplicationConfig.Validate is a no-op: all fields are optional metadata.
+	config := ApplicationConfig{
+		CustomFields: map[string]string{"key": "value"},
 	}
+	assert.NoError(t, config.Validate())
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			err := tt.config.Validate()
-
-			if tt.expectError {
-				assert.Error(t, err)
-				assert.Contains(t, err.Error(), tt.errorMsg)
-			} else {
-				assert.NoError(t, err)
-			}
-		})
-	}
+	// Empty config is also valid.
+	assert.NoError(t, (&ApplicationConfig{}).Validate())
 }
 
 func TestIsValidID(t *testing.T) {

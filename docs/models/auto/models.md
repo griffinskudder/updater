@@ -12,7 +12,7 @@ Design Decisions: \- Platform\-agnostic design supporting multiple operating sys
 
 Package models \- Service configuration and operational settings. This file defines comprehensive configuration structures for all service components.
 
-Configuration Philosophy: \- Hierarchical configuration with logical grouping \(server, storage, security, etc.\) \- Environment\-friendly defaults that work out of the box \- Comprehensive validation to catch misconfigurations early \- Support for multiple deployment scenarios \(development, production, cloud\) \- Security\-first approach with safe defaults \- Extensible design for future enhancements
+Configuration Philosophy: \- Hierarchical configuration with logical grouping \(server, storage, security, etc.\) \- Environment\-friendly defaults that work out of the box \- Comprehensive validation to catch misconfigurations early \- Support for multiple deployment scenarios \(development, production, cloud\) \- Security\-first approach with safe defaults
 
 Package models \- Release management and integrity verification. This file handles software release metadata, checksum validation, and release filtering.
 
@@ -49,8 +49,6 @@ Response Design Principles: \- Consistent JSON structure across all endpoints \-
 - [type ApplicationStats](<#ApplicationStats>)
 - [type ApplicationSummary](<#ApplicationSummary>)
   - [func \(as \*ApplicationSummary\) FromApplication\(app \*Application\)](<#ApplicationSummary.FromApplication>)
-- [type CacheConfig](<#CacheConfig>)
-  - [func \(cc \*CacheConfig\) Validate\(\) error](<#CacheConfig.Validate>)
 - [type ComponentHealth](<#ComponentHealth>)
 - [type Config](<#Config>)
   - [func NewDefaultConfig\(\) \*Config](<#NewDefaultConfig>)
@@ -80,7 +78,6 @@ Response Design Principles: \- Consistent JSON structure across all endpoints \-
 - [type ListReleasesResponse](<#ListReleasesResponse>)
 - [type LoggingConfig](<#LoggingConfig>)
   - [func \(lc \*LoggingConfig\) Validate\(\) error](<#LoggingConfig.Validate>)
-- [type MemoryConfig](<#MemoryConfig>)
 - [type MetricsConfig](<#MetricsConfig>)
   - [func \(mc \*MetricsConfig\) Validate\(\) error](<#MetricsConfig.Validate>)
 - [type ObservabilityConfig](<#ObservabilityConfig>)
@@ -88,7 +85,6 @@ Response Design Principles: \- Consistent JSON structure across all endpoints \-
 - [type PlatformInfo](<#PlatformInfo>)
   - [func \(pi \*PlatformInfo\) String\(\) string](<#PlatformInfo.String>)
   - [func \(pi \*PlatformInfo\) Validate\(\) error](<#PlatformInfo.Validate>)
-- [type RedisConfig](<#RedisConfig>)
 - [type RegisterReleaseRequest](<#RegisterReleaseRequest>)
   - [func \(r \*RegisterReleaseRequest\) Normalize\(\)](<#RegisterReleaseRequest.Normalize>)
   - [func \(r \*RegisterReleaseRequest\) Validate\(\) error](<#RegisterReleaseRequest.Validate>)
@@ -356,8 +352,6 @@ func NewApplication(id, name string, platforms []string) *Application
 
 NewApplication creates a new Application with sensible defaults.
 
-Default Configuration: \- Auto\-update disabled for safety \- 1\-hour update check interval \- No required updates \(user choice\) \- Pre\-release versions disabled \- Analytics disabled \(privacy first\) \- Empty custom fields map initialized
-
 <a name="Application.SupportsArchitecture"></a>
 ### func \(\*Application\) SupportsArchitecture
 
@@ -388,22 +382,13 @@ func (a *Application) Validate() error
 <a name="ApplicationConfig"></a>
 ## type ApplicationConfig
 
-ApplicationConfig contains application\-specific settings for update behavior.
+ApplicationConfig contains application\-specific metadata.
 
-Design Considerations: \- Flexible update policies \(auto\-update, intervals, required updates\) \- Version constraints for compatibility management \- Webhook support for integration with external systems \- Privacy\-conscious analytics \(disabled by default\) \- Extensible via CustomFields for application\-specific metadata
+Design Considerations: \- Extensible via CustomFields for application\-specific key\-value metadata \- Kept minimal: update behaviour is driven by per\-request parameters, not stored config
 
 ```go
 type ApplicationConfig struct {
-    UpdateCheckURL   string            `json:"update_check_url,omitempty"` // Custom update check endpoint override
-    AutoUpdate       bool              `json:"auto_update"`                // Enable automatic updates
-    UpdateInterval   int               `json:"update_interval"`            // Update check interval in seconds
-    RequiredUpdate   bool              `json:"required_update"`            // Force updates (security patches)
-    MinVersion       string            `json:"min_version,omitempty"`      // Minimum supported version
-    MaxVersion       string            `json:"max_version,omitempty"`      // Maximum supported version
-    AllowPrerelease  bool              `json:"allow_prerelease"`           // Include pre-release versions
-    CustomFields     map[string]string `json:"custom_fields,omitempty"`    // Application-specific metadata
-    NotificationURL  string            `json:"notification_url,omitempty"` // Webhook for update notifications
-    AnalyticsEnabled bool              `json:"analytics_enabled"`          // Privacy-conscious usage analytics
+    CustomFields map[string]string `json:"custom_fields,omitempty"` // Application-specific metadata
 }
 ```
 
@@ -474,30 +459,6 @@ func (as *ApplicationSummary) FromApplication(app *Application)
 
 
 
-<a name="CacheConfig"></a>
-## type CacheConfig
-
-
-
-```go
-type CacheConfig struct {
-    Enabled bool          `yaml:"enabled" json:"enabled"`
-    Type    string        `yaml:"type" json:"type"`
-    TTL     time.Duration `yaml:"ttl" json:"ttl"`
-    Redis   RedisConfig   `yaml:"redis" json:"redis"`
-    Memory  MemoryConfig  `yaml:"memory" json:"memory"`
-}
-```
-
-<a name="CacheConfig.Validate"></a>
-### func \(\*CacheConfig\) Validate
-
-```go
-func (cc *CacheConfig) Validate() error
-```
-
-
-
 <a name="ComponentHealth"></a>
 ## type ComponentHealth
 
@@ -517,7 +478,7 @@ type ComponentHealth struct {
 
 Config is the root configuration structure containing all service settings.
 
-Configuration Structure: \- Server: HTTP server and network settings \- Storage: Database and file storage configuration \- Security: Authentication and authorization \- Logging: Structured logging and output configuration \- Cache: Performance caching settings \- Metrics: Monitoring and observability
+Configuration Structure: \- Server: HTTP server and network settings \- Storage: Database and file storage configuration \- Security: Authentication and authorization \- Logging: Structured logging and output configuration \- Metrics: Monitoring and observability
 
 Design Benefits: \- Single source of truth for all configuration \- Clear separation of concerns by component \- Easy to serialize/deserialize from YAML/JSON \- Comprehensive validation across all components
 
@@ -527,7 +488,6 @@ type Config struct {
     Storage       StorageConfig       `yaml:"storage" json:"storage"`             // Data persistence settings
     Security      SecurityConfig      `yaml:"security" json:"security"`           // Authentication and authorization
     Logging       LoggingConfig       `yaml:"logging" json:"logging"`             // Logging and output configuration
-    Cache         CacheConfig         `yaml:"cache" json:"cache"`                 // Performance caching
     Metrics       MetricsConfig       `yaml:"metrics" json:"metrics"`             // Monitoring and metrics
     Observability ObservabilityConfig `yaml:"observability" json:"observability"` // OpenTelemetry observability
 }
@@ -542,9 +502,9 @@ func NewDefaultConfig() *Config
 
 NewDefaultConfig creates a configuration with production\-ready defaults.
 
-Default Configuration Principles: \- Security\-first: Authentication disabled but ready, HTTPS preferred \- Performance: Reasonable timeouts and connection limits \- Reliability: Conservative rate limits, structured logging \- Observability: Metrics enabled by default for monitoring \- Development\-friendly: JSON file storage, permissive CORS for testing \- Production\-ready: Easy to override for deployment\-specific needs
+Default Configuration Principles: \- Security\-first: Authentication disabled but ready, HTTPS preferred \- Performance: Reasonable timeouts and connection limits \- Reliability: Structured logging \- Observability: Metrics enabled by default for monitoring \- Development\-friendly: JSON file storage for quick setup \- Production\-ready: Easy to override for deployment\-specific needs
 
-Default Values Rationale: \- Port 8080: Standard non\-privileged HTTP port \- 30\-second timeouts: Balance between user experience and resource protection \- JSON storage: Simple setup without external dependencies \- Structured logging: Better for log aggregation and analysis \- Memory caching: Good performance without external dependencies
+Default Values Rationale: \- Port 8080: Standard non\-privileged HTTP port \- 30\-second timeouts: Balance between user experience and resource protection \- JSON storage: Simple setup without external dependencies \- Structured logging: Better for log aggregation and analysis
 
 <a name="Config.Validate"></a>
 ### func \(\*Config\) Validate
@@ -849,14 +809,10 @@ type ListReleasesResponse struct {
 
 ```go
 type LoggingConfig struct {
-    Level      string `yaml:"level" json:"level"`
-    Format     string `yaml:"format" json:"format"`
-    Output     string `yaml:"output" json:"output"`
-    FilePath   string `yaml:"file_path" json:"file_path"`
-    MaxSize    int    `yaml:"max_size" json:"max_size"`
-    MaxBackups int    `yaml:"max_backups" json:"max_backups"`
-    MaxAge     int    `yaml:"max_age" json:"max_age"`
-    Compress   bool   `yaml:"compress" json:"compress"`
+    Level    string `yaml:"level" json:"level"`
+    Format   string `yaml:"format" json:"format"`
+    Output   string `yaml:"output" json:"output"`
+    FilePath string `yaml:"file_path" json:"file_path"`
 }
 ```
 
@@ -868,18 +824,6 @@ func (lc *LoggingConfig) Validate() error
 ```
 
 
-
-<a name="MemoryConfig"></a>
-## type MemoryConfig
-
-
-
-```go
-type MemoryConfig struct {
-    MaxSize         int           `yaml:"max_size" json:"max_size"`
-    CleanupInterval time.Duration `yaml:"cleanup_interval" json:"cleanup_interval"`
-}
-```
 
 <a name="MetricsConfig"></a>
 ## type MetricsConfig
@@ -957,20 +901,6 @@ func (pi *PlatformInfo) Validate() error
 ```
 
 
-
-<a name="RedisConfig"></a>
-## type RedisConfig
-
-
-
-```go
-type RedisConfig struct {
-    Addr     string `yaml:"addr" json:"addr"`
-    Password string `yaml:"password" json:"password"`
-    DB       int    `yaml:"db" json:"db"`
-    PoolSize int    `yaml:"pool_size" json:"pool_size"`
-}
-```
 
 <a name="RegisterReleaseRequest"></a>
 ## type RegisterReleaseRequest

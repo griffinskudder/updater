@@ -385,9 +385,6 @@ func TestSQLiteStorageApplicationConfig(t *testing.T) {
 	ctx := context.Background()
 
 	app := models.NewApplication("config-app", "Config App", []string{"windows"})
-	app.Config.AutoUpdate = true
-	app.Config.UpdateInterval = 7200
-	app.Config.MinVersion = "1.0.0"
 	app.Config.CustomFields = map[string]string{"env": "production"}
 
 	if err := s.SaveApplication(ctx, app); err != nil {
@@ -399,15 +396,6 @@ func TestSQLiteStorageApplicationConfig(t *testing.T) {
 		t.Fatalf("GetApplication failed: %v", err)
 	}
 
-	if !got.Config.AutoUpdate {
-		t.Error("expected AutoUpdate to be true")
-	}
-	if got.Config.UpdateInterval != 7200 {
-		t.Errorf("expected UpdateInterval 7200, got %d", got.Config.UpdateInterval)
-	}
-	if got.Config.MinVersion != "1.0.0" {
-		t.Errorf("expected MinVersion '1.0.0', got %q", got.Config.MinVersion)
-	}
 	if got.Config.CustomFields["env"] != "production" {
 		t.Errorf("expected custom field env=production, got %v", got.Config.CustomFields)
 	}

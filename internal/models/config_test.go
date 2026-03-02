@@ -34,17 +34,6 @@ func TestNewDefaultConfig(t *testing.T) {
 	assert.Equal(t, "info", config.Logging.Level)
 	assert.Equal(t, "json", config.Logging.Format)
 	assert.Equal(t, "stdout", config.Logging.Output)
-	assert.Equal(t, 100, config.Logging.MaxSize)
-	assert.Equal(t, 3, config.Logging.MaxBackups)
-	assert.Equal(t, 28, config.Logging.MaxAge)
-	assert.True(t, config.Logging.Compress)
-
-	// Test cache defaults
-	assert.True(t, config.Cache.Enabled)
-	assert.Equal(t, "memory", config.Cache.Type)
-	assert.Equal(t, 5*time.Minute, config.Cache.TTL)
-	assert.Equal(t, 1000, config.Cache.Memory.MaxSize)
-	assert.Equal(t, 10*time.Minute, config.Cache.Memory.CleanupInterval)
 
 	// Test metrics defaults
 	assert.True(t, config.Metrics.Enabled)
@@ -84,9 +73,6 @@ func TestConfig_Validate(t *testing.T) {
 					Format: "json",
 					Output: "stdout",
 				},
-				Cache: CacheConfig{
-					Enabled: false,
-				},
 				Metrics: MetricsConfig{
 					Enabled: false,
 				},
@@ -109,9 +95,6 @@ func TestConfig_Validate(t *testing.T) {
 					Level:  "info",
 					Format: "json",
 					Output: "stdout",
-				},
-				Cache: CacheConfig{
-					Enabled: false,
 				},
 				Metrics: MetricsConfig{
 					Enabled: false,
@@ -454,86 +437,6 @@ func TestLoggingConfig_Validate(t *testing.T) {
 	}
 }
 
-func TestCacheConfig_Validate(t *testing.T) {
-	tests := []struct {
-		name        string
-		config      CacheConfig
-		expectError bool
-		errorMsg    string
-	}{
-		{
-			name: "cache disabled",
-			config: CacheConfig{
-				Enabled: false,
-			},
-			expectError: false,
-		},
-		{
-			name: "valid memory cache",
-			config: CacheConfig{
-				Enabled: true,
-				Type:    "memory",
-				TTL:     5 * time.Minute,
-			},
-			expectError: false,
-		},
-		{
-			name: "valid redis cache",
-			config: CacheConfig{
-				Enabled: true,
-				Type:    "redis",
-				TTL:     10 * time.Minute,
-				Redis: RedisConfig{
-					Addr: "localhost:6379",
-				},
-			},
-			expectError: false,
-		},
-		{
-			name: "invalid cache type",
-			config: CacheConfig{
-				Enabled: true,
-				Type:    "invalid",
-			},
-			expectError: true,
-			errorMsg:    "invalid cache type: invalid",
-		},
-		{
-			name: "negative TTL",
-			config: CacheConfig{
-				Enabled: true,
-				Type:    "memory",
-				TTL:     -1 * time.Second,
-			},
-			expectError: true,
-			errorMsg:    "cache TTL cannot be negative",
-		},
-		{
-			name: "redis cache without address",
-			config: CacheConfig{
-				Enabled: true,
-				Type:    "redis",
-				Redis:   RedisConfig{},
-			},
-			expectError: true,
-			errorMsg:    "Redis address is required when cache type is redis",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			err := tt.config.Validate()
-
-			if tt.expectError {
-				assert.Error(t, err)
-				assert.Contains(t, err.Error(), tt.errorMsg)
-			} else {
-				assert.NoError(t, err)
-			}
-		})
-	}
-}
-
 func TestMetricsConfig_Validate(t *testing.T) {
 	tests := []struct {
 		name        string
@@ -775,14 +678,11 @@ func TestConfigStructFields(t *testing.T) {
 	assert.NotNil(t, config.Storage)
 	assert.NotNil(t, config.Security)
 	assert.NotNil(t, config.Logging)
-	assert.NotNil(t, config.Cache)
 	assert.NotNil(t, config.Metrics)
 	assert.NotNil(t, config.Observability)
 
 	// Verify nested structures
 	assert.NotNil(t, config.Storage.Database)
-	assert.NotNil(t, config.Cache.Memory)
-	assert.NotNil(t, config.Cache.Redis)
 }
 
 func TestDatabaseConfig_Structure(t *testing.T) {
@@ -803,26 +703,3 @@ func TestDatabaseConfig_Structure(t *testing.T) {
 	assert.Equal(t, 30*time.Minute, dbConfig.ConnMaxIdleTime)
 }
 
-func TestMemoryConfig_Structure(t *testing.T) {
-	memoryConfig := MemoryConfig{
-		MaxSize:         2000,
-		CleanupInterval: 15 * time.Minute,
-	}
-
-	assert.Equal(t, 2000, memoryConfig.MaxSize)
-	assert.Equal(t, 15*time.Minute, memoryConfig.CleanupInterval)
-}
-
-func TestRedisConfig_Structure(t *testing.T) {
-	redisConfig := RedisConfig{
-		Addr:     "redis.example.com:6379",
-		Password: "secret",
-		DB:       1,
-		PoolSize: 20,
-	}
-
-	assert.Equal(t, "redis.example.com:6379", redisConfig.Addr)
-	assert.Equal(t, "secret", redisConfig.Password)
-	assert.Equal(t, 1, redisConfig.DB)
-	assert.Equal(t, 20, redisConfig.PoolSize)
-}

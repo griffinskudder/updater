@@ -13,8 +13,6 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
-
-	"github.com/Masterminds/semver/v3"
 )
 
 // Platform and Architecture Constants
@@ -74,48 +72,23 @@ type Application struct {
 	UpdatedAt   string            `json:"updated_at,omitempty"`                // Last modification timestamp
 }
 
-// ApplicationConfig contains application-specific settings for update behavior.
+// ApplicationConfig contains application-specific metadata.
 //
 // Design Considerations:
-// - Flexible update policies (auto-update, intervals, required updates)
-// - Version constraints for compatibility management
-// - Webhook support for integration with external systems
-// - Privacy-conscious analytics (disabled by default)
-// - Extensible via CustomFields for application-specific metadata
+// - Extensible via CustomFields for application-specific key-value metadata
+// - Kept minimal: update behaviour is driven by per-request parameters, not stored config
 type ApplicationConfig struct {
-	UpdateCheckURL   string            `json:"update_check_url,omitempty"` // Custom update check endpoint override
-	AutoUpdate       bool              `json:"auto_update"`                // Enable automatic updates
-	UpdateInterval   int               `json:"update_interval"`            // Update check interval in seconds
-	RequiredUpdate   bool              `json:"required_update"`            // Force updates (security patches)
-	MinVersion       string            `json:"min_version,omitempty"`      // Minimum supported version
-	MaxVersion       string            `json:"max_version,omitempty"`      // Maximum supported version
-	AllowPrerelease  bool              `json:"allow_prerelease"`           // Include pre-release versions
-	CustomFields     map[string]string `json:"custom_fields,omitempty"`    // Application-specific metadata
-	NotificationURL  string            `json:"notification_url,omitempty"` // Webhook for update notifications
-	AnalyticsEnabled bool              `json:"analytics_enabled"`          // Privacy-conscious usage analytics
+	CustomFields map[string]string `json:"custom_fields,omitempty"` // Application-specific metadata
 }
 
 // NewApplication creates a new Application with sensible defaults.
-//
-// Default Configuration:
-// - Auto-update disabled for safety
-// - 1-hour update check interval
-// - No required updates (user choice)
-// - Pre-release versions disabled
-// - Analytics disabled (privacy first)
-// - Empty custom fields map initialized
 func NewApplication(id, name string, platforms []string) *Application {
 	return &Application{
 		ID:        id,
 		Name:      name,
 		Platforms: platforms,
 		Config: ApplicationConfig{
-			AutoUpdate:       false,
-			UpdateInterval:   3600, // 1 hour default
-			RequiredUpdate:   false,
-			AllowPrerelease:  false,
-			AnalyticsEnabled: false,
-			CustomFields:     make(map[string]string),
+			CustomFields: make(map[string]string),
 		},
 	}
 }
@@ -167,30 +140,6 @@ func (a *Application) SupportsArchitecture(platform, arch string) bool {
 }
 
 func (ac *ApplicationConfig) Validate() error {
-	if ac.UpdateInterval < 0 {
-		return errors.New("update interval cannot be negative")
-	}
-
-	if ac.MinVersion != "" {
-		if _, err := semver.NewVersion(ac.MinVersion); err != nil {
-			return fmt.Errorf("invalid min version: %w", err)
-		}
-	}
-
-	if ac.MaxVersion != "" {
-		if _, err := semver.NewVersion(ac.MaxVersion); err != nil {
-			return fmt.Errorf("invalid max version: %w", err)
-		}
-	}
-
-	if ac.MinVersion != "" && ac.MaxVersion != "" {
-		minVer, _ := semver.NewVersion(ac.MinVersion)
-		maxVer, _ := semver.NewVersion(ac.MaxVersion)
-		if minVer.GreaterThan(maxVer) {
-			return errors.New("min version cannot be greater than max version")
-		}
-	}
-
 	return nil
 }
 

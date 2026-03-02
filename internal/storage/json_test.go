@@ -88,7 +88,7 @@ func TestJSONStorage_Applications(t *testing.T) {
 		ID:        "test-app",
 		Name:      "Test App",
 		Platforms: []string{"windows", "linux"},
-		Config:    models.ApplicationConfig{UpdateInterval: 3600},
+		Config:    models.ApplicationConfig{},
 	}
 
 	err = storage.SaveApplication(ctx, app)
@@ -118,7 +118,7 @@ func TestJSONStorage_GetApplication(t *testing.T) {
 		ID:        "test-app",
 		Name:      "Test App",
 		Platforms: []string{"windows", "linux"},
-		Config:    models.ApplicationConfig{UpdateInterval: 3600},
+		Config:    models.ApplicationConfig{},
 	}
 
 	err = storage.SaveApplication(ctx, app)
@@ -142,7 +142,7 @@ func TestJSONStorage_SaveApplication(t *testing.T) {
 		ID:        "test-app",
 		Name:      "Test App",
 		Platforms: []string{"windows"},
-		Config:    models.ApplicationConfig{UpdateInterval: 3600},
+		Config:    models.ApplicationConfig{},
 	}
 
 	// Save new application

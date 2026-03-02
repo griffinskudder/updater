@@ -49,6 +49,7 @@ type deprecatedConfig struct {
 	Observability struct {
 		ServiceVersion string `yaml:"service_version"`
 	} `yaml:"observability"`
+	Cache interface{} `yaml:"cache"`
 }
 
 // warnDeprecatedKeys logs a warning for each removed config key found in the YAML data.
@@ -72,6 +73,9 @@ func warnDeprecatedKeys(data []byte) {
 	}
 	if dep.Observability.ServiceVersion != "" {
 		slog.Warn("Config key is no longer supported; version is now set at build time via ldflags. See docs/ARCHITECTURE.md.", "config_key", "observability.service_version")
+	}
+	if dep.Cache != nil {
+		slog.Warn("Config key is no longer supported; caching was never implemented and the placeholder has been removed.", "config_key", "cache")
 	}
 }
 
@@ -188,77 +192,6 @@ func loadFromEnvironment(config *models.Config) {
 
 	if filePath := os.Getenv("UPDATER_LOG_FILE_PATH"); filePath != "" {
 		config.Logging.FilePath = filePath
-	}
-
-	if maxSize := os.Getenv("UPDATER_LOG_MAX_SIZE"); maxSize != "" {
-		if size, err := strconv.Atoi(maxSize); err == nil {
-			config.Logging.MaxSize = size
-		}
-	}
-
-	if maxBackups := os.Getenv("UPDATER_LOG_MAX_BACKUPS"); maxBackups != "" {
-		if backups, err := strconv.Atoi(maxBackups); err == nil {
-			config.Logging.MaxBackups = backups
-		}
-	}
-
-	if maxAge := os.Getenv("UPDATER_LOG_MAX_AGE"); maxAge != "" {
-		if age, err := strconv.Atoi(maxAge); err == nil {
-			config.Logging.MaxAge = age
-		}
-	}
-
-	if compress := os.Getenv("UPDATER_LOG_COMPRESS"); compress != "" {
-		config.Logging.Compress = strings.ToLower(compress) == "true"
-	}
-
-	// Cache configuration
-	if cache := os.Getenv("UPDATER_CACHE_ENABLED"); cache != "" {
-		config.Cache.Enabled = strings.ToLower(cache) == "true"
-	}
-
-	if cacheType := os.Getenv("UPDATER_CACHE_TYPE"); cacheType != "" {
-		config.Cache.Type = cacheType
-	}
-
-	if ttl := os.Getenv("UPDATER_CACHE_TTL"); ttl != "" {
-		if d, err := time.ParseDuration(ttl); err == nil {
-			config.Cache.TTL = d
-		}
-	}
-
-	// Redis configuration
-	if addr := os.Getenv("UPDATER_REDIS_ADDR"); addr != "" {
-		config.Cache.Redis.Addr = addr
-	}
-
-	if password := os.Getenv("UPDATER_REDIS_PASSWORD"); password != "" {
-		config.Cache.Redis.Password = password
-	}
-
-	if db := os.Getenv("UPDATER_REDIS_DB"); db != "" {
-		if dbNum, err := strconv.Atoi(db); err == nil {
-			config.Cache.Redis.DB = dbNum
-		}
-	}
-
-	if poolSize := os.Getenv("UPDATER_REDIS_POOL_SIZE"); poolSize != "" {
-		if size, err := strconv.Atoi(poolSize); err == nil {
-			config.Cache.Redis.PoolSize = size
-		}
-	}
-
-	// Memory cache configuration
-	if maxSize := os.Getenv("UPDATER_MEMORY_CACHE_MAX_SIZE"); maxSize != "" {
-		if size, err := strconv.Atoi(maxSize); err == nil {
-			config.Cache.Memory.MaxSize = size
-		}
-	}
-
-	if cleanup := os.Getenv("UPDATER_MEMORY_CACHE_CLEANUP_INTERVAL"); cleanup != "" {
-		if d, err := time.ParseDuration(cleanup); err == nil {
-			config.Cache.Memory.CleanupInterval = d
-		}
 	}
 
 	// Metrics configuration

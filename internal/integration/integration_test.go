@@ -69,13 +69,7 @@ func TestIntegration_FullUpdateFlow(t *testing.T) {
 		ID:        "integration-test-app",
 		Name:      "Integration Test App",
 		Platforms: []string{"windows", "linux", "darwin"},
-		Config: models.ApplicationConfig{
-			AutoUpdate:       true,
-			UpdateInterval:   3600,
-			RequiredUpdate:   false,
-			AllowPrerelease:  false,
-			AnalyticsEnabled: true,
-		},
+		Config:    models.ApplicationConfig{},
 	}
 
 	err = store.SaveApplication(ctx, app)
@@ -267,9 +261,7 @@ func TestIntegration_PreReleaseHandling(t *testing.T) {
 		ID:        "prerelease-test-app",
 		Name:      "Prerelease Test App",
 		Platforms: []string{"windows"},
-		Config: models.ApplicationConfig{
-			AllowPrerelease: true,
-		},
+		Config:    models.ApplicationConfig{},
 	}
 
 	err = store.SaveApplication(ctx, app)
@@ -592,10 +584,6 @@ logging:
   level: "debug"
   format: "text"
 
-cache:
-  enabled: true
-  ttl: 600s
-
 metrics:
   enabled: true
   port: 9091
@@ -622,9 +610,6 @@ metrics:
 
 	assert.Equal(t, "debug", cfg.Logging.Level)
 	assert.Equal(t, "text", cfg.Logging.Format)
-
-	assert.True(t, cfg.Cache.Enabled)
-	assert.Equal(t, 600*time.Second, cfg.Cache.TTL)
 
 	assert.True(t, cfg.Metrics.Enabled)
 	assert.Equal(t, 9091, cfg.Metrics.Port)
@@ -862,11 +847,7 @@ func TestApplicationLifecycle(t *testing.T) {
 		Name:        "Lifecycle Test App",
 		Description: "An application for lifecycle testing",
 		Platforms:   []string{"windows", "linux", "darwin"},
-		Config: models.ApplicationConfig{
-			AutoUpdate:      true,
-			UpdateInterval:  3600,
-			AllowPrerelease: false,
-		},
+		Config:      models.ApplicationConfig{},
 	}
 
 	resp := doRequest(t, "POST", server.URL+"/api/v1/applications", "test-write-key", createReq)
@@ -891,9 +872,6 @@ func TestApplicationLifecycle(t *testing.T) {
 	assert.Equal(t, "Lifecycle Test App", appInfo.Name)
 	assert.Equal(t, "An application for lifecycle testing", appInfo.Description)
 	assert.ElementsMatch(t, []string{"windows", "linux", "darwin"}, appInfo.Platforms)
-	assert.True(t, appInfo.Config.AutoUpdate)
-	assert.Equal(t, 3600, appInfo.Config.UpdateInterval)
-	assert.False(t, appInfo.Config.AllowPrerelease)
 
 	// Step 3: List applications via GET with read auth
 	resp = doRequest(t, "GET", server.URL+"/api/v1/applications", "test-read-key", nil)

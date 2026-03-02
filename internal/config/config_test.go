@@ -37,18 +37,6 @@ logging:
   level: "debug"
   format: "json"
   output: "stdout"
-  max_size: 50
-  max_backups: 5
-  max_age: 30
-  compress: true
-
-cache:
-  enabled: true
-  type: "memory"
-  ttl: 600s
-  memory:
-    max_size: 500
-    cleanup_interval: 300s
 
 metrics:
   enabled: true
@@ -82,17 +70,6 @@ metrics:
 	assert.Equal(t, "debug", config.Logging.Level)
 	assert.Equal(t, "json", config.Logging.Format)
 	assert.Equal(t, "stdout", config.Logging.Output)
-	assert.Equal(t, 50, config.Logging.MaxSize)
-	assert.Equal(t, 5, config.Logging.MaxBackups)
-	assert.Equal(t, 30, config.Logging.MaxAge)
-	assert.True(t, config.Logging.Compress)
-
-	// Verify cache config
-	assert.True(t, config.Cache.Enabled)
-	assert.Equal(t, "memory", config.Cache.Type)
-	assert.Equal(t, 600*time.Second, config.Cache.TTL)
-	assert.Equal(t, 500, config.Cache.Memory.MaxSize)
-	assert.Equal(t, 300*time.Second, config.Cache.Memory.CleanupInterval)
 
 	// Verify metrics config
 	assert.True(t, config.Metrics.Enabled)
@@ -140,11 +117,6 @@ storage:
 	assert.Equal(t, "info", config.Logging.Level)    // Default
 	assert.Equal(t, "json", config.Logging.Format)   // Default
 	assert.Equal(t, "stdout", config.Logging.Output) // Default
-
-	// Cache defaults
-	assert.True(t, config.Cache.Enabled)               // Default
-	assert.Equal(t, "memory", config.Cache.Type)       // Default
-	assert.Equal(t, 300*time.Second, config.Cache.TTL) // Default
 
 	// Metrics defaults
 	assert.True(t, config.Metrics.Enabled)           // Default
@@ -324,44 +296,6 @@ storage:
 	assert.Equal(t, 120*time.Second, config.Storage.Database.ConnMaxIdleTime)
 }
 
-func TestLoad_WithRedisCache(t *testing.T) {
-	tempDir := t.TempDir()
-	configFile := filepath.Join(tempDir, "redis_config.yaml")
-
-	configContent := `
-server:
-  port: 8080
-
-storage:
-  type: "json"
-  path: "./data.json"
-
-cache:
-  enabled: true
-  type: "redis"
-  ttl: 1200s
-  redis:
-    addr: "localhost:6379"
-    password: "secret"
-    db: 1
-    pool_size: 20
-`
-
-	err := os.WriteFile(configFile, []byte(configContent), 0644)
-	require.NoError(t, err)
-
-	config, err := Load(configFile)
-	require.NoError(t, err)
-
-	assert.True(t, config.Cache.Enabled)
-	assert.Equal(t, "redis", config.Cache.Type)
-	assert.Equal(t, 1200*time.Second, config.Cache.TTL)
-	assert.Equal(t, "localhost:6379", config.Cache.Redis.Addr)
-	assert.Equal(t, "secret", config.Cache.Redis.Password)
-	assert.Equal(t, 1, config.Cache.Redis.DB)
-	assert.Equal(t, 20, config.Cache.Redis.PoolSize)
-}
-
 func TestLoad_WithBootstrapKey(t *testing.T) {
 	tempDir := t.TempDir()
 	configFile := filepath.Join(tempDir, "bootstrap_key_config.yaml")
@@ -406,10 +340,6 @@ logging:
   format: "text"
   output: "file"
   file_path: "/var/log/updater.log"
-  max_size: 200
-  max_backups: 10
-  max_age: 60
-  compress: false
 `
 
 	err := os.WriteFile(configFile, []byte(configContent), 0644)
@@ -422,10 +352,6 @@ logging:
 	assert.Equal(t, "text", config.Logging.Format)
 	assert.Equal(t, "file", config.Logging.Output)
 	assert.Equal(t, "/var/log/updater.log", config.Logging.FilePath)
-	assert.Equal(t, 200, config.Logging.MaxSize)
-	assert.Equal(t, 10, config.Logging.MaxBackups)
-	assert.Equal(t, 60, config.Logging.MaxAge)
-	assert.False(t, config.Logging.Compress)
 }
 
 func TestValidate_ValidConfig(t *testing.T) {
@@ -534,9 +460,14 @@ func TestWarnDeprecatedKeys(t *testing.T) {
 			wantWarn: []string{"security.trusted_proxies"},
 		},
 		{
+			name:     "cache key warns",
+			yaml:     "cache:\n  enabled: true\n",
+			wantWarn: []string{"cache"},
+		},
+		{
 			name:     "all deprecated keys warn",
-			yaml:     "server:\n  cors:\n    enabled: true\nsecurity:\n  jwt_secret: \"x\"\n  rate_limit:\n    enabled: true\n  trusted_proxies: []\n",
-			wantWarn: []string{"server.cors", "security.jwt_secret", "security.rate_limit", "security.trusted_proxies"},
+			yaml:     "server:\n  cors:\n    enabled: true\nsecurity:\n  jwt_secret: \"x\"\n  rate_limit:\n    enabled: true\n  trusted_proxies: []\ncache:\n  enabled: true\n",
+			wantWarn: []string{"server.cors", "security.jwt_secret", "security.rate_limit", "security.trusted_proxies", "cache"},
 		},
 	}
 

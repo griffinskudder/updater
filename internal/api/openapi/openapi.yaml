@@ -402,38 +402,6 @@ components:
     ApplicationConfig:
       type: object
       properties:
-        update_check_url:
-          type: string
-          description: Custom update check endpoint override
-        auto_update:
-          type: boolean
-          default: false
-          description: Enable automatic updates
-        update_interval:
-          type: integer
-          default: 3600
-          description: Check interval in seconds
-        required_update:
-          type: boolean
-          default: false
-          description: Force all updates to be mandatory
-        min_version:
-          type: string
-          description: Minimum supported client version (semver)
-        max_version:
-          type: string
-          description: Maximum supported client version (semver)
-        allow_prerelease:
-          type: boolean
-          default: false
-          description: Include pre-release versions in update checks
-        notification_url:
-          type: string
-          description: Webhook URL for update notifications
-        analytics_enabled:
-          type: boolean
-          default: false
-          description: Enable usage analytics
         custom_fields:
           type: object
           additionalProperties:
@@ -1348,11 +1316,8 @@ paths:
               description: A cross-platform desktop application
               platforms: [windows, linux, darwin]
               config:
-                auto_update: false
-                update_interval: 3600
-                required_update: false
-                allow_prerelease: false
-                analytics_enabled: false
+                custom_fields:
+                  environment: production
       responses:
         "201":
           description: Application created successfully
@@ -1402,11 +1367,8 @@ paths:
                 description: A desktop application
                 platforms: [windows, linux, darwin]
                 config:
-                  auto_update: false
-                  update_interval: 3600
-                  required_update: false
-                  allow_prerelease: false
-                  analytics_enabled: false
+                  custom_fields:
+                    environment: production
                 stats:
                   total_releases: 12
                   latest_version: "2.1.0"
@@ -1446,8 +1408,8 @@ paths:
               description: Updated description
               platforms: [windows, linux, darwin, android]
               config:
-                auto_update: true
-                update_interval: 1800
+                custom_fields:
+                  environment: staging
       responses:
         "200":
           description: Application updated successfully

@@ -70,12 +70,9 @@ func TestMarshalUnmarshalConfig(t *testing.T) {
 		input models.ApplicationConfig
 	}{
 		{
-			name: "full config",
+			name: "config with custom fields",
 			input: models.ApplicationConfig{
-				AutoUpdate:     true,
-				UpdateInterval: 3600,
-				MinVersion:     "1.0.0",
-				CustomFields:   map[string]string{"key": "value"},
+				CustomFields: map[string]string{"key": "value"},
 			},
 		},
 		{
@@ -85,7 +82,7 @@ func TestMarshalUnmarshalConfig(t *testing.T) {
 		{
 			name: "config with nil custom fields",
 			input: models.ApplicationConfig{
-				AutoUpdate: false,
+				CustomFields: nil,
 			},
 		},
 	}
@@ -102,26 +99,22 @@ func TestMarshalUnmarshalConfig(t *testing.T) {
 				t.Fatalf("unmarshalConfig error: %v", err)
 			}
 
-			if result.AutoUpdate != tt.input.AutoUpdate {
-				t.Errorf("AutoUpdate: expected %v, got %v", tt.input.AutoUpdate, result.AutoUpdate)
-			}
-			if result.UpdateInterval != tt.input.UpdateInterval {
-				t.Errorf("UpdateInterval: expected %v, got %v", tt.input.UpdateInterval, result.UpdateInterval)
+			if len(tt.input.CustomFields) > 0 {
+				if !reflect.DeepEqual(result.CustomFields, tt.input.CustomFields) {
+					t.Errorf("CustomFields: expected %v, got %v", tt.input.CustomFields, result.CustomFields)
+				}
 			}
 		})
 	}
 }
 
 func TestUnmarshalConfigFromString(t *testing.T) {
-	result, err := unmarshalConfigFromString(`{"auto_update":true,"update_interval":7200}`)
+	result, err := unmarshalConfigFromString(`{"custom_fields":{"env":"staging"}}`)
 	if err != nil {
 		t.Fatalf("unmarshalConfigFromString error: %v", err)
 	}
-	if !result.AutoUpdate {
-		t.Error("expected AutoUpdate to be true")
-	}
-	if result.UpdateInterval != 7200 {
-		t.Errorf("expected UpdateInterval 7200, got %d", result.UpdateInterval)
+	if result.CustomFields["env"] != "staging" {
+		t.Errorf("expected custom_fields.env=staging, got %v", result.CustomFields)
 	}
 }
 

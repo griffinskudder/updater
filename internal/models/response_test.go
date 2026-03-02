@@ -296,8 +296,7 @@ func TestDeleteReleaseResponse_Structure(t *testing.T) {
 func TestApplicationInfoResponse_Structure(t *testing.T) {
 	now := time.Now()
 	config := ApplicationConfig{
-		AutoUpdate:     true,
-		UpdateInterval: 3600,
+		CustomFields: map[string]string{"env": "test"},
 	}
 	stats := ApplicationStats{
 		TotalReleases:     5,
