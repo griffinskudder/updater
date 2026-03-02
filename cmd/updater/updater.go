@@ -190,21 +190,15 @@ func main() {
 
 // initializeStorage creates and returns a storage instance based on configuration
 func initializeStorage(cfg *models.Config) (storage.Storage, error) {
-	storageConfig := storage.Config{
-		Type:             cfg.Storage.Type,
-		Path:             cfg.Storage.Path,
-		ConnectionString: cfg.Storage.Database.DSN,
-	}
-
 	switch cfg.Storage.Type {
 	case "json":
-		return storage.NewJSONStorage(storageConfig)
+		return storage.NewJSONStorage(cfg.Storage.Path)
 	case "memory":
-		return storage.NewMemoryStorage(storageConfig)
+		return storage.NewMemoryStorage()
 	case "postgres":
-		return storage.NewPostgresStorage(storageConfig)
+		return storage.NewPostgresStorage(cfg.Storage.Database.DSN)
 	case "sqlite":
-		return storage.NewSQLiteStorage(storageConfig)
+		return storage.NewSQLiteStorage(cfg.Storage.Database.DSN)
 	default:
 		return nil, fmt.Errorf("unsupported storage type: %s", cfg.Storage.Type)
 	}

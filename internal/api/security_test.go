@@ -98,7 +98,7 @@ func TestPermissionHierarchy(t *testing.T) {
 
 // TestAuthMiddleware tests the authentication middleware
 func TestAuthMiddleware(t *testing.T) {
-	store, err := storage.NewMemoryStorage(storage.Config{})
+	store, err := storage.NewMemoryStorage()
 	require.NoError(t, err)
 
 	validRawKey := "valid-key-123"
@@ -328,7 +328,7 @@ func TestRequirePermissionMiddleware(t *testing.T) {
 // TestEndpointSecurity tests that endpoints properly enforce security
 func TestEndpointSecurity(t *testing.T) {
 	// Set up storage with test API keys
-	store, err := storage.NewMemoryStorage(storage.Config{})
+	store, err := storage.NewMemoryStorage()
 	require.NoError(t, err)
 	for _, spec := range []struct {
 		raw   string
@@ -490,7 +490,7 @@ func TestEndpointSecurity(t *testing.T) {
 
 // TestSecurityVulnerabilities tests for common security vulnerabilities
 func TestSecurityVulnerabilities(t *testing.T) {
-	vulnStore, err := storage.NewMemoryStorage(storage.Config{})
+	vulnStore, err := storage.NewMemoryStorage()
 	require.NoError(t, err)
 	vulnAdminKey := "admin-key-123"
 	vak := models.NewAPIKey(models.NewKeyID(), "Admin Key", vulnAdminKey, []string{"admin"})
@@ -688,7 +688,7 @@ func TestSecurityHeaders(t *testing.T) {
 
 // BenchmarkAuthMiddleware benchmarks authentication middleware performance
 func BenchmarkAuthMiddleware(b *testing.B) {
-	benchStore, _ := storage.NewMemoryStorage(storage.Config{})
+	benchStore, _ := storage.NewMemoryStorage()
 	benchRawKey := "benchmark-key-123"
 	bak := models.NewAPIKey(models.NewKeyID(), "Benchmark Key", benchRawKey, []string{"read"})
 	_ = benchStore.CreateAPIKey(context.Background(), bak)
@@ -726,7 +726,7 @@ func BenchmarkPermissionCheck(b *testing.B) {
 
 // TestOptionalAuthMiddleware tests optional authentication functionality
 func TestOptionalAuthMiddleware(t *testing.T) {
-	optStore, err := storage.NewMemoryStorage(storage.Config{})
+	optStore, err := storage.NewMemoryStorage()
 	require.NoError(t, err)
 	optRawKey := "valid-key-123"
 	ok := models.NewAPIKey(models.NewKeyID(), "Test Key", optRawKey, []string{"read"})

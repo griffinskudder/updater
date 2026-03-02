@@ -13,7 +13,7 @@ import (
 
 func newSQLiteTestStorage(t *testing.T) Storage {
 	t.Helper()
-	s, err := NewSQLiteStorage(Config{ConnectionString: ":memory:"})
+	s, err := NewSQLiteStorage(":memory:")
 	if err != nil {
 		t.Fatalf("failed to create sqlite storage: %v", err)
 	}
@@ -22,7 +22,7 @@ func newSQLiteTestStorage(t *testing.T) Storage {
 }
 
 func TestSQLiteStorageConnectionError(t *testing.T) {
-	_, err := NewSQLiteStorage(Config{ConnectionString: ""})
+	_, err := NewSQLiteStorage("")
 	if err == nil {
 		t.Error("expected error for empty connection string")
 	}
@@ -457,7 +457,7 @@ func TestSQLiteStorage_DeleteApplication(t *testing.T) {
 }
 
 func TestSQLiteStorageClose(t *testing.T) {
-	s, err := NewSQLiteStorage(Config{ConnectionString: ":memory:"})
+	s, err := NewSQLiteStorage(":memory:")
 	if err != nil {
 		t.Fatalf("failed to create storage: %v", err)
 	}

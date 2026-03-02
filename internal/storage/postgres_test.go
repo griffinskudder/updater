@@ -20,7 +20,7 @@ func getPostgresDSN(t *testing.T) string {
 func newPostgresTestStorage(t *testing.T) Storage {
 	t.Helper()
 	dsn := getPostgresDSN(t)
-	s, err := NewPostgresStorage(Config{ConnectionString: dsn})
+	s, err := NewPostgresStorage(dsn)
 	if err != nil {
 		t.Fatalf("failed to create postgres storage: %v", err)
 	}
@@ -29,14 +29,14 @@ func newPostgresTestStorage(t *testing.T) Storage {
 }
 
 func TestPostgresStorageConnectionError(t *testing.T) {
-	_, err := NewPostgresStorage(Config{ConnectionString: ""})
+	_, err := NewPostgresStorage("")
 	if err == nil {
 		t.Error("expected error for empty connection string")
 	}
 }
 
 func TestPostgresStorageInvalidDSN(t *testing.T) {
-	_, err := NewPostgresStorage(Config{ConnectionString: "postgres://invalid:5432/nonexistent"})
+	_, err := NewPostgresStorage("postgres://invalid:5432/nonexistent")
 	if err == nil {
 		t.Error("expected error for invalid DSN")
 	}

@@ -28,12 +28,12 @@ type SQLiteStorage struct {
 
 // NewSQLiteStorage creates a new SQLite storage instance.
 // It automatically creates tables using the embedded schema if they do not exist.
-func NewSQLiteStorage(config Config) (Storage, error) {
-	if config.ConnectionString == "" {
+func NewSQLiteStorage(dsn string) (Storage, error) {
+	if dsn == "" {
 		return nil, fmt.Errorf("connection string is required for SQLite storage")
 	}
 
-	db, err := sql.Open("sqlite", config.ConnectionString)
+	db, err := sql.Open("sqlite", dsn)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open database: %w", err)
 	}

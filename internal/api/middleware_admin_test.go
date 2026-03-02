@@ -19,7 +19,7 @@ func okHandler(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.Stat
 // The raw key value "secret" is stored as its SHA-256 hash.
 func newTestStore(t *testing.T) (storage.Storage, string) {
 	t.Helper()
-	store, err := storage.NewMemoryStorage(storage.Config{})
+	store, err := storage.NewMemoryStorage()
 	require.NoError(t, err)
 	rawKey := "secret"
 	ak := models.NewAPIKey(models.NewKeyID(), "test", rawKey, []string{"admin"})
@@ -94,7 +94,7 @@ func TestAdminMiddleware_SkipsLogout(t *testing.T) {
 }
 
 func TestAdminMiddleware_DevMode_AnyKeyPasses(t *testing.T) {
-	store, err := storage.NewMemoryStorage(storage.Config{})
+	store, err := storage.NewMemoryStorage()
 	require.NoError(t, err)
 	// enableAuth=false => dev mode: any non-empty key is accepted.
 	mw := adminSessionMiddleware(store, false)
@@ -104,13 +104,13 @@ func TestAdminMiddleware_DevMode_AnyKeyPasses(t *testing.T) {
 }
 
 func TestIsValidAdminKey_DevMode_AcceptsAny(t *testing.T) {
-	store, err := storage.NewMemoryStorage(storage.Config{})
+	store, err := storage.NewMemoryStorage()
 	require.NoError(t, err)
 	assert.True(t, isValidAdminKey(context.Background(), "anything", store, false))
 }
 
 func TestIsValidAdminKey_EmptyKey_Rejects(t *testing.T) {
-	store, err := storage.NewMemoryStorage(storage.Config{})
+	store, err := storage.NewMemoryStorage()
 	require.NoError(t, err)
 	assert.False(t, isValidAdminKey(context.Background(), "", store, false))
 }
@@ -121,7 +121,7 @@ func TestIsValidAdminKey_ValidAdminKey(t *testing.T) {
 }
 
 func TestIsValidAdminKey_NonAdminKey_Rejects(t *testing.T) {
-	store, err := storage.NewMemoryStorage(storage.Config{})
+	store, err := storage.NewMemoryStorage()
 	require.NoError(t, err)
 	rawKey := "readkey"
 	ak := models.NewAPIKey(models.NewKeyID(), "r", rawKey, []string{"read"})
@@ -131,7 +131,7 @@ func TestIsValidAdminKey_NonAdminKey_Rejects(t *testing.T) {
 }
 
 func TestIsValidAdminKey_DisabledKey_Rejects(t *testing.T) {
-	store, err := storage.NewMemoryStorage(storage.Config{})
+	store, err := storage.NewMemoryStorage()
 	require.NoError(t, err)
 	rawKey := "disabledkey"
 	ak := models.NewAPIKey(models.NewKeyID(), "d", rawKey, []string{"admin"})

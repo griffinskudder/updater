@@ -35,7 +35,7 @@ func newAdminHandlers(t *testing.T) *Handlers {
 	t.Helper()
 	tmpl, err := ParseAdminTemplates()
 	require.NoError(t, err)
-	store, err := storage.NewMemoryStorage(storage.Config{})
+	store, err := storage.NewMemoryStorage()
 	require.NoError(t, err)
 	rawKey := "admin-key"
 	ak := models.NewAPIKey(models.NewKeyID(), "test", rawKey, []string{"admin"})

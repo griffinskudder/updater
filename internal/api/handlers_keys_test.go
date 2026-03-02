@@ -19,7 +19,7 @@ import (
 // It returns the handlers and the raw admin key string for use in Authorization headers.
 func newKeyTestHandlers(t *testing.T) (*Handlers, string) {
 	t.Helper()
-	store, err := storage.NewMemoryStorage(storage.Config{})
+	store, err := storage.NewMemoryStorage()
 	require.NoError(t, err)
 
 	adminRaw := "upd_test-admin-key-for-handlers"
@@ -47,7 +47,7 @@ func adminCtxRequest(method, path string, body []byte, store storage.Storage, ra
 }
 
 func TestListAPIKeys_ReturnsEmptyList(t *testing.T) {
-	store, err := storage.NewMemoryStorage(storage.Config{})
+	store, err := storage.NewMemoryStorage()
 	require.NoError(t, err)
 	h := NewHandlers(&MockUpdateService{}, WithStorage(store))
 

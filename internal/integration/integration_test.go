@@ -31,13 +31,7 @@ func TestIntegration_FullUpdateFlow(t *testing.T) {
 	storageFile := filepath.Join(tempDir, "test_releases.json")
 
 	// Initialize storage
-	storageConfig := storage.Config{
-		Type:     "json",
-		Path:     storageFile,
-		CacheTTL: "1m",
-	}
-
-	store, err := storage.NewJSONStorage(storageConfig)
+	store, err := storage.NewJSONStorage(storageFile)
 	require.NoError(t, err)
 	defer store.Close()
 
@@ -226,13 +220,7 @@ func TestIntegration_PreReleaseHandling(t *testing.T) {
 	tempDir := t.TempDir()
 	storageFile := filepath.Join(tempDir, "prerelease_test.json")
 
-	storageConfig := storage.Config{
-		Type:     "json",
-		Path:     storageFile,
-		CacheTTL: "1m",
-	}
-
-	store, err := storage.NewJSONStorage(storageConfig)
+	store, err := storage.NewJSONStorage(storageFile)
 	require.NoError(t, err)
 	defer store.Close()
 
@@ -355,13 +343,7 @@ func TestIntegration_ErrorHandling(t *testing.T) {
 	tempDir := t.TempDir()
 	storageFile := filepath.Join(tempDir, "error_test.json")
 
-	storageConfig := storage.Config{
-		Type:     "json",
-		Path:     storageFile,
-		CacheTTL: "1m",
-	}
-
-	store, err := storage.NewJSONStorage(storageConfig)
+	store, err := storage.NewJSONStorage(storageFile)
 	require.NoError(t, err)
 	defer store.Close()
 
@@ -448,13 +430,7 @@ func TestIntegration_ConcurrentRequests(t *testing.T) {
 	tempDir := t.TempDir()
 	storageFile := filepath.Join(tempDir, "concurrent_test.json")
 
-	storageConfig := storage.Config{
-		Type:     "json",
-		Path:     storageFile,
-		CacheTTL: "1m",
-	}
-
-	store, err := storage.NewJSONStorage(storageConfig)
+	store, err := storage.NewJSONStorage(storageFile)
 	require.NoError(t, err)
 	defer store.Close()
 
@@ -624,13 +600,7 @@ func TestIntegration_PaginationAndFiltering(t *testing.T) {
 	tempDir := t.TempDir()
 	storageFile := filepath.Join(tempDir, "pagination_test.json")
 
-	storageConfig := storage.Config{
-		Type:     "json",
-		Path:     storageFile,
-		CacheTTL: "1m",
-	}
-
-	store, err := storage.NewJSONStorage(storageConfig)
+	store, err := storage.NewJSONStorage(storageFile)
 	require.NoError(t, err)
 	defer store.Close()
 
@@ -756,13 +726,7 @@ func setupTestServer(t *testing.T, enableAuth bool) (*httptest.Server, storage.S
 	tempDir := t.TempDir()
 	storageFile := filepath.Join(tempDir, "test_releases.json")
 
-	storageConfig := storage.Config{
-		Type:     "json",
-		Path:     storageFile,
-		CacheTTL: "1m",
-	}
-
-	store, err := storage.NewJSONStorage(storageConfig)
+	store, err := storage.NewJSONStorage(storageFile)
 	require.NoError(t, err)
 	t.Cleanup(func() { store.Close() })
 

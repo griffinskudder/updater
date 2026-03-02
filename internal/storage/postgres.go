@@ -22,12 +22,12 @@ type PostgresStorage struct {
 }
 
 // NewPostgresStorage creates a new PostgreSQL storage instance.
-func NewPostgresStorage(config Config) (Storage, error) {
-	if config.ConnectionString == "" {
+func NewPostgresStorage(dsn string) (Storage, error) {
+	if dsn == "" {
 		return nil, fmt.Errorf("connection string is required for PostgreSQL storage")
 	}
 
-	pool, err := pgxpool.New(context.Background(), config.ConnectionString)
+	pool, err := pgxpool.New(context.Background(), dsn)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create connection pool: %w", err)
 	}

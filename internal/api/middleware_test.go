@@ -24,7 +24,7 @@ func newTestAPIKey(t *testing.T, store storage.Storage, name, rawKey string, per
 
 // TestAuthMiddlewareWithStorage tests authMiddleware using storage-backed key lookup.
 func TestAuthMiddlewareWithStorage(t *testing.T) {
-	store, err := storage.NewMemoryStorage(storage.Config{})
+	store, err := storage.NewMemoryStorage()
 	require.NoError(t, err)
 
 	validKey := newTestAPIKey(t, store, "Valid Key", "valid-raw-key", []string{"read"}, true)
@@ -65,7 +65,7 @@ func TestAuthMiddlewareWithStorage(t *testing.T) {
 
 // TestOptionalAuthWithStorage tests OptionalAuth using storage-backed key lookup.
 func TestOptionalAuthWithStorage(t *testing.T) {
-	store, err := storage.NewMemoryStorage(storage.Config{})
+	store, err := storage.NewMemoryStorage()
 	require.NoError(t, err)
 
 	validKey := newTestAPIKey(t, store, "Valid Key", "opt-valid-key", []string{"read"}, true)
@@ -110,7 +110,7 @@ func TestOptionalAuthWithStorage(t *testing.T) {
 
 // TestIsValidAdminKeyWithStorage tests isValidAdminKey using storage-backed key lookup.
 func TestIsValidAdminKeyWithStorage(t *testing.T) {
-	store, err := storage.NewMemoryStorage(storage.Config{})
+	store, err := storage.NewMemoryStorage()
 	require.NoError(t, err)
 
 	adminKey := newTestAPIKey(t, store, "Admin Key", "admin-raw-key", []string{"admin"}, true)

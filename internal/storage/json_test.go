@@ -19,13 +19,7 @@ func TestNewJSONStorage(t *testing.T) {
 	tempDir := t.TempDir()
 	filePath := filepath.Join(tempDir, "test.json")
 
-	config := Config{
-		Type:     "json",
-		Path:     filePath,
-		CacheTTL: "1m",
-	}
-
-	storage, err := NewJSONStorage(config)
+	storage, err := NewJSONStorage(filePath)
 	require.NoError(t, err)
 	require.NotNil(t, storage)
 	defer storage.Close()
@@ -33,8 +27,8 @@ func TestNewJSONStorage(t *testing.T) {
 	// Check that file was created
 	assert.FileExists(t, filePath)
 
-	// Check that cache TTL was set correctly
-	assert.Equal(t, time.Minute, storage.cacheTTL)
+	// Check that default cache TTL was set
+	assert.Equal(t, 5*time.Minute, storage.cacheTTL)
 }
 
 func TestNewJSONStorage_FilePermissions(t *testing.T) {
@@ -44,7 +38,7 @@ func TestNewJSONStorage_FilePermissions(t *testing.T) {
 	tempDir := t.TempDir()
 	filePath := filepath.Join(tempDir, "subdir", "test.json")
 
-	storage, err := NewJSONStorage(Config{Type: "json", Path: filePath})
+	storage, err := NewJSONStorage(filePath)
 	require.NoError(t, err)
 	defer storage.Close()
 
@@ -63,12 +57,7 @@ func TestNewJSONStorage_FilePermissions(t *testing.T) {
 
 func TestNewJSONStorage_InvalidPath(t *testing.T) {
 	// Use a path that can't be created (root directory on most systems)
-	config := Config{
-		Type: "json",
-		Path: "/",
-	}
-
-	_, err := NewJSONStorage(config)
+	_, err := NewJSONStorage("/")
 	assert.Error(t, err)
 }
 
@@ -407,13 +396,7 @@ func TestJSONStorage_Caching(t *testing.T) {
 	tempDir := t.TempDir()
 	filePath := filepath.Join(tempDir, "cache_test.json")
 
-	config := Config{
-		Type:     "json",
-		Path:     filePath,
-		CacheTTL: "100ms", // Very short TTL for testing
-	}
-
-	storage, err := NewJSONStorage(config)
+	storage, err := NewJSONStorage(filePath)
 	require.NoError(t, err)
 	defer storage.Close()
 
@@ -527,12 +510,7 @@ func setupTestStorage(t *testing.T) *JSONStorage {
 	tempDir := t.TempDir()
 	filePath := filepath.Join(tempDir, "test.json")
 
-	config := Config{
-		Type: "json",
-		Path: filePath,
-	}
-
-	storage, err := NewJSONStorage(config)
+	storage, err := NewJSONStorage(filePath)
 	require.NoError(t, err)
 	return storage
 }
@@ -564,7 +542,7 @@ func createTestRelease(appID, version, platform, arch string) *models.Release {
 
 func TestJSONStorage_APIKeyCRUD(t *testing.T) {
 	dir := t.TempDir()
-	s, err := NewJSONStorage(Config{Path: filepath.Join(dir, "data.json")})
+	s, err := NewJSONStorage(filepath.Join(dir, "data.json"))
 	require.NoError(t, err)
 	ctx := context.Background()
 
@@ -596,7 +574,7 @@ func TestJSONStorage_APIKeyCRUD(t *testing.T) {
 
 func TestJSONStorage_GetAPIKeyByHash_NotFound(t *testing.T) {
 	dir := t.TempDir()
-	s, err := NewJSONStorage(Config{Path: filepath.Join(dir, "data.json")})
+	s, err := NewJSONStorage(filepath.Join(dir, "data.json"))
 	require.NoError(t, err)
 	_, err = s.GetAPIKeyByHash(context.Background(), "nonexistent")
 	assert.ErrorIs(t, err, ErrNotFound)

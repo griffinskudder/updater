@@ -18,7 +18,7 @@ import (
 // newTestHandlers creates a Handlers instance backed by real memory storage and service.
 func newTestHandlers(t *testing.T) *Handlers {
 	t.Helper()
-	store, err := storage.NewMemoryStorage(storage.Config{})
+	store, err := storage.NewMemoryStorage()
 	require.NoError(t, err)
 	svc := update.NewService(store)
 	return NewHandlers(svc, WithStorage(store))

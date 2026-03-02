@@ -34,17 +34,10 @@ type JSONData struct {
 }
 
 // NewJSONStorage creates a new JSON-based storage instance
-func NewJSONStorage(config Config) (*JSONStorage, error) {
-	cacheTTL := 5 * time.Minute
-	if config.CacheTTL != "" {
-		if duration, err := time.ParseDuration(config.CacheTTL); err == nil {
-			cacheTTL = duration
-		}
-	}
-
+func NewJSONStorage(filePath string) (*JSONStorage, error) {
 	storage := &JSONStorage{
-		filePath: config.Path,
-		cacheTTL: cacheTTL,
+		filePath: filePath,
+		cacheTTL: 5 * time.Minute,
 	}
 
 	// Initialize with empty data if file doesn't exist
