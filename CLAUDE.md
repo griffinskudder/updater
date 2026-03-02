@@ -19,7 +19,6 @@ internal/
   integration/        - Integration tests
   logger/             - Structured logging (log/slog)
   models/             - Data models: application, release, request, response, config, api_key
-  ratelimit/          - Rate limiting (token bucket, HTTP middleware, in-memory backend)
   storage/            - Storage providers (JSON, memory, PostgreSQL, SQLite)
     sqlc/             - Generated type-safe database code (postgres/, sqlite/)
   update/             - Business logic: version comparison, release management, errors
@@ -103,10 +102,12 @@ Layered architecture, all layers complete:
 
 - **Storage**: Factory pattern (`storage/factory.go`), interface with `context.Context` support, copy-on-return
 - **Database**: sqlc-generated queries, engine-specific schemas (`postgres/`, `sqlite/`), migration-friendly naming (`001_initial.sql`)
-- **API**: Middleware chain (CORS -> Auth -> Permissions -> Handler), API key auth with role-based permissions; keys stored in DB, auth middleware calls `GetAPIKeyByHash` on every request
+- **API**: Middleware chain (Auth -> Permissions -> Handler), API key auth with role-based permissions; keys stored in DB, auth middleware calls `GetAPIKeyByHash` on every request
+- **Admin UI**: Cookie-authenticated HTML interface at `/admin`; `adminSessionMiddleware` validates an `admin_session` cookie; handlers in `handlers_admin.go`, templates embedded via `admin/templates/`
 - **API Key Management**: Storage-backed (`internal/models/api_key.go`); bootstrap key seeds first admin key; CRUD via `GET/POST /api/v1/admin/keys` and `PATCH/DELETE /api/v1/admin/keys/{id}`
-- **Rate Limiting**: Token bucket algorithm (`internal/ratelimit/`), two-tier limits (anonymous vs authenticated), middleware sets standard `X-RateLimit-*` headers
+- **Rate Limiting**: Delegated to the reverse proxy. There is no `internal/ratelimit/` package.
 - **Errors**: `ServiceError` type in `internal/update/errors.go` maps to HTTP status codes
+- **CacheConfig**: Defined in `models/config.go` and validated, but no caching layer is implemented. The config fields exist as placeholders only.
 - **Logging**: `log/slog` with JSON/text formats, security audit events tagged `"event", "security_audit"`
 - **Testing**: Table-driven, co-located `*_test.go`, memory provider as fast fake, concurrency tests
 - **Docker**: Distroless base, multi-stage build, non-root user, read-only filesystem
