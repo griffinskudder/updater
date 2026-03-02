@@ -13,7 +13,7 @@ import (
 )
 
 func TestMemoryStorage(t *testing.T) {
-	storage, err := NewMemoryStorage(Config{})
+	storage, err := NewMemoryStorage()
 	if err != nil {
 		t.Fatalf("Failed to create memory storage: %v", err)
 	}
@@ -222,7 +222,7 @@ func TestMemoryStorage_DeleteApplication(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			storage, err := NewMemoryStorage(Config{})
+			storage, err := NewMemoryStorage()
 			if err != nil {
 				t.Fatalf("Failed to create memory storage: %v", err)
 			}
@@ -255,7 +255,7 @@ func TestMemoryStorage_DeleteApplication(t *testing.T) {
 }
 
 func TestMemoryStorageConcurrency(t *testing.T) {
-	storage, err := NewMemoryStorage(Config{})
+	storage, err := NewMemoryStorage()
 	if err != nil {
 		t.Fatalf("Failed to create memory storage: %v", err)
 	}
@@ -318,7 +318,7 @@ func TestMemoryStorageConcurrency(t *testing.T) {
 }
 
 func TestMemoryStorage_APIKeyCRUD(t *testing.T) {
-	s, err := NewMemoryStorage(Config{})
+	s, err := NewMemoryStorage()
 	require.NoError(t, err)
 	ctx := context.Background()
 
@@ -354,14 +354,14 @@ func TestMemoryStorage_APIKeyCRUD(t *testing.T) {
 }
 
 func TestMemoryStorage_GetAPIKeyByHash_NotFound(t *testing.T) {
-	s, err := NewMemoryStorage(Config{})
+	s, err := NewMemoryStorage()
 	require.NoError(t, err)
 	_, err = s.GetAPIKeyByHash(context.Background(), "nonexistent")
 	assert.ErrorIs(t, err, ErrNotFound)
 }
 
 func TestMemoryStorage_UpdateAPIKey_NotFound(t *testing.T) {
-	s, err := NewMemoryStorage(Config{})
+	s, err := NewMemoryStorage()
 	require.NoError(t, err)
 	key := &models.APIKey{ID: "missing"}
 	err = s.UpdateAPIKey(context.Background(), key)
@@ -369,7 +369,7 @@ func TestMemoryStorage_UpdateAPIKey_NotFound(t *testing.T) {
 }
 
 func TestMemoryStorage_DeleteAPIKey_NotFound(t *testing.T) {
-	s, err := NewMemoryStorage(Config{})
+	s, err := NewMemoryStorage()
 	require.NoError(t, err)
 	err = s.DeleteAPIKey(context.Background(), "missing")
 	assert.ErrorIs(t, err, ErrNotFound)

@@ -20,49 +20,11 @@ const (
 	PermissionAdmin Permission = "admin"
 )
 
-// SecurityContext represents the security information for a request
-type SecurityContext struct {
-	APIKey      *models.APIKey
-	Permissions []string
-}
-
-// HasPermission checks if the security context has the required permission
-func (sc *SecurityContext) HasPermission(required Permission) bool {
-	if sc == nil || sc.APIKey == nil {
-		return false
-	}
-
-	requiredStr := string(required)
-
-	// Check if the API key has the exact permission
-	for _, permission := range sc.APIKey.Permissions {
-		if permission == requiredStr {
-			return true
-		}
-
-		// Check permission hierarchy
-		switch permission {
-		case string(PermissionAdmin):
-			// Admin permission grants access to everything
-			return true
-		case string(PermissionWrite):
-			// Write permission includes read
-			if required == PermissionRead {
-				return true
-			}
-		}
-	}
-
-	return false
-}
-
-// GetSecurityContext extracts security context from request context
-func GetSecurityContext(r *http.Request) *SecurityContext {
+// GetAPIKey extracts the authenticated API key from request context.
+// Returns nil if no key is present (unauthenticated request).
+func GetAPIKey(r *http.Request) *models.APIKey {
 	if apiKey, ok := r.Context().Value("api_key").(*models.APIKey); ok {
-		return &SecurityContext{
-			APIKey:      apiKey,
-			Permissions: apiKey.Permissions,
-		}
+		return apiKey
 	}
 	return nil
 }
@@ -71,13 +33,10 @@ func GetSecurityContext(r *http.Request) *SecurityContext {
 func RequirePermission(required Permission) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			securityContext := GetSecurityContext(r)
-
-			// Check for nil security context or insufficient permissions
-			if securityContext == nil || !securityContext.HasPermission(required) {
+			apiKey := GetAPIKey(r)
+			if apiKey == nil || !apiKey.HasPermission(string(required)) {
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusForbidden)
-
 				errorResp := models.NewErrorResponse(
 					"Insufficient permissions for this operation",
 					models.ErrorCodeForbidden,
@@ -85,7 +44,6 @@ func RequirePermission(required Permission) mux.MiddlewareFunc {
 				json.NewEncoder(w).Encode(errorResp)
 				return
 			}
-
 			next.ServeHTTP(w, r)
 		})
 	}

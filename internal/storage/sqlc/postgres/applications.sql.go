@@ -11,34 +11,6 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const createApplication = `-- name: CreateApplication :exec
-INSERT INTO applications (id, name, description, platforms, config, created_at, updated_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7)
-`
-
-type CreateApplicationParams struct {
-	ID          string             `json:"id"`
-	Name        string             `json:"name"`
-	Description pgtype.Text        `json:"description"`
-	Platforms   []byte             `json:"platforms"`
-	Config      []byte             `json:"config"`
-	CreatedAt   pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
-}
-
-func (q *Queries) CreateApplication(ctx context.Context, arg CreateApplicationParams) error {
-	_, err := q.db.Exec(ctx, createApplication,
-		arg.ID,
-		arg.Name,
-		arg.Description,
-		arg.Platforms,
-		arg.Config,
-		arg.CreatedAt,
-		arg.UpdatedAt,
-	)
-	return err
-}
-
 const deleteApplication = `-- name: DeleteApplication :exec
 DELETE FROM applications
 WHERE id = $1
@@ -104,28 +76,35 @@ func (q *Queries) GetApplicationByID(ctx context.Context, id string) (Applicatio
 	return i, err
 }
 
-const updateApplication = `-- name: UpdateApplication :exec
-UPDATE applications
-SET name = $2, description = $3, platforms = $4, config = $5, updated_at = $6
-WHERE id = $1
+const upsertApplication = `-- name: UpsertApplication :exec
+INSERT INTO applications (id, name, description, platforms, config, created_at, updated_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
+ON CONFLICT (id) DO UPDATE SET
+    name = EXCLUDED.name,
+    description = EXCLUDED.description,
+    platforms = EXCLUDED.platforms,
+    config = EXCLUDED.config,
+    updated_at = EXCLUDED.updated_at
 `
 
-type UpdateApplicationParams struct {
+type UpsertApplicationParams struct {
 	ID          string             `json:"id"`
 	Name        string             `json:"name"`
 	Description pgtype.Text        `json:"description"`
 	Platforms   []byte             `json:"platforms"`
 	Config      []byte             `json:"config"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
 }
 
-func (q *Queries) UpdateApplication(ctx context.Context, arg UpdateApplicationParams) error {
-	_, err := q.db.Exec(ctx, updateApplication,
+func (q *Queries) UpsertApplication(ctx context.Context, arg UpsertApplicationParams) error {
+	_, err := q.db.Exec(ctx, upsertApplication,
 		arg.ID,
 		arg.Name,
 		arg.Description,
 		arg.Platforms,
 		arg.Config,
+		arg.CreatedAt,
 		arg.UpdatedAt,
 	)
 	return err

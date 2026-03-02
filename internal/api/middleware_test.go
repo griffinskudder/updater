@@ -24,7 +24,7 @@ func newTestAPIKey(t *testing.T, store storage.Storage, name, rawKey string, per
 
 // TestAuthMiddlewareWithStorage tests authMiddleware using storage-backed key lookup.
 func TestAuthMiddlewareWithStorage(t *testing.T) {
-	store, err := storage.NewMemoryStorage(storage.Config{})
+	store, err := storage.NewMemoryStorage()
 	require.NoError(t, err)
 
 	validKey := newTestAPIKey(t, store, "Valid Key", "valid-raw-key", []string{"read"}, true)
@@ -65,7 +65,7 @@ func TestAuthMiddlewareWithStorage(t *testing.T) {
 
 // TestOptionalAuthWithStorage tests OptionalAuth using storage-backed key lookup.
 func TestOptionalAuthWithStorage(t *testing.T) {
-	store, err := storage.NewMemoryStorage(storage.Config{})
+	store, err := storage.NewMemoryStorage()
 	require.NoError(t, err)
 
 	validKey := newTestAPIKey(t, store, "Valid Key", "opt-valid-key", []string{"read"}, true)
@@ -104,35 +104,6 @@ func TestOptionalAuthWithStorage(t *testing.T) {
 			} else {
 				assert.Nil(t, ctxKey, "expected no API key in context")
 			}
-		})
-	}
-}
-
-// TestIsValidAdminKeyWithStorage tests isValidAdminKey using storage-backed key lookup.
-func TestIsValidAdminKeyWithStorage(t *testing.T) {
-	store, err := storage.NewMemoryStorage(storage.Config{})
-	require.NoError(t, err)
-
-	adminKey := newTestAPIKey(t, store, "Admin Key", "admin-raw-key", []string{"admin"}, true)
-	readKey := newTestAPIKey(t, store, "Read Key", "read-raw-key", []string{"read"}, true)
-
-	tests := []struct {
-		name       string
-		key        string
-		enableAuth bool
-		expected   bool
-	}{
-		{"valid admin key returns true", adminKey, true, true},
-		{"non-admin key returns false", readKey, true, false},
-		{"enableAuth=false accepts any non-empty key", "any-key-will-do", false, true},
-		{"empty key always returns false", "", false, false},
-		{"unknown key returns false when auth enabled", "unknown-key-xyz", true, false},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result := isValidAdminKey(context.Background(), tt.key, store, tt.enableAuth)
-			assert.Equal(t, tt.expected, result)
 		})
 	}
 }

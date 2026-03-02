@@ -84,18 +84,16 @@ Fully implemented business logic for version comparison and update determination
 - Structured error responses with proper HTTP status codes
 
 ### 3. Storage Layer (`internal/storage/`) ✅ **COMPLETE**
-Multi-provider persistence layer with a unified interface and factory-based provider creation.
+Multi-provider persistence layer with a unified interface.
 
 **Core Components:**
 - **Interface** (`interface.go`): `Storage` interface with context support for all operations
-- **Factory** (`factory.go`): Factory pattern for creating providers by type string
 - **Type Conversions** (`dbconvert.go`): Shared database-to-model conversion helpers
 
 **Storage Providers:**
-- **JSON** (`json.go`): File-based storage using JSON, suitable for development and small deployments
 - **Memory** (`memory.go`): In-memory storage for testing and ephemeral use
 - **PostgreSQL** (`postgres.go`): Production database backend using sqlc-generated queries
-- **SQLite** (`sqlite.go`): Lightweight database backend using sqlc-generated queries
+- **SQLite** (`sqlite.go`): Lightweight file-based database backend using sqlc-generated queries (default)
 
 **Database Layer (`sqlc/`):**
 - `schema/postgres/`, `schema/sqlite/`: Migration-friendly schemas (`001_initial.sql`, `002_add_indexes.sql`)
@@ -132,6 +130,7 @@ OpenTelemetry-based instrumentation for metrics, tracing, and storage monitoring
 **Core Components:**
 - **SDK Setup** (`observability.go`): OpenTelemetry TracerProvider and MeterProvider initialization
 - **Metrics Server** (`metrics.go`): Prometheus HTTP metrics server on a separate port
+- **HTTP Metrics Middleware** (`httpmiddleware.go`): Request count/latency recording and business-level counters (update checks, release registrations)
 - **Instrumented Storage** (`storage.go`): `InstrumentedStorage` wrapper that adds operation-level metrics and tracing to any `Storage` implementation
 
 **Exporters:**
@@ -269,6 +268,8 @@ Parameters can be provided via query params or headers:
 │   │   ├── response.go
 │   │   └── response_test.go
 │   ├── observability/                # OpenTelemetry instrumentation
+│   │   ├── httpmiddleware.go
+│   │   ├── httpmiddleware_test.go
 │   │   ├── metrics.go
 │   │   ├── metrics_test.go
 │   │   ├── observability.go
@@ -278,11 +279,7 @@ Parameters can be provided via query params or headers:
 │   ├── storage/                      # Multi-provider persistence
 │   │   ├── dbconvert.go
 │   │   ├── dbconvert_test.go
-│   │   ├── factory.go
-│   │   ├── factory_test.go
 │   │   ├── interface.go
-│   │   ├── json.go
-│   │   ├── json_test.go
 │   │   ├── memory.go
 │   │   ├── memory_test.go
 │   │   ├── postgres.go
@@ -370,7 +367,7 @@ type Application struct {
     Name        string            `json:"name"`
     Description string            `json:"description"`
     Platforms   []string          `json:"platforms"`
-    Config      ApplicationConfig `json:"config"`
+    Config      ApplicationConfig `json:"config"` // CustomFields map only
 }
 ```
 
@@ -421,7 +418,7 @@ sequenceDiagram
     S->>H: Data Response
     H->>C: JSON Response
 
-    Note over AM,PM: Security Context Added
+    Note over AM,PM: API Key Added to Context
     Note over H: Audit Logging
 ```
 
@@ -443,8 +440,6 @@ sequenceDiagram
 - **Permission Hierarchy**: Admin includes write, write includes read permissions
 - **Endpoint Protection**: `RequirePermission` middleware enforces different permission requirements
 - **Principle of Least Privilege**: Minimal permissions by default
-- **Security Context**: `SecurityContext` type for permission validation
-
 #### 4. Application Security Layer ✅ **IMPLEMENTED**
 - **Input Validation**: Comprehensive validation of all request data with structured error responses
 - **Output Sanitization**: Secure error messages without information leakage using `ServiceError` types
@@ -641,8 +636,7 @@ Configuration is loaded from a YAML file (via `-config` CLI flag) and overridden
 - `UPDATER_TLS_KEY_FILE`: Path to TLS private key
 
 **Storage:**
-- `UPDATER_STORAGE_TYPE`: Storage backend (json, memory, postgres, sqlite)
-- `UPDATER_STORAGE_PATH`: File path for JSON storage
+- `UPDATER_STORAGE_TYPE`: Storage backend (memory, postgres, sqlite)
 - `UPDATER_DATABASE_DSN`: Database connection string
 - `UPDATER_DATABASE_DRIVER`: Database driver (postgres, sqlite)
 - `UPDATER_DATABASE_MAX_OPEN_CONNS`: Maximum open database connections
@@ -658,21 +652,6 @@ Configuration is loaded from a YAML file (via `-config` CLI flag) and overridden
 - `UPDATER_LOG_FORMAT`: Output format (json, text)
 - `UPDATER_LOG_OUTPUT`: Output destination (stdout, stderr, file)
 - `UPDATER_LOG_FILE_PATH`: Log file path (when output is file)
-- `UPDATER_LOG_MAX_SIZE`: Max log file size in MB
-- `UPDATER_LOG_MAX_BACKUPS`: Max number of old log files
-- `UPDATER_LOG_MAX_AGE`: Max age of old log files in days
-- `UPDATER_LOG_COMPRESS`: Compress rotated log files
-
-**Cache:**
-- `UPDATER_CACHE_ENABLED`: Enable caching (default: false)
-- `UPDATER_CACHE_TYPE`: Cache type (memory, redis)
-- `UPDATER_CACHE_TTL`: Cache TTL duration
-- `UPDATER_REDIS_ADDR`: Redis address
-- `UPDATER_REDIS_PASSWORD`: Redis password
-- `UPDATER_REDIS_DB`: Redis database number
-- `UPDATER_REDIS_POOL_SIZE`: Redis connection pool size
-- `UPDATER_MEMORY_CACHE_MAX_SIZE`: Memory cache max entries
-- `UPDATER_MEMORY_CACHE_CLEANUP_INTERVAL`: Memory cache cleanup interval
 
 **Metrics:**
 - `UPDATER_METRICS_ENABLED`: Enable Prometheus metrics (default: false)
@@ -691,22 +670,16 @@ server:
   tls_cert_file: ""
   tls_key_file: ""
 storage:
-  type: json
-  path: ./data/releases.json
+  type: sqlite
   database:
-    dsn: ""
-    driver: ""
+    dsn: "./data/updater.db"
+    driver: "sqlite3"
     max_open_conns: 25
     max_idle_conns: 5
 
 security:
   enable_auth: false
   bootstrap_key: ""
-
-cache:
-  enabled: false
-  type: memory
-  ttl: 300s
 
 metrics:
   enabled: false
@@ -720,11 +693,6 @@ logging:
 ```
 
 ## Performance Considerations
-
-### Caching Strategy
-- In-memory caching of frequently requested releases
-- HTTP cache headers for CDN optimization
-- Configurable cache TTL per endpoint
 
 ### Scalability
 - Stateless design enables horizontal scaling
@@ -753,11 +721,13 @@ logging:
 The following features have been implemented since the initial architecture design:
 
 - **Prometheus metrics** -- `internal/observability/metrics.go`, exposed on a dedicated port
+- **HTTP and business metrics** -- `internal/observability/httpmiddleware.go` with request count/latency and update-check/release-registration counters
 - **Health check endpoints** -- `GET /health` and `GET /api/v1/health` with storage ping and auth-enhanced details
 - **Request tracing** -- OpenTelemetry integration via `internal/observability/observability.go`
 - **Audit logging** -- Security events logged in middleware with `"event", "security_audit"` tags
 - **PostgreSQL support** -- `internal/storage/postgres.go` with sqlc-generated queries
-- **SQLite support** -- `internal/storage/sqlite.go` with sqlc-generated queries
+- **SQLite support** -- `internal/storage/sqlite.go` with sqlc-generated queries (now the default file-based backend)
+- **Architecture cleanup** -- removed unused model types, factory pattern, JSON storage, admin UI, cache/log-rotation config; replaced read-then-write with SQL upserts
 
 ## Future Enhancements
 
@@ -771,7 +741,6 @@ The following features have been implemented since the initial architecture desi
    - OAuth2/JWT authentication
 
 3. **Storage Backends**
-   - Redis caching
    - S3-compatible object storage
 
 ## Testing Strategy

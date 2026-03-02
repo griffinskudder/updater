@@ -41,7 +41,6 @@ nav:
   - API:
     - Reference: api.md
     - OpenAPI Spec: openapi.md
-    - Admin UI: admin-ui.md
   - Architecture: ARCHITECTURE.md
   - Security:
     - Overview: SECURITY.md

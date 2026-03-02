@@ -33,6 +33,11 @@ func (p *Provider) PrometheusExporter() *prometheus.Exporter {
 	return p.promExporter
 }
 
+// MeterProvider returns the underlying SDK MeterProvider, or nil when metrics are disabled.
+func (p *Provider) MeterProvider() *sdkmetric.MeterProvider {
+	return p.meterProvider
+}
+
 // Shutdown gracefully shuts down all OpenTelemetry providers.
 func (p *Provider) Shutdown(ctx context.Context) error {
 	var errs []error

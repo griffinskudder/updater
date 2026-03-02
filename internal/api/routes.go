@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 	"updater/internal/models"
+	"updater/internal/observability"
 	"updater/internal/storage"
 
 	"github.com/gorilla/mux"
@@ -43,6 +44,13 @@ func WithOTelMiddleware(serviceName string) RouteOption {
 	}
 }
 
+// WithMetricsMiddleware adds HTTP request count and latency recording.
+func WithMetricsMiddleware(provider *observability.Provider) RouteOption {
+	return func(r *mux.Router) {
+		r.Use(observability.NewMetricsMiddleware(provider))
+	}
+}
+
 // registerPublicEndpoint registers a handler at both root and /api/v1 paths.
 // This is used for public endpoints like /health and /version that should be
 // accessible at both the root level and under the versioned API prefix.
@@ -70,32 +78,6 @@ func SetupRoutes(handlers *Handlers, config *models.Config, opts ...RouteOption)
 
 	api.HandleFunc("/openapi.yaml", handlers.ServeOpenAPISpec).Methods("GET")
 	api.HandleFunc("/docs", handlers.ServeSwaggerUI).Methods("GET")
-
-	// Admin UI - cookie-authenticated; middleware skips /login and /logout.
-	adminRouter := router.PathPrefix("/admin").Subrouter()
-	adminRouter.Use(adminSessionMiddleware(handlers.storage, config.Security.EnableAuth))
-	adminRouter.HandleFunc("/login", handlers.AdminLogin).Methods("GET", "POST")
-	adminRouter.HandleFunc("/logout", handlers.AdminLogout).Methods("POST")
-	adminRouter.HandleFunc("", func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, "/admin/applications", http.StatusSeeOther)
-	}).Methods("GET")
-	adminRouter.HandleFunc("/health", handlers.AdminHealth).Methods("GET")
-	adminRouter.HandleFunc("/applications", handlers.AdminListApplications).Methods("GET")
-	adminRouter.HandleFunc("/applications/new", handlers.AdminNewApplicationForm).Methods("GET")
-	adminRouter.HandleFunc("/applications", handlers.AdminCreateApplication).Methods("POST")
-	adminRouter.HandleFunc("/applications/{app_id}", handlers.AdminGetApplication).Methods("GET")
-	adminRouter.HandleFunc("/applications/{app_id}/edit", handlers.AdminEditApplicationForm).Methods("GET")
-	adminRouter.HandleFunc("/applications/{app_id}/edit", handlers.AdminUpdateApplication).Methods("POST")
-	adminRouter.HandleFunc("/applications/{app_id}", handlers.AdminDeleteApplication).Methods("DELETE")
-	adminRouter.HandleFunc("/applications/{app_id}/releases/new", handlers.AdminNewReleaseForm).Methods("GET")
-	adminRouter.HandleFunc("/applications/{app_id}/releases", handlers.AdminCreateRelease).Methods("POST")
-	adminRouter.HandleFunc("/applications/{app_id}/releases/{version}/{platform}/{arch}",
-		handlers.AdminDeleteRelease).Methods("DELETE")
-	adminRouter.HandleFunc("/keys", handlers.AdminListKeys).Methods("GET")
-	adminRouter.HandleFunc("/keys/new", handlers.AdminNewKeyForm).Methods("GET")
-	adminRouter.HandleFunc("/keys", handlers.AdminCreateKey).Methods("POST")
-	adminRouter.HandleFunc("/keys/{id}", handlers.AdminDeleteKey).Methods("DELETE")
-	adminRouter.HandleFunc("/keys/{id}/toggle", handlers.AdminToggleKey).Methods("POST")
 
 	registerPublicEndpoint(router, "/health", handlers.HealthCheck)
 	registerPublicEndpoint(router, "/version", handlers.VersionInfo)

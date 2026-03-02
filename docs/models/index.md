@@ -14,13 +14,11 @@ Key types:
 | Type | Description |
 |------|-------------|
 | `Application` | Application metadata, platform support, configuration |
-| `ApplicationConfig` | Per-application update policy settings |
+| `ApplicationConfig` | Per-application custom metadata |
 | `Release` | Release metadata, checksum validation, filtering |
-| `ReleaseFilter` | Criteria for filtering release queries |
 | `APIKey` | Storage-backed API key with permission checking |
 | `Config` | Root service configuration with all sub-configs |
-| `SecurityConfig` | Auth settings: bootstrap key, rate limiting, trusted proxies |
-| `RateLimitConfig` | Two-tier token-bucket rate limiting (anonymous + authenticated) |
+| `SecurityConfig` | Auth settings: bootstrap key, enable/disable authentication |
 | Request types | `CheckUpdateRequest`, `RegisterReleaseRequest`, `CreateApplicationRequest`, etc. |
 | Response types | `UpdateCheckResponse`, `LatestVersionResponse`, `HealthResponse`, etc. |
 
@@ -32,7 +30,7 @@ Key types:
 3. Check platform and architecture constants in the reference
 
 ### For Service Deployment
-1. Read the `Config`, `SecurityConfig`, and `RateLimitConfig` sections in the reference
+1. Read the `Config` and `SecurityConfig` sections in the reference
 2. See [Security](../SECURITY.md) for the API key management workflow
 
 ### For Client Development

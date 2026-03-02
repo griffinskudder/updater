@@ -28,12 +28,12 @@ type SQLiteStorage struct {
 
 // NewSQLiteStorage creates a new SQLite storage instance.
 // It automatically creates tables using the embedded schema if they do not exist.
-func NewSQLiteStorage(config Config) (Storage, error) {
-	if config.ConnectionString == "" {
+func NewSQLiteStorage(dsn string) (Storage, error) {
+	if dsn == "" {
 		return nil, fmt.Errorf("connection string is required for SQLite storage")
 	}
 
-	db, err := sql.Open("sqlite", config.ConnectionString)
+	db, err := sql.Open("sqlite", dsn)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open database: %w", err)
 	}
@@ -105,30 +105,12 @@ func (ss *SQLiteStorage) GetApplication(ctx context.Context, appID string) (*mod
 
 // SaveApplication stores or updates an application (upsert pattern).
 func (ss *SQLiteStorage) SaveApplication(ctx context.Context, app *models.Application) error {
-	_, err := ss.queries.GetApplicationByID(ctx, app.ID)
+	params, err := modelToSqliteUpsertApp(app)
 	if err != nil {
-		if !errors.Is(err, sql.ErrNoRows) {
-			return fmt.Errorf("failed to check existing application: %w", err)
-		}
-
-		// Create new application
-		params, err := modelToSqliteCreateApp(app)
-		if err != nil {
-			return fmt.Errorf("failed to convert application for create: %w", err)
-		}
-		if err := ss.queries.CreateApplication(ctx, params); err != nil {
-			return fmt.Errorf("failed to create application: %w", err)
-		}
-		return nil
+		return fmt.Errorf("failed to convert application for upsert: %w", err)
 	}
-
-	// Update existing application
-	params, err := modelToSqliteUpdateApp(app)
-	if err != nil {
-		return fmt.Errorf("failed to convert application for update: %w", err)
-	}
-	if err := ss.queries.UpdateApplication(ctx, params); err != nil {
-		return fmt.Errorf("failed to update application: %w", err)
+	if err := ss.queries.UpsertApplication(ctx, params); err != nil {
+		return fmt.Errorf("failed to upsert application: %w", err)
 	}
 	return nil
 }
@@ -181,35 +163,12 @@ func (ss *SQLiteStorage) GetRelease(ctx context.Context, appID, version, platfor
 
 // SaveRelease stores or updates a release (upsert pattern).
 func (ss *SQLiteStorage) SaveRelease(ctx context.Context, release *models.Release) error {
-	_, err := ss.queries.GetRelease(ctx, sqlcite.GetReleaseParams{
-		ApplicationID: release.ApplicationID,
-		Version:       release.Version,
-		Platform:      release.Platform,
-		Architecture:  release.Architecture,
-	})
+	params, err := modelToSqliteUpsertRelease(release)
 	if err != nil {
-		if !errors.Is(err, sql.ErrNoRows) {
-			return fmt.Errorf("failed to check existing release: %w", err)
-		}
-
-		// Create new release
-		params, err := modelToSqliteCreateRelease(release)
-		if err != nil {
-			return fmt.Errorf("failed to convert release for create: %w", err)
-		}
-		if err := ss.queries.CreateRelease(ctx, params); err != nil {
-			return fmt.Errorf("failed to create release: %w", err)
-		}
-		return nil
+		return fmt.Errorf("failed to convert release for upsert: %w", err)
 	}
-
-	// Update existing release
-	params, err := modelToSqliteUpdateRelease(release)
-	if err != nil {
-		return fmt.Errorf("failed to convert release for update: %w", err)
-	}
-	if err := ss.queries.UpdateRelease(ctx, params); err != nil {
-		return fmt.Errorf("failed to update release: %w", err)
+	if err := ss.queries.UpsertRelease(ctx, params); err != nil {
+		return fmt.Errorf("failed to upsert release: %w", err)
 	}
 	return nil
 }
@@ -348,19 +307,19 @@ func sqliteAppToModel(row sqlcite.Application) (*models.Application, error) {
 	}, nil
 }
 
-func modelToSqliteCreateApp(app *models.Application) (sqlcite.CreateApplicationParams, error) {
+func modelToSqliteUpsertApp(app *models.Application) (sqlcite.UpsertApplicationParams, error) {
 	platforms, err := marshalPlatforms(app.Platforms)
 	if err != nil {
-		return sqlcite.CreateApplicationParams{}, err
+		return sqlcite.UpsertApplicationParams{}, err
 	}
 
 	config, err := marshalConfig(app.Config)
 	if err != nil {
-		return sqlcite.CreateApplicationParams{}, err
+		return sqlcite.UpsertApplicationParams{}, err
 	}
 
 	now := time.Now().UTC().Format(time.RFC3339)
-	return sqlcite.CreateApplicationParams{
+	return sqlcite.UpsertApplicationParams{
 		ID:          app.ID,
 		Name:        app.Name,
 		Description: stringToNullString(app.Description),
@@ -368,27 +327,6 @@ func modelToSqliteCreateApp(app *models.Application) (sqlcite.CreateApplicationP
 		Config:      string(config),
 		CreatedAt:   now,
 		UpdatedAt:   now,
-	}, nil
-}
-
-func modelToSqliteUpdateApp(app *models.Application) (sqlcite.UpdateApplicationParams, error) {
-	platforms, err := marshalPlatforms(app.Platforms)
-	if err != nil {
-		return sqlcite.UpdateApplicationParams{}, err
-	}
-
-	config, err := marshalConfig(app.Config)
-	if err != nil {
-		return sqlcite.UpdateApplicationParams{}, err
-	}
-
-	return sqlcite.UpdateApplicationParams{
-		ID:          app.ID,
-		Name:        app.Name,
-		Description: stringToNullString(app.Description),
-		Platforms:   string(platforms),
-		Config:      string(config),
-		UpdatedAt:   time.Now().UTC().Format(time.RFC3339),
 	}, nil
 }
 
@@ -421,13 +359,13 @@ func sqliteReleaseToModel(row sqlcite.Release) (*models.Release, error) {
 	}, nil
 }
 
-func modelToSqliteCreateRelease(r *models.Release) (sqlcite.CreateReleaseParams, error) {
+func modelToSqliteUpsertRelease(r *models.Release) (sqlcite.UpsertReleaseParams, error) {
 	metadata, err := marshalMetadata(r.Metadata)
 	if err != nil {
-		return sqlcite.CreateReleaseParams{}, err
+		return sqlcite.UpsertReleaseParams{}, err
 	}
 
-	return sqlcite.CreateReleaseParams{
+	return sqlcite.UpsertReleaseParams{
 		ID:             r.ID,
 		ApplicationID:  r.ApplicationID,
 		Version:        r.Version,
@@ -443,26 +381,6 @@ func modelToSqliteCreateRelease(r *models.Release) (sqlcite.CreateReleaseParams,
 		MinimumVersion: stringToNullString(r.MinimumVersion),
 		Metadata:       stringToNullString(string(metadata)),
 		CreatedAt:      r.CreatedAt.UTC().Format(time.RFC3339),
-	}, nil
-}
-
-func modelToSqliteUpdateRelease(r *models.Release) (sqlcite.UpdateReleaseParams, error) {
-	metadata, err := marshalMetadata(r.Metadata)
-	if err != nil {
-		return sqlcite.UpdateReleaseParams{}, err
-	}
-
-	return sqlcite.UpdateReleaseParams{
-		ID:             r.ID,
-		DownloadUrl:    r.DownloadURL,
-		Checksum:       r.Checksum,
-		ChecksumType:   r.ChecksumType,
-		FileSize:       r.FileSize,
-		ReleaseNotes:   stringToNullString(r.ReleaseNotes),
-		ReleaseDate:    r.ReleaseDate.UTC().Format(time.RFC3339),
-		Required:       r.Required,
-		MinimumVersion: stringToNullString(r.MinimumVersion),
-		Metadata:       stringToNullString(string(metadata)),
 	}, nil
 }
 

@@ -28,19 +28,23 @@ FROM releases
 WHERE application_id = ? AND platform = ? AND architecture = ?
 ORDER BY release_date DESC;
 
--- name: CreateRelease :exec
+-- name: UpsertRelease :exec
 INSERT INTO releases (
     id, application_id, version, platform, architecture, download_url,
     checksum, checksum_type, file_size, release_notes, release_date,
     required, minimum_version, metadata, created_at
 )
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
-
--- name: UpdateRelease :exec
-UPDATE releases
-SET download_url = ?, checksum = ?, checksum_type = ?, file_size = ?,
-    release_notes = ?, release_date = ?, required = ?, minimum_version = ?, metadata = ?
-WHERE id = ?;
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT (application_id, version, platform, architecture) DO UPDATE SET
+    download_url = excluded.download_url,
+    checksum = excluded.checksum,
+    checksum_type = excluded.checksum_type,
+    file_size = excluded.file_size,
+    release_notes = excluded.release_notes,
+    release_date = excluded.release_date,
+    required = excluded.required,
+    minimum_version = excluded.minimum_version,
+    metadata = excluded.metadata;
 
 -- name: DeleteRelease :exec
 DELETE FROM releases

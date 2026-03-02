@@ -27,17 +27,8 @@ import (
 
 func TestIntegration_FullUpdateFlow(t *testing.T) {
 	// Setup test environment
-	tempDir := t.TempDir()
-	storageFile := filepath.Join(tempDir, "test_releases.json")
-
 	// Initialize storage
-	storageConfig := storage.Config{
-		Type:     "json",
-		Path:     storageFile,
-		CacheTTL: "1m",
-	}
-
-	store, err := storage.NewJSONStorage(storageConfig)
+	store, err := storage.NewMemoryStorage()
 	require.NoError(t, err)
 	defer store.Close()
 
@@ -52,8 +43,7 @@ func TestIntegration_FullUpdateFlow(t *testing.T) {
 			Host: "localhost",
 		},
 		Storage: models.StorageConfig{
-			Type: "json",
-			Path: storageFile,
+			Type: "memory",
 		},
 	}
 
@@ -69,13 +59,7 @@ func TestIntegration_FullUpdateFlow(t *testing.T) {
 		ID:        "integration-test-app",
 		Name:      "Integration Test App",
 		Platforms: []string{"windows", "linux", "darwin"},
-		Config: models.ApplicationConfig{
-			AutoUpdate:       true,
-			UpdateInterval:   3600,
-			RequiredUpdate:   false,
-			AllowPrerelease:  false,
-			AnalyticsEnabled: true,
-		},
+		Config:    models.ApplicationConfig{},
 	}
 
 	err = store.SaveApplication(ctx, app)
@@ -229,16 +213,7 @@ func TestIntegration_FullUpdateFlow(t *testing.T) {
 
 func TestIntegration_PreReleaseHandling(t *testing.T) {
 	// Setup test environment
-	tempDir := t.TempDir()
-	storageFile := filepath.Join(tempDir, "prerelease_test.json")
-
-	storageConfig := storage.Config{
-		Type:     "json",
-		Path:     storageFile,
-		CacheTTL: "1m",
-	}
-
-	store, err := storage.NewJSONStorage(storageConfig)
+	store, err := storage.NewMemoryStorage()
 	require.NoError(t, err)
 	defer store.Close()
 
@@ -251,8 +226,7 @@ func TestIntegration_PreReleaseHandling(t *testing.T) {
 			Host: "localhost",
 		},
 		Storage: models.StorageConfig{
-			Type: "json",
-			Path: storageFile,
+			Type: "memory",
 		},
 	}
 
@@ -267,9 +241,7 @@ func TestIntegration_PreReleaseHandling(t *testing.T) {
 		ID:        "prerelease-test-app",
 		Name:      "Prerelease Test App",
 		Platforms: []string{"windows"},
-		Config: models.ApplicationConfig{
-			AllowPrerelease: true,
-		},
+		Config:    models.ApplicationConfig{},
 	}
 
 	err = store.SaveApplication(ctx, app)
@@ -360,16 +332,7 @@ func TestIntegration_PreReleaseHandling(t *testing.T) {
 
 func TestIntegration_ErrorHandling(t *testing.T) {
 	// Setup minimal test environment
-	tempDir := t.TempDir()
-	storageFile := filepath.Join(tempDir, "error_test.json")
-
-	storageConfig := storage.Config{
-		Type:     "json",
-		Path:     storageFile,
-		CacheTTL: "1m",
-	}
-
-	store, err := storage.NewJSONStorage(storageConfig)
+	store, err := storage.NewMemoryStorage()
 	require.NoError(t, err)
 	defer store.Close()
 
@@ -382,8 +345,7 @@ func TestIntegration_ErrorHandling(t *testing.T) {
 			Host: "localhost",
 		},
 		Storage: models.StorageConfig{
-			Type: "json",
-			Path: storageFile,
+			Type: "memory",
 		},
 	}
 
@@ -453,16 +415,7 @@ func TestIntegration_ErrorHandling(t *testing.T) {
 
 func TestIntegration_ConcurrentRequests(t *testing.T) {
 	// Setup test environment
-	tempDir := t.TempDir()
-	storageFile := filepath.Join(tempDir, "concurrent_test.json")
-
-	storageConfig := storage.Config{
-		Type:     "json",
-		Path:     storageFile,
-		CacheTTL: "1m",
-	}
-
-	store, err := storage.NewJSONStorage(storageConfig)
+	store, err := storage.NewMemoryStorage()
 	require.NoError(t, err)
 	defer store.Close()
 
@@ -475,8 +428,7 @@ func TestIntegration_ConcurrentRequests(t *testing.T) {
 			Host: "localhost",
 		},
 		Storage: models.StorageConfig{
-			Type: "json",
-			Path: storageFile,
+			Type: "memory",
 		},
 	}
 
@@ -582,8 +534,9 @@ server:
   idle_timeout: 90s
 
 storage:
-  type: "json"
-  path: "./integration_test.json"
+  type: "sqlite"
+  database:
+    dsn: ":memory:"
 
 security:
   enable_auth: false
@@ -591,10 +544,6 @@ security:
 logging:
   level: "debug"
   format: "text"
-
-cache:
-  enabled: true
-  ttl: 600s
 
 metrics:
   enabled: true
@@ -615,16 +564,13 @@ metrics:
 	assert.Equal(t, 45*time.Second, cfg.Server.WriteTimeout)
 	assert.Equal(t, 90*time.Second, cfg.Server.IdleTimeout)
 
-	assert.Equal(t, "json", cfg.Storage.Type)
-	assert.Equal(t, "./integration_test.json", cfg.Storage.Path)
+	assert.Equal(t, "sqlite", cfg.Storage.Type)
+	assert.Equal(t, ":memory:", cfg.Storage.Database.DSN)
 
 	assert.False(t, cfg.Security.EnableAuth)
 
 	assert.Equal(t, "debug", cfg.Logging.Level)
 	assert.Equal(t, "text", cfg.Logging.Format)
-
-	assert.True(t, cfg.Cache.Enabled)
-	assert.Equal(t, 600*time.Second, cfg.Cache.TTL)
 
 	assert.True(t, cfg.Metrics.Enabled)
 	assert.Equal(t, 9091, cfg.Metrics.Port)
@@ -636,16 +582,7 @@ metrics:
 
 func TestIntegration_PaginationAndFiltering(t *testing.T) {
 	// Setup test environment
-	tempDir := t.TempDir()
-	storageFile := filepath.Join(tempDir, "pagination_test.json")
-
-	storageConfig := storage.Config{
-		Type:     "json",
-		Path:     storageFile,
-		CacheTTL: "1m",
-	}
-
-	store, err := storage.NewJSONStorage(storageConfig)
+	store, err := storage.NewMemoryStorage()
 	require.NoError(t, err)
 	defer store.Close()
 
@@ -658,8 +595,7 @@ func TestIntegration_PaginationAndFiltering(t *testing.T) {
 			Host: "localhost",
 		},
 		Storage: models.StorageConfig{
-			Type: "json",
-			Path: storageFile,
+			Type: "memory",
 		},
 	}
 
@@ -768,16 +704,7 @@ func TestIntegration_PaginationAndFiltering(t *testing.T) {
 func setupTestServer(t *testing.T, enableAuth bool) (*httptest.Server, storage.Storage) {
 	t.Helper()
 
-	tempDir := t.TempDir()
-	storageFile := filepath.Join(tempDir, "test_releases.json")
-
-	storageConfig := storage.Config{
-		Type:     "json",
-		Path:     storageFile,
-		CacheTTL: "1m",
-	}
-
-	store, err := storage.NewJSONStorage(storageConfig)
+	store, err := storage.NewMemoryStorage()
 	require.NoError(t, err)
 	t.Cleanup(func() { store.Close() })
 
@@ -790,8 +717,7 @@ func setupTestServer(t *testing.T, enableAuth bool) (*httptest.Server, storage.S
 			Host: "localhost",
 		},
 		Storage: models.StorageConfig{
-			Type: "json",
-			Path: storageFile,
+			Type: "memory",
 		},
 	}
 
@@ -862,11 +788,7 @@ func TestApplicationLifecycle(t *testing.T) {
 		Name:        "Lifecycle Test App",
 		Description: "An application for lifecycle testing",
 		Platforms:   []string{"windows", "linux", "darwin"},
-		Config: models.ApplicationConfig{
-			AutoUpdate:      true,
-			UpdateInterval:  3600,
-			AllowPrerelease: false,
-		},
+		Config:      models.ApplicationConfig{},
 	}
 
 	resp := doRequest(t, "POST", server.URL+"/api/v1/applications", "test-write-key", createReq)
@@ -891,9 +813,6 @@ func TestApplicationLifecycle(t *testing.T) {
 	assert.Equal(t, "Lifecycle Test App", appInfo.Name)
 	assert.Equal(t, "An application for lifecycle testing", appInfo.Description)
 	assert.ElementsMatch(t, []string{"windows", "linux", "darwin"}, appInfo.Platforms)
-	assert.True(t, appInfo.Config.AutoUpdate)
-	assert.Equal(t, 3600, appInfo.Config.UpdateInterval)
-	assert.False(t, appInfo.Config.AllowPrerelease)
 
 	// Step 3: List applications via GET with read auth
 	resp = doRequest(t, "GET", server.URL+"/api/v1/applications", "test-read-key", nil)

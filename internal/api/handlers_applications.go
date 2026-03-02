@@ -16,12 +16,12 @@ import (
 // Requires authentication and 'write' permission
 func (h *Handlers) CreateApplication(w http.ResponseWriter, r *http.Request) {
 	// Get security context for audit logging
-	securityContext := GetSecurityContext(r)
+	apiKey := GetAPIKey(r)
 
 	// Log the admin operation attempt
 	slog.Warn("Application creation attempt",
 		"event", "security_audit",
-		"api_key", getAPIKeyName(securityContext),
+		"api_key", getAPIKeyName(apiKey),
 		"client_ip", getClientIP(r))
 
 	// Validate content-type
@@ -36,7 +36,7 @@ func (h *Handlers) CreateApplication(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		slog.Warn("Invalid JSON in application creation",
 			"event", "security_audit",
-			"api_key", getAPIKeyName(securityContext))
+			"api_key", getAPIKeyName(apiKey))
 		h.writeErrorResponse(w, http.StatusBadRequest, models.ErrorCodeInvalidRequest, "Invalid JSON body")
 		return
 	}
@@ -47,7 +47,7 @@ func (h *Handlers) CreateApplication(w http.ResponseWriter, r *http.Request) {
 		slog.Warn("Application creation failed",
 			"event", "security_audit",
 			"app_id", req.ID,
-			"api_key", getAPIKeyName(securityContext),
+			"api_key", getAPIKeyName(apiKey),
 			"error", err.Error())
 		h.writeServiceErrorResponse(w, err)
 		return
@@ -57,7 +57,7 @@ func (h *Handlers) CreateApplication(w http.ResponseWriter, r *http.Request) {
 	slog.Info("Application created successfully",
 		"event", "security_audit",
 		"app_id", req.ID,
-		"api_key", getAPIKeyName(securityContext))
+		"api_key", getAPIKeyName(apiKey))
 
 	h.writeJSONResponse(w, http.StatusCreated, response)
 }
@@ -115,13 +115,13 @@ func (h *Handlers) UpdateApplication(w http.ResponseWriter, r *http.Request) {
 	appID := vars["app_id"]
 
 	// Get security context for audit logging
-	securityContext := GetSecurityContext(r)
+	apiKey := GetAPIKey(r)
 
 	// Log the admin operation attempt
 	slog.Warn("Application update attempt",
 		"event", "security_audit",
 		"app_id", appID,
-		"api_key", getAPIKeyName(securityContext),
+		"api_key", getAPIKeyName(apiKey),
 		"client_ip", getClientIP(r))
 
 	// Validate content-type
@@ -137,7 +137,7 @@ func (h *Handlers) UpdateApplication(w http.ResponseWriter, r *http.Request) {
 		slog.Warn("Invalid JSON in application update",
 			"event", "security_audit",
 			"app_id", appID,
-			"api_key", getAPIKeyName(securityContext))
+			"api_key", getAPIKeyName(apiKey))
 		h.writeErrorResponse(w, http.StatusBadRequest, models.ErrorCodeInvalidRequest, "Invalid JSON body")
 		return
 	}
@@ -148,7 +148,7 @@ func (h *Handlers) UpdateApplication(w http.ResponseWriter, r *http.Request) {
 		slog.Warn("Application update failed",
 			"event", "security_audit",
 			"app_id", appID,
-			"api_key", getAPIKeyName(securityContext),
+			"api_key", getAPIKeyName(apiKey),
 			"error", err.Error())
 		h.writeServiceErrorResponse(w, err)
 		return
@@ -158,7 +158,7 @@ func (h *Handlers) UpdateApplication(w http.ResponseWriter, r *http.Request) {
 	slog.Info("Application updated successfully",
 		"event", "security_audit",
 		"app_id", appID,
-		"api_key", getAPIKeyName(securityContext))
+		"api_key", getAPIKeyName(apiKey))
 
 	h.writeJSONResponse(w, http.StatusOK, response)
 }
@@ -171,13 +171,13 @@ func (h *Handlers) DeleteApplication(w http.ResponseWriter, r *http.Request) {
 	appID := vars["app_id"]
 
 	// Get security context for audit logging
-	securityContext := GetSecurityContext(r)
+	apiKey := GetAPIKey(r)
 
 	// Log the admin operation attempt
 	slog.Warn("Application deletion attempt",
 		"event", "security_audit",
 		"app_id", appID,
-		"api_key", getAPIKeyName(securityContext),
+		"api_key", getAPIKeyName(apiKey),
 		"client_ip", getClientIP(r))
 
 	// Delete application
@@ -186,7 +186,7 @@ func (h *Handlers) DeleteApplication(w http.ResponseWriter, r *http.Request) {
 		slog.Warn("Application deletion failed",
 			"event", "security_audit",
 			"app_id", appID,
-			"api_key", getAPIKeyName(securityContext),
+			"api_key", getAPIKeyName(apiKey),
 			"error", err.Error())
 		h.writeServiceErrorResponse(w, err)
 		return
@@ -196,7 +196,7 @@ func (h *Handlers) DeleteApplication(w http.ResponseWriter, r *http.Request) {
 	slog.Info("Application deleted successfully",
 		"event", "security_audit",
 		"app_id", appID,
-		"api_key", getAPIKeyName(securityContext))
+		"api_key", getAPIKeyName(apiKey))
 
 	w.WriteHeader(http.StatusNoContent)
 }
@@ -212,7 +212,7 @@ func (h *Handlers) DeleteRelease(w http.ResponseWriter, r *http.Request) {
 	arch := vars["arch"]
 
 	// Get security context for audit logging
-	securityContext := GetSecurityContext(r)
+	apiKey := GetAPIKey(r)
 
 	// Log the admin operation attempt
 	slog.Warn("Release deletion attempt",
@@ -221,7 +221,7 @@ func (h *Handlers) DeleteRelease(w http.ResponseWriter, r *http.Request) {
 		"version", version,
 		"platform", platform,
 		"arch", arch,
-		"api_key", getAPIKeyName(securityContext),
+		"api_key", getAPIKeyName(apiKey),
 		"client_ip", getClientIP(r))
 
 	// Delete release
@@ -233,7 +233,7 @@ func (h *Handlers) DeleteRelease(w http.ResponseWriter, r *http.Request) {
 			"version", version,
 			"platform", platform,
 			"arch", arch,
-			"api_key", getAPIKeyName(securityContext),
+			"api_key", getAPIKeyName(apiKey),
 			"error", err.Error())
 		h.writeServiceErrorResponse(w, err)
 		return
@@ -246,7 +246,7 @@ func (h *Handlers) DeleteRelease(w http.ResponseWriter, r *http.Request) {
 		"version", version,
 		"platform", platform,
 		"arch", arch,
-		"api_key", getAPIKeyName(securityContext))
+		"api_key", getAPIKeyName(apiKey))
 
 	h.writeJSONResponse(w, http.StatusOK, response)
 }

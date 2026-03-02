@@ -22,7 +22,7 @@ type MemoryStorage struct {
 }
 
 // NewMemoryStorage creates a new memory-based storage instance
-func NewMemoryStorage(config Config) (*MemoryStorage, error) {
+func NewMemoryStorage() (*MemoryStorage, error) {
 	return &MemoryStorage{
 		applications: make(map[string]*models.Application),
 		releases:     make(map[string][]*models.Release),

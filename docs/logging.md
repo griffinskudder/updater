@@ -33,10 +33,6 @@ Logging is configured through the `logging` section of the service configuration
 | `format` | string | `json` | Output format (`json` or `text`) |
 | `output` | string | `stdout` | Output destination (`stdout`, `stderr`, or `file`) |
 | `file_path` | string | | File path when output is `file` |
-| `max_size` | int | `100` | Maximum log file size in MB (for rotation) |
-| `max_backups` | int | `3` | Maximum number of old log files to retain |
-| `max_age` | int | `28` | Maximum days to retain old log files |
-| `compress` | bool | `true` | Compress rotated log files |
 
 ### Example Configuration
 
@@ -45,18 +41,6 @@ logging:
   level: info
   format: json
   output: stdout
-```
-
-```yaml
-logging:
-  level: debug
-  format: text
-  output: file
-  file_path: /var/log/updater/service.log
-  max_size: 100
-  max_backups: 5
-  max_age: 30
-  compress: true
 ```
 
 ## Log Levels

@@ -4,27 +4,28 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"html/template"
 	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 	"updater/internal/models"
+	"updater/internal/observability"
 	"updater/internal/storage"
 	"updater/internal/update"
 	"updater/internal/version"
 
 	"github.com/gorilla/mux"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 )
 
 // Handlers contains HTTP handlers for the updater API
 type Handlers struct {
-	updateService  update.ServiceInterface
-	storage        storage.Storage
-	adminTmpl      *template.Template
-	securityConfig models.SecurityConfig
-	versionInfo    version.Info
+	updateService update.ServiceInterface
+	storage       storage.Storage
+	versionInfo   version.Info
+	appMetrics    *observability.AppMetrics
 }
 
 // NewHandlers creates a new handlers instance
@@ -49,19 +50,14 @@ func WithStorage(s storage.Storage) HandlersOption {
 	}
 }
 
-// WithAdminTemplates sets the parsed admin template set.
-func WithAdminTemplates(tmpl *template.Template) HandlersOption {
-	return func(h *Handlers) { h.adminTmpl = tmpl }
-}
-
-// WithSecurityConfig stores the security config for admin session validation.
-func WithSecurityConfig(cfg models.SecurityConfig) HandlersOption {
-	return func(h *Handlers) { h.securityConfig = cfg }
-}
-
 // WithVersionInfo sets the version information for health and version endpoints.
 func WithVersionInfo(info version.Info) HandlersOption {
 	return func(h *Handlers) { h.versionInfo = info }
+}
+
+// WithAppMetrics sets the application-level business metrics.
+func WithAppMetrics(m *observability.AppMetrics) HandlersOption {
+	return func(h *Handlers) { h.appMetrics = m }
 }
 
 // CheckForUpdates handles update check requests
@@ -105,9 +101,16 @@ func (h *Handlers) CheckForUpdates(w http.ResponseWriter, r *http.Request) {
 	// Check for updates
 	response, err := h.updateService.CheckForUpdate(r.Context(), req)
 	if err != nil {
+		h.recordUpdateCheck(r, req.ApplicationID, "error")
 		h.writeServiceErrorResponse(w, err)
 		return
 	}
+
+	result := "no_update"
+	if response.UpdateAvailable {
+		result = "update_available"
+	}
+	h.recordUpdateCheck(r, req.ApplicationID, result)
 
 	h.writeJSONResponse(w, http.StatusOK, response)
 }
@@ -208,14 +211,14 @@ func (h *Handlers) RegisterRelease(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	appID := vars["app_id"]
 
-	// Get security context for audit logging
-	securityContext := GetSecurityContext(r)
+	// Get API key for audit logging
+	apiKey := GetAPIKey(r)
 
 	// Log the admin operation attempt
 	slog.Warn("Release registration attempt",
 		"event", "security_audit",
 		"app_id", appID,
-		"api_key", getAPIKeyName(securityContext),
+		"api_key", getAPIKeyName(apiKey),
 		"client_ip", getClientIP(r))
 
 	// Parse request body
@@ -224,7 +227,7 @@ func (h *Handlers) RegisterRelease(w http.ResponseWriter, r *http.Request) {
 		slog.Warn("Invalid JSON in release registration",
 			"event", "security_audit",
 			"app_id", appID,
-			"api_key", getAPIKeyName(securityContext))
+			"api_key", getAPIKeyName(apiKey))
 		h.writeErrorResponse(w, http.StatusBadRequest, models.ErrorCodeInvalidRequest, "Invalid JSON body")
 		return
 	}
@@ -239,7 +242,7 @@ func (h *Handlers) RegisterRelease(w http.ResponseWriter, r *http.Request) {
 			"event", "security_audit",
 			"app_id", appID,
 			"version", req.Version,
-			"api_key", getAPIKeyName(securityContext),
+			"api_key", getAPIKeyName(apiKey),
 			"error", err.Error())
 		h.writeServiceErrorResponse(w, err)
 		return
@@ -250,7 +253,9 @@ func (h *Handlers) RegisterRelease(w http.ResponseWriter, r *http.Request) {
 		"event", "security_audit",
 		"app_id", appID,
 		"version", req.Version,
-		"api_key", getAPIKeyName(securityContext))
+		"api_key", getAPIKeyName(apiKey))
+
+	h.recordReleaseRegistered(r, appID)
 
 	h.writeJSONResponse(w, http.StatusCreated, response)
 }
@@ -279,19 +284,19 @@ func (h *Handlers) HealthCheck(w http.ResponseWriter, r *http.Request) {
 	response.AddComponent("storage", storageStatus, storageMessage)
 	response.AddComponent("api", models.StatusHealthy, "API is operational")
 
-	// Get security context to check if user is authenticated
-	securityContext := GetSecurityContext(r)
+	// Get API key to check if user is authenticated
+	apiKey := GetAPIKey(r)
 
 	// If authenticated, add enhanced details
-	if securityContext != nil && securityContext.HasPermission(PermissionRead) {
+	if apiKey != nil && apiKey.HasPermission(string(PermissionRead)) {
 		// Add enhanced metrics for authenticated users
 		if response.Metrics == nil {
 			response.Metrics = make(map[string]interface{})
 		}
 
 		response.Metrics["authentication_enabled"] = true
-		response.Metrics["api_key_name"] = getAPIKeyName(securityContext)
-		response.Metrics["permissions"] = securityContext.APIKey.Permissions
+		response.Metrics["api_key_name"] = getAPIKeyName(apiKey)
+		response.Metrics["permissions"] = apiKey.Permissions
 		response.AddComponent("auth", models.StatusHealthy, "Authentication system operational")
 	} else {
 		// Add limited info for public access
@@ -365,12 +370,12 @@ func splitAndTrim(s, delim string) []string {
 }
 
 // getAPIKeyName safely extracts the API key name for logging
-func getAPIKeyName(securityContext *SecurityContext) string {
-	if securityContext == nil || securityContext.APIKey == nil {
+func getAPIKeyName(apiKey *models.APIKey) string {
+	if apiKey == nil {
 		return "anonymous"
 	}
-	if securityContext.APIKey.Name != "" {
-		return securityContext.APIKey.Name
+	if apiKey.Name != "" {
+		return apiKey.Name
 	}
 	return "unnamed-key"
 }
@@ -392,4 +397,25 @@ func getClientIP(r *http.Request) string {
 
 	// Fallback to RemoteAddr
 	return r.RemoteAddr
+}
+
+// recordUpdateCheck increments the update-check counter when app metrics are configured.
+func (h *Handlers) recordUpdateCheck(r *http.Request, appID, result string) {
+	if h.appMetrics == nil {
+		return
+	}
+	h.appMetrics.UpdateChecks.Add(r.Context(), 1, metric.WithAttributes(
+		attribute.String("app_id", appID),
+		attribute.String("result", result),
+	))
+}
+
+// recordReleaseRegistered increments the release-registered counter when app metrics are configured.
+func (h *Handlers) recordReleaseRegistered(r *http.Request, appID string) {
+	if h.appMetrics == nil {
+		return
+	}
+	h.appMetrics.ReleasesRegistered.Add(r.Context(), 1, metric.WithAttributes(
+		attribute.String("app_id", appID),
+	))
 }

@@ -13,7 +13,7 @@ import (
 
 func newSQLiteTestStorage(t *testing.T) Storage {
 	t.Helper()
-	s, err := NewSQLiteStorage(Config{ConnectionString: ":memory:"})
+	s, err := NewSQLiteStorage(":memory:")
 	if err != nil {
 		t.Fatalf("failed to create sqlite storage: %v", err)
 	}
@@ -22,7 +22,7 @@ func newSQLiteTestStorage(t *testing.T) Storage {
 }
 
 func TestSQLiteStorageConnectionError(t *testing.T) {
-	_, err := NewSQLiteStorage(Config{ConnectionString: ""})
+	_, err := NewSQLiteStorage("")
 	if err == nil {
 		t.Error("expected error for empty connection string")
 	}
@@ -385,9 +385,6 @@ func TestSQLiteStorageApplicationConfig(t *testing.T) {
 	ctx := context.Background()
 
 	app := models.NewApplication("config-app", "Config App", []string{"windows"})
-	app.Config.AutoUpdate = true
-	app.Config.UpdateInterval = 7200
-	app.Config.MinVersion = "1.0.0"
 	app.Config.CustomFields = map[string]string{"env": "production"}
 
 	if err := s.SaveApplication(ctx, app); err != nil {
@@ -399,15 +396,6 @@ func TestSQLiteStorageApplicationConfig(t *testing.T) {
 		t.Fatalf("GetApplication failed: %v", err)
 	}
 
-	if !got.Config.AutoUpdate {
-		t.Error("expected AutoUpdate to be true")
-	}
-	if got.Config.UpdateInterval != 7200 {
-		t.Errorf("expected UpdateInterval 7200, got %d", got.Config.UpdateInterval)
-	}
-	if got.Config.MinVersion != "1.0.0" {
-		t.Errorf("expected MinVersion '1.0.0', got %q", got.Config.MinVersion)
-	}
 	if got.Config.CustomFields["env"] != "production" {
 		t.Errorf("expected custom field env=production, got %v", got.Config.CustomFields)
 	}
@@ -469,7 +457,7 @@ func TestSQLiteStorage_DeleteApplication(t *testing.T) {
 }
 
 func TestSQLiteStorageClose(t *testing.T) {
-	s, err := NewSQLiteStorage(Config{ConnectionString: ":memory:"})
+	s, err := NewSQLiteStorage(":memory:")
 	if err != nil {
 		t.Fatalf("failed to create storage: %v", err)
 	}

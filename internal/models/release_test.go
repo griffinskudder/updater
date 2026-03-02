@@ -625,62 +625,6 @@ func TestIsValidChecksumType(t *testing.T) {
 	}
 }
 
-func TestReleaseFilter_Validate(t *testing.T) {
-	tests := []struct {
-		name        string
-		filter      ReleaseFilter
-		expectError bool
-		errorMsg    string
-	}{
-		{
-			name:        "valid filter",
-			filter:      ReleaseFilter{Limit: 10, Offset: 0, SortOrder: "asc"},
-			expectError: false,
-		},
-		{
-			name:        "negative limit",
-			filter:      ReleaseFilter{Limit: -1},
-			expectError: true,
-			errorMsg:    "limit cannot be negative",
-		},
-		{
-			name:        "negative offset",
-			filter:      ReleaseFilter{Offset: -1},
-			expectError: true,
-			errorMsg:    "offset cannot be negative",
-		},
-		{
-			name:        "invalid sort order",
-			filter:      ReleaseFilter{SortOrder: "invalid"},
-			expectError: true,
-			errorMsg:    "sort order must be 'asc' or 'desc'",
-		},
-		{
-			name:        "valid sort orders",
-			filter:      ReleaseFilter{SortOrder: "desc"},
-			expectError: false,
-		},
-		{
-			name:        "empty sort order is valid",
-			filter:      ReleaseFilter{SortOrder: ""},
-			expectError: false,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			err := tt.filter.Validate()
-
-			if tt.expectError {
-				assert.Error(t, err)
-				assert.Contains(t, err.Error(), tt.errorMsg)
-			} else {
-				assert.NoError(t, err)
-			}
-		})
-	}
-}
-
 func TestSupportedChecksumTypes(t *testing.T) {
 	expectedTypes := []string{
 		ChecksumTypeSHA256,
@@ -700,20 +644,4 @@ func TestReleaseConstants(t *testing.T) {
 	assert.Equal(t, "sha256", ChecksumTypeSHA256)
 	assert.Equal(t, "md5", ChecksumTypeMD5)
 	assert.Equal(t, "sha1", ChecksumTypeSHA1)
-}
-
-func TestReleaseStats(t *testing.T) {
-	// Test that ReleaseStats struct exists and has expected fields
-	stats := ReleaseStats{
-		TotalReleases:     10,
-		LatestVersion:     "1.2.3",
-		LatestReleaseDate: time.Now(),
-		PlatformCount:     3,
-		RequiredReleases:  2,
-	}
-
-	assert.Equal(t, 10, stats.TotalReleases)
-	assert.Equal(t, "1.2.3", stats.LatestVersion)
-	assert.Equal(t, 3, stats.PlatformCount)
-	assert.Equal(t, 2, stats.RequiredReleases)
 }

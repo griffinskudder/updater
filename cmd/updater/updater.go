@@ -96,25 +96,23 @@ func main() {
 	// Initialize update service
 	updateService := update.NewService(activeStorage)
 
-	// Parse admin UI templates from embedded FS.
-	adminTmpl, err := api.ParseAdminTemplates()
-	if err != nil {
-		slog.Error("Failed to parse admin templates", "error", err)
-		os.Exit(1)
-	}
-
 	// Initialize HTTP handlers with storage for health checks
-	handlers := api.NewHandlers(updateService,
+	handlerOpts := []api.HandlersOption{
 		api.WithStorage(activeStorage),
-		api.WithAdminTemplates(adminTmpl),
-		api.WithSecurityConfig(cfg.Security),
 		api.WithVersionInfo(versionInfo),
-	)
+	}
+	if cfg.Metrics.Enabled {
+		handlerOpts = append(handlerOpts, api.WithAppMetrics(observability.NewAppMetrics(otelProvider)))
+	}
+	handlers := api.NewHandlers(updateService, handlerOpts...)
 
 	// Setup routes with middleware
 	routeOpts := []api.RouteOption{}
 	if cfg.Observability.Tracing.Enabled {
 		routeOpts = append(routeOpts, api.WithOTelMiddleware(cfg.Observability.ServiceName))
+	}
+	if cfg.Metrics.Enabled {
+		routeOpts = append(routeOpts, api.WithMetricsMiddleware(otelProvider))
 	}
 
 	router := api.SetupRoutes(handlers, cfg, routeOpts...)
@@ -190,22 +188,13 @@ func main() {
 
 // initializeStorage creates and returns a storage instance based on configuration
 func initializeStorage(cfg *models.Config) (storage.Storage, error) {
-	storageConfig := storage.Config{
-		Type:             cfg.Storage.Type,
-		Path:             cfg.Storage.Path,
-		ConnectionString: cfg.Storage.Database.DSN,
-		CacheTTL:         cfg.Cache.TTL.String(),
-	}
-
 	switch cfg.Storage.Type {
-	case "json":
-		return storage.NewJSONStorage(storageConfig)
 	case "memory":
-		return storage.NewMemoryStorage(storageConfig)
+		return storage.NewMemoryStorage()
 	case "postgres":
-		return storage.NewPostgresStorage(storageConfig)
+		return storage.NewPostgresStorage(cfg.Storage.Database.DSN)
 	case "sqlite":
-		return storage.NewSQLiteStorage(storageConfig)
+		return storage.NewSQLiteStorage(cfg.Storage.Database.DSN)
 	default:
 		return nil, fmt.Errorf("unsupported storage type: %s", cfg.Storage.Type)
 	}

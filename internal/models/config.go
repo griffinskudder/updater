@@ -7,7 +7,6 @@
 // - Comprehensive validation to catch misconfigurations early
 // - Support for multiple deployment scenarios (development, production, cloud)
 // - Security-first approach with safe defaults
-// - Extensible design for future enhancements
 package models
 
 import (
@@ -18,7 +17,6 @@ import (
 
 // Storage type constants
 const (
-	StorageTypeJSON     = "json"
 	StorageTypeMemory   = "memory"
 	StorageTypePostgres = "postgres"
 	StorageTypeSQLite   = "sqlite"
@@ -31,7 +29,6 @@ const (
 // - Storage: Database and file storage configuration
 // - Security: Authentication and authorization
 // - Logging: Structured logging and output configuration
-// - Cache: Performance caching settings
 // - Metrics: Monitoring and observability
 //
 // Design Benefits:
@@ -44,7 +41,6 @@ type Config struct {
 	Storage       StorageConfig       `yaml:"storage" json:"storage"`             // Data persistence settings
 	Security      SecurityConfig      `yaml:"security" json:"security"`           // Authentication and authorization
 	Logging       LoggingConfig       `yaml:"logging" json:"logging"`             // Logging and output configuration
-	Cache         CacheConfig         `yaml:"cache" json:"cache"`                 // Performance caching
 	Metrics       MetricsConfig       `yaml:"metrics" json:"metrics"`             // Monitoring and metrics
 	Observability ObservabilityConfig `yaml:"observability" json:"observability"` // OpenTelemetry observability
 }
@@ -88,34 +84,10 @@ type SecurityConfig struct {
 }
 
 type LoggingConfig struct {
-	Level      string `yaml:"level" json:"level"`
-	Format     string `yaml:"format" json:"format"`
-	Output     string `yaml:"output" json:"output"`
-	FilePath   string `yaml:"file_path" json:"file_path"`
-	MaxSize    int    `yaml:"max_size" json:"max_size"`
-	MaxBackups int    `yaml:"max_backups" json:"max_backups"`
-	MaxAge     int    `yaml:"max_age" json:"max_age"`
-	Compress   bool   `yaml:"compress" json:"compress"`
-}
-
-type CacheConfig struct {
-	Enabled bool          `yaml:"enabled" json:"enabled"`
-	Type    string        `yaml:"type" json:"type"`
-	TTL     time.Duration `yaml:"ttl" json:"ttl"`
-	Redis   RedisConfig   `yaml:"redis" json:"redis"`
-	Memory  MemoryConfig  `yaml:"memory" json:"memory"`
-}
-
-type RedisConfig struct {
-	Addr     string `yaml:"addr" json:"addr"`
-	Password string `yaml:"password" json:"password"`
-	DB       int    `yaml:"db" json:"db"`
-	PoolSize int    `yaml:"pool_size" json:"pool_size"`
-}
-
-type MemoryConfig struct {
-	MaxSize         int           `yaml:"max_size" json:"max_size"`
-	CleanupInterval time.Duration `yaml:"cleanup_interval" json:"cleanup_interval"`
+	Level    string `yaml:"level" json:"level"`
+	Format   string `yaml:"format" json:"format"`
+	Output   string `yaml:"output" json:"output"`
+	FilePath string `yaml:"file_path" json:"file_path"`
 }
 
 type MetricsConfig struct {
@@ -144,17 +116,16 @@ type TracingConfig struct {
 // Default Configuration Principles:
 // - Security-first: Authentication disabled but ready, HTTPS preferred
 // - Performance: Reasonable timeouts and connection limits
-// - Reliability: Conservative rate limits, structured logging
+// - Reliability: Structured logging
 // - Observability: Metrics enabled by default for monitoring
-// - Development-friendly: JSON file storage, permissive CORS for testing
+// - Development-friendly: SQLite storage for quick setup
 // - Production-ready: Easy to override for deployment-specific needs
 //
 // Default Values Rationale:
 // - Port 8080: Standard non-privileged HTTP port
 // - 30-second timeouts: Balance between user experience and resource protection
-// - JSON storage: Simple setup without external dependencies
+// - SQLite storage: Simple setup without external dependencies
 // - Structured logging: Better for log aggregation and analysis
-// - Memory caching: Good performance without external dependencies
 func NewDefaultConfig() *Config {
 	return &Config{
 		Server: ServerConfig{
@@ -166,10 +137,11 @@ func NewDefaultConfig() *Config {
 			TLSEnabled:   false,
 		},
 		Storage: StorageConfig{
-			Type: "json",
-			Path: "./data/releases.json",
+			Type: "sqlite",
+			Path: "./data/updater.db",
 			Database: DatabaseConfig{
 				Driver:          "sqlite3",
+				DSN:             "./data/updater.db",
 				MaxOpenConns:    25,
 				MaxIdleConns:    5,
 				ConnMaxLifetime: 5 * time.Minute,
@@ -181,22 +153,9 @@ func NewDefaultConfig() *Config {
 			EnableAuth: false,
 		},
 		Logging: LoggingConfig{
-			Level:      "info",
-			Format:     "json",
-			Output:     "stdout",
-			MaxSize:    100,
-			MaxBackups: 3,
-			MaxAge:     28,
-			Compress:   true,
-		},
-		Cache: CacheConfig{
-			Enabled: true,
-			Type:    "memory",
-			TTL:     5 * time.Minute,
-			Memory: MemoryConfig{
-				MaxSize:         1000,
-				CleanupInterval: 10 * time.Minute,
-			},
+			Level:  "info",
+			Format: "json",
+			Output: "stdout",
 		},
 		Metrics: MetricsConfig{
 			Enabled: true,
@@ -229,10 +188,6 @@ func (c *Config) Validate() error {
 
 	if err := c.Logging.Validate(); err != nil {
 		return fmt.Errorf("invalid logging config: %w", err)
-	}
-
-	if err := c.Cache.Validate(); err != nil {
-		return fmt.Errorf("invalid cache config: %w", err)
 	}
 
 	if err := c.Metrics.Validate(); err != nil {
@@ -280,7 +235,7 @@ func (sc *ServerConfig) Validate() error {
 }
 
 func (stc *StorageConfig) Validate() error {
-	validTypes := []string{StorageTypeJSON, StorageTypeMemory, StorageTypePostgres, StorageTypeSQLite}
+	validTypes := []string{StorageTypeMemory, StorageTypePostgres, StorageTypeSQLite}
 	found := false
 	for _, vt := range validTypes {
 		if stc.Type == vt {
@@ -290,10 +245,6 @@ func (stc *StorageConfig) Validate() error {
 	}
 	if !found {
 		return fmt.Errorf("invalid storage type: %s", stc.Type)
-	}
-
-	if stc.Type == StorageTypeJSON && stc.Path == "" {
-		return errors.New("path is required for JSON storage")
 	}
 
 	if stc.Type == StorageTypeMemory {
@@ -355,34 +306,6 @@ func (lc *LoggingConfig) Validate() error {
 
 	if lc.Output == "file" && lc.FilePath == "" {
 		return errors.New("file path is required when output is file")
-	}
-
-	return nil
-}
-
-func (cc *CacheConfig) Validate() error {
-	if !cc.Enabled {
-		return nil
-	}
-
-	validTypes := []string{"memory", "redis"}
-	found := false
-	for _, vt := range validTypes {
-		if cc.Type == vt {
-			found = true
-			break
-		}
-	}
-	if !found {
-		return fmt.Errorf("invalid cache type: %s", cc.Type)
-	}
-
-	if cc.TTL < 0 {
-		return errors.New("cache TTL cannot be negative")
-	}
-
-	if cc.Type == "redis" && cc.Redis.Addr == "" {
-		return errors.New("Redis address is required when cache type is redis")
 	}
 
 	return nil

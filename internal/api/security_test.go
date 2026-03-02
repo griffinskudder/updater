@@ -19,8 +19,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestSecurityContext tests the security context functionality
-func TestSecurityContext(t *testing.T) {
+// TestPermissionHierarchy tests that the permission hierarchy works correctly via GetAPIKey
+func TestPermissionHierarchy(t *testing.T) {
 	tests := []struct {
 		name         string
 		apiKey       *models.APIKey
@@ -78,7 +78,7 @@ func TestSecurityContext(t *testing.T) {
 			expectAccess: false,
 		},
 		{
-			name:         "nil context has no permissions",
+			name:         "nil key has no permissions",
 			apiKey:       nil,
 			required:     PermissionRead,
 			expectAccess: false,
@@ -87,15 +87,10 @@ func TestSecurityContext(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			var securityContext *SecurityContext
+			var hasPermission bool
 			if tt.apiKey != nil {
-				securityContext = &SecurityContext{
-					APIKey:      tt.apiKey,
-					Permissions: tt.apiKey.Permissions,
-				}
+				hasPermission = tt.apiKey.HasPermission(string(tt.required))
 			}
-
-			hasPermission := securityContext.HasPermission(tt.required)
 			assert.Equal(t, tt.expectAccess, hasPermission)
 		})
 	}
@@ -103,7 +98,7 @@ func TestSecurityContext(t *testing.T) {
 
 // TestAuthMiddleware tests the authentication middleware
 func TestAuthMiddleware(t *testing.T) {
-	store, err := storage.NewMemoryStorage(storage.Config{})
+	store, err := storage.NewMemoryStorage()
 	require.NoError(t, err)
 
 	validRawKey := "valid-key-123"
@@ -333,7 +328,7 @@ func TestRequirePermissionMiddleware(t *testing.T) {
 // TestEndpointSecurity tests that endpoints properly enforce security
 func TestEndpointSecurity(t *testing.T) {
 	// Set up storage with test API keys
-	store, err := storage.NewMemoryStorage(storage.Config{})
+	store, err := storage.NewMemoryStorage()
 	require.NoError(t, err)
 	for _, spec := range []struct {
 		raw   string
@@ -495,7 +490,7 @@ func TestEndpointSecurity(t *testing.T) {
 
 // TestSecurityVulnerabilities tests for common security vulnerabilities
 func TestSecurityVulnerabilities(t *testing.T) {
-	vulnStore, err := storage.NewMemoryStorage(storage.Config{})
+	vulnStore, err := storage.NewMemoryStorage()
 	require.NoError(t, err)
 	vulnAdminKey := "admin-key-123"
 	vak := models.NewAPIKey(models.NewKeyID(), "Admin Key", vulnAdminKey, []string{"admin"})
@@ -693,7 +688,7 @@ func TestSecurityHeaders(t *testing.T) {
 
 // BenchmarkAuthMiddleware benchmarks authentication middleware performance
 func BenchmarkAuthMiddleware(b *testing.B) {
-	benchStore, _ := storage.NewMemoryStorage(storage.Config{})
+	benchStore, _ := storage.NewMemoryStorage()
 	benchRawKey := "benchmark-key-123"
 	bak := models.NewAPIKey(models.NewKeyID(), "Benchmark Key", benchRawKey, []string{"read"})
 	_ = benchStore.CreateAPIKey(context.Background(), bak)
@@ -717,24 +712,21 @@ func BenchmarkAuthMiddleware(b *testing.B) {
 
 // BenchmarkPermissionCheck benchmarks permission checking performance
 func BenchmarkPermissionCheck(b *testing.B) {
-	securityContext := &SecurityContext{
-		APIKey: &models.APIKey{
-			Name:        "Test Key",
-			Permissions: []string{"read", "write"},
-			Enabled:     true,
-		},
+	apiKey := &models.APIKey{
+		Name:        "Test Key",
 		Permissions: []string{"read", "write"},
+		Enabled:     true,
 	}
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_ = securityContext.HasPermission(PermissionRead)
+		_ = apiKey.HasPermission(string(PermissionRead))
 	}
 }
 
 // TestOptionalAuthMiddleware tests optional authentication functionality
 func TestOptionalAuthMiddleware(t *testing.T) {
-	optStore, err := storage.NewMemoryStorage(storage.Config{})
+	optStore, err := storage.NewMemoryStorage()
 	require.NoError(t, err)
 	optRawKey := "valid-key-123"
 	ok := models.NewAPIKey(models.NewKeyID(), "Test Key", optRawKey, []string{"read"})

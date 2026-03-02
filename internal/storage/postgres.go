@@ -22,12 +22,12 @@ type PostgresStorage struct {
 }
 
 // NewPostgresStorage creates a new PostgreSQL storage instance.
-func NewPostgresStorage(config Config) (Storage, error) {
-	if config.ConnectionString == "" {
+func NewPostgresStorage(dsn string) (Storage, error) {
+	if dsn == "" {
 		return nil, fmt.Errorf("connection string is required for PostgreSQL storage")
 	}
 
-	pool, err := pgxpool.New(context.Background(), config.ConnectionString)
+	pool, err := pgxpool.New(context.Background(), dsn)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create connection pool: %w", err)
 	}
@@ -77,30 +77,12 @@ func (ps *PostgresStorage) GetApplication(ctx context.Context, appID string) (*m
 
 // SaveApplication stores or updates an application (upsert pattern).
 func (ps *PostgresStorage) SaveApplication(ctx context.Context, app *models.Application) error {
-	_, err := ps.queries.GetApplicationByID(ctx, app.ID)
+	params, err := modelToPgUpsertApp(app)
 	if err != nil {
-		if !errors.Is(err, pgx.ErrNoRows) {
-			return fmt.Errorf("failed to check existing application: %w", err)
-		}
-
-		// Create new application
-		params, err := modelToPgCreateApp(app)
-		if err != nil {
-			return fmt.Errorf("failed to convert application for create: %w", err)
-		}
-		if err := ps.queries.CreateApplication(ctx, params); err != nil {
-			return fmt.Errorf("failed to create application: %w", err)
-		}
-		return nil
+		return fmt.Errorf("failed to convert application for upsert: %w", err)
 	}
-
-	// Update existing application
-	params, err := modelToPgUpdateApp(app)
-	if err != nil {
-		return fmt.Errorf("failed to convert application for update: %w", err)
-	}
-	if err := ps.queries.UpdateApplication(ctx, params); err != nil {
-		return fmt.Errorf("failed to update application: %w", err)
+	if err := ps.queries.UpsertApplication(ctx, params); err != nil {
+		return fmt.Errorf("failed to upsert application: %w", err)
 	}
 	return nil
 }
@@ -153,35 +135,12 @@ func (ps *PostgresStorage) GetRelease(ctx context.Context, appID, version, platf
 
 // SaveRelease stores or updates a release (upsert pattern).
 func (ps *PostgresStorage) SaveRelease(ctx context.Context, release *models.Release) error {
-	_, err := ps.queries.GetRelease(ctx, sqlcpg.GetReleaseParams{
-		ApplicationID: release.ApplicationID,
-		Version:       release.Version,
-		Platform:      release.Platform,
-		Architecture:  release.Architecture,
-	})
+	params, err := modelToPgUpsertRelease(release)
 	if err != nil {
-		if !errors.Is(err, pgx.ErrNoRows) {
-			return fmt.Errorf("failed to check existing release: %w", err)
-		}
-
-		// Create new release
-		params, err := modelToPgCreateRelease(release)
-		if err != nil {
-			return fmt.Errorf("failed to convert release for create: %w", err)
-		}
-		if err := ps.queries.CreateRelease(ctx, params); err != nil {
-			return fmt.Errorf("failed to create release: %w", err)
-		}
-		return nil
+		return fmt.Errorf("failed to convert release for upsert: %w", err)
 	}
-
-	// Update existing release
-	params, err := modelToPgUpdateRelease(release)
-	if err != nil {
-		return fmt.Errorf("failed to convert release for update: %w", err)
-	}
-	if err := ps.queries.UpdateRelease(ctx, params); err != nil {
-		return fmt.Errorf("failed to update release: %w", err)
+	if err := ps.queries.UpsertRelease(ctx, params); err != nil {
+		return fmt.Errorf("failed to upsert release: %w", err)
 	}
 	return nil
 }
@@ -328,19 +287,19 @@ func pgAppToModel(row sqlcpg.Application) (*models.Application, error) {
 	return app, nil
 }
 
-func modelToPgCreateApp(app *models.Application) (sqlcpg.CreateApplicationParams, error) {
+func modelToPgUpsertApp(app *models.Application) (sqlcpg.UpsertApplicationParams, error) {
 	platforms, err := marshalPlatforms(app.Platforms)
 	if err != nil {
-		return sqlcpg.CreateApplicationParams{}, err
+		return sqlcpg.UpsertApplicationParams{}, err
 	}
 
 	config, err := marshalConfig(app.Config)
 	if err != nil {
-		return sqlcpg.CreateApplicationParams{}, err
+		return sqlcpg.UpsertApplicationParams{}, err
 	}
 
 	now := time.Now()
-	return sqlcpg.CreateApplicationParams{
+	return sqlcpg.UpsertApplicationParams{
 		ID:          app.ID,
 		Name:        app.Name,
 		Description: stringToPgText(app.Description),
@@ -348,27 +307,6 @@ func modelToPgCreateApp(app *models.Application) (sqlcpg.CreateApplicationParams
 		Config:      config,
 		CreatedAt:   timeToPgTimestamptz(now),
 		UpdatedAt:   timeToPgTimestamptz(now),
-	}, nil
-}
-
-func modelToPgUpdateApp(app *models.Application) (sqlcpg.UpdateApplicationParams, error) {
-	platforms, err := marshalPlatforms(app.Platforms)
-	if err != nil {
-		return sqlcpg.UpdateApplicationParams{}, err
-	}
-
-	config, err := marshalConfig(app.Config)
-	if err != nil {
-		return sqlcpg.UpdateApplicationParams{}, err
-	}
-
-	return sqlcpg.UpdateApplicationParams{
-		ID:          app.ID,
-		Name:        app.Name,
-		Description: stringToPgText(app.Description),
-		Platforms:   platforms,
-		Config:      config,
-		UpdatedAt:   timeToPgTimestamptz(time.Now()),
 	}, nil
 }
 
@@ -405,13 +343,13 @@ func pgReleaseToModel(row sqlcpg.Release) (*models.Release, error) {
 	return release, nil
 }
 
-func modelToPgCreateRelease(r *models.Release) (sqlcpg.CreateReleaseParams, error) {
+func modelToPgUpsertRelease(r *models.Release) (sqlcpg.UpsertReleaseParams, error) {
 	metadata, err := marshalMetadata(r.Metadata)
 	if err != nil {
-		return sqlcpg.CreateReleaseParams{}, err
+		return sqlcpg.UpsertReleaseParams{}, err
 	}
 
-	return sqlcpg.CreateReleaseParams{
+	return sqlcpg.UpsertReleaseParams{
 		ID:             r.ID,
 		ApplicationID:  r.ApplicationID,
 		Version:        r.Version,
@@ -427,26 +365,6 @@ func modelToPgCreateRelease(r *models.Release) (sqlcpg.CreateReleaseParams, erro
 		MinimumVersion: stringToPgText(r.MinimumVersion),
 		Metadata:       metadata,
 		CreatedAt:      timeToPgTimestamptz(r.CreatedAt),
-	}, nil
-}
-
-func modelToPgUpdateRelease(r *models.Release) (sqlcpg.UpdateReleaseParams, error) {
-	metadata, err := marshalMetadata(r.Metadata)
-	if err != nil {
-		return sqlcpg.UpdateReleaseParams{}, err
-	}
-
-	return sqlcpg.UpdateReleaseParams{
-		ID:             r.ID,
-		DownloadUrl:    r.DownloadURL,
-		Checksum:       r.Checksum,
-		ChecksumType:   r.ChecksumType,
-		FileSize:       r.FileSize,
-		ReleaseNotes:   stringToPgText(r.ReleaseNotes),
-		ReleaseDate:    timeToPgTimestamptz(r.ReleaseDate),
-		Required:       r.Required,
-		MinimumVersion: stringToPgText(r.MinimumVersion),
-		Metadata:       metadata,
 	}, nil
 }
 

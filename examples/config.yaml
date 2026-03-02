@@ -11,12 +11,11 @@ server:
   # tls_key_file: "/path/to/key.pem"
 
 storage:
-  type: "json"
-  path: "./data/releases.json"
-  # Database configuration (when using database storage)
+  type: "sqlite"
+  path: "./data/updater.db"
   database:
     driver: "sqlite3"
-    dsn: ""
+    dsn: "./data/updater.db"
     max_open_conns: 25
     max_idle_conns: 5
     conn_max_lifetime: 300s
@@ -34,27 +33,6 @@ logging:
   format: "json"  # json, text
   output: "stdout"  # stdout, stderr, file
   # file_path: "/var/log/updater.log"  # Required when output is "file"
-  max_size: 100    # Max size in MB before rotation
-  max_backups: 3   # Max number of backup files
-  max_age: 28      # Max age in days
-  compress: true
-
-cache:
-  enabled: true
-  type: "memory"  # memory, redis
-  ttl: 300s
-
-  # Redis configuration (when using redis cache)
-  redis:
-    addr: "localhost:6379"
-    password: ""
-    db: 0
-    pool_size: 10
-
-  # Memory cache configuration
-  memory:
-    max_size: 1000
-    cleanup_interval: 600s
 
 metrics:
   enabled: true

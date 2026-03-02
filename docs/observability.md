@@ -9,6 +9,7 @@ graph TB
     subgraph "Updater Service"
         API["HTTP API<br/>(Gorilla Mux)"]
         OTelMux["otelmux Middleware"]
+        MetricsMW["Metrics Middleware"]
         Handlers["API Handlers"]
         IS["InstrumentedStorage"]
         Storage["Storage Backend"]
@@ -31,11 +32,13 @@ graph TB
         Collector["OTel Collector"]
     end
 
-    API --> OTelMux --> Handlers
+    API --> OTelMux --> MetricsMW --> Handlers
     Handlers --> IS --> Storage
     Health --> Storage
 
     OTelMux --> TP
+    MetricsMW --> MP
+    Handlers --> MP
     IS --> TP
     IS --> MP
 
@@ -97,6 +100,20 @@ Automatically collected for all API requests (excluding `/health` and `/metrics`
 
 - `http.server.request.duration` - Request duration histogram
 - `http.server.active_requests` - Currently active requests gauge
+
+#### HTTP Metrics (via MetricsMiddleware)
+
+| Metric | Type | Labels | Description |
+|--------|------|--------|-------------|
+| `updater_http_requests_total` | Counter | `method`, `path`, `status` | Total HTTP requests |
+| `updater_http_request_duration_seconds` | Histogram | `method`, `path`, `status` | Request latency in seconds |
+
+#### Application Metrics (via AppMetrics)
+
+| Metric | Type | Labels | Description |
+|--------|------|--------|-------------|
+| `updater_update_checks_total` | Counter | `app_id`, `result` | Update check outcomes (`update_available`, `no_update`, `error`) |
+| `updater_releases_registered_total` | Counter | `app_id` | New releases registered |
 
 #### Storage Metrics (via InstrumentedStorage)
 
@@ -229,7 +246,6 @@ The `/health` endpoint performs real storage connectivity verification by callin
 | Storage Type | Ping Implementation |
 |-------------|-------------------|
 | Memory | Always returns nil (in-process) |
-| JSON | Always returns nil (file verified at init) |
 | PostgreSQL | Executes `db.PingContext()` on the connection pool |
 | SQLite | Executes `db.PingContext()` on the database connection |
 
@@ -378,12 +394,14 @@ docker/grafana/provisioning/
 
 ```
 internal/observability/
-    observability.go       # SDK setup: TracerProvider, MeterProvider, shutdown
-    metrics.go             # Prometheus HTTP server on metrics port
-    storage.go             # InstrumentedStorage wrapper with tracing and metrics
-    observability_test.go  # Tests for SDK setup and shutdown
-    metrics_test.go        # Tests for metrics server
-    storage_test.go        # Tests for instrumented storage
+    observability.go           # SDK setup: TracerProvider, MeterProvider, shutdown
+    metrics.go                 # Prometheus HTTP server on metrics port
+    httpmiddleware.go          # HTTP request metrics middleware and business metrics
+    storage.go                 # InstrumentedStorage wrapper with tracing and metrics
+    observability_test.go      # Tests for SDK setup and shutdown
+    metrics_test.go            # Tests for metrics server
+    httpmiddleware_test.go     # Tests for HTTP and app metrics
+    storage_test.go            # Tests for instrumented storage
 ```
 
 ## Graceful Shutdown

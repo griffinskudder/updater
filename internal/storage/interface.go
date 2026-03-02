@@ -61,21 +61,3 @@ type Storage interface {
 	// DeleteAPIKey permanently removes an API key by ID.
 	DeleteAPIKey(ctx context.Context, id string) error
 }
-
-// Config holds configuration for storage backends
-type Config struct {
-	// Type specifies the storage backend type (json, database, etc.)
-	Type string `json:"type" yaml:"type"`
-
-	// Path is used for file-based storage backends
-	Path string `json:"path,omitempty" yaml:"path,omitempty"`
-
-	// ConnectionString is used for database backends
-	ConnectionString string `json:"connection_string,omitempty" yaml:"connection_string,omitempty"`
-
-	// CacheTTL specifies how long to cache data in memory
-	CacheTTL string `json:"cache_ttl,omitempty" yaml:"cache_ttl,omitempty"`
-
-	// Additional options for specific backends
-	Options map[string]interface{} `json:"options,omitempty" yaml:"options,omitempty"`
-}

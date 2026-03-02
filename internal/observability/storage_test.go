@@ -32,7 +32,7 @@ func setupTestProvider(t *testing.T) *Provider {
 
 func setupMemoryStorage(t *testing.T) storage.Storage {
 	t.Helper()
-	s, err := storage.NewMemoryStorage(storage.Config{Type: "memory"})
+	s, err := storage.NewMemoryStorage()
 	require.NoError(t, err)
 	return s
 }
@@ -217,7 +217,7 @@ func TestInstrumentedStorage_ImplementsInterface(t *testing.T) {
 
 func TestInstrumentedStorage_APIKeyMethods(t *testing.T) {
 	_ = setupTestProvider(t)
-	inner, err := storage.NewMemoryStorage(storage.Config{})
+	inner, err := storage.NewMemoryStorage()
 	require.NoError(t, err)
 	s, err := NewInstrumentedStorage(inner)
 	require.NoError(t, err)
