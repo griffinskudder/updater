@@ -113,9 +113,7 @@ display prefix are persisted.
 | `PATCH` | `/api/v1/admin/keys/{id}` | Update name, permissions, or enabled status |
 | `DELETE` | `/api/v1/admin/keys/{id}` | Permanently revoke a key |
 
-All key management endpoints require `admin` permission. The admin UI at
-`/admin/keys` and `/admin/keys/new` provides a browser-based interface for the
-same operations.
+All key management endpoints require `admin` permission.
 
 ### Permission Model
 
@@ -141,7 +139,7 @@ Permissions are cumulative: `admin` includes `write`, `write` includes `read`.
    to version control.
 
 4. **Revocation**: Revoke compromised keys immediately via `DELETE
-   /api/v1/admin/keys/{id}` or the `/admin/keys` UI.
+   /api/v1/admin/keys/{id}`.
 
 ## Configuration Security
 
@@ -286,7 +284,7 @@ curl -X PATCH https://updater.example.com/api/v1/admin/keys/<key-id> \
   -d '{"enabled": false}'
 ```
 
-Key IDs are visible in `GET /api/v1/admin/keys` or the `/admin/keys` admin UI.
+Key IDs are visible in `GET /api/v1/admin/keys`.
 
 ## Security Testing
 

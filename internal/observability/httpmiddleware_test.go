@@ -8,6 +8,7 @@ import (
 	"updater/internal/models"
 	"updater/internal/version"
 
+	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -26,13 +27,14 @@ func TestMetricsMiddleware_RecordsRequestCount(t *testing.T) {
 	provider := newTestProvider(t)
 	middleware := NewMetricsMiddleware(provider)
 
-	handler := middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	router := mux.NewRouter()
+	router.Handle("/api/v1/updates/{app_id}/check", middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-	}))
+	}))).Methods("GET")
 
 	req := httptest.NewRequest("GET", "/api/v1/updates/myapp/check", nil)
 	rec := httptest.NewRecorder()
-	handler.ServeHTTP(rec, req)
+	router.ServeHTTP(rec, req)
 
 	assert.Equal(t, http.StatusOK, rec.Code)
 }
@@ -68,6 +70,22 @@ func TestStatusWriter_WriteHeaderOnlyOnce(t *testing.T) {
 	sw.WriteHeader(http.StatusCreated)
 	sw.WriteHeader(http.StatusInternalServerError) // should be ignored
 	assert.Equal(t, http.StatusCreated, sw.status)
+}
+
+func TestStatusWriter_WriteSetsWrittenFlag(t *testing.T) {
+	rec := httptest.NewRecorder()
+	sw := &statusWriter{ResponseWriter: rec, status: http.StatusOK}
+
+	assert.False(t, sw.written, "written should be false before Write")
+
+	n, err := sw.Write([]byte("hello"))
+	require.NoError(t, err)
+	assert.Equal(t, 5, n)
+	assert.True(t, sw.written, "written should be true after Write")
+
+	// A subsequent WriteHeader should not change the status.
+	sw.WriteHeader(http.StatusInternalServerError)
+	assert.Equal(t, http.StatusOK, sw.status, "WriteHeader after Write should not change status")
 }
 
 func TestNewAppMetrics(t *testing.T) {

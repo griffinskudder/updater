@@ -118,7 +118,7 @@ type TracingConfig struct {
 // - Performance: Reasonable timeouts and connection limits
 // - Reliability: Structured logging
 // - Observability: Metrics enabled by default for monitoring
-// - Development-friendly: JSON file storage for quick setup
+// - Development-friendly: SQLite storage for quick setup
 // - Production-ready: Easy to override for deployment-specific needs
 //
 // Default Values Rationale:

@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/gorilla/mux"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 )
@@ -31,9 +32,15 @@ func NewMetricsMiddleware(provider *Provider) func(http.Handler) http.Handler {
 			next.ServeHTTP(sw, r)
 
 			elapsed := time.Since(start).Seconds()
+			path := r.URL.Path
+			if route := mux.CurrentRoute(r); route != nil {
+				if tpl, err := route.GetPathTemplate(); err == nil {
+					path = tpl
+				}
+			}
 			attrs := []attribute.KeyValue{
 				attribute.String("method", r.Method),
-				attribute.String("path", r.URL.Path),
+				attribute.String("path", path),
 				attribute.String("status", strconv.Itoa(sw.status)),
 			}
 			requestsTotal.Add(r.Context(), 1, metric.WithAttributes(attrs...))
@@ -47,6 +54,13 @@ type statusWriter struct {
 	http.ResponseWriter
 	status  int
 	written bool
+}
+
+func (sw *statusWriter) Write(b []byte) (int, error) {
+	if !sw.written {
+		sw.written = true
+	}
+	return sw.ResponseWriter.Write(b)
 }
 
 func (sw *statusWriter) WriteHeader(code int) {

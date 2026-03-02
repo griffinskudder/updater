@@ -216,7 +216,6 @@ INSERT INTO releases (
 )
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 ON CONFLICT (application_id, version, platform, architecture) DO UPDATE SET
-    id = excluded.id,
     download_url = excluded.download_url,
     checksum = excluded.checksum,
     checksum_type = excluded.checksum_type,

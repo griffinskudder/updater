@@ -6,12 +6,10 @@ The updater service uses a pluggable storage layer that supports multiple backen
 
 ```mermaid
 graph TD
-    A[Storage Interface] --> B[JSON File Storage]
-    A --> C[Memory Storage]
+    A[Storage Interface] --> C[Memory Storage]
     A --> D[PostgreSQL Storage]
     A --> E[SQLite Storage]
-    F[Factory] --> A
-    G[Configuration] --> F
+    G[Configuration] --> A
     D --> H[sqlc Generated Queries]
     E --> I[sqlc Generated Queries]
     H --> J[PostgreSQL Database]
@@ -20,15 +18,15 @@ graph TD
 
 ## Provider Comparison
 
-| Feature | JSON | Memory | SQLite | PostgreSQL |
-|---------|------|--------|--------|------------|
-| Persistence | File-based | None (in-memory) | File-based | Server-based |
-| Concurrency | Thread-safe with caching | Thread-safe (RWMutex) | Single writer (WAL mode) | Full concurrent access |
-| Setup | No external dependencies | No setup needed | No external dependencies | Requires PostgreSQL server |
-| Performance | Good for small datasets | Fastest (no I/O) | Good for medium datasets | Best for large datasets |
-| Use Case | Development, small deployments | Testing, development | Single-server deployments | Production, multi-server |
-| CGO Required | No | No | No (pure Go driver) | No |
-| Schema Management | Automatic | Automatic | Automatic (embedded DDL) | Manual migration required |
+| Feature | Memory | SQLite | PostgreSQL |
+|---------|--------|--------|------------|
+| Persistence | None (in-memory) | File-based | Server-based |
+| Concurrency | Thread-safe (RWMutex) | Single writer (WAL mode) | Full concurrent access |
+| Setup | No setup needed | No external dependencies | Requires PostgreSQL server |
+| Performance | Fastest (no I/O) | Good for medium datasets | Best for large datasets |
+| Use Case | Testing, development | Single-server deployments | Production, multi-server |
+| CGO Required | No | No (pure Go driver) | No |
+| Schema Management | Automatic | Automatic (embedded DDL) | Manual migration required |
 
 ## Storage Interface
 
@@ -60,14 +58,6 @@ classDiagram
 
 ## Configuration
 
-### JSON Storage
-
-```yaml
-storage:
-  type: json
-  path: ./data/releases.json
-```
-
 ### Memory Storage
 
 ```yaml
@@ -95,10 +85,6 @@ storage:
 
 ## Provider Details
 
-### JSON File Storage
-
-Stores all data in a single JSON file with an in-memory cache. Thread-safe using read-write mutexes with configurable cache TTL. Best suited for development and small deployments with limited data.
-
 ### Memory Storage
 
 Stores data in Go maps protected by `sync.RWMutex`. Returns copies of all data to prevent external mutation. Data is lost on service restart. Ideal for testing and development environments.
@@ -111,7 +97,7 @@ Uses the `modernc.org/sqlite` pure-Go driver (no CGO required). The schema is au
 - **Foreign keys** enabled for referential integrity
 - **Single connection** to prevent concurrency issues with SQLite's single-writer model
 - **Semantic version comparison** performed in Go after fetching results
-- **Upsert pattern**: check-then-create/update for `SaveApplication` and `SaveRelease`
+- **Upsert pattern**: SQL upserts (`INSERT ... ON CONFLICT`) for `SaveApplication` and `SaveRelease`
 
 ### PostgreSQL Storage
 
@@ -122,7 +108,7 @@ Uses `pgx/v5` with connection pooling via `pgxpool`. All queries are generated b
 - **Timestamptz** for proper timezone-aware timestamps
 - **Cascade deletes** from applications to releases
 - **Semantic version comparison** performed in Go after fetching results
-- **Upsert pattern**: check-then-create/update for `SaveApplication` and `SaveRelease`
+- **Upsert pattern**: SQL upserts (`INSERT ... ON CONFLICT`) for `SaveApplication` and `SaveRelease`
 
 ## Database Schema
 
@@ -190,17 +176,6 @@ Shared conversion helpers in `dbconvert.go` handle JSON marshaling for:
 
 Each provider has additional helpers for engine-specific type conversions (e.g., `pgtype.Text` for PostgreSQL, `sql.NullString` for SQLite).
 
-## Factory Pattern
-
-The `Factory` type provides centralized provider instantiation:
-
-```go
-factory := storage.NewFactory()
-store, err := factory.Create(config.Storage)
-```
-
-The factory validates configuration before creating providers and supports all four backend types.
-
 ## Database Schema Docs
 
 The auto-generated schema reference (including ER diagrams per table) lives in
@@ -214,6 +189,5 @@ make docs-db
 ## Testing
 
 - **Memory**: Full CRUD tests with concurrency testing
-- **JSON**: File I/O tests with caching and concurrent access
 - **SQLite**: Full CRUD tests using `:memory:` (always runs, no external DB)
 - **PostgreSQL**: Full CRUD tests skipped unless `POSTGRES_TEST_DSN` env var is set
