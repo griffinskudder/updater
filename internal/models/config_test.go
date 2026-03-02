@@ -692,4 +692,3 @@ func TestDatabaseConfig_Structure(t *testing.T) {
 	assert.Equal(t, 1*time.Hour, dbConfig.ConnMaxLifetime)
 	assert.Equal(t, 30*time.Minute, dbConfig.ConnMaxIdleTime)
 }
-

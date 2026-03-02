@@ -225,10 +225,10 @@ func TestLoad_EmptyConfigFile(t *testing.T) {
 	require.NoError(t, err)
 
 	// Should have all defaults applied
-	assert.Equal(t, 8080, config.Server.Port)                // Default
-	assert.Equal(t, "0.0.0.0", config.Server.Host)           // Default
-	assert.Equal(t, "sqlite", config.Storage.Type)           // Default
-	assert.Contains(t, config.Storage.Path, "updater.db")   // Default
+	assert.Equal(t, 8080, config.Server.Port)             // Default
+	assert.Equal(t, "0.0.0.0", config.Server.Host)        // Default
+	assert.Equal(t, "sqlite", config.Storage.Type)        // Default
+	assert.Contains(t, config.Storage.Path, "updater.db") // Default
 }
 
 func TestLoad_WithTLSConfig(t *testing.T) {

@@ -107,4 +107,3 @@ func TestOptionalAuthWithStorage(t *testing.T) {
 		})
 	}
 }
-

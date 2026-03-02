@@ -645,4 +645,3 @@ func TestReleaseConstants(t *testing.T) {
 	assert.Equal(t, "md5", ChecksumTypeMD5)
 	assert.Equal(t, "sha1", ChecksumTypeSHA1)
 }
-

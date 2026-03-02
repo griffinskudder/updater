@@ -258,4 +258,3 @@ func isValidChecksumType(checksumType string) bool {
 	}
 	return false
 }
-
