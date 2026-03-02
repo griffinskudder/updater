@@ -11,12 +11,11 @@ server:
   # tls_key_file: "/path/to/key.pem"
 
 storage:
-  type: "json"
-  path: "./data/releases.json"
-  # Database configuration (when using database storage)
+  type: "sqlite"
+  path: "./data/updater.db"
   database:
     driver: "sqlite3"
-    dsn: ""
+    dsn: "./data/updater.db"
     max_open_conns: 25
     max_idle_conns: 5
     conn_max_lifetime: 300s

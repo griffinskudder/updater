@@ -26,8 +26,9 @@ server:
   idle_timeout: 60s
   tls_enabled: false
 storage:
-  type: "json"
-  path: "./data/test.json"
+  type: "sqlite"
+  database:
+    dsn: ":memory:"
 
 security:
   enable_auth: true
@@ -59,8 +60,8 @@ metrics:
 	assert.False(t, config.Server.TLSEnabled)
 
 	// Verify storage config
-	assert.Equal(t, "json", config.Storage.Type)
-	assert.Equal(t, "./data/test.json", config.Storage.Path)
+	assert.Equal(t, "sqlite", config.Storage.Type)
+	assert.Equal(t, ":memory:", config.Storage.Database.DSN)
 
 	// Verify security config
 	assert.True(t, config.Security.EnableAuth)
@@ -87,8 +88,7 @@ server:
   port: 3000
 
 storage:
-  type: "json"
-  path: "./test.json"
+  type: "memory"
 `
 
 	err := os.WriteFile(configFile, []byte(configContent), 0644)
@@ -106,8 +106,7 @@ storage:
 	assert.False(t, config.Server.TLSEnabled)                   // Default
 
 	// Storage config should be as specified
-	assert.Equal(t, "json", config.Storage.Type)
-	assert.Equal(t, "./test.json", config.Storage.Path)
+	assert.Equal(t, "memory", config.Storage.Type)
 
 	// Security defaults
 	assert.False(t, config.Security.EnableAuth) // Default
@@ -166,8 +165,7 @@ server:
   host: "localhost"
 
 storage:
-  type: "json"
-  path: "./data.json"
+  type: "memory"
 
 security:
   enable_auth: false
@@ -229,8 +227,8 @@ func TestLoad_EmptyConfigFile(t *testing.T) {
 	// Should have all defaults applied
 	assert.Equal(t, 8080, config.Server.Port)                // Default
 	assert.Equal(t, "0.0.0.0", config.Server.Host)           // Default
-	assert.Equal(t, "json", config.Storage.Type)             // Default
-	assert.Contains(t, config.Storage.Path, "releases.json") // Default
+	assert.Equal(t, "sqlite", config.Storage.Type)           // Default
+	assert.Contains(t, config.Storage.Path, "updater.db")   // Default
 }
 
 func TestLoad_WithTLSConfig(t *testing.T) {
@@ -245,8 +243,7 @@ server:
   tls_key_file: "/path/to/key.pem"
 
 storage:
-  type: "json"
-  path: "./data.json"
+  type: "memory"
 `
 
 	err := os.WriteFile(configFile, []byte(configContent), 0644)
@@ -305,8 +302,7 @@ server:
   port: 8080
 
 storage:
-  type: "json"
-  path: "./data.json"
+  type: "memory"
 
 security:
   enable_auth: true
@@ -332,8 +328,7 @@ server:
   port: 8080
 
 storage:
-  type: "json"
-  path: "./data.json"
+  type: "memory"
 
 logging:
   level: "error"
@@ -361,8 +356,7 @@ func TestValidate_ValidConfig(t *testing.T) {
 			Host: "localhost",
 		},
 		Storage: models.StorageConfig{
-			Type: "json",
-			Path: "./test.json",
+			Type: "memory",
 		},
 		Logging: models.LoggingConfig{
 			Level:  "error",
@@ -382,8 +376,7 @@ func TestValidate_InvalidPort(t *testing.T) {
 			Host: "localhost",
 		},
 		Storage: models.StorageConfig{
-			Type: "json",
-			Path: "./test.json",
+			Type: "memory",
 		},
 	}
 
@@ -418,8 +411,7 @@ func TestValidate_TLSEnabledWithoutCerts(t *testing.T) {
 			// Missing TLSCertFile and TLSKeyFile
 		},
 		Storage: models.StorageConfig{
-			Type: "json",
-			Path: "./test.json",
+			Type: "memory",
 		},
 	}
 

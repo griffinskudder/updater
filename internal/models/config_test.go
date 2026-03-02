@@ -19,8 +19,8 @@ func TestNewDefaultConfig(t *testing.T) {
 	assert.False(t, config.Server.TLSEnabled)
 
 	// Test storage defaults
-	assert.Equal(t, "json", config.Storage.Type)
-	assert.Equal(t, "./data/releases.json", config.Storage.Path)
+	assert.Equal(t, "sqlite", config.Storage.Type)
+	assert.Equal(t, "./data/updater.db", config.Storage.Path)
 	assert.Equal(t, "sqlite3", config.Storage.Database.Driver)
 	assert.Equal(t, 25, config.Storage.Database.MaxOpenConns)
 	assert.Equal(t, 5, config.Storage.Database.MaxIdleConns)
@@ -64,8 +64,7 @@ func TestConfig_Validate(t *testing.T) {
 			config: &Config{
 				Server: ServerConfig{Port: -1}, // Invalid port
 				Storage: StorageConfig{
-					Type: "json",
-					Path: "./data/test.json",
+					Type: "memory",
 				},
 				Security: SecurityConfig{},
 				Logging: LoggingConfig{
@@ -251,10 +250,9 @@ func TestStorageConfig_Validate(t *testing.T) {
 		errorMsg    string
 	}{
 		{
-			name: "valid JSON storage",
+			name: "valid memory storage",
 			config: StorageConfig{
-				Type: "json",
-				Path: "./data/releases.json",
+				Type: "memory",
 			},
 			expectError: false,
 		},
@@ -275,14 +273,6 @@ func TestStorageConfig_Validate(t *testing.T) {
 			},
 			expectError: true,
 			errorMsg:    "invalid storage type: invalid",
-		},
-		{
-			name: "JSON storage without path",
-			config: StorageConfig{
-				Type: "json",
-			},
-			expectError: true,
-			errorMsg:    "path is required for JSON storage",
 		},
 		{
 			name: "database storage without DSN",

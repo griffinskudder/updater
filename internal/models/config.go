@@ -17,7 +17,6 @@ import (
 
 // Storage type constants
 const (
-	StorageTypeJSON     = "json"
 	StorageTypeMemory   = "memory"
 	StorageTypePostgres = "postgres"
 	StorageTypeSQLite   = "sqlite"
@@ -125,7 +124,7 @@ type TracingConfig struct {
 // Default Values Rationale:
 // - Port 8080: Standard non-privileged HTTP port
 // - 30-second timeouts: Balance between user experience and resource protection
-// - JSON storage: Simple setup without external dependencies
+// - SQLite storage: Simple setup without external dependencies
 // - Structured logging: Better for log aggregation and analysis
 func NewDefaultConfig() *Config {
 	return &Config{
@@ -138,10 +137,11 @@ func NewDefaultConfig() *Config {
 			TLSEnabled:   false,
 		},
 		Storage: StorageConfig{
-			Type: "json",
-			Path: "./data/releases.json",
+			Type: "sqlite",
+			Path: "./data/updater.db",
 			Database: DatabaseConfig{
 				Driver:          "sqlite3",
+				DSN:             "./data/updater.db",
 				MaxOpenConns:    25,
 				MaxIdleConns:    5,
 				ConnMaxLifetime: 5 * time.Minute,
@@ -235,7 +235,7 @@ func (sc *ServerConfig) Validate() error {
 }
 
 func (stc *StorageConfig) Validate() error {
-	validTypes := []string{StorageTypeJSON, StorageTypeMemory, StorageTypePostgres, StorageTypeSQLite}
+	validTypes := []string{StorageTypeMemory, StorageTypePostgres, StorageTypeSQLite}
 	found := false
 	for _, vt := range validTypes {
 		if stc.Type == vt {
@@ -245,10 +245,6 @@ func (stc *StorageConfig) Validate() error {
 	}
 	if !found {
 		return fmt.Errorf("invalid storage type: %s", stc.Type)
-	}
-
-	if stc.Type == StorageTypeJSON && stc.Path == "" {
-		return errors.New("path is required for JSON storage")
 	}
 
 	if stc.Type == StorageTypeMemory {

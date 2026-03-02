@@ -27,11 +27,8 @@ import (
 
 func TestIntegration_FullUpdateFlow(t *testing.T) {
 	// Setup test environment
-	tempDir := t.TempDir()
-	storageFile := filepath.Join(tempDir, "test_releases.json")
-
 	// Initialize storage
-	store, err := storage.NewJSONStorage(storageFile)
+	store, err := storage.NewMemoryStorage()
 	require.NoError(t, err)
 	defer store.Close()
 
@@ -46,8 +43,7 @@ func TestIntegration_FullUpdateFlow(t *testing.T) {
 			Host: "localhost",
 		},
 		Storage: models.StorageConfig{
-			Type: "json",
-			Path: storageFile,
+			Type: "memory",
 		},
 	}
 
@@ -217,10 +213,7 @@ func TestIntegration_FullUpdateFlow(t *testing.T) {
 
 func TestIntegration_PreReleaseHandling(t *testing.T) {
 	// Setup test environment
-	tempDir := t.TempDir()
-	storageFile := filepath.Join(tempDir, "prerelease_test.json")
-
-	store, err := storage.NewJSONStorage(storageFile)
+	store, err := storage.NewMemoryStorage()
 	require.NoError(t, err)
 	defer store.Close()
 
@@ -233,8 +226,7 @@ func TestIntegration_PreReleaseHandling(t *testing.T) {
 			Host: "localhost",
 		},
 		Storage: models.StorageConfig{
-			Type: "json",
-			Path: storageFile,
+			Type: "memory",
 		},
 	}
 
@@ -340,10 +332,7 @@ func TestIntegration_PreReleaseHandling(t *testing.T) {
 
 func TestIntegration_ErrorHandling(t *testing.T) {
 	// Setup minimal test environment
-	tempDir := t.TempDir()
-	storageFile := filepath.Join(tempDir, "error_test.json")
-
-	store, err := storage.NewJSONStorage(storageFile)
+	store, err := storage.NewMemoryStorage()
 	require.NoError(t, err)
 	defer store.Close()
 
@@ -356,8 +345,7 @@ func TestIntegration_ErrorHandling(t *testing.T) {
 			Host: "localhost",
 		},
 		Storage: models.StorageConfig{
-			Type: "json",
-			Path: storageFile,
+			Type: "memory",
 		},
 	}
 
@@ -427,10 +415,7 @@ func TestIntegration_ErrorHandling(t *testing.T) {
 
 func TestIntegration_ConcurrentRequests(t *testing.T) {
 	// Setup test environment
-	tempDir := t.TempDir()
-	storageFile := filepath.Join(tempDir, "concurrent_test.json")
-
-	store, err := storage.NewJSONStorage(storageFile)
+	store, err := storage.NewMemoryStorage()
 	require.NoError(t, err)
 	defer store.Close()
 
@@ -443,8 +428,7 @@ func TestIntegration_ConcurrentRequests(t *testing.T) {
 			Host: "localhost",
 		},
 		Storage: models.StorageConfig{
-			Type: "json",
-			Path: storageFile,
+			Type: "memory",
 		},
 	}
 
@@ -550,8 +534,9 @@ server:
   idle_timeout: 90s
 
 storage:
-  type: "json"
-  path: "./integration_test.json"
+  type: "sqlite"
+  database:
+    dsn: ":memory:"
 
 security:
   enable_auth: false
@@ -579,8 +564,8 @@ metrics:
 	assert.Equal(t, 45*time.Second, cfg.Server.WriteTimeout)
 	assert.Equal(t, 90*time.Second, cfg.Server.IdleTimeout)
 
-	assert.Equal(t, "json", cfg.Storage.Type)
-	assert.Equal(t, "./integration_test.json", cfg.Storage.Path)
+	assert.Equal(t, "sqlite", cfg.Storage.Type)
+	assert.Equal(t, ":memory:", cfg.Storage.Database.DSN)
 
 	assert.False(t, cfg.Security.EnableAuth)
 
@@ -597,10 +582,7 @@ metrics:
 
 func TestIntegration_PaginationAndFiltering(t *testing.T) {
 	// Setup test environment
-	tempDir := t.TempDir()
-	storageFile := filepath.Join(tempDir, "pagination_test.json")
-
-	store, err := storage.NewJSONStorage(storageFile)
+	store, err := storage.NewMemoryStorage()
 	require.NoError(t, err)
 	defer store.Close()
 
@@ -613,8 +595,7 @@ func TestIntegration_PaginationAndFiltering(t *testing.T) {
 			Host: "localhost",
 		},
 		Storage: models.StorageConfig{
-			Type: "json",
-			Path: storageFile,
+			Type: "memory",
 		},
 	}
 
@@ -723,10 +704,7 @@ func TestIntegration_PaginationAndFiltering(t *testing.T) {
 func setupTestServer(t *testing.T, enableAuth bool) (*httptest.Server, storage.Storage) {
 	t.Helper()
 
-	tempDir := t.TempDir()
-	storageFile := filepath.Join(tempDir, "test_releases.json")
-
-	store, err := storage.NewJSONStorage(storageFile)
+	store, err := storage.NewMemoryStorage()
 	require.NoError(t, err)
 	t.Cleanup(func() { store.Close() })
 
@@ -739,8 +717,7 @@ func setupTestServer(t *testing.T, enableAuth bool) (*httptest.Server, storage.S
 			Host: "localhost",
 		},
 		Storage: models.StorageConfig{
-			Type: "json",
-			Path: storageFile,
+			Type: "memory",
 		},
 	}
 

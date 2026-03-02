@@ -191,8 +191,6 @@ func main() {
 // initializeStorage creates and returns a storage instance based on configuration
 func initializeStorage(cfg *models.Config) (storage.Storage, error) {
 	switch cfg.Storage.Type {
-	case "json":
-		return storage.NewJSONStorage(cfg.Storage.Path)
 	case "memory":
 		return storage.NewMemoryStorage()
 	case "postgres":
