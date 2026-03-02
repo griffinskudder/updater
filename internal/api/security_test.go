@@ -19,8 +19,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestSecurityContext tests the security context functionality
-func TestSecurityContext(t *testing.T) {
+// TestPermissionHierarchy tests that the permission hierarchy works correctly via GetAPIKey
+func TestPermissionHierarchy(t *testing.T) {
 	tests := []struct {
 		name         string
 		apiKey       *models.APIKey
@@ -78,7 +78,7 @@ func TestSecurityContext(t *testing.T) {
 			expectAccess: false,
 		},
 		{
-			name:         "nil context has no permissions",
+			name:         "nil key has no permissions",
 			apiKey:       nil,
 			required:     PermissionRead,
 			expectAccess: false,
@@ -87,15 +87,10 @@ func TestSecurityContext(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			var securityContext *SecurityContext
+			var hasPermission bool
 			if tt.apiKey != nil {
-				securityContext = &SecurityContext{
-					APIKey:      tt.apiKey,
-					Permissions: tt.apiKey.Permissions,
-				}
+				hasPermission = tt.apiKey.HasPermission(string(tt.required))
 			}
-
-			hasPermission := securityContext.HasPermission(tt.required)
 			assert.Equal(t, tt.expectAccess, hasPermission)
 		})
 	}
@@ -717,18 +712,15 @@ func BenchmarkAuthMiddleware(b *testing.B) {
 
 // BenchmarkPermissionCheck benchmarks permission checking performance
 func BenchmarkPermissionCheck(b *testing.B) {
-	securityContext := &SecurityContext{
-		APIKey: &models.APIKey{
-			Name:        "Test Key",
-			Permissions: []string{"read", "write"},
-			Enabled:     true,
-		},
+	apiKey := &models.APIKey{
+		Name:        "Test Key",
 		Permissions: []string{"read", "write"},
+		Enabled:     true,
 	}
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_ = securityContext.HasPermission(PermissionRead)
+		_ = apiKey.HasPermission(string(PermissionRead))
 	}
 }
 

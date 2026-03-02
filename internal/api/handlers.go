@@ -208,14 +208,14 @@ func (h *Handlers) RegisterRelease(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	appID := vars["app_id"]
 
-	// Get security context for audit logging
-	securityContext := GetSecurityContext(r)
+	// Get API key for audit logging
+	apiKey := GetAPIKey(r)
 
 	// Log the admin operation attempt
 	slog.Warn("Release registration attempt",
 		"event", "security_audit",
 		"app_id", appID,
-		"api_key", getAPIKeyName(securityContext),
+		"api_key", getAPIKeyName(apiKey),
 		"client_ip", getClientIP(r))
 
 	// Parse request body
@@ -224,7 +224,7 @@ func (h *Handlers) RegisterRelease(w http.ResponseWriter, r *http.Request) {
 		slog.Warn("Invalid JSON in release registration",
 			"event", "security_audit",
 			"app_id", appID,
-			"api_key", getAPIKeyName(securityContext))
+			"api_key", getAPIKeyName(apiKey))
 		h.writeErrorResponse(w, http.StatusBadRequest, models.ErrorCodeInvalidRequest, "Invalid JSON body")
 		return
 	}
@@ -239,7 +239,7 @@ func (h *Handlers) RegisterRelease(w http.ResponseWriter, r *http.Request) {
 			"event", "security_audit",
 			"app_id", appID,
 			"version", req.Version,
-			"api_key", getAPIKeyName(securityContext),
+			"api_key", getAPIKeyName(apiKey),
 			"error", err.Error())
 		h.writeServiceErrorResponse(w, err)
 		return
@@ -250,7 +250,7 @@ func (h *Handlers) RegisterRelease(w http.ResponseWriter, r *http.Request) {
 		"event", "security_audit",
 		"app_id", appID,
 		"version", req.Version,
-		"api_key", getAPIKeyName(securityContext))
+		"api_key", getAPIKeyName(apiKey))
 
 	h.writeJSONResponse(w, http.StatusCreated, response)
 }
@@ -279,19 +279,19 @@ func (h *Handlers) HealthCheck(w http.ResponseWriter, r *http.Request) {
 	response.AddComponent("storage", storageStatus, storageMessage)
 	response.AddComponent("api", models.StatusHealthy, "API is operational")
 
-	// Get security context to check if user is authenticated
-	securityContext := GetSecurityContext(r)
+	// Get API key to check if user is authenticated
+	apiKey := GetAPIKey(r)
 
 	// If authenticated, add enhanced details
-	if securityContext != nil && securityContext.HasPermission(PermissionRead) {
+	if apiKey != nil && apiKey.HasPermission(string(PermissionRead)) {
 		// Add enhanced metrics for authenticated users
 		if response.Metrics == nil {
 			response.Metrics = make(map[string]interface{})
 		}
 
 		response.Metrics["authentication_enabled"] = true
-		response.Metrics["api_key_name"] = getAPIKeyName(securityContext)
-		response.Metrics["permissions"] = securityContext.APIKey.Permissions
+		response.Metrics["api_key_name"] = getAPIKeyName(apiKey)
+		response.Metrics["permissions"] = apiKey.Permissions
 		response.AddComponent("auth", models.StatusHealthy, "Authentication system operational")
 	} else {
 		// Add limited info for public access
@@ -365,12 +365,12 @@ func splitAndTrim(s, delim string) []string {
 }
 
 // getAPIKeyName safely extracts the API key name for logging
-func getAPIKeyName(securityContext *SecurityContext) string {
-	if securityContext == nil || securityContext.APIKey == nil {
+func getAPIKeyName(apiKey *models.APIKey) string {
+	if apiKey == nil {
 		return "anonymous"
 	}
-	if securityContext.APIKey.Name != "" {
-		return securityContext.APIKey.Name
+	if apiKey.Name != "" {
+		return apiKey.Name
 	}
 	return "unnamed-key"
 }
