@@ -97,15 +97,22 @@ func main() {
 	updateService := update.NewService(activeStorage)
 
 	// Initialize HTTP handlers with storage for health checks
-	handlers := api.NewHandlers(updateService,
+	handlerOpts := []api.HandlersOption{
 		api.WithStorage(activeStorage),
 		api.WithVersionInfo(versionInfo),
-	)
+	}
+	if cfg.Metrics.Enabled {
+		handlerOpts = append(handlerOpts, api.WithAppMetrics(observability.NewAppMetrics(otelProvider)))
+	}
+	handlers := api.NewHandlers(updateService, handlerOpts...)
 
 	// Setup routes with middleware
 	routeOpts := []api.RouteOption{}
 	if cfg.Observability.Tracing.Enabled {
 		routeOpts = append(routeOpts, api.WithOTelMiddleware(cfg.Observability.ServiceName))
+	}
+	if cfg.Metrics.Enabled {
+		routeOpts = append(routeOpts, api.WithMetricsMiddleware(otelProvider))
 	}
 
 	router := api.SetupRoutes(handlers, cfg, routeOpts...)

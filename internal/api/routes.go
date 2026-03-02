@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 	"updater/internal/models"
+	"updater/internal/observability"
 	"updater/internal/storage"
 
 	"github.com/gorilla/mux"
@@ -40,6 +41,13 @@ func WithOTelMiddleware(serviceName string) RouteOption {
 				return true
 			}),
 		))
+	}
+}
+
+// WithMetricsMiddleware adds HTTP request count and latency recording.
+func WithMetricsMiddleware(provider *observability.Provider) RouteOption {
+	return func(r *mux.Router) {
+		r.Use(observability.NewMetricsMiddleware(provider))
 	}
 }
 

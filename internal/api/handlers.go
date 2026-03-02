@@ -10,11 +10,14 @@ import (
 	"strings"
 	"time"
 	"updater/internal/models"
+	"updater/internal/observability"
 	"updater/internal/storage"
 	"updater/internal/update"
 	"updater/internal/version"
 
 	"github.com/gorilla/mux"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 )
 
 // Handlers contains HTTP handlers for the updater API
@@ -22,6 +25,7 @@ type Handlers struct {
 	updateService update.ServiceInterface
 	storage       storage.Storage
 	versionInfo   version.Info
+	appMetrics    *observability.AppMetrics
 }
 
 // NewHandlers creates a new handlers instance
@@ -49,6 +53,11 @@ func WithStorage(s storage.Storage) HandlersOption {
 // WithVersionInfo sets the version information for health and version endpoints.
 func WithVersionInfo(info version.Info) HandlersOption {
 	return func(h *Handlers) { h.versionInfo = info }
+}
+
+// WithAppMetrics sets the application-level business metrics.
+func WithAppMetrics(m *observability.AppMetrics) HandlersOption {
+	return func(h *Handlers) { h.appMetrics = m }
 }
 
 // CheckForUpdates handles update check requests
@@ -92,9 +101,16 @@ func (h *Handlers) CheckForUpdates(w http.ResponseWriter, r *http.Request) {
 	// Check for updates
 	response, err := h.updateService.CheckForUpdate(r.Context(), req)
 	if err != nil {
+		h.recordUpdateCheck(r, req.ApplicationID, "error")
 		h.writeServiceErrorResponse(w, err)
 		return
 	}
+
+	result := "no_update"
+	if response.UpdateAvailable {
+		result = "update_available"
+	}
+	h.recordUpdateCheck(r, req.ApplicationID, result)
 
 	h.writeJSONResponse(w, http.StatusOK, response)
 }
@@ -239,6 +255,8 @@ func (h *Handlers) RegisterRelease(w http.ResponseWriter, r *http.Request) {
 		"version", req.Version,
 		"api_key", getAPIKeyName(apiKey))
 
+	h.recordReleaseRegistered(r, appID)
+
 	h.writeJSONResponse(w, http.StatusCreated, response)
 }
 
@@ -379,4 +397,25 @@ func getClientIP(r *http.Request) string {
 
 	// Fallback to RemoteAddr
 	return r.RemoteAddr
+}
+
+// recordUpdateCheck increments the update-check counter when app metrics are configured.
+func (h *Handlers) recordUpdateCheck(r *http.Request, appID, result string) {
+	if h.appMetrics == nil {
+		return
+	}
+	h.appMetrics.UpdateChecks.Add(r.Context(), 1, metric.WithAttributes(
+		attribute.String("app_id", appID),
+		attribute.String("result", result),
+	))
+}
+
+// recordReleaseRegistered increments the release-registered counter when app metrics are configured.
+func (h *Handlers) recordReleaseRegistered(r *http.Request, appID string) {
+	if h.appMetrics == nil {
+		return
+	}
+	h.appMetrics.ReleasesRegistered.Add(r.Context(), 1, metric.WithAttributes(
+		attribute.String("app_id", appID),
+	))
 }
