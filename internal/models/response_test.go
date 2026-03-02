@@ -147,18 +147,6 @@ func TestNewErrorResponse(t *testing.T) {
 	assert.Empty(t, response.RequestID)
 }
 
-func TestNewValidationErrorResponse(t *testing.T) {
-	errors := map[string]string{
-		"field1": "Field 1 is required",
-		"field2": "Field 2 must be a valid email",
-	}
-
-	response := NewValidationErrorResponse(errors)
-
-	assert.Equal(t, "validation_error", response.Error)
-	assert.Equal(t, errors, response.Errors)
-}
-
 func TestNewHealthCheckResponse(t *testing.T) {
 	status := StatusHealthy
 
@@ -355,50 +343,6 @@ func TestApplicationStats_Structure(t *testing.T) {
 	// Test with nil LatestReleaseDate
 	stats.LatestReleaseDate = nil
 	assert.Nil(t, stats.LatestReleaseDate)
-}
-
-func TestStatsResponse_Structure(t *testing.T) {
-	now := time.Now()
-	activity := []ActivityItem{
-		{
-			Type:        "release_created",
-			Description: "New release 1.2.3 created",
-			Timestamp:   now,
-			Metadata:    map[string]string{"version": "1.2.3"},
-		},
-	}
-
-	response := StatsResponse{
-		TotalApplications: 5,
-		TotalReleases:     25,
-		PlatformStats:     map[string]int{"windows": 10, "linux": 15},
-		VersionStats:      map[string]int{"1.0.0": 5, "1.1.0": 10, "1.2.0": 10},
-		RecentActivity:    activity,
-		SystemInfo:        map[string]interface{}{"uptime": "24h", "memory_usage": "512MB"},
-	}
-
-	assert.Equal(t, 5, response.TotalApplications)
-	assert.Equal(t, 25, response.TotalReleases)
-	assert.Equal(t, 2, len(response.PlatformStats))
-	assert.Equal(t, 3, len(response.VersionStats))
-	assert.Equal(t, 1, len(response.RecentActivity))
-	assert.Equal(t, 2, len(response.SystemInfo))
-}
-
-func TestActivityItem_Structure(t *testing.T) {
-	now := time.Now()
-	item := ActivityItem{
-		Type:        "application_created",
-		Description: "Application 'test-app' was created",
-		Timestamp:   now,
-		Metadata:    map[string]string{"app_id": "test-app", "user": "admin"},
-	}
-
-	assert.Equal(t, "application_created", item.Type)
-	assert.Equal(t, "Application 'test-app' was created", item.Description)
-	assert.Equal(t, now, item.Timestamp)
-	assert.Equal(t, "test-app", item.Metadata["app_id"])
-	assert.Equal(t, "admin", item.Metadata["user"])
 }
 
 func TestComponentHealth_Structure(t *testing.T) {

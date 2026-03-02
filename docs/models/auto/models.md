@@ -38,7 +38,6 @@ Response Design Principles: \- Consistent JSON structure across all endpoints \-
 - [type APIKey](<#APIKey>)
   - [func NewAPIKey\(id, name, rawKey string, permissions \[\]string\) \*APIKey](<#NewAPIKey>)
   - [func \(ak \*APIKey\) HasPermission\(required string\) bool](<#APIKey.HasPermission>)
-- [type ActivityItem](<#ActivityItem>)
 - [type Application](<#Application>)
   - [func NewApplication\(id, name string, platforms \[\]string\) \*Application](<#NewApplication>)
   - [func \(a \*Application\) SupportsArchitecture\(platform, arch string\) bool](<#Application.SupportsArchitecture>)
@@ -65,7 +64,6 @@ Response Design Principles: \- Consistent JSON structure across all endpoints \-
 - [type DeleteReleaseResponse](<#DeleteReleaseResponse>)
 - [type ErrorResponse](<#ErrorResponse>)
   - [func NewErrorResponse\(message string, code string\) \*ErrorResponse](<#NewErrorResponse>)
-- [type HealthCheckRequest](<#HealthCheckRequest>)
 - [type HealthCheckResponse](<#HealthCheckResponse>)
   - [func NewHealthCheckResponse\(status string\) \*HealthCheckResponse](<#NewHealthCheckResponse>)
   - [func \(h \*HealthCheckResponse\) AddComponent\(name, status, message string\)](<#HealthCheckResponse.AddComponent>)
@@ -107,17 +105,12 @@ Response Design Principles: \- Consistent JSON structure across all endpoints \-
   - [func \(r \*Release\) Validate\(\) error](<#Release.Validate>)
   - [func \(r \*Release\) ValidateDownloadURL\(\) error](<#Release.ValidateDownloadURL>)
   - [func \(r \*Release\) VerifyChecksum\(data \[\]byte\) bool](<#Release.VerifyChecksum>)
-- [type ReleaseFilter](<#ReleaseFilter>)
-  - [func \(rf \*ReleaseFilter\) Validate\(\) error](<#ReleaseFilter.Validate>)
 - [type ReleaseInfo](<#ReleaseInfo>)
   - [func \(ri \*ReleaseInfo\) FromRelease\(release \*Release\)](<#ReleaseInfo.FromRelease>)
-- [type ReleaseMetadata](<#ReleaseMetadata>)
-- [type ReleaseStats](<#ReleaseStats>)
 - [type SecurityConfig](<#SecurityConfig>)
   - [func \(sec \*SecurityConfig\) Validate\(\) error](<#SecurityConfig.Validate>)
 - [type ServerConfig](<#ServerConfig>)
   - [func \(sc \*ServerConfig\) Validate\(\) error](<#ServerConfig.Validate>)
-- [type StatsResponse](<#StatsResponse>)
 - [type StorageConfig](<#StorageConfig>)
   - [func \(stc \*StorageConfig\) Validate\(\) error](<#StorageConfig.Validate>)
 - [type TracingConfig](<#TracingConfig>)
@@ -131,8 +124,6 @@ Response Design Principles: \- Consistent JSON structure across all endpoints \-
 - [type UpdateCheckResponse](<#UpdateCheckResponse>)
   - [func \(r \*UpdateCheckResponse\) SetNoUpdateAvailable\(currentVersion string\)](<#UpdateCheckResponse.SetNoUpdateAvailable>)
   - [func \(r \*UpdateCheckResponse\) SetUpdateAvailable\(release \*Release\)](<#UpdateCheckResponse.SetUpdateAvailable>)
-- [type ValidationErrorResponse](<#ValidationErrorResponse>)
-  - [func NewValidationErrorResponse\(errors map\[string\]string\) \*ValidationErrorResponse](<#NewValidationErrorResponse>)
 
 
 ## Constants
@@ -247,7 +238,7 @@ var SupportedChecksumTypes = []string{
 ```
 
 <a name="GenerateAPIKey"></a>
-## func [GenerateAPIKey](<https://github.com/griffinskudder/updater/blob/main/internal/models/api_key.go#L61>)
+## func GenerateAPIKey
 
 ```go
 func GenerateAPIKey() (string, error)
@@ -256,7 +247,7 @@ func GenerateAPIKey() (string, error)
 GenerateAPIKey produces a new random API key in the format upd\_\<44 url\-safe base64 chars\>.
 
 <a name="HashAPIKey"></a>
-## func [HashAPIKey](<https://github.com/griffinskudder/updater/blob/main/internal/models/api_key.go#L70>)
+## func HashAPIKey
 
 ```go
 func HashAPIKey(rawKey string) string
@@ -265,7 +256,7 @@ func HashAPIKey(rawKey string) string
 HashAPIKey computes the SHA\-256 hex digest of a raw API key.
 
 <a name="NewKeyID"></a>
-## func [NewKeyID](<https://github.com/griffinskudder/updater/blob/main/internal/models/api_key.go#L76>)
+## func NewKeyID
 
 ```go
 func NewKeyID() string
@@ -274,7 +265,7 @@ func NewKeyID() string
 NewKeyID generates a new UUID v4 for use as an APIKey ID.
 
 <a name="NormalizeArchitecture"></a>
-## func [NormalizeArchitecture](<https://github.com/griffinskudder/updater/blob/main/internal/models/application.go#L227>)
+## func NormalizeArchitecture
 
 ```go
 func NormalizeArchitecture(arch string) string
@@ -283,7 +274,7 @@ func NormalizeArchitecture(arch string) string
 
 
 <a name="NormalizePlatform"></a>
-## func [NormalizePlatform](<https://github.com/griffinskudder/updater/blob/main/internal/models/application.go#L223>)
+## func NormalizePlatform
 
 ```go
 func NormalizePlatform(platform string) string
@@ -292,7 +283,7 @@ func NormalizePlatform(platform string) string
 
 
 <a name="APIKey"></a>
-## type [APIKey](<https://github.com/griffinskudder/updater/blob/main/internal/models/api_key.go#L22-L37>)
+## type APIKey
 
 APIKey represents a stored API key.
 
@@ -320,7 +311,7 @@ type APIKey struct {
 ```
 
 <a name="NewAPIKey"></a>
-### func [NewAPIKey](<https://github.com/griffinskudder/updater/blob/main/internal/models/api_key.go#L40>)
+### func NewAPIKey
 
 ```go
 func NewAPIKey(id, name, rawKey string, permissions []string) *APIKey
@@ -329,7 +320,7 @@ func NewAPIKey(id, name, rawKey string, permissions []string) *APIKey
 NewAPIKey creates a new APIKey from a raw key string.
 
 <a name="APIKey.HasPermission"></a>
-### func \(\*APIKey\) [HasPermission](<https://github.com/griffinskudder/updater/blob/main/internal/models/api_key.go#L81>)
+### func \(\*APIKey\) HasPermission
 
 ```go
 func (ak *APIKey) HasPermission(required string) bool
@@ -337,22 +328,8 @@ func (ak *APIKey) HasPermission(required string) bool
 
 HasPermission returns true when the key is enabled and possesses the required permission.
 
-<a name="ActivityItem"></a>
-## type [ActivityItem](<https://github.com/griffinskudder/updater/blob/main/internal/models/response.go#L192-L197>)
-
-
-
-```go
-type ActivityItem struct {
-    Type        string            `json:"type"`
-    Description string            `json:"description"`
-    Timestamp   time.Time         `json:"timestamp"`
-    Metadata    map[string]string `json:"metadata,omitempty"`
-}
-```
-
 <a name="Application"></a>
-## type [Application](<https://github.com/griffinskudder/updater/blob/main/internal/models/application.go#L67-L75>)
+## type Application
 
 Application represents a software application that can receive updates.
 
@@ -371,7 +348,7 @@ type Application struct {
 ```
 
 <a name="NewApplication"></a>
-### func [NewApplication](<https://github.com/griffinskudder/updater/blob/main/internal/models/application.go#L107>)
+### func NewApplication
 
 ```go
 func NewApplication(id, name string, platforms []string) *Application
@@ -382,7 +359,7 @@ NewApplication creates a new Application with sensible defaults.
 Default Configuration: \- Auto\-update disabled for safety \- 1\-hour update check interval \- No required updates \(user choice\) \- Pre\-release versions disabled \- Analytics disabled \(privacy first\) \- Empty custom fields map initialized
 
 <a name="Application.SupportsArchitecture"></a>
-### func \(\*Application\) [SupportsArchitecture](<https://github.com/griffinskudder/updater/blob/main/internal/models/application.go#L162>)
+### func \(\*Application\) SupportsArchitecture
 
 ```go
 func (a *Application) SupportsArchitecture(platform, arch string) bool
@@ -391,7 +368,7 @@ func (a *Application) SupportsArchitecture(platform, arch string) bool
 
 
 <a name="Application.SupportsPlatform"></a>
-### func \(\*Application\) [SupportsPlatform](<https://github.com/griffinskudder/updater/blob/main/internal/models/application.go#L153>)
+### func \(\*Application\) SupportsPlatform
 
 ```go
 func (a *Application) SupportsPlatform(platform string) bool
@@ -400,7 +377,7 @@ func (a *Application) SupportsPlatform(platform string) bool
 
 
 <a name="Application.Validate"></a>
-### func \(\*Application\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/application.go#L123>)
+### func \(\*Application\) Validate
 
 ```go
 func (a *Application) Validate() error
@@ -409,7 +386,7 @@ func (a *Application) Validate() error
 
 
 <a name="ApplicationConfig"></a>
-## type [ApplicationConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/application.go#L85-L96>)
+## type ApplicationConfig
 
 ApplicationConfig contains application\-specific settings for update behavior.
 
@@ -431,7 +408,7 @@ type ApplicationConfig struct {
 ```
 
 <a name="ApplicationConfig.Validate"></a>
-### func \(\*ApplicationConfig\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/application.go#L169>)
+### func \(\*ApplicationConfig\) Validate
 
 ```go
 func (ac *ApplicationConfig) Validate() error
@@ -440,7 +417,7 @@ func (ac *ApplicationConfig) Validate() error
 
 
 <a name="ApplicationInfoResponse"></a>
-## type [ApplicationInfoResponse](<https://github.com/griffinskudder/updater/blob/main/internal/models/response.go#L147-L156>)
+## type ApplicationInfoResponse
 
 
 
@@ -458,7 +435,7 @@ type ApplicationInfoResponse struct {
 ```
 
 <a name="ApplicationStats"></a>
-## type [ApplicationStats](<https://github.com/griffinskudder/updater/blob/main/internal/models/response.go#L158-L164>)
+## type ApplicationStats
 
 
 
@@ -473,7 +450,7 @@ type ApplicationStats struct {
 ```
 
 <a name="ApplicationSummary"></a>
-## type [ApplicationSummary](<https://github.com/griffinskudder/updater/blob/main/internal/models/response.go#L174-L181>)
+## type ApplicationSummary
 
 
 
@@ -489,7 +466,7 @@ type ApplicationSummary struct {
 ```
 
 <a name="ApplicationSummary.FromApplication"></a>
-### func \(\*ApplicationSummary\) [FromApplication](<https://github.com/griffinskudder/updater/blob/main/internal/models/response.go#L301>)
+### func \(\*ApplicationSummary\) FromApplication
 
 ```go
 func (as *ApplicationSummary) FromApplication(app *Application)
@@ -498,7 +475,7 @@ func (as *ApplicationSummary) FromApplication(app *Application)
 
 
 <a name="CacheConfig"></a>
-## type [CacheConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L101-L107>)
+## type CacheConfig
 
 
 
@@ -513,7 +490,7 @@ type CacheConfig struct {
 ```
 
 <a name="CacheConfig.Validate"></a>
-### func \(\*CacheConfig\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L363>)
+### func \(\*CacheConfig\) Validate
 
 ```go
 func (cc *CacheConfig) Validate() error
@@ -522,7 +499,7 @@ func (cc *CacheConfig) Validate() error
 
 
 <a name="ComponentHealth"></a>
-## type [ComponentHealth](<https://github.com/griffinskudder/updater/blob/main/internal/models/response.go#L140-L145>)
+## type ComponentHealth
 
 
 
@@ -536,7 +513,7 @@ type ComponentHealth struct {
 ```
 
 <a name="Config"></a>
-## type [Config](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L42-L50>)
+## type Config
 
 Config is the root configuration structure containing all service settings.
 
@@ -557,7 +534,7 @@ type Config struct {
 ```
 
 <a name="NewDefaultConfig"></a>
-### func [NewDefaultConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L158>)
+### func NewDefaultConfig
 
 ```go
 func NewDefaultConfig() *Config
@@ -570,7 +547,7 @@ Default Configuration Principles: \- Security\-first: Authentication disabled bu
 Default Values Rationale: \- Port 8080: Standard non\-privileged HTTP port \- 30\-second timeouts: Balance between user experience and resource protection \- JSON storage: Simple setup without external dependencies \- Structured logging: Better for log aggregation and analysis \- Memory caching: Good performance without external dependencies
 
 <a name="Config.Validate"></a>
-### func \(\*Config\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L217>)
+### func \(\*Config\) Validate
 
 ```go
 func (c *Config) Validate() error
@@ -579,7 +556,7 @@ func (c *Config) Validate() error
 
 
 <a name="CreateApplicationRequest"></a>
-## type [CreateApplicationRequest](<https://github.com/griffinskudder/updater/blob/main/internal/models/request.go#L95-L101>)
+## type CreateApplicationRequest
 
 
 
@@ -594,7 +571,7 @@ type CreateApplicationRequest struct {
 ```
 
 <a name="CreateApplicationRequest.Normalize"></a>
-### func \(\*CreateApplicationRequest\) [Normalize](<https://github.com/griffinskudder/updater/blob/main/internal/models/request.go#L295>)
+### func \(\*CreateApplicationRequest\) Normalize
 
 ```go
 func (r *CreateApplicationRequest) Normalize()
@@ -603,7 +580,7 @@ func (r *CreateApplicationRequest) Normalize()
 
 
 <a name="CreateApplicationRequest.Validate"></a>
-### func \(\*CreateApplicationRequest\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/request.go#L265>)
+### func \(\*CreateApplicationRequest\) Validate
 
 ```go
 func (r *CreateApplicationRequest) Validate() error
@@ -612,7 +589,7 @@ func (r *CreateApplicationRequest) Validate() error
 
 
 <a name="CreateApplicationResponse"></a>
-## type [CreateApplicationResponse](<https://github.com/griffinskudder/updater/blob/main/internal/models/response.go#L90-L94>)
+## type CreateApplicationResponse
 
 
 
@@ -625,7 +602,7 @@ type CreateApplicationResponse struct {
 ```
 
 <a name="DatabaseConfig"></a>
-## type [DatabaseConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L70-L77>)
+## type DatabaseConfig
 
 
 
@@ -641,7 +618,7 @@ type DatabaseConfig struct {
 ```
 
 <a name="DeleteReleaseRequest"></a>
-## type [DeleteReleaseRequest](<https://github.com/griffinskudder/updater/blob/main/internal/models/request.go#L110-L113>)
+## type DeleteReleaseRequest
 
 
 
@@ -653,7 +630,7 @@ type DeleteReleaseRequest struct {
 ```
 
 <a name="DeleteReleaseResponse"></a>
-## type [DeleteReleaseResponse](<https://github.com/griffinskudder/updater/blob/main/internal/models/response.go#L102-L105>)
+## type DeleteReleaseResponse
 
 
 
@@ -665,7 +642,7 @@ type DeleteReleaseResponse struct {
 ```
 
 <a name="ErrorResponse"></a>
-## type [ErrorResponse](<https://github.com/griffinskudder/updater/blob/main/internal/models/response.go#L122-L129>)
+## type ErrorResponse
 
 ErrorResponse provides structured error information with debugging context.
 
@@ -685,7 +662,7 @@ type ErrorResponse struct {
 ```
 
 <a name="NewErrorResponse"></a>
-### func [NewErrorResponse](<https://github.com/griffinskudder/updater/blob/main/internal/models/response.go#L238>)
+### func NewErrorResponse
 
 ```go
 func NewErrorResponse(message string, code string) *ErrorResponse
@@ -693,20 +670,8 @@ func NewErrorResponse(message string, code string) *ErrorResponse
 
 
 
-<a name="HealthCheckRequest"></a>
-## type [HealthCheckRequest](<https://github.com/griffinskudder/updater/blob/main/internal/models/request.go#L115-L118>)
-
-
-
-```go
-type HealthCheckRequest struct {
-    Component string `json:"component,omitempty"`
-    Deep      bool   `json:"deep"`
-}
-```
-
 <a name="HealthCheckResponse"></a>
-## type [HealthCheckResponse](<https://github.com/griffinskudder/updater/blob/main/internal/models/response.go#L131-L138>)
+## type HealthCheckResponse
 
 
 
@@ -722,7 +687,7 @@ type HealthCheckResponse struct {
 ```
 
 <a name="NewHealthCheckResponse"></a>
-### func [NewHealthCheckResponse](<https://github.com/griffinskudder/updater/blob/main/internal/models/response.go#L308>)
+### func NewHealthCheckResponse
 
 ```go
 func NewHealthCheckResponse(status string) *HealthCheckResponse
@@ -731,7 +696,7 @@ func NewHealthCheckResponse(status string) *HealthCheckResponse
 
 
 <a name="HealthCheckResponse.AddComponent"></a>
-### func \(\*HealthCheckResponse\) [AddComponent](<https://github.com/griffinskudder/updater/blob/main/internal/models/response.go#L317>)
+### func \(\*HealthCheckResponse\) AddComponent
 
 ```go
 func (h *HealthCheckResponse) AddComponent(name, status, message string)
@@ -740,7 +705,7 @@ func (h *HealthCheckResponse) AddComponent(name, status, message string)
 
 
 <a name="HealthCheckResponse.AddMetric"></a>
-### func \(\*HealthCheckResponse\) [AddMetric](<https://github.com/griffinskudder/updater/blob/main/internal/models/response.go#L326>)
+### func \(\*HealthCheckResponse\) AddMetric
 
 ```go
 func (h *HealthCheckResponse) AddMetric(name string, value interface{})
@@ -749,7 +714,7 @@ func (h *HealthCheckResponse) AddMetric(name string, value interface{})
 
 
 <a name="LatestVersionRequest"></a>
-## type [LatestVersionRequest](<https://github.com/griffinskudder/updater/blob/main/internal/models/request.go#L44-L50>)
+## type LatestVersionRequest
 
 
 
@@ -764,7 +729,7 @@ type LatestVersionRequest struct {
 ```
 
 <a name="LatestVersionRequest.Normalize"></a>
-### func \(\*LatestVersionRequest\) [Normalize](<https://github.com/griffinskudder/updater/blob/main/internal/models/request.go#L141>)
+### func \(\*LatestVersionRequest\) Normalize
 
 ```go
 func (r *LatestVersionRequest) Normalize()
@@ -773,7 +738,7 @@ func (r *LatestVersionRequest) Normalize()
 
 
 <a name="LatestVersionRequest.Validate"></a>
-### func \(\*LatestVersionRequest\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/request.go#L137>)
+### func \(\*LatestVersionRequest\) Validate
 
 ```go
 func (r *LatestVersionRequest) Validate() error
@@ -782,7 +747,7 @@ func (r *LatestVersionRequest) Validate() error
 
 
 <a name="LatestVersionResponse"></a>
-## type [LatestVersionResponse](<https://github.com/griffinskudder/updater/blob/main/internal/models/response.go#L48-L58>)
+## type LatestVersionResponse
 
 
 
@@ -801,7 +766,7 @@ type LatestVersionResponse struct {
 ```
 
 <a name="LatestVersionResponse.FromRelease"></a>
-### func \(\*LatestVersionResponse\) [FromRelease](<https://github.com/griffinskudder/updater/blob/main/internal/models/response.go#L273>)
+### func \(\*LatestVersionResponse\) FromRelease
 
 ```go
 func (r *LatestVersionResponse) FromRelease(release *Release)
@@ -810,7 +775,7 @@ func (r *LatestVersionResponse) FromRelease(release *Release)
 
 
 <a name="ListApplicationsResponse"></a>
-## type [ListApplicationsResponse](<https://github.com/griffinskudder/updater/blob/main/internal/models/response.go#L166-L172>)
+## type ListApplicationsResponse
 
 
 
@@ -825,7 +790,7 @@ type ListApplicationsResponse struct {
 ```
 
 <a name="ListReleasesRequest"></a>
-## type [ListReleasesRequest](<https://github.com/griffinskudder/updater/blob/main/internal/models/request.go#L52-L63>)
+## type ListReleasesRequest
 
 
 
@@ -845,7 +810,7 @@ type ListReleasesRequest struct {
 ```
 
 <a name="ListReleasesRequest.Normalize"></a>
-### func \(\*ListReleasesRequest\) [Normalize](<https://github.com/griffinskudder/updater/blob/main/internal/models/request.go#L199>)
+### func \(\*ListReleasesRequest\) Normalize
 
 ```go
 func (r *ListReleasesRequest) Normalize()
@@ -854,7 +819,7 @@ func (r *ListReleasesRequest) Normalize()
 
 
 <a name="ListReleasesRequest.Validate"></a>
-### func \(\*ListReleasesRequest\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/request.go#L145>)
+### func \(\*ListReleasesRequest\) Validate
 
 ```go
 func (r *ListReleasesRequest) Validate() error
@@ -863,7 +828,7 @@ func (r *ListReleasesRequest) Validate() error
 
 
 <a name="ListReleasesResponse"></a>
-## type [ListReleasesResponse](<https://github.com/griffinskudder/updater/blob/main/internal/models/response.go#L60-L66>)
+## type ListReleasesResponse
 
 
 
@@ -878,7 +843,7 @@ type ListReleasesResponse struct {
 ```
 
 <a name="LoggingConfig"></a>
-## type [LoggingConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L90-L99>)
+## type LoggingConfig
 
 
 
@@ -896,7 +861,7 @@ type LoggingConfig struct {
 ```
 
 <a name="LoggingConfig.Validate"></a>
-### func \(\*LoggingConfig\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L319>)
+### func \(\*LoggingConfig\) Validate
 
 ```go
 func (lc *LoggingConfig) Validate() error
@@ -905,7 +870,7 @@ func (lc *LoggingConfig) Validate() error
 
 
 <a name="MemoryConfig"></a>
-## type [MemoryConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L116-L119>)
+## type MemoryConfig
 
 
 
@@ -917,7 +882,7 @@ type MemoryConfig struct {
 ```
 
 <a name="MetricsConfig"></a>
-## type [MetricsConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L121-L125>)
+## type MetricsConfig
 
 
 
@@ -930,7 +895,7 @@ type MetricsConfig struct {
 ```
 
 <a name="MetricsConfig.Validate"></a>
-### func \(\*MetricsConfig\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L391>)
+### func \(\*MetricsConfig\) Validate
 
 ```go
 func (mc *MetricsConfig) Validate() error
@@ -939,7 +904,7 @@ func (mc *MetricsConfig) Validate() error
 
 
 <a name="ObservabilityConfig"></a>
-## type [ObservabilityConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L129-L132>)
+## type ObservabilityConfig
 
 ObservabilityConfig holds configuration for OpenTelemetry\-based observability. Note: ServiceVersion is now set at build time via ldflags, not via configuration.
 
@@ -951,7 +916,7 @@ type ObservabilityConfig struct {
 ```
 
 <a name="ObservabilityConfig.Validate"></a>
-### func \(\*ObservabilityConfig\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L407>)
+### func \(\*ObservabilityConfig\) Validate
 
 ```go
 func (oc *ObservabilityConfig) Validate() error
@@ -960,7 +925,7 @@ func (oc *ObservabilityConfig) Validate() error
 
 
 <a name="PlatformInfo"></a>
-## type [PlatformInfo](<https://github.com/griffinskudder/updater/blob/main/internal/models/application.go#L239-L242>)
+## type PlatformInfo
 
 PlatformInfo represents a platform/architecture combination.
 
@@ -976,7 +941,7 @@ type PlatformInfo struct {
 ```
 
 <a name="PlatformInfo.String"></a>
-### func \(\*PlatformInfo\) [String](<https://github.com/griffinskudder/updater/blob/main/internal/models/application.go#L254>)
+### func \(\*PlatformInfo\) String
 
 ```go
 func (pi *PlatformInfo) String() string
@@ -985,7 +950,7 @@ func (pi *PlatformInfo) String() string
 
 
 <a name="PlatformInfo.Validate"></a>
-### func \(\*PlatformInfo\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/application.go#L244>)
+### func \(\*PlatformInfo\) Validate
 
 ```go
 func (pi *PlatformInfo) Validate() error
@@ -994,7 +959,7 @@ func (pi *PlatformInfo) Validate() error
 
 
 <a name="RedisConfig"></a>
-## type [RedisConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L109-L114>)
+## type RedisConfig
 
 
 
@@ -1008,7 +973,7 @@ type RedisConfig struct {
 ```
 
 <a name="RegisterReleaseRequest"></a>
-## type [RegisterReleaseRequest](<https://github.com/griffinskudder/updater/blob/main/internal/models/request.go#L80-L93>)
+## type RegisterReleaseRequest
 
 RegisterReleaseRequest represents a request to register a new release \(admin operation\).
 
@@ -1034,7 +999,7 @@ type RegisterReleaseRequest struct {
 ```
 
 <a name="RegisterReleaseRequest.Normalize"></a>
-### func \(\*RegisterReleaseRequest\) [Normalize](<https://github.com/griffinskudder/updater/blob/main/internal/models/request.go#L257>)
+### func \(\*RegisterReleaseRequest\) Normalize
 
 ```go
 func (r *RegisterReleaseRequest) Normalize()
@@ -1043,7 +1008,7 @@ func (r *RegisterReleaseRequest) Normalize()
 
 
 <a name="RegisterReleaseRequest.Validate"></a>
-### func \(\*RegisterReleaseRequest\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/request.go#L219>)
+### func \(\*RegisterReleaseRequest\) Validate
 
 ```go
 func (r *RegisterReleaseRequest) Validate() error
@@ -1052,7 +1017,7 @@ func (r *RegisterReleaseRequest) Validate() error
 
 
 <a name="RegisterReleaseResponse"></a>
-## type [RegisterReleaseResponse](<https://github.com/griffinskudder/updater/blob/main/internal/models/response.go#L84-L88>)
+## type RegisterReleaseResponse
 
 
 
@@ -1065,7 +1030,7 @@ type RegisterReleaseResponse struct {
 ```
 
 <a name="Release"></a>
-## type [Release](<https://github.com/griffinskudder/updater/blob/main/internal/models/release.go#L53-L70>)
+## type Release
 
 Release represents a software release with complete metadata and security information.
 
@@ -1093,7 +1058,7 @@ type Release struct {
 ```
 
 <a name="NewRelease"></a>
-### func [NewRelease](<https://github.com/griffinskudder/updater/blob/main/internal/models/release.go#L115>)
+### func NewRelease
 
 ```go
 func NewRelease(appID, version, platform, arch, downloadURL string) *Release
@@ -1104,7 +1069,7 @@ NewRelease creates a new Release with secure defaults.
 Security Defaults: \- Generated composite ID for uniqueness and predictability \- SHA256 checksum algorithm for strong integrity verification \- Current timestamp for audit trails \- Non\-required update \(safety first \- let users choose\) \- Initialized metadata map for extensibility
 
 <a name="Release.GenerateChecksum"></a>
-### func \(\*Release\) [GenerateChecksum](<https://github.com/griffinskudder/updater/blob/main/internal/models/release.go#L250>)
+### func \(\*Release\) GenerateChecksum
 
 ```go
 func (r *Release) GenerateChecksum(data []byte) string
@@ -1113,7 +1078,7 @@ func (r *Release) GenerateChecksum(data []byte) string
 
 
 <a name="Release.GetMetadata"></a>
-### func \(\*Release\) [GetMetadata](<https://github.com/griffinskudder/updater/blob/main/internal/models/release.go#L275>)
+### func \(\*Release\) GetMetadata
 
 ```go
 func (r *Release) GetMetadata(key string) (string, bool)
@@ -1122,7 +1087,7 @@ func (r *Release) GetMetadata(key string) (string, bool)
 
 
 <a name="Release.GetPlatformInfo"></a>
-### func \(\*Release\) [GetPlatformInfo](<https://github.com/griffinskudder/updater/blob/main/internal/models/release.go#L206>)
+### func \(\*Release\) GetPlatformInfo
 
 ```go
 func (r *Release) GetPlatformInfo() PlatformInfo
@@ -1131,7 +1096,7 @@ func (r *Release) GetPlatformInfo() PlatformInfo
 
 
 <a name="Release.IsCompatibleWith"></a>
-### func \(\*Release\) [IsCompatibleWith](<https://github.com/griffinskudder/updater/blob/main/internal/models/release.go#L227>)
+### func \(\*Release\) IsCompatibleWith
 
 ```go
 func (r *Release) IsCompatibleWith(platform, arch string) bool
@@ -1140,7 +1105,7 @@ func (r *Release) IsCompatibleWith(platform, arch string) bool
 
 
 <a name="Release.IsNewerThan"></a>
-### func \(\*Release\) [IsNewerThan](<https://github.com/griffinskudder/updater/blob/main/internal/models/release.go#L213>)
+### func \(\*Release\) IsNewerThan
 
 ```go
 func (r *Release) IsNewerThan(other *Release) (bool, error)
@@ -1149,7 +1114,7 @@ func (r *Release) IsNewerThan(other *Release) (bool, error)
 
 
 <a name="Release.MeetsMinimumVersion"></a>
-### func \(\*Release\) [MeetsMinimumVersion](<https://github.com/griffinskudder/updater/blob/main/internal/models/release.go#L232>)
+### func \(\*Release\) MeetsMinimumVersion
 
 ```go
 func (r *Release) MeetsMinimumVersion(currentVersion string) (bool, error)
@@ -1158,7 +1123,7 @@ func (r *Release) MeetsMinimumVersion(currentVersion string) (bool, error)
 
 
 <a name="Release.SetMetadata"></a>
-### func \(\*Release\) [SetMetadata](<https://github.com/griffinskudder/updater/blob/main/internal/models/release.go#L267>)
+### func \(\*Release\) SetMetadata
 
 ```go
 func (r *Release) SetMetadata(key, value string)
@@ -1167,7 +1132,7 @@ func (r *Release) SetMetadata(key, value string)
 
 
 <a name="Release.Validate"></a>
-### func \(\*Release\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/release.go#L135>)
+### func \(\*Release\) Validate
 
 ```go
 func (r *Release) Validate() error
@@ -1176,7 +1141,7 @@ func (r *Release) Validate() error
 
 
 <a name="Release.ValidateDownloadURL"></a>
-### func \(\*Release\) [ValidateDownloadURL](<https://github.com/griffinskudder/updater/blob/main/internal/models/release.go#L189>)
+### func \(\*Release\) ValidateDownloadURL
 
 ```go
 func (r *Release) ValidateDownloadURL() error
@@ -1185,7 +1150,7 @@ func (r *Release) ValidateDownloadURL() error
 
 
 <a name="Release.VerifyChecksum"></a>
-### func \(\*Release\) [VerifyChecksum](<https://github.com/griffinskudder/updater/blob/main/internal/models/release.go#L261>)
+### func \(\*Release\) VerifyChecksum
 
 ```go
 func (r *Release) VerifyChecksum(data []byte) bool
@@ -1193,39 +1158,8 @@ func (r *Release) VerifyChecksum(data []byte) bool
 
 
 
-<a name="ReleaseFilter"></a>
-## type [ReleaseFilter](<https://github.com/griffinskudder/updater/blob/main/internal/models/release.go#L80-L91>)
-
-ReleaseFilter provides flexible querying and pagination for release lists.
-
-Query Design: \- Supports filtering by any combination of fields \- Pagination with limit/offset for large datasets \- Flexible sorting by multiple fields \- Multi\-platform queries for cross\-platform applications \- Boolean pointer for Required allows three states: true, false, nil \(don't care\)
-
-```go
-type ReleaseFilter struct {
-    ApplicationID string   `json:"application_id,omitempty"` // Filter by application
-    Platform      string   `json:"platform,omitempty"`       // Filter by single platform
-    Architecture  string   `json:"architecture,omitempty"`   // Filter by architecture
-    Version       string   `json:"version,omitempty"`        // Filter by specific version
-    Required      *bool    `json:"required,omitempty"`       // Filter by required status (nil = all)
-    Limit         int      `json:"limit,omitempty"`          // Maximum results to return
-    Offset        int      `json:"offset,omitempty"`         // Results to skip (pagination)
-    SortBy        string   `json:"sort_by,omitempty"`        // Field to sort by
-    SortOrder     string   `json:"sort_order,omitempty"`     // Sort direction (asc/desc)
-    Platforms     []string `json:"platforms,omitempty"`      // Filter by multiple platforms
-}
-```
-
-<a name="ReleaseFilter.Validate"></a>
-### func \(\*ReleaseFilter\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/release.go#L305>)
-
-```go
-func (rf *ReleaseFilter) Validate() error
-```
-
-
-
 <a name="ReleaseInfo"></a>
-## type [ReleaseInfo](<https://github.com/griffinskudder/updater/blob/main/internal/models/response.go#L68-L82>)
+## type ReleaseInfo
 
 
 
@@ -1248,7 +1182,7 @@ type ReleaseInfo struct {
 ```
 
 <a name="ReleaseInfo.FromRelease"></a>
-### func \(\*ReleaseInfo\) [FromRelease](<https://github.com/griffinskudder/updater/blob/main/internal/models/response.go#L285>)
+### func \(\*ReleaseInfo\) FromRelease
 
 ```go
 func (ri *ReleaseInfo) FromRelease(release *Release)
@@ -1256,39 +1190,8 @@ func (ri *ReleaseInfo) FromRelease(release *Release)
 
 
 
-<a name="ReleaseMetadata"></a>
-## type [ReleaseMetadata](<https://github.com/griffinskudder/updater/blob/main/internal/models/release.go#L100-L105>)
-
-ReleaseMetadata contains additional file and security information for releases.
-
-Extended Metadata: \- FileName for original file naming and client\-side handling \- ContentType for proper MIME handling and security \- Signature for future cryptographic verification \(code signing\) \- Publisher for trust and accountability
-
-```go
-type ReleaseMetadata struct {
-    FileName    string `json:"file_name,omitempty"`    // Original filename for download
-    ContentType string `json:"content_type,omitempty"` // MIME type for proper handling
-    Signature   string `json:"signature,omitempty"`    // Cryptographic signature (future)
-    Publisher   string `json:"publisher,omitempty"`    // Publisher/signer identity
-}
-```
-
-<a name="ReleaseStats"></a>
-## type [ReleaseStats](<https://github.com/griffinskudder/updater/blob/main/internal/models/release.go#L297-L303>)
-
-
-
-```go
-type ReleaseStats struct {
-    TotalReleases     int       `json:"total_releases"`
-    LatestVersion     string    `json:"latest_version"`
-    LatestReleaseDate time.Time `json:"latest_release_date"`
-    PlatformCount     int       `json:"platform_count"`
-    RequiredReleases  int       `json:"required_releases"`
-}
-```
-
 <a name="SecurityConfig"></a>
-## type [SecurityConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L80-L88>)
+## type SecurityConfig
 
 SecurityConfig holds authentication and authorisation settings.
 
@@ -1305,7 +1208,7 @@ type SecurityConfig struct {
 ```
 
 <a name="SecurityConfig.Validate"></a>
-### func \(\*SecurityConfig\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L311>)
+### func \(\*SecurityConfig\) Validate
 
 ```go
 func (sec *SecurityConfig) Validate() error
@@ -1314,7 +1217,7 @@ func (sec *SecurityConfig) Validate() error
 
 
 <a name="ServerConfig"></a>
-## type [ServerConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L52-L61>)
+## type ServerConfig
 
 
 
@@ -1332,7 +1235,7 @@ type ServerConfig struct {
 ```
 
 <a name="ServerConfig.Validate"></a>
-### func \(\*ServerConfig\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L249>)
+### func \(\*ServerConfig\) Validate
 
 ```go
 func (sc *ServerConfig) Validate() error
@@ -1340,24 +1243,8 @@ func (sc *ServerConfig) Validate() error
 
 
 
-<a name="StatsResponse"></a>
-## type [StatsResponse](<https://github.com/griffinskudder/updater/blob/main/internal/models/response.go#L183-L190>)
-
-
-
-```go
-type StatsResponse struct {
-    TotalApplications int                    `json:"total_applications"`
-    TotalReleases     int                    `json:"total_releases"`
-    PlatformStats     map[string]int         `json:"platform_stats"`
-    VersionStats      map[string]int         `json:"version_stats"`
-    RecentActivity    []ActivityItem         `json:"recent_activity"`
-    SystemInfo        map[string]interface{} `json:"system_info"`
-}
-```
-
 <a name="StorageConfig"></a>
-## type [StorageConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L63-L68>)
+## type StorageConfig
 
 
 
@@ -1371,7 +1258,7 @@ type StorageConfig struct {
 ```
 
 <a name="StorageConfig.Validate"></a>
-### func \(\*StorageConfig\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L282>)
+### func \(\*StorageConfig\) Validate
 
 ```go
 func (stc *StorageConfig) Validate() error
@@ -1380,7 +1267,7 @@ func (stc *StorageConfig) Validate() error
 
 
 <a name="TracingConfig"></a>
-## type [TracingConfig](<https://github.com/griffinskudder/updater/blob/main/internal/models/config.go#L135-L140>)
+## type TracingConfig
 
 TracingConfig holds configuration for distributed tracing.
 
@@ -1394,7 +1281,7 @@ type TracingConfig struct {
 ```
 
 <a name="UpdateApplicationRequest"></a>
-## type [UpdateApplicationRequest](<https://github.com/griffinskudder/updater/blob/main/internal/models/request.go#L103-L108>)
+## type UpdateApplicationRequest
 
 
 
@@ -1408,7 +1295,7 @@ type UpdateApplicationRequest struct {
 ```
 
 <a name="UpdateApplicationRequest.Normalize"></a>
-### func \(\*UpdateApplicationRequest\) [Normalize](<https://github.com/griffinskudder/updater/blob/main/internal/models/request.go#L327>)
+### func \(\*UpdateApplicationRequest\) Normalize
 
 ```go
 func (r *UpdateApplicationRequest) Normalize()
@@ -1417,7 +1304,7 @@ func (r *UpdateApplicationRequest) Normalize()
 
 
 <a name="UpdateApplicationRequest.Validate"></a>
-### func \(\*UpdateApplicationRequest\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/request.go#L305>)
+### func \(\*UpdateApplicationRequest\) Validate
 
 ```go
 func (r *UpdateApplicationRequest) Validate() error
@@ -1426,7 +1313,7 @@ func (r *UpdateApplicationRequest) Validate() error
 
 
 <a name="UpdateApplicationResponse"></a>
-## type [UpdateApplicationResponse](<https://github.com/griffinskudder/updater/blob/main/internal/models/response.go#L96-L100>)
+## type UpdateApplicationResponse
 
 
 
@@ -1439,7 +1326,7 @@ type UpdateApplicationResponse struct {
 ```
 
 <a name="UpdateCheckRequest"></a>
-## type [UpdateCheckRequest](<https://github.com/griffinskudder/updater/blob/main/internal/models/request.go#L33-L42>)
+## type UpdateCheckRequest
 
 UpdateCheckRequest represents a request to check for available updates.
 
@@ -1461,7 +1348,7 @@ type UpdateCheckRequest struct {
 ```
 
 <a name="UpdateCheckRequest.Normalize"></a>
-### func \(\*UpdateCheckRequest\) [Normalize](<https://github.com/griffinskudder/updater/blob/main/internal/models/request.go#L132>)
+### func \(\*UpdateCheckRequest\) Normalize
 
 ```go
 func (r *UpdateCheckRequest) Normalize()
@@ -1470,7 +1357,7 @@ func (r *UpdateCheckRequest) Normalize()
 
 
 <a name="UpdateCheckRequest.Validate"></a>
-### func \(\*UpdateCheckRequest\) [Validate](<https://github.com/griffinskudder/updater/blob/main/internal/models/request.go#L120>)
+### func \(\*UpdateCheckRequest\) Validate
 
 ```go
 func (r *UpdateCheckRequest) Validate() error
@@ -1479,7 +1366,7 @@ func (r *UpdateCheckRequest) Validate() error
 
 
 <a name="UpdateCheckResponse"></a>
-## type [UpdateCheckResponse](<https://github.com/griffinskudder/updater/blob/main/internal/models/response.go#L32-L46>)
+## type UpdateCheckResponse
 
 UpdateCheckResponse provides complete information about available updates.
 
@@ -1506,7 +1393,7 @@ type UpdateCheckResponse struct {
 ```
 
 <a name="UpdateCheckResponse.SetNoUpdateAvailable"></a>
-### func \(\*UpdateCheckResponse\) [SetNoUpdateAvailable](<https://github.com/griffinskudder/updater/blob/main/internal/models/response.go#L268>)
+### func \(\*UpdateCheckResponse\) SetNoUpdateAvailable
 
 ```go
 func (r *UpdateCheckResponse) SetNoUpdateAvailable(currentVersion string)
@@ -1515,31 +1402,10 @@ func (r *UpdateCheckResponse) SetNoUpdateAvailable(currentVersion string)
 
 
 <a name="UpdateCheckResponse.SetUpdateAvailable"></a>
-### func \(\*UpdateCheckResponse\) [SetUpdateAvailable](<https://github.com/griffinskudder/updater/blob/main/internal/models/response.go#L254>)
+### func \(\*UpdateCheckResponse\) SetUpdateAvailable
 
 ```go
 func (r *UpdateCheckResponse) SetUpdateAvailable(release *Release)
-```
-
-
-
-<a name="ValidationErrorResponse"></a>
-## type [ValidationErrorResponse](<https://github.com/griffinskudder/updater/blob/main/internal/models/response.go#L199-L202>)
-
-
-
-```go
-type ValidationErrorResponse struct {
-    Error  string            `json:"error"`
-    Errors map[string]string `json:"errors"`
-}
-```
-
-<a name="NewValidationErrorResponse"></a>
-### func [NewValidationErrorResponse](<https://github.com/griffinskudder/updater/blob/main/internal/models/response.go#L247>)
-
-```go
-func NewValidationErrorResponse(errors map[string]string) *ValidationErrorResponse
 ```
 
 

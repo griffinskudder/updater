@@ -180,27 +180,6 @@ type ApplicationSummary struct {
 	UpdatedAt   time.Time `json:"updated_at"`
 }
 
-type StatsResponse struct {
-	TotalApplications int                    `json:"total_applications"`
-	TotalReleases     int                    `json:"total_releases"`
-	PlatformStats     map[string]int         `json:"platform_stats"`
-	VersionStats      map[string]int         `json:"version_stats"`
-	RecentActivity    []ActivityItem         `json:"recent_activity"`
-	SystemInfo        map[string]interface{} `json:"system_info"`
-}
-
-type ActivityItem struct {
-	Type        string            `json:"type"`
-	Description string            `json:"description"`
-	Timestamp   time.Time         `json:"timestamp"`
-	Metadata    map[string]string `json:"metadata,omitempty"`
-}
-
-type ValidationErrorResponse struct {
-	Error  string            `json:"error"`
-	Errors map[string]string `json:"errors"`
-}
-
 // Health Status Constants
 //
 // Health Monitoring:
@@ -241,13 +220,6 @@ func NewErrorResponse(message string, code string) *ErrorResponse {
 		Message:   message,
 		Code:      code,
 		Timestamp: time.Now(),
-	}
-}
-
-func NewValidationErrorResponse(errors map[string]string) *ValidationErrorResponse {
-	return &ValidationErrorResponse{
-		Error:  "validation_error",
-		Errors: errors,
 	}
 }
 

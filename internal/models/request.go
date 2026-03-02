@@ -112,11 +112,6 @@ type DeleteReleaseRequest struct {
 	ReleaseID     string `json:"release_id" validate:"required"`
 }
 
-type HealthCheckRequest struct {
-	Component string `json:"component,omitempty"`
-	Deep      bool   `json:"deep"`
-}
-
 func (r *UpdateCheckRequest) Validate() error {
 	if err := validateRequiredFields(r.ApplicationID, r.Platform, r.Architecture); err != nil {
 		return err

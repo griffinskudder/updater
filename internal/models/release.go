@@ -69,41 +69,6 @@ type Release struct {
 	UpdatedAt      time.Time         `json:"updated_at"`                           // Last modification timestamp
 }
 
-// ReleaseFilter provides flexible querying and pagination for release lists.
-//
-// Query Design:
-// - Supports filtering by any combination of fields
-// - Pagination with limit/offset for large datasets
-// - Flexible sorting by multiple fields
-// - Multi-platform queries for cross-platform applications
-// - Boolean pointer for Required allows three states: true, false, nil (don't care)
-type ReleaseFilter struct {
-	ApplicationID string   `json:"application_id,omitempty"` // Filter by application
-	Platform      string   `json:"platform,omitempty"`       // Filter by single platform
-	Architecture  string   `json:"architecture,omitempty"`   // Filter by architecture
-	Version       string   `json:"version,omitempty"`        // Filter by specific version
-	Required      *bool    `json:"required,omitempty"`       // Filter by required status (nil = all)
-	Limit         int      `json:"limit,omitempty"`          // Maximum results to return
-	Offset        int      `json:"offset,omitempty"`         // Results to skip (pagination)
-	SortBy        string   `json:"sort_by,omitempty"`        // Field to sort by
-	SortOrder     string   `json:"sort_order,omitempty"`     // Sort direction (asc/desc)
-	Platforms     []string `json:"platforms,omitempty"`      // Filter by multiple platforms
-}
-
-// ReleaseMetadata contains additional file and security information for releases.
-//
-// Extended Metadata:
-// - FileName for original file naming and client-side handling
-// - ContentType for proper MIME handling and security
-// - Signature for future cryptographic verification (code signing)
-// - Publisher for trust and accountability
-type ReleaseMetadata struct {
-	FileName    string `json:"file_name,omitempty"`    // Original filename for download
-	ContentType string `json:"content_type,omitempty"` // MIME type for proper handling
-	Signature   string `json:"signature,omitempty"`    // Cryptographic signature (future)
-	Publisher   string `json:"publisher,omitempty"`    // Publisher/signer identity
-}
-
 // NewRelease creates a new Release with secure defaults.
 //
 // Security Defaults:
@@ -294,23 +259,3 @@ func isValidChecksumType(checksumType string) bool {
 	return false
 }
 
-type ReleaseStats struct {
-	TotalReleases     int       `json:"total_releases"`
-	LatestVersion     string    `json:"latest_version"`
-	LatestReleaseDate time.Time `json:"latest_release_date"`
-	PlatformCount     int       `json:"platform_count"`
-	RequiredReleases  int       `json:"required_releases"`
-}
-
-func (rf *ReleaseFilter) Validate() error {
-	if rf.Limit < 0 {
-		return errors.New("limit cannot be negative")
-	}
-	if rf.Offset < 0 {
-		return errors.New("offset cannot be negative")
-	}
-	if rf.SortOrder != "" && rf.SortOrder != "asc" && rf.SortOrder != "desc" {
-		return errors.New("sort order must be 'asc' or 'desc'")
-	}
-	return nil
-}
