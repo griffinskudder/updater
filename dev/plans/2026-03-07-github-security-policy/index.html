@@ -12,13 +12,13 @@
         <meta name="author" content="Updater Service Team">
       
       
-        <link rel="canonical" href="https://griffinskudder.github.io/updater/dev/plans/2026-02-16-github-ci-implementation/">
+        <link rel="canonical" href="https://griffinskudder.github.io/updater/dev/plans/2026-03-07-github-security-policy/">
       
       
-        <link rel="prev" href="../2026-02-16-github-ci-design/">
+        <link rel="prev" href="../2026-03-07-github-security-policy-design/">
       
       
-        <link rel="next" href="../2026-02-16-github-pages-design/">
+        <link rel="next" href="../../db/">
       
       
         
@@ -82,7 +82,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#github-ci-pipeline-implementation-plan" class="md-skip">
+        <a href="#github-security-policy-implementation-plan" class="md-skip">
           Skip to content
         </a>
       
@@ -1577,8 +1577,6 @@
                 
   
   
-    
-  
   
   
     
@@ -1594,11 +1592,13 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_15_4" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_15_4" >
         
           
           <label class="md-nav__link" for="__nav_15_4" id="__nav_15_4_label" tabindex="">
@@ -1619,7 +1619,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_15_4_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_15_4_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_15_4">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1662,37 +1662,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Implementation
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../2026-02-16-github-ci-implementation/" class="md-nav__link">
         
   
   
@@ -1708,120 +1681,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#context" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Context
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Context">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#task-1-add-fmt-check-make-target" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Task 1: Add fmt-check Make target
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#task-2-add-cover-make-target" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Task 2: Add cover Make target
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#task-3-set-the-initial-coverage-threshold" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Task 3: Set the initial coverage threshold
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#task-4-add-security-make-target" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Task 4: Add security Make target
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#task-5-create-the-github-actions-workflow" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Task 5: Create the GitHub Actions workflow
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#task-6-validate-ci-passes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Task 6: Validate CI passes
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#task-7-update-documentation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Task 7: Update documentation
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -2984,8 +2843,10 @@
                 
   
   
+    
   
   
+  
     
     
     
@@ -2999,13 +2860,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_15_15" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_15_15" checked>
         
           
           <label class="md-nav__link" for="__nav_15_15" id="__nav_15_15_label" tabindex="">
@@ -3026,7 +2885,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_15_15_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_15_15_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_15_15">
             <span class="md-nav__icon md-icon"></span>
             
@@ -3069,10 +2928,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../2026-03-07-github-security-policy/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Implementation
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -3088,6 +2974,48 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#task-1-create-githubsecuritymd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 1: Create .github/SECURITY.md
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#task-2-open-a-pull-request" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 2: Open a pull request
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -3308,96 +3236,24 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#context" class="md-nav__link">
+  <a href="#task-1-create-githubsecuritymd" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Context
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Context">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#task-1-add-fmt-check-make-target" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Task 1: Add fmt-check Make target
+        Task 1: Create .github/SECURITY.md
       
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#task-2-add-cover-make-target" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#task-2-open-a-pull-request" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Task 2: Add cover Make target
+        Task 2: Open a pull request
       
     </span>
   </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#task-3-set-the-initial-coverage-threshold" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Task 3: Set the initial coverage threshold
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#task-4-add-security-make-target" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Task 4: Add security Make target
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#task-5-create-the-github-actions-workflow" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Task 5: Create the GitHub Actions workflow
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#task-6-validate-ci-passes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Task 6: Validate CI passes
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#task-7-update-documentation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Task 7: Update documentation
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -3470,10 +3326,10 @@
     
     
       <li class="md-path__item">
-        <a href="../2026-02-16-github-ci-design/" class="md-path__link">
+        <a href="../2026-03-07-github-security-policy-design/" class="md-path__link">
           
   <span class="md-ellipsis">
-    GitHub CI
+    GitHub Security Policy
   </span>
 
         </a>
@@ -3495,272 +3351,102 @@
   
 
 
-<h1 id="github-ci-pipeline-implementation-plan">GitHub CI Pipeline Implementation Plan<a class="headerlink" href="#github-ci-pipeline-implementation-plan" title="Permanent link">&para;</a></h1>
+<h1 id="github-security-policy-implementation-plan">GitHub Security Policy Implementation Plan<a class="headerlink" href="#github-security-policy-implementation-plan" title="Permanent link">&para;</a></h1>
 <blockquote>
 <p><strong>For Claude:</strong> REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.</p>
 </blockquote>
-<p><strong>Goal:</strong> Add GitHub Actions CI with format check, vet, test, coverage ratchet, OpenAPI validation, and gosec security scanning.</p>
-<p><strong>Architecture:</strong> Two parallel GitHub Actions jobs — <code>ci</code> (Docker-in-Docker, runs existing Make targets) and <code>security</code> (native Go, runs gosec). Coverage is enforced via a committed threshold file <code>.github/coverage-threshold</code>. Three new Make targets (<code>fmt-check</code>, <code>cover</code>, <code>security</code>) mirror CI behaviour locally.</p>
-<p><strong>Tech Stack:</strong> GitHub Actions, Docker-in-Docker, gosec (<code>securego/gosec</code>), <code>github/codeql-action</code> for SARIF upload, existing <code>golang:1.25-alpine</code> Docker image.</p>
+<p><strong>Goal:</strong> Add <code>.github/SECURITY.md</code> — the GitHub-standard vulnerability disclosure policy file.</p>
+<p><strong>Architecture:</strong> A single new file in <code>.github/</code>. Minimal and focused: supported versions, how to report, disclosure timeline, out-of-scope list, and a link to <code>docs/SECURITY.md</code>. No code changes.</p>
+<p><strong>Tech Stack:</strong> Markdown, GitHub repository conventions</p>
 <hr />
-<h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
-<p><strong>Root Makefile</strong> (<code>Makefile</code>) defines the <code>GO_DOCKER</code> variable used by all Go Make targets:</p>
-<div class="language-makefile highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nv">GO_IMAGE</span><span class="w">   </span><span class="o">:=</span><span class="w"> </span>golang:1.25-alpine
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nv">GO_MOD_CACHE</span><span class="w">   </span><span class="o">:=</span><span class="w"> </span><span class="k">$(</span>APP_NAME<span class="k">)</span>-go-mod-cache
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="nv">GO_BUILD_CACHE</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="k">$(</span>APP_NAME<span class="k">)</span>-go-build-cache
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="nv">GO_DOCKER</span><span class="w">  </span><span class="o">:=</span><span class="w"> </span>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span>-v<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>CURDIR<span class="k">)</span><span class="s2">:/app&quot;</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span>-v<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>GO_MOD_CACHE<span class="k">)</span><span class="s2">:/go/pkg/mod&quot;</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span>-v<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>GO_BUILD_CACHE<span class="k">)</span><span class="s2">:/root/.cache/go-build&quot;</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">    </span>-w<span class="w"> </span>/app<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">    </span>-e<span class="w"> </span><span class="nv">CGO_ENABLED</span><span class="o">=</span><span class="m">0</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">    </span><span class="k">$(</span>GO_IMAGE<span class="k">)</span>
-</span></code></pre></div>
-<p>Go targets live in <code>make/go.mk</code>. The <code>$(GO_DOCKER)</code> variable is available to all targets in <code>make/*.mk</code> via the root Makefile includes.</p>
-<p><strong>Key constraint:</strong> No CGO. <code>CGO_ENABLED=0</code> is already set in <code>GO_DOCKER</code>.</p>
-<hr />
-<h3 id="task-1-add-fmt-check-make-target">Task 1: Add <code>fmt-check</code> Make target<a class="headerlink" href="#task-1-add-fmt-check-make-target" title="Permanent link">&para;</a></h3>
+<h3 id="task-1-create-githubsecuritymd">Task 1: Create <code>.github/SECURITY.md</code><a class="headerlink" href="#task-1-create-githubsecuritymd" title="Permanent link">&para;</a></h3>
 <p><strong>Files:</strong>
-- Modify: <code>make/go.mk</code></p>
-<p><strong>Step 1: Add the target</strong></p>
-<p>Open <code>make/go.mk</code>. After the <code>fmt</code> target, add:</p>
-<div class="language-makefile highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nf">fmt-check</span><span class="o">:</span><span class="w"> </span><span class="c">## Check formatting without modifying files</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="k">$(</span>GO_DOCKER<span class="k">)</span><span class="w"> </span>sh<span class="w"> </span>-c<span class="w"> </span><span class="s1">&#39;unformatted=$$(gofmt -l .); [ -z &quot;$$unformatted&quot; ] || (printf &quot;Unformatted files:\n$$unformatted\n&quot; &amp;&amp; exit 1)&#39;</span>
+- Create: <code>.github/SECURITY.md</code></p>
+<p>No tests apply — this is a policy document, not code.</p>
+<p><strong>Step 1: Create the file</strong></p>
+<p>Create <code>.github/SECURITY.md</code> with the following content (verbatim):</p>
+<div class="language-markdown highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="gh"># Security Policy</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="gu">## Supported Versions</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>The following versions of the updater service receive security updates:
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>| Version | Supported |
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>|---------|-----------|
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>| Latest release | Yes |
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>| Previous major | Yes |
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>| Older versions | No |
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="gu">## Reporting a Vulnerability</span>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>Report security vulnerabilities using the GitHub private security advisory workflow:
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>https://github.com/griffinskudder/updater/security/advisories/new
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>Please do not open a public issue for security vulnerabilities.
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>We aim to acknowledge reports within 5 business days.
+</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>
+</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a><span class="gu">## Disclosure Policy</span>
+</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>
+</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>This project follows a 90-day coordinated disclosure policy. We ask that you:
+</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>
+</span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a><span class="k">1.</span> Report the vulnerability privately using the link above.
+</span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a><span class="k">2.</span> Allow up to 90 days for us to investigate and release a fix.
+</span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a><span class="k">3.</span> Coordinate public disclosure timing with us after a fix is available.
+</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>We will publish a GitHub Security Advisory when a fix is released.
+</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>
+</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a><span class="gu">## Out of Scope</span>
+</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>
+</span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>The following are outside the scope of this policy:
+</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>
+</span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a><span class="k">-</span><span class="w"> </span>DDoS and resource exhaustion attacks — rate limiting is delegated to the reverse proxy in front of the service, not the application itself.
+</span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a><span class="k">-</span><span class="w"> </span>Vulnerabilities in upstream dependencies that have not yet been patched by their maintainers.
+</span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a><span class="k">-</span><span class="w"> </span>Issues that have already been publicly disclosed elsewhere.
+</span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>
+</span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a><span class="gu">## Security Documentation</span>
+</span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>
+</span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>For the full security architecture, threat model, API key management guidance, and operational security documentation, see [<span class="nt">docs/SECURITY.md</span>](<span class="na">../docs/SECURITY.md</span>).
 </span></code></pre></div>
-<p>Note the Makefile quoting rules: <code>$$</code> escapes <code>$</code> in Make, producing a single <code>$</code> in the shell. The <code>sh -c</code> wrapper is needed because <code>gofmt -l</code> is a shell pipeline.</p>
-<p>Also add <code>fmt-check</code> to the <code>.PHONY</code> line at the top of <code>make/go.mk</code>.</p>
-<p><strong>Step 2: Verify it passes on well-formatted code</strong></p>
-<p>Run:
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>make<span class="w"> </span>fmt-check
-</span></code></pre></div></p>
-<p>Expected: exits 0 with no output (all files are already formatted).</p>
-<p><strong>Step 3: Verify it fails on unformatted code</strong></p>
-<p>Temporarily add a blank line in the wrong place in any <code>.go</code> file (e.g., add two blank lines where one is expected), then run:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>make<span class="w"> </span>fmt-check
-</span></code></pre></div>
-<p>Expected: output like:
-<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>Unformatted files:
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>internal/api/handler.go
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>make: *** [fmt-check] Error 1
-</span></code></pre></div></p>
-<p>Revert the temporary change.</p>
-<p><strong>Step 4: Commit</strong></p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>git<span class="w"> </span>add<span class="w"> </span>make/go.mk
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;feat(make): add fmt-check target&quot;</span>
-</span></code></pre></div>
-<hr />
-<h3 id="task-2-add-cover-make-target">Task 2: Add <code>cover</code> Make target<a class="headerlink" href="#task-2-add-cover-make-target" title="Permanent link">&para;</a></h3>
-<p><strong>Files:</strong>
-- Modify: <code>make/go.mk</code></p>
-<p><strong>Step 1: Add the target</strong></p>
-<p>In <code>make/go.mk</code>, after the <code>test</code> target, add:</p>
-<div class="language-makefile highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nf">cover</span><span class="o">:</span><span class="w"> </span><span class="c">## Run tests with coverage report</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">    </span><span class="k">$(</span>GO_DOCKER<span class="k">)</span><span class="w"> </span>sh<span class="w"> </span>-c<span class="w"> </span><span class="s1">&#39;go test -coverprofile=coverage.out ./... &amp;&amp; go tool cover -func=coverage.out | grep ^total&#39;</span>
-</span></code></pre></div>
-<p>Add <code>cover</code> to the <code>.PHONY</code> line.</p>
-<p><strong>Step 2: Run it and capture the output</strong></p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>make<span class="w"> </span>cover
-</span></code></pre></div>
-<p>Expected output ends with a line like:
-<div class="language-text highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>total:          (statements)    82.3%
-</span></code></pre></div></p>
-<p>(The exact percentage will vary. Note it down — you will need it in Task 3.)</p>
-<p><strong>Step 3: Verify the output is parseable</strong></p>
-<p>Run:
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>make<span class="w"> </span>cover<span class="w"> </span><span class="p">|</span><span class="w"> </span>awk<span class="w"> </span><span class="s1">&#39;/^total/ {gsub(/%/, &quot;&quot;, $3); print $3}&#39;</span>
-</span></code></pre></div></p>
-<p>Expected: a bare float, e.g. <code>82.3</code>. This is the shell expression CI will use.</p>
-<p><strong>Step 4: Add <code>coverage.out</code> to <code>.gitignore</code></strong></p>
-<p>The coverage profile file should not be committed. Add it:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;coverage.out&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>.gitignore
-</span></code></pre></div>
-<p>Verify:
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>git<span class="w"> </span>status
-</span></code></pre></div></p>
-<p>Expected: <code>coverage.out</code> not shown as untracked (or not present yet — either is fine).</p>
-<p><strong>Step 5: Commit</strong></p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>git<span class="w"> </span>add<span class="w"> </span>make/go.mk<span class="w"> </span>.gitignore
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;feat(make): add cover target&quot;</span>
-</span></code></pre></div>
-<hr />
-<h3 id="task-3-set-the-initial-coverage-threshold">Task 3: Set the initial coverage threshold<a class="headerlink" href="#task-3-set-the-initial-coverage-threshold" title="Permanent link">&para;</a></h3>
-<p><strong>Files:</strong>
-- Create: <code>.github/coverage-threshold</code></p>
-<p><strong>Step 1: Run cover and get the percentage</strong></p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>make<span class="w"> </span>cover<span class="w"> </span><span class="p">|</span><span class="w"> </span>awk<span class="w"> </span><span class="s1">&#39;/^total/ {gsub(/%/, &quot;&quot;, $3); print $3}&#39;</span>
-</span></code></pre></div>
-<p>Note the output, e.g. <code>82.3</code>.</p>
-<p><strong>Step 2: Write the threshold file</strong></p>
-<p>Create <code>.github/coverage-threshold</code> with exactly the percentage value on a single line, no trailing newline:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>82.3
-</span></code></pre></div>
-<p>(Replace <code>82.3</code> with the actual value from Step 1.)</p>
+<p><strong>Step 2: Verify the file looks correct</strong></p>
+<p>Open <code>.github/SECURITY.md</code> and confirm:
+- The supported versions table has three rows (latest, previous major, older)
+- The advisory URL points to <code>griffinskudder/updater</code>
+- All five sections are present</p>
 <p><strong>Step 3: Commit</strong></p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>git<span class="w"> </span>add<span class="w"> </span>.github/coverage-threshold
-</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;ci: set initial coverage threshold&quot;</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>git<span class="w"> </span>add<span class="w"> </span>.github/SECURITY.md
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;feat: add GitHub security policy (SECURITY.md)&quot;</span>
 </span></code></pre></div>
+<p>Expected: one file committed, <code>feat/github-security-policy</code> branch.</p>
 <hr />
-<h3 id="task-4-add-security-make-target">Task 4: Add <code>security</code> Make target<a class="headerlink" href="#task-4-add-security-make-target" title="Permanent link">&para;</a></h3>
-<p><strong>Files:</strong>
-- Modify: <code>make/go.mk</code></p>
-<p><strong>Step 1: Add the target</strong></p>
-<p>In <code>make/go.mk</code>, at the end, add:</p>
-<div class="language-makefile highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="nf">security</span><span class="o">:</span><span class="w"> </span><span class="c">## Run gosec security scanner</span>
-</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="w">    </span>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="w">        </span>-v<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>CURDIR<span class="k">)</span><span class="s2">:/app&quot;</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="w">        </span>-w<span class="w"> </span>/app<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="w">        </span>securego/gosec:latest<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="w">        </span>-severity<span class="w"> </span>high<span class="w"> </span>-confidence<span class="w"> </span>medium<span class="w"> </span>./...
+<h3 id="task-2-open-a-pull-request">Task 2: Open a pull request<a class="headerlink" href="#task-2-open-a-pull-request" title="Permanent link">&para;</a></h3>
+<p><strong>Step 1: Push the branch</strong></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>git<span class="w"> </span>push<span class="w"> </span>-u<span class="w"> </span>origin<span class="w"> </span>feat/github-security-policy
 </span></code></pre></div>
-<p>Note: this target uses its own <code>docker run</code> directly (not <code>$(GO_DOCKER)</code>) because it uses a different image (<code>securego/gosec:latest</code> instead of <code>golang:1.25-alpine</code>).</p>
-<p>Add <code>security</code> to the <code>.PHONY</code> line.</p>
-<p><strong>Step 2: Run it</strong></p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>make<span class="w"> </span>security
+<p><strong>Step 2: Create the PR</strong></p>
+<p>Use the GitHub MCP (<code>mcp__plugin_github_github__create_pull_request</code>) with:</p>
+<ul>
+<li><strong>title:</strong> <code>feat: add GitHub security policy</code></li>
+<li><strong>body:</strong></li>
+</ul>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>## Summary
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>- Adds `.github/SECURITY.md` — the GitHub-standard vulnerability disclosure policy
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>- Supported versions: latest release and previous major
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>- Reporting channel: GitHub private security advisories
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>- 90-day coordinated disclosure window
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>- Links to `docs/SECURITY.md` for full security architecture documentation
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>## Test plan
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>- [ ] Verify the file renders correctly on GitHub (Security tab shows the policy)
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>- [ ] Confirm the &quot;Report a vulnerability&quot; button is active on the repository Security tab
 </span></code></pre></div>
-<p>Expected: either exits 0 with no findings, or prints any High severity + Medium/High confidence findings. If findings are printed, investigate each one — they may be legitimate issues to fix or false positives to suppress with <code>// #nosec G###</code>.</p>
-<p>If any findings are legitimate, fix them now before continuing.</p>
-<p><strong>Step 3: Commit</strong></p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>git<span class="w"> </span>add<span class="w"> </span>make/go.mk
-</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;feat(make): add security target&quot;</span>
-</span></code></pre></div>
-<hr />
-<h3 id="task-5-create-the-github-actions-workflow">Task 5: Create the GitHub Actions workflow<a class="headerlink" href="#task-5-create-the-github-actions-workflow" title="Permanent link">&para;</a></h3>
-<p><strong>Files:</strong>
-- Create: <code>.github/workflows/ci.yml</code></p>
-<p><strong>Step 1: Create the workflows directory</strong></p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>mkdir<span class="w"> </span>-p<span class="w"> </span>.github/workflows
-</span></code></pre></div>
-<p><strong>Step 2: Write the workflow file</strong></p>
-<p>Create <code>.github/workflows/ci.yml</code>:</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CI</span>
-</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>
-</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="nt">on</span><span class="p">:</span>
-</span><span id="__span-20-4"><a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="w">  </span><span class="nt">push</span><span class="p">:</span>
-</span><span id="__span-20-5"><a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a><span class="w">    </span><span class="nt">branches</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">main</span><span class="p p-Indicator">]</span>
-</span><span id="__span-20-6"><a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a><span class="w">  </span><span class="nt">pull_request</span><span class="p">:</span>
-</span><span id="__span-20-7"><a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a><span class="w">    </span><span class="nt">branches</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">main</span><span class="p p-Indicator">]</span>
-</span><span id="__span-20-8"><a id="__codelineno-20-8" name="__codelineno-20-8" href="#__codelineno-20-8"></a>
-</span><span id="__span-20-9"><a id="__codelineno-20-9" name="__codelineno-20-9" href="#__codelineno-20-9"></a><span class="nt">jobs</span><span class="p">:</span>
-</span><span id="__span-20-10"><a id="__codelineno-20-10" name="__codelineno-20-10" href="#__codelineno-20-10"></a><span class="w">  </span><span class="nt">ci</span><span class="p">:</span>
-</span><span id="__span-20-11"><a id="__codelineno-20-11" name="__codelineno-20-11" href="#__codelineno-20-11"></a><span class="w">    </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
-</span><span id="__span-20-12"><a id="__codelineno-20-12" name="__codelineno-20-12" href="#__codelineno-20-12"></a><span class="w">    </span><span class="nt">steps</span><span class="p">:</span>
-</span><span id="__span-20-13"><a id="__codelineno-20-13" name="__codelineno-20-13" href="#__codelineno-20-13"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/checkout@v4</span>
-</span><span id="__span-20-14"><a id="__codelineno-20-14" name="__codelineno-20-14" href="#__codelineno-20-14"></a>
-</span><span id="__span-20-15"><a id="__codelineno-20-15" name="__codelineno-20-15" href="#__codelineno-20-15"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Check formatting</span>
-</span><span id="__span-20-16"><a id="__codelineno-20-16" name="__codelineno-20-16" href="#__codelineno-20-16"></a><span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">make fmt-check</span>
-</span><span id="__span-20-17"><a id="__codelineno-20-17" name="__codelineno-20-17" href="#__codelineno-20-17"></a>
-</span><span id="__span-20-18"><a id="__codelineno-20-18" name="__codelineno-20-18" href="#__codelineno-20-18"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Vet</span>
-</span><span id="__span-20-19"><a id="__codelineno-20-19" name="__codelineno-20-19" href="#__codelineno-20-19"></a><span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">make vet</span>
-</span><span id="__span-20-20"><a id="__codelineno-20-20" name="__codelineno-20-20" href="#__codelineno-20-20"></a>
-</span><span id="__span-20-21"><a id="__codelineno-20-21" name="__codelineno-20-21" href="#__codelineno-20-21"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Test</span>
-</span><span id="__span-20-22"><a id="__codelineno-20-22" name="__codelineno-20-22" href="#__codelineno-20-22"></a><span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">make test</span>
-</span><span id="__span-20-23"><a id="__codelineno-20-23" name="__codelineno-20-23" href="#__codelineno-20-23"></a>
-</span><span id="__span-20-24"><a id="__codelineno-20-24" name="__codelineno-20-24" href="#__codelineno-20-24"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Coverage</span>
-</span><span id="__span-20-25"><a id="__codelineno-20-25" name="__codelineno-20-25" href="#__codelineno-20-25"></a><span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
-</span><span id="__span-20-26"><a id="__codelineno-20-26" name="__codelineno-20-26" href="#__codelineno-20-26"></a><span class="w">          </span><span class="no">COVERAGE=$(make cover | awk &#39;/^total/ {gsub(/%/, &quot;&quot;, $3); print $3}&#39;)</span>
-</span><span id="__span-20-27"><a id="__codelineno-20-27" name="__codelineno-20-27" href="#__codelineno-20-27"></a><span class="w">          </span><span class="no">THRESHOLD=$(cat .github/coverage-threshold)</span>
-</span><span id="__span-20-28"><a id="__codelineno-20-28" name="__codelineno-20-28" href="#__codelineno-20-28"></a><span class="w">          </span><span class="no">echo &quot;Coverage:  ${COVERAGE}%&quot;</span>
-</span><span id="__span-20-29"><a id="__codelineno-20-29" name="__codelineno-20-29" href="#__codelineno-20-29"></a><span class="w">          </span><span class="no">echo &quot;Threshold: ${THRESHOLD}%&quot;</span>
-</span><span id="__span-20-30"><a id="__codelineno-20-30" name="__codelineno-20-30" href="#__codelineno-20-30"></a><span class="w">          </span><span class="no">awk &quot;BEGIN {</span>
-</span><span id="__span-20-31"><a id="__codelineno-20-31" name="__codelineno-20-31" href="#__codelineno-20-31"></a><span class="w">            </span><span class="no">if (${COVERAGE} + 0 &lt; ${THRESHOLD} + 0) {</span>
-</span><span id="__span-20-32"><a id="__codelineno-20-32" name="__codelineno-20-32" href="#__codelineno-20-32"></a><span class="w">              </span><span class="no">print \&quot;FAIL: coverage \&quot; ${COVERAGE} \&quot;% is below threshold \&quot; ${THRESHOLD} \&quot;%\&quot;</span>
-</span><span id="__span-20-33"><a id="__codelineno-20-33" name="__codelineno-20-33" href="#__codelineno-20-33"></a><span class="w">              </span><span class="no">exit 1</span>
-</span><span id="__span-20-34"><a id="__codelineno-20-34" name="__codelineno-20-34" href="#__codelineno-20-34"></a><span class="w">            </span><span class="no">}</span>
-</span><span id="__span-20-35"><a id="__codelineno-20-35" name="__codelineno-20-35" href="#__codelineno-20-35"></a><span class="w">            </span><span class="no">print \&quot;PASS: coverage \&quot; ${COVERAGE} \&quot;% meets threshold \&quot; ${THRESHOLD} \&quot;%\&quot;</span>
-</span><span id="__span-20-36"><a id="__codelineno-20-36" name="__codelineno-20-36" href="#__codelineno-20-36"></a><span class="w">          </span><span class="no">}&quot;</span>
-</span><span id="__span-20-37"><a id="__codelineno-20-37" name="__codelineno-20-37" href="#__codelineno-20-37"></a>
-</span><span id="__span-20-38"><a id="__codelineno-20-38" name="__codelineno-20-38" href="#__codelineno-20-38"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Validate OpenAPI spec</span>
-</span><span id="__span-20-39"><a id="__codelineno-20-39" name="__codelineno-20-39" href="#__codelineno-20-39"></a><span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">make openapi-validate</span>
-</span><span id="__span-20-40"><a id="__codelineno-20-40" name="__codelineno-20-40" href="#__codelineno-20-40"></a>
-</span><span id="__span-20-41"><a id="__codelineno-20-41" name="__codelineno-20-41" href="#__codelineno-20-41"></a><span class="w">  </span><span class="nt">security</span><span class="p">:</span>
-</span><span id="__span-20-42"><a id="__codelineno-20-42" name="__codelineno-20-42" href="#__codelineno-20-42"></a><span class="w">    </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
-</span><span id="__span-20-43"><a id="__codelineno-20-43" name="__codelineno-20-43" href="#__codelineno-20-43"></a><span class="w">    </span><span class="nt">permissions</span><span class="p">:</span>
-</span><span id="__span-20-44"><a id="__codelineno-20-44" name="__codelineno-20-44" href="#__codelineno-20-44"></a><span class="w">      </span><span class="nt">security-events</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">write</span>
-</span><span id="__span-20-45"><a id="__codelineno-20-45" name="__codelineno-20-45" href="#__codelineno-20-45"></a><span class="w">    </span><span class="nt">steps</span><span class="p">:</span>
-</span><span id="__span-20-46"><a id="__codelineno-20-46" name="__codelineno-20-46" href="#__codelineno-20-46"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/checkout@v4</span>
-</span><span id="__span-20-47"><a id="__codelineno-20-47" name="__codelineno-20-47" href="#__codelineno-20-47"></a>
-</span><span id="__span-20-48"><a id="__codelineno-20-48" name="__codelineno-20-48" href="#__codelineno-20-48"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/setup-go@v5</span>
-</span><span id="__span-20-49"><a id="__codelineno-20-49" name="__codelineno-20-49" href="#__codelineno-20-49"></a><span class="w">        </span><span class="nt">with</span><span class="p">:</span>
-</span><span id="__span-20-50"><a id="__codelineno-20-50" name="__codelineno-20-50" href="#__codelineno-20-50"></a><span class="w">          </span><span class="nt">go-version</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;1.25.0&#39;</span>
-</span><span id="__span-20-51"><a id="__codelineno-20-51" name="__codelineno-20-51" href="#__codelineno-20-51"></a>
-</span><span id="__span-20-52"><a id="__codelineno-20-52" name="__codelineno-20-52" href="#__codelineno-20-52"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Install gosec</span>
-</span><span id="__span-20-53"><a id="__codelineno-20-53" name="__codelineno-20-53" href="#__codelineno-20-53"></a><span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">go install github.com/securego/gosec/v2/cmd/gosec@latest</span>
-</span><span id="__span-20-54"><a id="__codelineno-20-54" name="__codelineno-20-54" href="#__codelineno-20-54"></a>
-</span><span id="__span-20-55"><a id="__codelineno-20-55" name="__codelineno-20-55" href="#__codelineno-20-55"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Generate SARIF report</span>
-</span><span id="__span-20-56"><a id="__codelineno-20-56" name="__codelineno-20-56" href="#__codelineno-20-56"></a><span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gosec -no-fail -fmt sarif -out gosec.sarif ./...</span>
-</span><span id="__span-20-57"><a id="__codelineno-20-57" name="__codelineno-20-57" href="#__codelineno-20-57"></a>
-</span><span id="__span-20-58"><a id="__codelineno-20-58" name="__codelineno-20-58" href="#__codelineno-20-58"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Upload to GitHub Security tab</span>
-</span><span id="__span-20-59"><a id="__codelineno-20-59" name="__codelineno-20-59" href="#__codelineno-20-59"></a><span class="w">        </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">github/codeql-action/upload-sarif@v3</span>
-</span><span id="__span-20-60"><a id="__codelineno-20-60" name="__codelineno-20-60" href="#__codelineno-20-60"></a><span class="w">        </span><span class="nt">with</span><span class="p">:</span>
-</span><span id="__span-20-61"><a id="__codelineno-20-61" name="__codelineno-20-61" href="#__codelineno-20-61"></a><span class="w">          </span><span class="nt">sarif_file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gosec.sarif</span>
-</span><span id="__span-20-62"><a id="__codelineno-20-62" name="__codelineno-20-62" href="#__codelineno-20-62"></a>
-</span><span id="__span-20-63"><a id="__codelineno-20-63" name="__codelineno-20-63" href="#__codelineno-20-63"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Enforce security threshold</span>
-</span><span id="__span-20-64"><a id="__codelineno-20-64" name="__codelineno-20-64" href="#__codelineno-20-64"></a><span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gosec -severity high -confidence medium ./...</span>
-</span></code></pre></div>
-<p><strong>Step 3: Commit</strong></p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>git<span class="w"> </span>add<span class="w"> </span>.github/workflows/ci.yml
-</span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;ci: add GitHub Actions CI workflow&quot;</span>
-</span></code></pre></div>
-<hr />
-<h3 id="task-6-validate-ci-passes">Task 6: Validate CI passes<a class="headerlink" href="#task-6-validate-ci-passes" title="Permanent link">&para;</a></h3>
-<p><strong>Step 1: Push to a branch and open a PR</strong></p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>git<span class="w"> </span>checkout<span class="w"> </span>-b<span class="w"> </span>ci/setup
-</span><span id="__span-22-2"><a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>git<span class="w"> </span>push<span class="w"> </span>-u<span class="w"> </span>origin<span class="w"> </span>ci/setup
-</span></code></pre></div>
-<p>Then open a PR targeting <code>main</code> on GitHub.</p>
-<p><strong>Step 2: Watch the Actions tab</strong></p>
-<p>Navigate to the PR on GitHub → Actions tab. Both <code>ci</code> and <code>security</code> jobs should appear running in parallel.</p>
-<p>Expected outcome for each job:</p>
-<p><code>ci</code> job:
-- <code>Check formatting</code> — green
-- <code>Vet</code> — green
-- <code>Test</code> — green
-- <code>Coverage</code> — green, prints <code>PASS: coverage X% meets threshold Y%</code>
-- <code>Validate OpenAPI spec</code> — green</p>
-<p><code>security</code> job:
-- <code>Install gosec</code> — green
-- <code>Generate SARIF report</code> — green (always succeeds due to <code>-no-fail</code>)
-- <code>Upload to GitHub Security tab</code> — green
-- <code>Enforce security threshold</code> — green (no High + Medium/High findings)</p>
-<p><strong>Step 3: If any job fails, investigate</strong></p>
-<p>Common failure modes:</p>
-<table>
-<thead>
-<tr>
-<th>Failure</th>
-<th>Fix</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>fmt-check</code> fails</td>
-<td>Run <code>make fmt</code> locally, commit the result</td>
-</tr>
-<tr>
-<td><code>Cover</code> fails with parse error</td>
-<td>Check <code>make cover</code> output manually; ensure the <code>total:</code> line is present</td>
-</tr>
-<tr>
-<td><code>Coverage</code> below threshold</td>
-<td>Either increase test coverage or lower the threshold if the initial value was wrong</td>
-</tr>
-<tr>
-<td><code>gosec</code> threshold fails</td>
-<td>Fix the finding or suppress with <code>// #nosec G###</code> if it is a false positive</td>
-</tr>
-<tr>
-<td><code>openapi-validate</code> fails</td>
-<td>Fix the OpenAPI spec at <code>internal/api/openapi/openapi.yaml</code></td>
-</tr>
-</tbody>
-</table>
-<p><strong>Step 4: Merge the PR</strong></p>
-<p>Once all checks are green, merge via GitHub UI.</p>
-<hr />
-<h3 id="task-7-update-documentation">Task 7: Update documentation<a class="headerlink" href="#task-7-update-documentation" title="Permanent link">&para;</a></h3>
-<p><strong>Files:</strong>
-- Modify: <code>docs/plans/2026-02-16-github-ci-implementation.md</code> — already exists (this file)</p>
-<p>No additional documentation is needed beyond the design doc (<code>docs/plans/2026-02-16-github-ci-design.md</code>) already committed. The Make targets are self-documenting via <code>## comments</code> visible in <code>make help</code>.</p>
+<ul>
+<li><strong>head:</strong> <code>feat/github-security-policy</code></li>
+<li><strong>base:</strong> <code>main</code></li>
+</ul>
 
 
 
