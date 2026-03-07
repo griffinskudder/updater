@@ -172,6 +172,29 @@
           "type": "timestamp with time zone",
           "nullable": false,
           "default": "now()"
+        },
+        {
+          "name": "version_major",
+          "type": "bigint",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "version_minor",
+          "type": "bigint",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "version_patch",
+          "type": "bigint",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "version_pre_release",
+          "type": "text",
+          "nullable": true
         }
       ],
       "indexes": [
@@ -252,6 +275,17 @@
           "columns": [
             "application_id",
             "version"
+          ]
+        },
+        {
+          "name": "idx_releases_version_sort",
+          "def": "CREATE INDEX idx_releases_version_sort ON public.releases USING btree (application_id, version_major DESC, version_minor DESC, version_patch DESC)",
+          "table": "public.releases",
+          "columns": [
+            "application_id",
+            "version_major",
+            "version_minor",
+            "version_patch"
           ]
         }
       ],

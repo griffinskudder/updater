@@ -12,13 +12,13 @@
         <meta name="author" content="Updater Service Team">
       
       
-        <link rel="canonical" href="https://griffinskudder.github.io/updater/dev/plans/2026-02-18-proxy-delegation-design/">
+        <link rel="canonical" href="https://griffinskudder.github.io/updater/dev/plans/2026-03-07-keyset-pagination-design/">
       
       
-        <link rel="prev" href="../2026-02-15-makefile-restructure-implementation/">
+        <link rel="prev" href="../2026-03-07-storage-pagination-pushdown-implementation/">
       
       
-        <link rel="next" href="../2026-02-18-proxy-delegation-implementation/">
+        <link rel="next" href="../2026-03-07-keyset-pagination-implementation/">
       
       
         
@@ -82,7 +82,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#proxy-delegation-design" class="md-skip">
+        <a href="#keyset-pagination-design" class="md-skip">
           Skip to content
         </a>
       
@@ -2061,8 +2061,6 @@
                 
   
   
-    
-  
   
   
     
@@ -2078,11 +2076,13 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_15_8" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_15_8" >
         
           
           <label class="md-nav__link" for="__nav_15_8" id="__nav_15_8_label" tabindex="">
@@ -2103,7 +2103,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_15_8_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_15_8_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_15_8">
             <span class="md-nav__icon md-icon"></span>
             
@@ -2118,37 +2118,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Design
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../2026-02-18-proxy-delegation-design/" class="md-nav__link">
         
   
   
@@ -2164,203 +2137,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#problem" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Problem
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#decision" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Decision
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#scope" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Scope
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Scope">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#removed-from-the-application" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Removed from the application
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#unchanged" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Unchanged
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#deprecation-warning" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Deprecation Warning
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#new-files" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        New Files
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#updated-files" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Updated Files
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#proxy-responsibilities" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Proxy Responsibilities
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Proxy Responsibilities">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#cors" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        CORS
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#rate-limiting" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Rate limiting
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#tls" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        TLS
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#real-client-ip" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Real client IP
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#breaking-config-change" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Breaking Config Change
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#out-of-scope" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Out of Scope
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -2918,8 +2694,10 @@
                 
   
   
+    
   
   
+  
     
     
     
@@ -2933,13 +2711,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_15_14" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_15_14" checked>
         
           
           <label class="md-nav__link" for="__nav_15_14" id="__nav_15_14_label" tabindex="">
@@ -2960,7 +2736,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_15_14_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_15_14_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_15_14">
             <span class="md-nav__icon md-icon"></span>
             
@@ -2975,10 +2751,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../2026-03-07-keyset-pagination-design/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -2994,6 +2797,220 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#background" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Background
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#max-limit-enforcement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Max Limit Enforcement
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cursor-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cursor Design
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Cursor Design">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#release-cursor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Release cursor
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#application-cursor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Application cursor
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keyset-where-clause" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Keyset WHERE Clause
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Keyset WHERE Clause">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#scalar-sort-fields-release_date-platform-architecture-created_at" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scalar sort fields (release_date, platform, architecture, created_at)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#version-sort-always-desc-sort_order-is-ignored-existing-behaviour" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version sort (always DESC, sort_order is ignored — existing behaviour)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#response-shape" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Response Shape
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#api-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API Changes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="API Changes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#get-updatesapp_idreleases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GET /updates/{app_id}/releases
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-applications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GET /applications
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#layers-changed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Layers Changed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#error-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error Handling
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -3270,10 +3287,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#problem" class="md-nav__link">
+  <a href="#background" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Problem
+        Background
       
     </span>
   </a>
@@ -3292,22 +3309,33 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#scope" class="md-nav__link">
+  <a href="#max-limit-enforcement" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Scope
+        Max Limit Enforcement
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Scope">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cursor-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cursor Design
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Cursor Design">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#removed-from-the-application" class="md-nav__link">
+  <a href="#release-cursor" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Removed from the application
+        Release cursor
       
     </span>
   </a>
@@ -3315,10 +3343,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#unchanged" class="md-nav__link">
+  <a href="#application-cursor" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Unchanged
+        Application cursor
       
     </span>
   </a>
@@ -3331,55 +3359,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#deprecation-warning" class="md-nav__link">
+  <a href="#keyset-where-clause" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Deprecation Warning
+        Keyset WHERE Clause
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#new-files" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        New Files
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#updated-files" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Updated Files
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#proxy-responsibilities" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Proxy Responsibilities
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Proxy Responsibilities">
+    <nav class="md-nav" aria-label="Keyset WHERE Clause">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#cors" class="md-nav__link">
+  <a href="#scalar-sort-fields-release_date-platform-architecture-created_at" class="md-nav__link">
     <span class="md-ellipsis">
       
-        CORS
+        Scalar sort fields (release_date, platform, architecture, created_at)
       
     </span>
   </a>
@@ -3387,32 +3382,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#rate-limiting" class="md-nav__link">
+  <a href="#version-sort-always-desc-sort_order-is-ignored-existing-behaviour" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Rate limiting
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#tls" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        TLS
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#real-client-ip" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Real client IP
+        Version sort (always DESC, sort_order is ignored — existing behaviour)
       
     </span>
   </a>
@@ -3425,10 +3398,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#breaking-config-change" class="md-nav__link">
+  <a href="#response-shape" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Breaking Config Change
+        Response Shape
       
     </span>
   </a>
@@ -3436,10 +3409,71 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#out-of-scope" class="md-nav__link">
+  <a href="#api-changes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Out of Scope
+        API Changes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="API Changes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#get-updatesapp_idreleases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GET /updates/{app_id}/releases
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-applications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GET /applications
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#layers-changed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Layers Changed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#error-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error Handling
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing
       
     </span>
   </a>
@@ -3518,7 +3552,7 @@
         <a href="./" class="md-path__link">
           
   <span class="md-ellipsis">
-    Proxy Delegation
+    Keyset Pagination
   </span>
 
         </a>
@@ -3540,173 +3574,249 @@
   
 
 
-<h1 id="proxy-delegation-design">Proxy Delegation Design<a class="headerlink" href="#proxy-delegation-design" title="Permanent link">&para;</a></h1>
-<p><strong>Date:</strong> 2026-02-18
+<h1 id="keyset-pagination-design">Keyset Pagination Design<a class="headerlink" href="#keyset-pagination-design" title="Permanent link">&para;</a></h1>
+<p><strong>Date:</strong> 2026-03-07
+<strong>Issue:</strong> <a href="https://github.com/griffinskudder/updater/issues/40">#40</a>
 <strong>Status:</strong> Approved</p>
-<h2 id="problem">Problem<a class="headerlink" href="#problem" title="Permanent link">&para;</a></h2>
-<p>The updater service currently implements CORS, rate limiting, trusted proxy handling, and a JWT secret field in its own application layer. These concerns are better owned by a reverse proxy (nginx, Traefik) that sits in front of the service in every production deployment. Keeping them in the application adds configuration surface, code to maintain, and test coverage obligations without providing value that the proxy layer does not already supply.</p>
+<h2 id="background">Background<a class="headerlink" href="#background" title="Permanent link">&para;</a></h2>
+<p>Both list endpoints (<code>GET /updates/{app_id}/releases</code>, <code>GET /applications</code>) support
+offset-based pagination via <code>limit</code> and <code>offset</code> query parameters. Two gaps remain:</p>
+<ol>
+<li>No server-side maximum limit enforcement — a client can request arbitrarily large pages.</li>
+<li>Offset pagination degrades at scale — <code>LIMIT n OFFSET m</code> requires the database to scan
+   and discard the first <code>m</code> rows on every request.</li>
+</ol>
+<p>Breaking changes to the API are acceptable.</p>
 <h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
-<p>Remove the four features from the application entirely. The service will document which proxy configuration replaces each removed feature and will emit startup warnings if deprecated config keys are still present in the YAML.</p>
-<h2 id="scope">Scope<a class="headerlink" href="#scope" title="Permanent link">&para;</a></h2>
-<h3 id="removed-from-the-application">Removed from the application<a class="headerlink" href="#removed-from-the-application" title="Permanent link">&para;</a></h3>
+<p>Replace offset pagination with keyset (cursor) pagination on both list endpoints. Enforce
+a maximum page size of 500, returning 400 if exceeded.</p>
+<h2 id="max-limit-enforcement">Max Limit Enforcement<a class="headerlink" href="#max-limit-enforcement" title="Permanent link">&para;</a></h2>
+<p>A constant <code>MaxPageSize = 500</code> is added to the <code>models</code> package. Both
+<code>ListReleasesRequest.Validate()</code> and the new <code>ListApplicationsRequest.Validate()</code> return a
+400 error if <code>Limit &gt; MaxPageSize</code>. The default limit (when unset) remains 50.</p>
+<h2 id="cursor-design">Cursor Design<a class="headerlink" href="#cursor-design" title="Permanent link">&para;</a></h2>
+<p>Cursors are opaque base64-encoded JSON strings. They are produced by the server and consumed
+by clients as-is. Clients must not construct or modify cursors.</p>
+<p>No HMAC signing is applied. All cursor values are parameterised query arguments (no SQL
+injection risk), <code>application_id</code> is taken from the URL path (no cross-app leakage), and the
+cursor encodes only values already present in the response body (no information disclosure).
+Cursor tampering produces unexpected page boundaries but no security violation.</p>
+<h3 id="release-cursor">Release cursor<a class="headerlink" href="#release-cursor" title="Permanent link">&para;</a></h3>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">&quot;sort_by&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;release_date&quot;</span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">&quot;sort_order&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;desc&quot;</span><span class="p">,</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;uuid&gt;&quot;</span><span class="p">,</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span><span class="nt">&quot;release_date&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;RFC3339&gt;&quot;</span><span class="p">,</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">  </span><span class="nt">&quot;version_major&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">  </span><span class="nt">&quot;version_minor&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">  </span><span class="nt">&quot;version_patch&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">  </span><span class="nt">&quot;version_is_stable&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">  </span><span class="nt">&quot;version_pre_release&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">  </span><span class="nt">&quot;platform&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">  </span><span class="nt">&quot;architecture&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">  </span><span class="nt">&quot;created_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;RFC3339&gt;&quot;</span>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="p">}</span>
+</span></code></pre></div>
+<p>All sort-field values are always encoded. Only the field matching <code>sort_by</code> is used for the
+keyset comparison; the rest are zero values. The cursor is validated against the current
+request's <code>sort_by</code> and <code>sort_order</code> — a mismatch returns 400.</p>
+<h3 id="application-cursor">Application cursor<a class="headerlink" href="#application-cursor" title="Permanent link">&para;</a></h3>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">{</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">&quot;created_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;RFC3339&gt;&quot;</span><span class="p">,</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;string&gt;&quot;</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="p">}</span>
+</span></code></pre></div>
+<p>Applications are sorted by <code>created_at DESC, id DESC</code>.</p>
+<h2 id="keyset-where-clause">Keyset WHERE Clause<a class="headerlink" href="#keyset-where-clause" title="Permanent link">&para;</a></h2>
+<p>The dynamic SQL builder in each storage implementation appends a keyset condition to the
+existing WHERE clause when a cursor is present. The condition is parameterised.</p>
+<h3 id="scalar-sort-fields-release_date-platform-architecture-created_at">Scalar sort fields (release_date, platform, architecture, created_at)<a class="headerlink" href="#scalar-sort-fields-release_date-platform-architecture-created_at" title="Permanent link">&para;</a></h3>
+<p>For <code>sort_order=desc</code>:
+<div class="language-sql highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">AND</span><span class="w"> </span><span class="p">((</span><span class="n">col</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="err">$</span><span class="n">cursor_val</span><span class="p">)</span><span class="w"> </span><span class="k">OR</span><span class="w"> </span><span class="p">(</span><span class="n">col</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">$</span><span class="n">cursor_val</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="err">$</span><span class="n">cursor_id</span><span class="p">))</span>
+</span></code></pre></div></p>
+<p>For <code>sort_order=asc</code>:
+<div class="language-sql highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">AND</span><span class="w"> </span><span class="p">((</span><span class="n">col</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="err">$</span><span class="n">cursor_val</span><span class="p">)</span><span class="w"> </span><span class="k">OR</span><span class="w"> </span><span class="p">(</span><span class="n">col</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">$</span><span class="n">cursor_val</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="err">$</span><span class="n">cursor_id</span><span class="p">))</span>
+</span></code></pre></div></p>
+<h3 id="version-sort-always-desc-sort_order-is-ignored-existing-behaviour">Version sort (always DESC, sort_order is ignored — existing behaviour)<a class="headerlink" href="#version-sort-always-desc-sort_order-is-ignored-existing-behaviour" title="Permanent link">&para;</a></h3>
+<p>Version ordering uses the stored numeric columns. The keyset condition uses the expanded
+multi-condition form to handle mixed sort directions within the composite key:</p>
+<div class="language-sql highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">AND</span><span class="w"> </span><span class="p">(</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="n">version_major</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="err">$</span><span class="n">c_major</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span><span class="k">OR</span><span class="w"> </span><span class="p">(</span><span class="n">version_major</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">$</span><span class="n">c_major</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">version_minor</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="err">$</span><span class="n">c_minor</span><span class="p">)</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span><span class="k">OR</span><span class="w"> </span><span class="p">(</span><span class="n">version_major</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">$</span><span class="n">c_major</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">version_minor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">$</span><span class="n">c_minor</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">version_patch</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="err">$</span><span class="n">c_patch</span><span class="p">)</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">  </span><span class="k">OR</span><span class="w"> </span><span class="p">(</span><span class="n">version_major</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">$</span><span class="n">c_major</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">version_minor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">$</span><span class="n">c_minor</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">version_patch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">$</span><span class="n">c_patch</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">      </span><span class="k">AND</span><span class="w"> </span><span class="n">is_stable</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="err">$</span><span class="n">c_is_stable</span><span class="p">)</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">  </span><span class="k">OR</span><span class="w"> </span><span class="p">(</span><span class="n">version_major</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">$</span><span class="n">c_major</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">version_minor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">$</span><span class="n">c_minor</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">version_patch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">$</span><span class="n">c_patch</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">      </span><span class="k">AND</span><span class="w"> </span><span class="n">is_stable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">$</span><span class="n">c_is_stable</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">      </span><span class="k">AND</span><span class="w"> </span><span class="k">COALESCE</span><span class="p">(</span><span class="n">version_pre_release</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="err">$</span><span class="n">c_pre_release</span><span class="p">)</span>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">  </span><span class="k">OR</span><span class="w"> </span><span class="p">(</span><span class="n">version_major</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">$</span><span class="n">c_major</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">version_minor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">$</span><span class="n">c_minor</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">version_patch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">$</span><span class="n">c_patch</span>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">      </span><span class="k">AND</span><span class="w"> </span><span class="n">is_stable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">$</span><span class="n">c_is_stable</span>
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">      </span><span class="k">AND</span><span class="w"> </span><span class="k">COALESCE</span><span class="p">(</span><span class="n">version_pre_release</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">$</span><span class="n">c_pre_release</span>
+</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="w">      </span><span class="k">AND</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="err">$</span><span class="n">c_id</span><span class="p">)</span>
+</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="p">)</span>
+</span></code></pre></div>
+<p>Where <code>is_stable</code> is <code>CASE WHEN version_pre_release IS NULL THEN 1 ELSE 0 END</code>.</p>
+<h2 id="response-shape">Response Shape<a class="headerlink" href="#response-shape" title="Permanent link">&para;</a></h2>
+<p>Both list responses adopt the same pagination envelope. <code>page</code>, <code>page_size</code>, and <code>has_more</code>
+are removed. <code>next_cursor</code> is added.</p>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="p">{</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="nt">&quot;releases&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">],</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">  </span><span class="nt">&quot;total_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">42</span><span class="p">,</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">  </span><span class="nt">&quot;next_cursor&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;opaque string&gt;&quot;</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="p">}</span>
+</span></code></pre></div>
+<p><code>next_cursor</code> is populated whenever more results exist (including the first page).
+<code>next_cursor</code> is an empty string when the result set is exhausted.</p>
+<p><code>total_count</code> is retained and continues to use <code>COUNT(*) OVER()</code> — it reflects the total
+number of rows matching the filters, independent of the cursor.</p>
+<h2 id="api-changes">API Changes<a class="headerlink" href="#api-changes" title="Permanent link">&para;</a></h2>
+<h3 id="get-updatesapp_idreleases">GET /updates/{app_id}/releases<a class="headerlink" href="#get-updatesapp_idreleases" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
-<th>Feature</th>
-<th>Location</th>
-<th>Notes</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>CORSConfig</code> type + <code>server.cors</code> block</td>
-<td><code>internal/models/config.go</code></td>
-<td>Proxy sets <code>Access-Control-Allow-*</code> headers</td>
-</tr>
-<tr>
-<td><code>RateLimitConfig</code> type + <code>security.rate_limit</code> block</td>
-<td><code>internal/models/config.go</code></td>
-<td>Proxy enforces request limits</td>
-</tr>
-<tr>
-<td><code>SecurityConfig.TrustedProxies</code></td>
-<td><code>internal/models/config.go</code></td>
-<td>Proxy is unconditionally trusted</td>
-</tr>
-<tr>
-<td><code>SecurityConfig.JWTSecret</code></td>
-<td><code>internal/models/config.go</code></td>
-<td>Unused in the current codebase</td>
-</tr>
-<tr>
-<td><code>corsMiddleware</code> + <code>WithRateLimiter</code> wiring</td>
-<td><code>internal/api/routes.go</code></td>
-<td>~30 lines</td>
-</tr>
-<tr>
-<td><code>internal/ratelimit/</code> package</td>
-<td>entire directory</td>
-<td><code>limiter.go</code>, <code>memory.go</code>, <code>middleware.go</code> + tests</td>
-</tr>
-<tr>
-<td>Rate limiter wiring</td>
-<td><code>cmd/updater/updater.go</code></td>
-<td>~8 lines</td>
-</tr>
-<tr>
-<td>CORS + rate limit tests</td>
-<td><code>internal/api/security_test.go</code>, <code>internal/models/config_test.go</code></td>
-<td>Remove only the cases for removed features</td>
-</tr>
-</tbody>
-</table>
-<h3 id="unchanged">Unchanged<a class="headerlink" href="#unchanged" title="Permanent link">&para;</a></h3>
-<ul>
-<li>API key authentication (<code>authMiddleware</code>, <code>OptionalAuth</code>)</li>
-<li>Permission enforcement (<code>RequirePermission</code>, read/write/admin hierarchy)</li>
-<li>Admin cookie session middleware (<code>adminSessionMiddleware</code>)</li>
-<li><code>EnableAuth</code> config toggle</li>
-<li>All HTTP handlers, OpenAPI spec, request/response models</li>
-<li>Logging middleware, panic recovery middleware</li>
-</ul>
-<h2 id="deprecation-warning">Deprecation Warning<a class="headerlink" href="#deprecation-warning" title="Permanent link">&para;</a></h2>
-<p>On startup, <code>LoadConfig</code> will perform a second decode into a <code>deprecatedConfig</code> struct that retains the old fields:</p>
-<div class="language-go highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kd">type</span><span class="w"> </span><span class="nx">deprecatedConfig</span><span class="w"> </span><span class="kd">struct</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="nx">Server</span><span class="w">   </span><span class="kd">struct</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">CORS</span><span class="w"> </span><span class="kd">interface</span><span class="p">{}</span><span class="w"> </span><span class="s">`yaml:&quot;cors&quot;`</span><span class="w"> </span><span class="p">}</span><span class="w">         </span><span class="s">`yaml:&quot;server&quot;`</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="nx">Security</span><span class="w"> </span><span class="kd">struct</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">        </span><span class="nx">JWTSecret</span><span class="w">      </span><span class="kt">string</span><span class="w">      </span><span class="s">`yaml:&quot;jwt_secret&quot;`</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">        </span><span class="nx">TrustedProxies</span><span class="w"> </span><span class="kd">interface</span><span class="p">{}</span><span class="w"> </span><span class="s">`yaml:&quot;trusted_proxies&quot;`</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">        </span><span class="nx">RateLimit</span><span class="w">      </span><span class="kd">interface</span><span class="p">{}</span><span class="w"> </span><span class="s">`yaml:&quot;rate_limit&quot;`</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="s">`yaml:&quot;security&quot;`</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="p">}</span>
-</span></code></pre></div>
-<p>If any field is non-zero, a <code>slog.Warn</code> is emitted naming the offending key and pointing to <code>docs/reverse-proxy.md</code>. The service continues to start normally — no fatal error.</p>
-<h2 id="new-files">New Files<a class="headerlink" href="#new-files" title="Permanent link">&para;</a></h2>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>examples/
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>  nginx/
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    nginx.conf          # TLS termination, CORS, rate limiting, X-Forwarded-For
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    docker-compose.yml  # nginx + updater compose
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>  traefik/
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    docker-compose.yml  # Traefik v3 + updater with CORS middleware, rate limiting, Let&#39;s Encrypt TLS
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>docs/
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>  reverse-proxy.md      # Overview: what the proxy must handle, links to examples
-</span></code></pre></div>
-<h2 id="updated-files">Updated Files<a class="headerlink" href="#updated-files" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>File</th>
+<th>Parameter</th>
 <th>Change</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>docker/nginx/nginx.conf</code></td>
-<td>Add <code>Access-Control-Allow-*</code> headers; update comments</td>
+<td><code>limit</code></td>
+<td>Max 500; 400 if exceeded</td>
 </tr>
 <tr>
-<td><code>examples/config.yaml</code></td>
-<td>Remove <code>cors</code>, <code>jwt_secret</code>, <code>rate_limit</code>, <code>trusted_proxies</code>, stale <code>api_keys</code></td>
+<td><code>offset</code></td>
+<td>Removed</td>
 </tr>
 <tr>
-<td><code>docs/SECURITY.md</code></td>
-<td>Remove CORS and rate limiting sections; add "Proxy Layer" section</td>
-</tr>
-<tr>
-<td><code>docs/ARCHITECTURE.md</code></td>
-<td>Update security features list</td>
-</tr>
-<tr>
-<td><code>mkdocs.yml</code></td>
-<td>Add <code>reverse-proxy.md</code> to nav</td>
-</tr>
-<tr>
-<td><code>internal/models/config.go</code></td>
-<td>Remove four config types/fields and their defaults</td>
-</tr>
-<tr>
-<td><code>internal/models/config_test.go</code></td>
-<td>Remove <code>RateLimitConfig</code> and <code>CORSConfig</code> test cases</td>
-</tr>
-<tr>
-<td><code>internal/api/routes.go</code></td>
-<td>Remove <code>corsMiddleware</code>, <code>WithRateLimiter</code>; remove CORS opt-in block</td>
-</tr>
-<tr>
-<td><code>internal/api/security_test.go</code></td>
-<td>Remove CORS header assertion tests</td>
-</tr>
-<tr>
-<td><code>cmd/updater/updater.go</code></td>
-<td>Remove <code>ratelimit</code> import and limiter construction</td>
-</tr>
-<tr>
-<td><code>internal/config/</code></td>
-<td>Add <code>checkDeprecatedKeys</code> function</td>
+<td><code>after</code></td>
+<td>New — opaque cursor string</td>
 </tr>
 </tbody>
 </table>
-<h2 id="proxy-responsibilities">Proxy Responsibilities<a class="headerlink" href="#proxy-responsibilities" title="Permanent link">&para;</a></h2>
-<h3 id="cors">CORS<a class="headerlink" href="#cors" title="Permanent link">&para;</a></h3>
-<p>nginx sets <code>Access-Control-Allow-*</code> response headers on all proxied requests. The service no longer handles preflight OPTIONS responses for CORS purposes (the existing OPTIONS handler for unknown routes returns 204 and is unrelated to CORS).</p>
-<h3 id="rate-limiting">Rate limiting<a class="headerlink" href="#rate-limiting" title="Permanent link">&para;</a></h3>
-<p>nginx uses two <code>limit_req_zone</code> zones keyed on <code>$binary_remote_addr</code> to approximate the app's two-tier behaviour:</p>
+<h3 id="get-applications">GET /applications<a class="headerlink" href="#get-applications" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Change</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>limit</code></td>
+<td>Max 500; 400 if exceeded</td>
+</tr>
+<tr>
+<td><code>offset</code></td>
+<td>Removed</td>
+</tr>
+<tr>
+<td><code>after</code></td>
+<td>New — opaque cursor string</td>
+</tr>
+</tbody>
+</table>
+<h2 id="layers-changed">Layers Changed<a class="headerlink" href="#layers-changed" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Change</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>internal/models/request.go</code></td>
+<td>Add <code>MaxPageSize</code>; add <code>After</code> to <code>ListReleasesRequest</code>; add <code>ListApplicationsRequest</code></td>
+</tr>
+<tr>
+<td><code>internal/models/response.go</code></td>
+<td>Drop <code>Page</code>, <code>PageSize</code>, <code>HasMore</code>; add <code>NextCursor</code> to both list responses</td>
+</tr>
+<tr>
+<td><code>internal/models/cursor.go</code></td>
+<td>New file — <code>ReleaseCursor</code> and <code>ApplicationCursor</code> structs with encode/decode</td>
+</tr>
+<tr>
+<td><code>internal/update/service.go</code></td>
+<td>Decode cursor; build <code>NextCursor</code> from last result; change <code>ListApplications</code> signature</td>
+</tr>
+<tr>
+<td><code>internal/update/interface.go</code></td>
+<td>Update <code>ListApplications</code> signature</td>
+</tr>
+<tr>
+<td><code>internal/storage/interface.go</code></td>
+<td>Replace <code>offset int</code> with cursor params on both paged methods</td>
+</tr>
+<tr>
+<td><code>internal/storage/postgres.go</code></td>
+<td>Extend dynamic SQL builder with keyset WHERE</td>
+</tr>
+<tr>
+<td><code>internal/storage/sqlite.go</code></td>
+<td>Extend dynamic SQL builder with keyset WHERE</td>
+</tr>
+<tr>
+<td><code>internal/storage/memory.go</code></td>
+<td>Cursor-based slicing in Go</td>
+</tr>
+<tr>
+<td><code>internal/api/handlers.go</code></td>
+<td>Parse <code>after</code> param; remove <code>offset</code> parsing</td>
+</tr>
+<tr>
+<td><code>internal/api/handlers_applications.go</code></td>
+<td>Use <code>ListApplicationsRequest</code></td>
+</tr>
+<tr>
+<td><code>internal/api/openapi/openapi.yaml</code></td>
+<td>Update both list endpoints</td>
+</tr>
+</tbody>
+</table>
+<h2 id="error-handling">Error Handling<a class="headerlink" href="#error-handling" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Condition</th>
+<th>Status</th>
+<th>Code</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>limit &gt; 500</code></td>
+<td>422</td>
+<td><code>VALIDATION_ERROR</code></td>
+</tr>
+<tr>
+<td><code>limit &lt; 0</code></td>
+<td>422</td>
+<td><code>VALIDATION_ERROR</code></td>
+</tr>
+<tr>
+<td>Cursor malformed (bad base64 or JSON)</td>
+<td>422</td>
+<td><code>VALIDATION_ERROR</code></td>
+</tr>
+<tr>
+<td>Cursor <code>sort_by</code>/<code>sort_order</code> mismatch with request</td>
+<td>422</td>
+<td><code>VALIDATION_ERROR</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="testing">Testing<a class="headerlink" href="#testing" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Anonymous zone: lower rate (equivalent to the former <code>requests_per_minute</code> / <code>burst_size</code>)</li>
-<li>A separate zone for the <code>/api/</code> path at a higher rate reflects the former <code>authenticated_requests_per_minute</code></li>
-</ul>
-<p>A true per-key authenticated rate limit requires custom logic (e.g., <code>auth_request</code> + Redis) and is out of scope.</p>
-<h3 id="tls">TLS<a class="headerlink" href="#tls" title="Permanent link">&para;</a></h3>
-<p>Both nginx and Traefik examples terminate TLS externally and forward plain HTTP to the service on port 8080.</p>
-<h3 id="real-client-ip">Real client IP<a class="headerlink" href="#real-client-ip" title="Permanent link">&para;</a></h3>
-<p><code>X-Forwarded-For</code> and <code>X-Real-IP</code> are forwarded by the proxy. The service's request logging reads <code>r.RemoteAddr</code> which will be the proxy's IP. If real client IPs are needed in logs, handlers should read <code>X-Real-IP</code>. This is a known trade-off — no logging change is in scope for this PR.</p>
-<h2 id="breaking-config-change">Breaking Config Change<a class="headerlink" href="#breaking-config-change" title="Permanent link">&para;</a></h2>
-<p>Operators using <code>server.cors</code>, <code>security.rate_limit</code>, <code>security.jwt_secret</code>, or <code>security.trusted_proxies</code> in their YAML files will see startup warnings but no crash. They should migrate those concerns to their reverse proxy and remove the deprecated keys from their config.</p>
-<h2 id="out-of-scope">Out of Scope<a class="headerlink" href="#out-of-scope" title="Permanent link">&para;</a></h2>
-<ul>
-<li>Updating request logging to use the forwarded real IP</li>
-<li>Distributed rate limiting (Redis-backed) for HA deployments — this is tracked in roadmap item 3.2</li>
-<li>Multi-tenancy changes</li>
+<li><strong>Cursor</strong>: encode/decode round-trip; mismatch detection; malformed input returns error</li>
+<li><strong>Models</strong>: <code>ListApplicationsRequest</code> Validate/Normalize; max limit on both request types</li>
+<li><strong>Storage</strong>: keyset correctness for each of the 5 release sort fields and application
+  <code>created_at</code>; no duplicates or gaps across pages; empty cursor returns first page; cursor
+  from last item produces empty next page</li>
+<li><strong>Service</strong>: <code>NextCursor</code> populated when results remain; empty on last page; cursor
+  validated before storage call</li>
+<li><strong>Handler</strong>: 422 on <code>limit &gt; 500</code>; 422 on malformed cursor; updated response shape</li>
 </ul>
 
 
