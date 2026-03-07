@@ -120,8 +120,8 @@ func (m *MockUpdateService) GetApplication(ctx context.Context, id string) (*mod
 	return args.Get(0).(*models.ApplicationInfoResponse), args.Error(1)
 }
 
-func (m *MockUpdateService) ListApplications(ctx context.Context, limit, offset int) (*models.ListApplicationsResponse, error) {
-	args := m.Called(ctx, limit, offset)
+func (m *MockUpdateService) ListApplications(ctx context.Context, req *models.ListApplicationsRequest) (*models.ListApplicationsResponse, error) {
+	args := m.Called(ctx, req)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}

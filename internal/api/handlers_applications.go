@@ -81,24 +81,23 @@ func (h *Handlers) GetApplication(w http.ResponseWriter, r *http.Request) {
 // ListApplications handles application listing requests
 // GET /api/v1/applications
 func (h *Handlers) ListApplications(w http.ResponseWriter, r *http.Request) {
-	// Parse limit and offset with defaults
-	limit := 50
-	offset := 0
-
+	// Parse limit from query parameter; 0 means use default
+	var limit int
 	if limitParam := r.URL.Query().Get("limit"); limitParam != "" {
-		if parsed, err := strconv.Atoi(limitParam); err == nil && parsed > 0 {
+		if parsed, err := strconv.Atoi(limitParam); err == nil {
 			limit = parsed
 		}
 	}
 
-	if offsetParam := r.URL.Query().Get("offset"); offsetParam != "" {
-		if parsed, err := strconv.Atoi(offsetParam); err == nil && parsed >= 0 {
-			offset = parsed
-		}
+	after := r.URL.Query().Get("after")
+
+	req := &models.ListApplicationsRequest{
+		Limit: limit,
+		After: after,
 	}
 
 	// List applications
-	response, err := h.updateService.ListApplications(r.Context(), limit, offset)
+	response, err := h.updateService.ListApplications(r.Context(), req)
 	if err != nil {
 		h.writeServiceErrorResponse(w, err)
 		return

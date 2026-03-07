@@ -182,6 +182,18 @@ func (s *Service) ListReleases(ctx context.Context, req *models.ListReleasesRequ
 	}
 	req.Normalize()
 
+	var cursor *models.ReleaseCursor
+	if req.After != "" {
+		var err error
+		cursor, err = models.DecodeReleaseCursor(req.After)
+		if err != nil {
+			return nil, NewValidationError("invalid cursor", err)
+		}
+		if cursor.SortBy != req.SortBy || cursor.SortOrder != req.SortOrder {
+			return nil, NewValidationError("cursor sort_by/sort_order mismatch", nil)
+		}
+	}
+
 	filters := models.ReleaseFilters{
 		Architecture: req.Architecture,
 		Version:      req.Version,
@@ -193,7 +205,7 @@ func (s *Service) ListReleases(ctx context.Context, req *models.ListReleasesRequ
 		filters.Platforms = req.Platforms
 	}
 
-	releases, totalCount, err := s.storage.ListReleasesPaged(ctx, req.ApplicationID, filters, req.SortBy, req.SortOrder, req.Limit, nil)
+	releases, totalCount, err := s.storage.ListReleasesPaged(ctx, req.ApplicationID, filters, req.SortBy, req.SortOrder, req.Limit, cursor)
 	if err != nil {
 		return nil, NewInternalError("failed to get releases", err)
 	}
@@ -203,10 +215,33 @@ func (s *Service) ListReleases(ctx context.Context, req *models.ListReleasesRequ
 		releaseInfos[i].FromRelease(release)
 	}
 
+	var nextCursor string
+	if len(releases) > 0 && len(releases) < totalCount {
+		last := releases[len(releases)-1]
+		sv, err := semver.NewVersion(last.Version)
+		if err == nil {
+			c := &models.ReleaseCursor{
+				SortBy:            req.SortBy,
+				SortOrder:         req.SortOrder,
+				ID:                last.ID,
+				ReleaseDate:       last.ReleaseDate,
+				VersionMajor:      int64(sv.Major()),
+				VersionMinor:      int64(sv.Minor()),
+				VersionPatch:      int64(sv.Patch()),
+				VersionIsStable:   sv.Prerelease() == "",
+				VersionPreRelease: sv.Prerelease(),
+				Platform:          last.Platform,
+				Architecture:      last.Architecture,
+				CreatedAt:         last.CreatedAt,
+			}
+			nextCursor, _ = c.Encode()
+		}
+	}
+
 	return &models.ListReleasesResponse{
 		Releases:   releaseInfos,
 		TotalCount: totalCount,
-		NextCursor: "",
+		NextCursor: nextCursor,
 	}, nil
 }
 
@@ -325,12 +360,22 @@ func (s *Service) GetApplication(ctx context.Context, appID string) (*models.App
 }
 
 // ListApplications returns a paginated list of applications.
-func (s *Service) ListApplications(ctx context.Context, limit, offset int) (*models.ListApplicationsResponse, error) {
-	if limit <= 0 {
-		limit = 50
+func (s *Service) ListApplications(ctx context.Context, req *models.ListApplicationsRequest) (*models.ListApplicationsResponse, error) {
+	if err := req.Validate(); err != nil {
+		return nil, NewValidationError("invalid request", err)
+	}
+	req.Normalize()
+
+	var cursor *models.ApplicationCursor
+	if req.After != "" {
+		var err error
+		cursor, err = models.DecodeApplicationCursor(req.After)
+		if err != nil {
+			return nil, NewValidationError("invalid cursor", err)
+		}
 	}
 
-	apps, totalCount, err := s.storage.ListApplicationsPaged(ctx, limit, nil)
+	apps, totalCount, err := s.storage.ListApplicationsPaged(ctx, req.Limit, cursor)
 	if err != nil {
 		return nil, NewInternalError("failed to list applications", err)
 	}
@@ -342,10 +387,21 @@ func (s *Service) ListApplications(ctx context.Context, limit, offset int) (*mod
 		summaries[i].UpdatedAt, _ = time.Parse(time.RFC3339, app.UpdatedAt)
 	}
 
+	var nextCursor string
+	if len(apps) > 0 && len(apps) < totalCount {
+		last := apps[len(apps)-1]
+		createdAt, _ := time.Parse(time.RFC3339, last.CreatedAt)
+		c := &models.ApplicationCursor{
+			CreatedAt: createdAt,
+			ID:        last.ID,
+		}
+		nextCursor, _ = c.Encode()
+	}
+
 	return &models.ListApplicationsResponse{
 		Applications: summaries,
 		TotalCount:   totalCount,
-		NextCursor:   "",
+		NextCursor:   nextCursor,
 	}, nil
 }
 

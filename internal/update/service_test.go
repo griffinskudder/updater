@@ -866,15 +866,13 @@ func TestService_ListApplications(t *testing.T) {
 	tests := []struct {
 		name        string
 		setup       func(*MockStorage)
-		limit       int
-		offset      int
+		req         *models.ListApplicationsRequest
 		checkResult func(*testing.T, *models.ListApplicationsResponse)
 	}{
 		{
-			name:   "empty list",
-			setup:  func(m *MockStorage) {},
-			limit:  50,
-			offset: 0,
+			name:  "empty list",
+			setup: func(m *MockStorage) {},
+			req:   &models.ListApplicationsRequest{Limit: 50},
 			checkResult: func(t *testing.T, resp *models.ListApplicationsResponse) {
 				assert.Len(t, resp.Applications, 0)
 				assert.Equal(t, 0, resp.TotalCount)
@@ -891,15 +889,14 @@ func TestService_ListApplications(t *testing.T) {
 					m.applications[id] = app
 				}
 			},
-			limit:  50,
-			offset: 0,
+			req: &models.ListApplicationsRequest{Limit: 50},
 			checkResult: func(t *testing.T, resp *models.ListApplicationsResponse) {
 				assert.Len(t, resp.Applications, 3)
 				assert.Equal(t, 3, resp.TotalCount)
 			},
 		},
 		{
-			name: "pagination - first page",
+			name: "pagination - first page returns next_cursor",
 			setup: func(m *MockStorage) {
 				for i := 0; i < 5; i++ {
 					id := fmt.Sprintf("app-%d", i)
@@ -909,17 +906,17 @@ func TestService_ListApplications(t *testing.T) {
 					m.applications[id] = app
 				}
 			},
-			limit:  2,
-			offset: 0,
+			req: &models.ListApplicationsRequest{Limit: 2},
 			checkResult: func(t *testing.T, resp *models.ListApplicationsResponse) {
 				assert.Len(t, resp.Applications, 2)
 				assert.Equal(t, 5, resp.TotalCount)
+				assert.NotEmpty(t, resp.NextCursor)
 			},
 		},
 		{
-			name: "pagination - second page",
+			name: "pagination - last page has no next_cursor",
 			setup: func(m *MockStorage) {
-				for i := 0; i < 5; i++ {
+				for i := 0; i < 3; i++ {
 					id := fmt.Sprintf("app-%d", i)
 					app := models.NewApplication(id, fmt.Sprintf("App %d", i), []string{"windows"})
 					app.CreatedAt = "2025-01-01T00:00:00Z"
@@ -927,11 +924,11 @@ func TestService_ListApplications(t *testing.T) {
 					m.applications[id] = app
 				}
 			},
-			limit:  2,
-			offset: 2,
+			req: &models.ListApplicationsRequest{Limit: 50},
 			checkResult: func(t *testing.T, resp *models.ListApplicationsResponse) {
-				assert.Len(t, resp.Applications, 2)
-				assert.Equal(t, 5, resp.TotalCount)
+				assert.Len(t, resp.Applications, 3)
+				assert.Equal(t, 3, resp.TotalCount)
+				assert.Empty(t, resp.NextCursor)
 			},
 		},
 		{
@@ -942,11 +939,21 @@ func TestService_ListApplications(t *testing.T) {
 				app.UpdatedAt = "2025-01-01T00:00:00Z"
 				m.applications["app-1"] = app
 			},
-			limit:  0,
-			offset: 0,
+			req: &models.ListApplicationsRequest{Limit: 0},
 			checkResult: func(t *testing.T, resp *models.ListApplicationsResponse) {
 				assert.Len(t, resp.Applications, 1)
 			},
+		},
+		{
+			name: "invalid cursor returns validation error",
+			setup: func(m *MockStorage) {
+				app := models.NewApplication("app-1", "App 1", []string{"windows"})
+				app.CreatedAt = "2025-01-01T00:00:00Z"
+				app.UpdatedAt = "2025-01-01T00:00:00Z"
+				m.applications["app-1"] = app
+			},
+			req: &models.ListApplicationsRequest{Limit: 10, After: "not-a-valid-cursor"},
+			checkResult: nil,
 		},
 	}
 
@@ -957,7 +964,12 @@ func TestService_ListApplications(t *testing.T) {
 			service := NewService(mockStorage)
 			ctx := context.Background()
 
-			resp, err := service.ListApplications(ctx, tt.limit, tt.offset)
+			resp, err := service.ListApplications(ctx, tt.req)
+			if tt.req.After != "" && tt.checkResult == nil {
+				// Expect a validation error for invalid cursor tests
+				require.Error(t, err)
+				return
+			}
 			require.NoError(t, err)
 			require.NotNil(t, resp)
 			if tt.checkResult != nil {
