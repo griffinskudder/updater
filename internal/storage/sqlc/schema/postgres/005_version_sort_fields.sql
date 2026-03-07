@@ -1,3 +1,5 @@
+-- Add version sort columns for SQL-level semver ordering
+
 ALTER TABLE releases ADD COLUMN version_major      INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE releases ADD COLUMN version_minor      INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE releases ADD COLUMN version_patch      INTEGER NOT NULL DEFAULT 0;
@@ -14,5 +16,5 @@ UPDATE releases SET
     )
 WHERE version ~ '^\d+\.\d+\.\d+';
 
-CREATE INDEX idx_releases_version_sort
+CREATE INDEX IF NOT EXISTS idx_releases_version_sort
     ON releases(application_id, version_major DESC, version_minor DESC, version_patch DESC);
