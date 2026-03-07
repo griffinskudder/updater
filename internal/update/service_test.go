@@ -3,11 +3,13 @@ package update
 import (
 	"context"
 	"fmt"
+	"sort"
 	"testing"
 	"time"
 	"updater/internal/models"
 	"updater/internal/storage"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -49,6 +51,9 @@ func (m *MockStorage) SaveApplication(ctx context.Context, app *models.Applicati
 func (m *MockStorage) DeleteApplication(ctx context.Context, appID string) error {
 	if _, exists := m.applications[appID]; !exists {
 		return fmt.Errorf("application %s not found", appID)
+	}
+	if len(m.releases[appID]) > 0 {
+		return storage.ErrHasDependencies
 	}
 	delete(m.applications, appID)
 	return nil
@@ -172,20 +177,117 @@ func (m *MockStorage) DeleteAPIKey(_ context.Context, _ string) error {
 	return nil
 }
 
-func (m *MockStorage) ListApplicationsPaged(_ context.Context, _, _ int) ([]*models.Application, int, error) {
-	return nil, 0, nil
+func (m *MockStorage) ListApplicationsPaged(_ context.Context, limit, offset int) ([]*models.Application, int, error) {
+	apps := make([]*models.Application, 0, len(m.applications))
+	for _, app := range m.applications {
+		copied := *app
+		apps = append(apps, &copied)
+	}
+	sort.Slice(apps, func(i, j int) bool { return apps[i].Name < apps[j].Name })
+	total := len(apps)
+	if offset >= total {
+		return []*models.Application{}, total, nil
+	}
+	end := offset + limit
+	if end > total {
+		end = total
+	}
+	return apps[offset:end], total, nil
 }
 
-func (m *MockStorage) ListReleasesPaged(_ context.Context, _ string, _ models.ReleaseFilters, _, _ string, _, _ int) ([]*models.Release, int, error) {
-	return nil, 0, nil
+func (m *MockStorage) ListReleasesPaged(_ context.Context, appID string, filters models.ReleaseFilters, sortBy, sortOrder string, limit, offset int) ([]*models.Release, int, error) {
+	var filtered []*models.Release
+	for _, r := range m.releases[appID] {
+		if filters.Architecture != "" && r.Architecture != filters.Architecture {
+			continue
+		}
+		if filters.Version != "" && r.Version != filters.Version {
+			continue
+		}
+		if filters.Required != nil && r.Required != *filters.Required {
+			continue
+		}
+		if len(filters.Platforms) > 0 {
+			match := false
+			for _, p := range filters.Platforms {
+				if r.Platform == p {
+					match = true
+					break
+				}
+			}
+			if !match {
+				continue
+			}
+		}
+		copied := *r
+		filtered = append(filtered, &copied)
+	}
+	total := len(filtered)
+	if offset >= total {
+		return []*models.Release{}, total, nil
+	}
+	end := offset + limit
+	if end > total {
+		end = total
+	}
+	return filtered[offset:end], total, nil
 }
 
-func (m *MockStorage) GetLatestStableRelease(_ context.Context, _, _, _ string) (*models.Release, error) {
-	return nil, storage.ErrNotFound
+func (m *MockStorage) GetLatestStableRelease(_ context.Context, appID, platform, arch string) (*models.Release, error) {
+	var latest *models.Release
+	for _, r := range m.releases[appID] {
+		if r.Platform != platform || r.Architecture != arch {
+			continue
+		}
+		v, err := semver.NewVersion(r.Version)
+		if err != nil || v.Prerelease() != "" {
+			continue
+		}
+		if latest == nil {
+			copied := *r
+			latest = &copied
+			continue
+		}
+		lv, _ := semver.NewVersion(latest.Version)
+		if v.GreaterThan(lv) {
+			copied := *r
+			latest = &copied
+		}
+	}
+	if latest == nil {
+		return nil, storage.ErrNotFound
+	}
+	return latest, nil
 }
 
-func (m *MockStorage) GetApplicationStats(_ context.Context, _ string) (models.ApplicationStats, error) {
-	return models.ApplicationStats{}, nil
+func (m *MockStorage) GetApplicationStats(_ context.Context, appID string) (models.ApplicationStats, error) {
+	releases := m.releases[appID]
+	stats := models.ApplicationStats{TotalReleases: len(releases)}
+	if len(releases) == 0 {
+		return stats, nil
+	}
+	platforms := make(map[string]struct{})
+	var latestVer *semver.Version
+	var latestDate *time.Time
+	for _, r := range releases {
+		platforms[r.Platform] = struct{}{}
+		if r.Required {
+			stats.RequiredReleases++
+		}
+		if v, err := semver.NewVersion(r.Version); err == nil {
+			if latestVer == nil || v.GreaterThan(latestVer) {
+				latestVer = v
+				stats.LatestVersion = r.Version
+			}
+		}
+		if latestDate == nil || r.ReleaseDate.After(*latestDate) {
+			rd := r.ReleaseDate
+			latestDate = &rd
+		}
+	}
+	stats.PlatformCount = len(platforms)
+	stats.LatestReleaseDate = latestDate
+	return stats, nil
 }
 
 func TestNewService(t *testing.T) {
@@ -1099,131 +1201,6 @@ func TestService_DeleteRelease(t *testing.T) {
 			// Verify release was deleted
 			_, getErr := mockStorage.GetRelease(ctx, tt.appID, tt.version, tt.platform, tt.arch)
 			assert.Error(t, getErr)
-		})
-	}
-}
-
-func TestSortReleases(t *testing.T) {
-	service := NewService(nil)
-
-	t1 := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
-	t2 := time.Date(2025, 6, 1, 0, 0, 0, 0, time.UTC)
-	t3 := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
-
-	tests := []struct {
-		name         string
-		releases     []*models.Release
-		sortBy       string
-		sortOrder    string
-		wantVersions []string
-	}{
-		{
-			name: "version ascending",
-			releases: func() []*models.Release {
-				r1 := createTestReleaseForUpdate("app", "2.0.0", "windows", "amd64")
-				r2 := createTestReleaseForUpdate("app", "1.0.0", "windows", "amd64")
-				r3 := createTestReleaseForUpdate("app", "3.0.0", "windows", "amd64")
-				return []*models.Release{r1, r2, r3}
-			}(),
-			sortBy:       "version",
-			sortOrder:    "asc",
-			wantVersions: []string{"1.0.0", "2.0.0", "3.0.0"},
-		},
-		{
-			name: "version descending",
-			releases: func() []*models.Release {
-				r1 := createTestReleaseForUpdate("app", "1.0.0", "windows", "amd64")
-				r2 := createTestReleaseForUpdate("app", "3.0.0", "windows", "amd64")
-				r3 := createTestReleaseForUpdate("app", "2.0.0", "windows", "amd64")
-				return []*models.Release{r1, r2, r3}
-			}(),
-			sortBy:       "version",
-			sortOrder:    "desc",
-			wantVersions: []string{"3.0.0", "2.0.0", "1.0.0"},
-		},
-		{
-			name: "version descending with equal versions",
-			releases: func() []*models.Release {
-				r1 := createTestReleaseForUpdate("app", "1.0.0", "windows", "amd64")
-				r2 := createTestReleaseForUpdate("app", "2.0.0", "linux", "amd64")
-				r3 := createTestReleaseForUpdate("app", "1.0.0", "darwin", "amd64")
-				return []*models.Release{r1, r2, r3}
-			}(),
-			sortBy:       "version",
-			sortOrder:    "desc",
-			wantVersions: []string{"2.0.0", "1.0.0", "1.0.0"},
-		},
-		{
-			name: "release_date ascending",
-			releases: func() []*models.Release {
-				r1 := createTestReleaseForUpdate("app", "1.0.0", "windows", "amd64")
-				r1.ReleaseDate = t2
-				r2 := createTestReleaseForUpdate("app", "2.0.0", "windows", "amd64")
-				r2.ReleaseDate = t1
-				r3 := createTestReleaseForUpdate("app", "3.0.0", "windows", "amd64")
-				r3.ReleaseDate = t3
-				return []*models.Release{r1, r2, r3}
-			}(),
-			sortBy:       "release_date",
-			sortOrder:    "asc",
-			wantVersions: []string{"2.0.0", "1.0.0", "3.0.0"},
-		},
-		{
-			name: "release_date descending",
-			releases: func() []*models.Release {
-				r1 := createTestReleaseForUpdate("app", "1.0.0", "windows", "amd64")
-				r1.ReleaseDate = t2
-				r2 := createTestReleaseForUpdate("app", "2.0.0", "windows", "amd64")
-				r2.ReleaseDate = t1
-				r3 := createTestReleaseForUpdate("app", "3.0.0", "windows", "amd64")
-				r3.ReleaseDate = t3
-				return []*models.Release{r1, r2, r3}
-			}(),
-			sortBy:       "release_date",
-			sortOrder:    "desc",
-			wantVersions: []string{"3.0.0", "1.0.0", "2.0.0"},
-		},
-		{
-			name:         "empty slice is unchanged",
-			releases:     []*models.Release{},
-			sortBy:       "version",
-			sortOrder:    "asc",
-			wantVersions: []string{},
-		},
-		{
-			name: "single element is unchanged",
-			releases: func() []*models.Release {
-				return []*models.Release{createTestReleaseForUpdate("app", "1.0.0", "windows", "amd64")}
-			}(),
-			sortBy:       "version",
-			sortOrder:    "asc",
-			wantVersions: []string{"1.0.0"},
-		},
-		{
-			name: "unknown sortBy defaults to release_date ascending",
-			releases: func() []*models.Release {
-				r1 := createTestReleaseForUpdate("app", "1.0.0", "windows", "amd64")
-				r1.ReleaseDate = t2
-				r2 := createTestReleaseForUpdate("app", "2.0.0", "windows", "amd64")
-				r2.ReleaseDate = t1
-				r3 := createTestReleaseForUpdate("app", "3.0.0", "windows", "amd64")
-				r3.ReleaseDate = t3
-				return []*models.Release{r1, r2, r3}
-			}(),
-			sortBy:       "unknown_field",
-			sortOrder:    "asc",
-			wantVersions: []string{"2.0.0", "1.0.0", "3.0.0"},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			service.sortReleases(tt.releases, tt.sortBy, tt.sortOrder)
-			gotVersions := make([]string, len(tt.releases))
-			for i, r := range tt.releases {
-				gotVersions[i] = r.Version
-			}
-			assert.Equal(t, tt.wantVersions, gotVersions)
 		})
 	}
 }

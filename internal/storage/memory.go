@@ -74,13 +74,18 @@ func (m *MemoryStorage) SaveApplication(ctx context.Context, app *models.Applica
 	return nil
 }
 
-// DeleteApplication removes an application by its ID
+// DeleteApplication removes an application by its ID.
+// Returns ErrHasDependencies if the application has existing releases.
 func (m *MemoryStorage) DeleteApplication(ctx context.Context, appID string) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
 	if _, exists := m.applications[appID]; !exists {
 		return fmt.Errorf("application %s not found", appID)
+	}
+
+	if len(m.releases[appID]) > 0 {
+		return ErrHasDependencies
 	}
 
 	delete(m.applications, appID)
