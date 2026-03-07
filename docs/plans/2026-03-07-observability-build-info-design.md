@@ -50,12 +50,12 @@ create a new time series per instance restart.
 
 ### Implementation
 
-Add a private `registerBuildInfo(ver version.Info) error` method to
-`Provider`. `Setup()` calls it immediately after `p.meterProvider` is
-assigned:
+Add a private `registerBuildInfo(ver version.Info, env string) error` method to
+`Provider`. `Setup()` calls `getEnvironment()` once, then calls `registerBuildInfo`
+immediately after `p.meterProvider` is assigned:
 
 ```go
-func (p *Provider) registerBuildInfo(ver version.Info) error {
+func (p *Provider) registerBuildInfo(ver version.Info, env string) error {
     meter := p.meterProvider.Meter("updater.build")
     gauge, err := meter.Int64ObservableGauge(
         "updater_build_info",
@@ -69,7 +69,7 @@ func (p *Provider) registerBuildInfo(ver version.Info) error {
         attribute.String("version", ver.Version),
         attribute.String("git_commit", ver.GitCommit),
         attribute.String("build_date", ver.BuildDate),
-        attribute.String("environment", getEnvironment()),
+        attribute.String("environment", env),
     )
     _, err = meter.RegisterCallback(
         func(_ context.Context, o metric.Observer) error {
@@ -82,12 +82,16 @@ func (p *Provider) registerBuildInfo(ver version.Info) error {
 }
 ```
 
-`Setup()` propagates the error:
+`Setup()` calls `getEnvironment()` once and passes the result to both
+`resource.WithAttributes` and `registerBuildInfo`:
 
 ```go
-if err := p.registerBuildInfo(ver); err != nil {
+env := getEnvironment()
+// ... resource creation uses env ...
+// registerBuildInfo failure is non-fatal: a missing build_info gauge should
+// not prevent the service from starting.
+if err := p.registerBuildInfo(ver, env); err != nil {
     slog.Warn("failed to register build_info metric", "error", err)
-    // non-fatal: continue without build_info
 }
 ```
 

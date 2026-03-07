@@ -11,6 +11,7 @@ import (
 	"updater/internal/models"
 	"updater/internal/version"
 
+	clientprom "github.com/prometheus/client_golang/prometheus"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
@@ -62,10 +63,33 @@ func (p *Provider) Shutdown(ctx context.Context) error {
 	return nil
 }
 
+// Option configures Setup behavior.
+type Option func(*setupOptions)
+
+type setupOptions struct {
+	prometheusRegisterer clientprom.Registerer
+}
+
+// WithPrometheusRegisterer overrides the Prometheus registerer used for the metrics
+// exporter. Default is prometheus.DefaultRegisterer. Pass a custom registry in tests
+// to avoid polluting the global default registry.
+func WithPrometheusRegisterer(reg clientprom.Registerer) Option {
+	return func(o *setupOptions) {
+		o.prometheusRegisterer = reg
+	}
+}
+
 // Setup initializes OpenTelemetry tracing and metrics providers based on configuration.
 // It returns a Provider that must be shut down on application exit.
-func Setup(metrics models.MetricsConfig, obs models.ObservabilityConfig, ver version.Info) (*Provider, error) {
+func Setup(metrics models.MetricsConfig, obs models.ObservabilityConfig, ver version.Info, opts ...Option) (*Provider, error) {
+	o := &setupOptions{prometheusRegisterer: clientprom.DefaultRegisterer}
+	for _, opt := range opts {
+		opt(o)
+	}
+
 	p := &Provider{}
+
+	env := getEnvironment()
 
 	res, err := resource.New(context.Background(),
 		resource.WithAttributes(
@@ -75,7 +99,7 @@ func Setup(metrics models.MetricsConfig, obs models.ObservabilityConfig, ver ver
 			attribute.String("host.name", ver.Hostname),
 			attribute.String("git.commit", ver.GitCommit),
 			attribute.String("build.date", ver.BuildDate),
-			attribute.String("deployment.environment", getEnvironment()),
+			attribute.String("deployment.environment", env),
 		),
 	)
 	if err != nil {
@@ -94,7 +118,7 @@ func Setup(metrics models.MetricsConfig, obs models.ObservabilityConfig, ver ver
 
 	// Setup metrics with Prometheus exporter
 	if metrics.Enabled {
-		promExporter, err := prometheus.New()
+		promExporter, err := prometheus.New(prometheus.WithRegisterer(o.prometheusRegisterer))
 		if err != nil {
 			return nil, fmt.Errorf("failed to create prometheus exporter: %w", err)
 		}
@@ -107,7 +131,10 @@ func Setup(metrics models.MetricsConfig, obs models.ObservabilityConfig, ver ver
 		p.meterProvider = mp
 		otel.SetMeterProvider(mp)
 
-		if err := p.registerBuildInfo(ver, getEnvironment()); err != nil {
+		// registerBuildInfo failure is non-fatal: a missing build_info gauge should
+		// not prevent the service from starting, unlike resource or exporter failures
+		// which would leave the entire observability stack broken.
+		if err := p.registerBuildInfo(ver, env); err != nil {
 			slog.Warn("failed to register build_info metric", "error", err)
 		}
 	}

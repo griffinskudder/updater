@@ -25,11 +25,26 @@ func TestSetup_MetricsOnly(t *testing.T) {
 		},
 	}
 
-	provider, err := Setup(metrics, obs, version.Info{})
+	reg := prometheus.NewRegistry()
+	provider, err := Setup(metrics, obs, version.Info{}, WithPrometheusRegisterer(reg))
 	require.NoError(t, err)
 	require.NotNil(t, provider)
 	assert.NotNil(t, provider.promExporter)
 	assert.Nil(t, provider.tracerProvider)
+
+	// updater_build_info is registered as a side effect of Setup when metrics are enabled.
+	mfs, err := reg.Gather()
+	require.NoError(t, err)
+	var found bool
+	for _, mf := range mfs {
+		if mf.GetName() == "updater_build_info" {
+			found = true
+			require.Len(t, mf.GetMetric(), 1)
+			assert.InEpsilon(t, 1.0, mf.GetMetric()[0].GetGauge().GetValue(), 0.001)
+			break
+		}
+	}
+	assert.True(t, found, "updater_build_info not found in gathered metrics")
 
 	err = provider.Shutdown(context.Background())
 	assert.NoError(t, err)
@@ -73,11 +88,26 @@ func TestSetup_BothEnabled(t *testing.T) {
 		},
 	}
 
-	provider, err := Setup(metrics, obs, version.Info{})
+	reg := prometheus.NewRegistry()
+	provider, err := Setup(metrics, obs, version.Info{}, WithPrometheusRegisterer(reg))
 	require.NoError(t, err)
 	require.NotNil(t, provider)
 	assert.NotNil(t, provider.tracerProvider)
 	assert.NotNil(t, provider.promExporter)
+
+	// updater_build_info is registered as a side effect of Setup when metrics are enabled.
+	mfs, err := reg.Gather()
+	require.NoError(t, err)
+	var found bool
+	for _, mf := range mfs {
+		if mf.GetName() == "updater_build_info" {
+			found = true
+			require.Len(t, mf.GetMetric(), 1)
+			assert.InEpsilon(t, 1.0, mf.GetMetric()[0].GetGauge().GetValue(), 0.001)
+			break
+		}
+	}
+	assert.True(t, found, "updater_build_info not found in gathered metrics")
 
 	err = provider.Shutdown(context.Background())
 	assert.NoError(t, err)
@@ -174,17 +204,14 @@ func TestSetup_BuildInfoMetric(t *testing.T) {
 		BuildDate: "2026-03-07",
 	}
 
-	provider, err := Setup(metrics, obs, ver)
+	// Use an isolated registry so this test does not touch prometheus.DefaultRegisterer.
+	reg := prometheus.NewRegistry()
+	provider, err := Setup(metrics, obs, ver, WithPrometheusRegisterer(reg))
 	require.NoError(t, err)
 	require.NotNil(t, provider)
 	defer provider.Shutdown(context.Background())
 
-	// The OTel Prometheus exporter registers itself with prometheus.DefaultRegisterer,
-	// so gathering from prometheus.DefaultGatherer will include OTel metrics.
-	// Note: other tests in this package also call Setup(), each registering an
-	// unchecked OTel collector with the default registry. We search for a sample
-	// with our specific label values rather than asserting exactly one sample.
-	mfs, err := prometheus.DefaultGatherer.Gather()
+	mfs, err := reg.Gather()
 	require.NoError(t, err)
 
 	var found *dto.MetricFamily
@@ -195,28 +222,16 @@ func TestSetup_BuildInfoMetric(t *testing.T) {
 		}
 	}
 	require.NotNil(t, found, "metric family updater_build_info not found in gathered metrics")
+	require.Len(t, found.GetMetric(), 1, "expected exactly one updater_build_info sample")
 
-	// Find the sample produced by this test's provider (identified by its label values).
-	var matched *dto.Metric
-	for _, m := range found.GetMetric() {
-		labels := make(map[string]string, len(m.GetLabel()))
-		for _, lp := range m.GetLabel() {
-			labels[lp.GetName()] = lp.GetValue()
-		}
-		if labels["version"] == "v9.9.9" && labels["git_commit"] == "abc123" {
-			matched = m
-			break
-		}
-	}
-	require.NotNil(t, matched, "no updater_build_info sample with version=v9.9.9 git_commit=abc123 found")
-
-	labels := make(map[string]string, len(matched.GetLabel()))
-	for _, lp := range matched.GetLabel() {
+	labels := make(map[string]string, len(found.GetMetric()[0].GetLabel()))
+	for _, lp := range found.GetMetric()[0].GetLabel() {
 		labels[lp.GetName()] = lp.GetValue()
 	}
 	assert.Equal(t, "v9.9.9", labels["version"])
 	assert.Equal(t, "abc123", labels["git_commit"])
 	assert.Equal(t, "2026-03-07", labels["build_date"])
-	assert.NotEmpty(t, labels["environment"])
-	assert.InEpsilon(t, 1.0, matched.GetGauge().GetValue(), 0.001)
+	// getEnvironment() falls back to "development" when no env vars are set.
+	assert.Equal(t, "development", labels["environment"])
+	assert.InEpsilon(t, 1.0, found.GetMetric()[0].GetGauge().GetValue(), 0.001)
 }
