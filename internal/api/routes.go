@@ -245,7 +245,7 @@ func authMiddleware(store storage.Storage) mux.MiddlewareFunc {
 				json.NewEncoder(w).Encode(errorResp)
 				return
 			}
-			ctx := context.WithValue(r.Context(), "api_key", validKey)
+			ctx := context.WithValue(r.Context(), apiKeyContextKey, validKey)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
