@@ -208,7 +208,7 @@ func (h *Handlers) DeleteAPIKey(w http.ResponseWriter, r *http.Request) {
 
 // actorKeyID extracts the ID of the authenticated key making this request.
 func actorKeyID(r *http.Request) string {
-	if k, ok := r.Context().Value("api_key").(*models.APIKey); ok {
+	if k, ok := r.Context().Value(apiKeyContextKey).(*models.APIKey); ok {
 		return k.ID
 	}
 	return "unknown"

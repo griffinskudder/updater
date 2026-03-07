@@ -185,7 +185,7 @@ func TestAuthMiddleware(t *testing.T) {
 			// Create test handler
 			handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				// Check if API key is in context
-				apiKey := r.Context().Value("api_key")
+				apiKey := r.Context().Value(apiKeyContextKey)
 				if tt.expectAPIKeyInCtx {
 					assert.NotNil(t, apiKey, "Expected API key in context")
 					if actualKey, ok := apiKey.(*models.APIKey); ok {
@@ -304,7 +304,7 @@ func TestRequirePermissionMiddleware(t *testing.T) {
 			testHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				if tt.apiKey != nil {
 					// Add API key to context (simulating auth middleware)
-					ctx := context.WithValue(r.Context(), "api_key", tt.apiKey)
+					ctx := context.WithValue(r.Context(), apiKeyContextKey, tt.apiKey)
 					r = r.WithContext(ctx)
 				}
 				middleware(handler).ServeHTTP(w, r)
@@ -884,7 +884,7 @@ func TestOptionalAuthMiddleware(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// Create test handler
 			handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				apiKey := r.Context().Value("api_key")
+				apiKey := r.Context().Value(apiKeyContextKey)
 				if tt.expectAPIKeyInCtx {
 					assert.NotNil(t, apiKey, "Expected API key in context")
 				} else {

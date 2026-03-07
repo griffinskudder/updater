@@ -42,7 +42,7 @@ func adminCtxRequest(method, path string, body []byte, store storage.Storage, ra
 	}
 	hash := models.HashAPIKey(rawKey)
 	ak, _ := store.GetAPIKeyByHash(context.Background(), hash)
-	ctx := context.WithValue(req.Context(), "api_key", ak)
+	ctx := context.WithValue(req.Context(), apiKeyContextKey, ak)
 	return req.WithContext(ctx)
 }
 

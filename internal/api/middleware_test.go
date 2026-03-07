@@ -87,7 +87,7 @@ func TestOptionalAuthWithStorage(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var ctxKey *models.APIKey
 			handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				ctxKey, _ = r.Context().Value("api_key").(*models.APIKey)
+				ctxKey, _ = r.Context().Value(apiKeyContextKey).(*models.APIKey)
 				w.WriteHeader(http.StatusOK)
 			})
 

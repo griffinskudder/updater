@@ -20,10 +20,17 @@ const (
 	PermissionAdmin Permission = "admin"
 )
 
+// contextKey is an unexported type for context keys in this package.
+// Using a named type prevents collisions with context keys from other packages.
+type contextKey struct{}
+
+// apiKeyContextKey is the context key used to store and retrieve the authenticated API key.
+var apiKeyContextKey = contextKey{}
+
 // GetAPIKey extracts the authenticated API key from request context.
 // Returns nil if no key is present (unauthenticated request).
 func GetAPIKey(r *http.Request) *models.APIKey {
-	if apiKey, ok := r.Context().Value("api_key").(*models.APIKey); ok {
+	if apiKey, ok := r.Context().Value(apiKeyContextKey).(*models.APIKey); ok {
 		return apiKey
 	}
 	return nil
@@ -82,7 +89,7 @@ func OptionalAuth(store storage.Storage) mux.MiddlewareFunc {
 			}
 
 			// Add API key info to context for handlers to use
-			ctx := context.WithValue(r.Context(), "api_key", validKey)
+			ctx := context.WithValue(r.Context(), apiKeyContextKey, validKey)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
