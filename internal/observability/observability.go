@@ -6,15 +6,18 @@ package observability
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
 	"updater/internal/models"
 	"updater/internal/version"
 
+	clientprom "github.com/prometheus/client_golang/prometheus"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/exporters/prometheus"
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
+	"go.opentelemetry.io/otel/metric"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
@@ -60,10 +63,33 @@ func (p *Provider) Shutdown(ctx context.Context) error {
 	return nil
 }
 
+// Option configures Setup behavior.
+type Option func(*setupOptions)
+
+type setupOptions struct {
+	prometheusRegisterer clientprom.Registerer
+}
+
+// WithPrometheusRegisterer overrides the Prometheus registerer used for the metrics
+// exporter. Default is prometheus.DefaultRegisterer. Pass a custom registry in tests
+// to avoid polluting the global default registry.
+func WithPrometheusRegisterer(reg clientprom.Registerer) Option {
+	return func(o *setupOptions) {
+		o.prometheusRegisterer = reg
+	}
+}
+
 // Setup initializes OpenTelemetry tracing and metrics providers based on configuration.
 // It returns a Provider that must be shut down on application exit.
-func Setup(metrics models.MetricsConfig, obs models.ObservabilityConfig, ver version.Info) (*Provider, error) {
+func Setup(metrics models.MetricsConfig, obs models.ObservabilityConfig, ver version.Info, opts ...Option) (*Provider, error) {
+	o := &setupOptions{prometheusRegisterer: clientprom.DefaultRegisterer}
+	for _, opt := range opts {
+		opt(o)
+	}
+
 	p := &Provider{}
+
+	env := getEnvironment()
 
 	res, err := resource.New(context.Background(),
 		resource.WithAttributes(
@@ -73,7 +99,7 @@ func Setup(metrics models.MetricsConfig, obs models.ObservabilityConfig, ver ver
 			attribute.String("host.name", ver.Hostname),
 			attribute.String("git.commit", ver.GitCommit),
 			attribute.String("build.date", ver.BuildDate),
-			attribute.String("deployment.environment", getEnvironment()),
+			attribute.String("deployment.environment", env),
 		),
 	)
 	if err != nil {
@@ -92,7 +118,7 @@ func Setup(metrics models.MetricsConfig, obs models.ObservabilityConfig, ver ver
 
 	// Setup metrics with Prometheus exporter
 	if metrics.Enabled {
-		promExporter, err := prometheus.New()
+		promExporter, err := prometheus.New(prometheus.WithRegisterer(o.prometheusRegisterer))
 		if err != nil {
 			return nil, fmt.Errorf("failed to create prometheus exporter: %w", err)
 		}
@@ -104,9 +130,58 @@ func Setup(metrics models.MetricsConfig, obs models.ObservabilityConfig, ver ver
 		)
 		p.meterProvider = mp
 		otel.SetMeterProvider(mp)
+
+		// registerBuildInfo failure is non-fatal: a missing build_info gauge should
+		// not prevent the service from starting, unlike resource or exporter failures
+		// which would leave the entire observability stack broken.
+		if err := p.registerBuildInfo(ver, env); err != nil {
+			slog.Warn("failed to register build_info metric", "error", err)
+		}
 	}
 
 	return p, nil
+}
+
+// registerBuildInfo registers an updater_build_info gauge that always returns 1
+// with version metadata as labels. This follows the standard Prometheus build_info
+// pattern, making version data queryable and enabling version-change alerting.
+func (p *Provider) registerBuildInfo(ver version.Info, env string) error {
+	meter := p.meterProvider.Meter("updater.build")
+
+	gauge, err := meter.Int64ObservableGauge(
+		"updater_build_info",
+		metric.WithDescription("Build and version information (always 1)."),
+		metric.WithUnit("{info}"),
+	)
+	if err != nil {
+		return fmt.Errorf("register build_info gauge: %w", err)
+	}
+
+	attrs := metric.WithAttributes(
+		attribute.String("version", ver.Version),
+		attribute.String("git_commit", ver.GitCommit),
+		attribute.String("build_date", ver.BuildDate),
+		// environment is intentionally repeated as a direct label so it is queryable
+		// on the metric itself — resource attributes appear in target_info, not on
+		// individual metrics, in standard Prometheus scraping.
+		attribute.String("environment", env),
+	)
+
+	// The Registration is discarded because this is a process-lifetime gauge
+	// registered exactly once at startup. MeterProvider.Shutdown() stops all
+	// callbacks, so there is no leak.
+	_, err = meter.RegisterCallback(
+		func(_ context.Context, o metric.Observer) error {
+			o.ObserveInt64(gauge, 1, attrs)
+			return nil
+		},
+		gauge,
+	)
+	if err != nil {
+		return fmt.Errorf("register build_info callback: %w", err)
+	}
+
+	return nil
 }
 
 func setupTracing(res *resource.Resource, cfg models.TracingConfig) (*sdktrace.TracerProvider, error) {
