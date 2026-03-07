@@ -115,6 +115,33 @@ Automatically collected for all API requests (excluding `/health` and `/metrics`
 | `updater_update_checks_total` | Counter | `app_id`, `result` | Update check outcomes (`update_available`, `no_update`, `error`) |
 | `updater_releases_registered_total` | Counter | `app_id` | New releases registered |
 
+#### Build Info Metric
+
+| Metric | Type | Labels | Description |
+|--------|------|--------|-------------|
+| `updater_build_info` | Gauge | `version`, `git_commit`, `build_date`, `environment` | Always 1; exposes build metadata as labels |
+
+`environment` is read from the `ENVIRONMENT` environment variable, falling back to
+`DEPLOYMENT_ENV`, then `development`.
+
+**Example output:**
+
+```
+# HELP updater_build_info Build and version information (always 1).
+# TYPE updater_build_info gauge
+updater_build_info{build_date="2026-03-07",environment="production",git_commit="7fd6828",version="v1.2.3"} 1
+```
+
+**Useful PromQL:**
+
+```promql
+# How many distinct versions are running? (useful during rolling deploys)
+count by (version) (updater_build_info)
+
+# Alert when version changes
+changes(updater_build_info[10m]) > 0
+```
+
 #### Storage Metrics (via InstrumentedStorage)
 
 Collected for every storage operation:
