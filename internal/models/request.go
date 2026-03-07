@@ -12,10 +12,14 @@ package models
 import (
 	"errors"
 	"fmt"
+	"math"
 	"strings"
 
 	"github.com/Masterminds/semver/v3"
 )
+
+// MaxPageSize is the maximum number of items that can be requested per page.
+const MaxPageSize = 500
 
 // UpdateCheckRequest represents a request to check for available updates.
 //
@@ -56,7 +60,7 @@ type ListReleasesRequest struct {
 	Version       string   `json:"version,omitempty"`
 	Required      *bool    `json:"required,omitempty"`
 	Limit         int      `json:"limit,omitempty"`
-	Offset        int      `json:"offset,omitempty"`
+	After         string   `json:"after,omitempty"` // Opaque keyset cursor
 	SortBy        string   `json:"sort_by,omitempty"`
 	SortOrder     string   `json:"sort_order,omitempty"`
 	Platforms     []string `json:"platforms,omitempty"`
@@ -105,6 +109,28 @@ type UpdateApplicationRequest struct {
 	Description *string            `json:"description,omitempty"`
 	Platforms   []string           `json:"platforms,omitempty"`
 	Config      *ApplicationConfig `json:"config,omitempty"`
+}
+
+// ListApplicationsRequest represents a request to list applications with keyset pagination.
+type ListApplicationsRequest struct {
+	Limit int    `json:"limit,omitempty"` // Maximum items per page (1–500); 0 means use default (50)
+	After string `json:"after,omitempty"` // Opaque keyset cursor from a previous response
+}
+
+func (r *ListApplicationsRequest) Validate() error {
+	if r.Limit < 0 {
+		return errors.New("limit cannot be negative")
+	}
+	if r.Limit > MaxPageSize {
+		return fmt.Errorf("limit cannot exceed %d", MaxPageSize)
+	}
+	return nil
+}
+
+func (r *ListApplicationsRequest) Normalize() {
+	if r.Limit == 0 {
+		r.Limit = 50
+	}
 }
 
 type DeleteReleaseRequest struct {
@@ -162,8 +188,8 @@ func (r *ListReleasesRequest) Validate() error {
 	}
 
 	if r.Version != "" {
-		if _, err := semver.NewVersion(r.Version); err != nil {
-			return fmt.Errorf("invalid version format: %w", err)
+		if err := validateVersion(r.Version); err != nil {
+			return err
 		}
 	}
 
@@ -171,8 +197,8 @@ func (r *ListReleasesRequest) Validate() error {
 		return errors.New("limit cannot be negative")
 	}
 
-	if r.Offset < 0 {
-		return errors.New("offset cannot be negative")
+	if r.Limit > MaxPageSize {
+		return fmt.Errorf("limit cannot exceed %d", MaxPageSize)
 	}
 
 	if r.SortOrder != "" && r.SortOrder != "asc" && r.SortOrder != "desc" {
@@ -252,7 +278,7 @@ func (r *RegisterReleaseRequest) Validate() error {
 	}
 
 	if r.MinimumVersion != "" {
-		if _, err := semver.NewVersion(r.MinimumVersion); err != nil {
+		if err := validateVersion(r.MinimumVersion); err != nil {
 			return fmt.Errorf("invalid minimum_version format: %w", err)
 		}
 	}
@@ -373,14 +399,21 @@ func validateRequiredFields(appID, platform, architecture string) error {
 	return nil
 }
 
-// validateVersion validates a semantic version string using semver library
+// validateVersion validates a semantic version string using semver library.
+// It also rejects versions where any component exceeds math.MaxInt64, since
+// components are stored as int64 in the database.
 func validateVersion(version string) error {
 	if version == "" {
 		return errors.New("version is required")
 	}
 
-	if _, err := semver.NewVersion(version); err != nil {
+	sv, err := semver.NewVersion(version)
+	if err != nil {
 		return fmt.Errorf("invalid version format: %w", err)
+	}
+
+	if sv.Major() > math.MaxInt64 || sv.Minor() > math.MaxInt64 || sv.Patch() > math.MaxInt64 {
+		return errors.New("version components exceed maximum allowed value")
 	}
 
 	return nil

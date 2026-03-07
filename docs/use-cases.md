@@ -360,9 +360,7 @@ curl "https://updates.example.com/api/v1/updates/photo-editor/releases" \
     }
   ],
   "total_count": 1,
-  "page": 1,
-  "page_size": 50,
-  "has_more": false
+  "next_cursor": ""
 }
 ```
 

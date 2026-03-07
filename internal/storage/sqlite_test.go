@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"testing"
 	"time"
@@ -34,7 +35,7 @@ func TestSQLiteStorageSchemaCreation(t *testing.T) {
 	ctx := context.Background()
 
 	// Verify tables exist by performing operations
-	apps, _, err := s.ListApplicationsPaged(ctx, 50, 0)
+	apps, _, err := s.ListApplicationsPaged(ctx, 50, nil)
 	if err != nil {
 		t.Fatalf("ListApplicationsPaged failed: %v", err)
 	}
@@ -42,7 +43,7 @@ func TestSQLiteStorageSchemaCreation(t *testing.T) {
 		t.Error("expected non-nil slice")
 	}
 
-	releases, _, err := s.ListReleasesPaged(ctx, "test-app", models.ReleaseFilters{}, "release_date", "desc", 50, 0)
+	releases, _, err := s.ListReleasesPaged(ctx, "test-app", models.ReleaseFilters{}, "release_date", "desc", 50, nil)
 	if err != nil {
 		t.Fatalf("ListReleasesPaged failed: %v", err)
 	}
@@ -99,7 +100,7 @@ func TestSQLiteStorageApplicationCRUD(t *testing.T) {
 	}
 
 	// List applications
-	apps, _, err := s.ListApplicationsPaged(ctx, 50, 0)
+	apps, _, err := s.ListApplicationsPaged(ctx, 50, nil)
 	if err != nil {
 		t.Fatalf("ListApplicationsPaged failed: %v", err)
 	}
@@ -113,7 +114,7 @@ func TestSQLiteStorageApplicationCRUD(t *testing.T) {
 		t.Fatalf("SaveApplication (second) failed: %v", err)
 	}
 
-	apps, _, err = s.ListApplicationsPaged(ctx, 50, 0)
+	apps, _, err = s.ListApplicationsPaged(ctx, 50, nil)
 	if err != nil {
 		t.Fatalf("ListApplicationsPaged failed: %v", err)
 	}
@@ -188,7 +189,7 @@ func TestSQLiteStorageReleaseCRUD(t *testing.T) {
 	}
 
 	// List releases
-	releases, _, err := s.ListReleasesPaged(ctx, "rel-app", models.ReleaseFilters{}, "release_date", "desc", 50, 0)
+	releases, _, err := s.ListReleasesPaged(ctx, "rel-app", models.ReleaseFilters{}, "release_date", "desc", 50, nil)
 	if err != nil {
 		t.Fatalf("ListReleasesPaged failed: %v", err)
 	}
@@ -220,7 +221,7 @@ func TestSQLiteStorageReleaseCRUD(t *testing.T) {
 	}
 
 	// Empty releases list
-	releases, _, err = s.ListReleasesPaged(ctx, "rel-app", models.ReleaseFilters{}, "release_date", "desc", 50, 0)
+	releases, _, err = s.ListReleasesPaged(ctx, "rel-app", models.ReleaseFilters{}, "release_date", "desc", 50, nil)
 	if err != nil {
 		t.Fatalf("ListReleasesPaged failed: %v", err)
 	}
@@ -349,7 +350,7 @@ func TestSQLiteStorageConcurrency(t *testing.T) {
 		go func() {
 			defer wg.Done()
 			for j := 0; j < 10; j++ {
-				_, _, err := s.ListApplicationsPaged(ctx, 50, 0)
+				_, _, err := s.ListApplicationsPaged(ctx, 50, nil)
 				if err != nil {
 					errs <- err
 					return
@@ -535,7 +536,7 @@ func TestSQLiteStorage_ListApplicationsPaged(t *testing.T) {
 	}
 
 	t.Run("first page returns 2 apps total=3", func(t *testing.T) {
-		apps, total, err := s.ListApplicationsPaged(ctx, 2, 0)
+		apps, total, err := s.ListApplicationsPaged(ctx, 2, nil)
 		if err != nil {
 			t.Fatalf("ListApplicationsPaged failed: %v", err)
 		}
@@ -547,26 +548,16 @@ func TestSQLiteStorage_ListApplicationsPaged(t *testing.T) {
 		}
 	})
 
-	t.Run("second page offset 2 returns 1 remaining app", func(t *testing.T) {
-		apps, total, err := s.ListApplicationsPaged(ctx, 2, 2)
+	t.Run("all apps returned with large limit", func(t *testing.T) {
+		apps, total, err := s.ListApplicationsPaged(ctx, 1000, nil)
 		if err != nil {
-			t.Fatalf("ListApplicationsPaged offset=2 failed: %v", err)
+			t.Fatalf("ListApplicationsPaged large limit failed: %v", err)
 		}
 		if total != 3 {
 			t.Errorf("expected total=3, got %d", total)
 		}
-		if len(apps) != 1 {
-			t.Errorf("expected 1 app on second page, got %d", len(apps))
-		}
-	})
-
-	t.Run("offset beyond total returns empty slice", func(t *testing.T) {
-		apps, _, err := s.ListApplicationsPaged(ctx, 2, 10000)
-		if err != nil {
-			t.Fatalf("ListApplicationsPaged offset beyond total failed: %v", err)
-		}
-		if len(apps) != 0 {
-			t.Errorf("expected empty apps, got %d", len(apps))
+		if len(apps) != 3 {
+			t.Errorf("expected 3 apps, got %d", len(apps))
 		}
 	})
 }
@@ -603,7 +594,7 @@ func TestSQLiteStorage_ListReleasesPaged(t *testing.T) {
 	}
 
 	t.Run("filter by linux platform returns 2 releases total=2", func(t *testing.T) {
-		rels, total, err := s.ListReleasesPaged(ctx, appID, models.ReleaseFilters{Platforms: []string{"linux"}}, "release_date", "asc", 10, 0)
+		rels, total, err := s.ListReleasesPaged(ctx, appID, models.ReleaseFilters{Platforms: []string{"linux"}}, "release_date", "asc", 10, nil)
 		if err != nil {
 			t.Fatalf("ListReleasesPaged failed: %v", err)
 		}
@@ -621,7 +612,7 @@ func TestSQLiteStorage_ListReleasesPaged(t *testing.T) {
 	})
 
 	t.Run("sort by version desc returns correct order", func(t *testing.T) {
-		rels, total, err := s.ListReleasesPaged(ctx, appID, models.ReleaseFilters{Platforms: []string{"linux"}}, "version", "desc", 10, 0)
+		rels, total, err := s.ListReleasesPaged(ctx, appID, models.ReleaseFilters{Platforms: []string{"linux"}}, "version", "desc", 10, nil)
 		if err != nil {
 			t.Fatalf("ListReleasesPaged sort by version failed: %v", err)
 		}
@@ -639,8 +630,8 @@ func TestSQLiteStorage_ListReleasesPaged(t *testing.T) {
 		}
 	})
 
-	t.Run("pagination limit=1 offset=0 returns one release total=3", func(t *testing.T) {
-		rels, total, err := s.ListReleasesPaged(ctx, appID, models.ReleaseFilters{}, "release_date", "asc", 1, 0)
+	t.Run("pagination limit=1 no cursor returns one release total=3", func(t *testing.T) {
+		rels, total, err := s.ListReleasesPaged(ctx, appID, models.ReleaseFilters{}, "release_date", "asc", 1, nil)
 		if err != nil {
 			t.Fatalf("ListReleasesPaged pagination failed: %v", err)
 		}
@@ -649,16 +640,6 @@ func TestSQLiteStorage_ListReleasesPaged(t *testing.T) {
 		}
 		if len(rels) != 1 {
 			t.Errorf("expected 1 release, got %d", len(rels))
-		}
-	})
-
-	t.Run("offset beyond total returns empty", func(t *testing.T) {
-		rels, _, err := s.ListReleasesPaged(ctx, appID, models.ReleaseFilters{}, "release_date", "asc", 10, 10000)
-		if err != nil {
-			t.Fatalf("ListReleasesPaged offset beyond total failed: %v", err)
-		}
-		if len(rels) != 0 {
-			t.Errorf("expected empty, got %d", len(rels))
 		}
 	})
 }
@@ -783,6 +764,142 @@ func TestSQLiteStorage_GetApplicationStats(t *testing.T) {
 	if stats.LatestReleaseDate == nil {
 		t.Error("expected LatestReleaseDate to be non-nil")
 	}
+}
+
+func TestSQLiteStorage_ListApplicationsPaged_TotalCountStable(t *testing.T) {
+	store, err := NewSQLiteStorage(":memory:")
+	require.NoError(t, err)
+	defer store.Close()
+	ctx := context.Background()
+
+	now := time.Now().UTC()
+	for i := range 5 {
+		app := &models.Application{
+			ID:        fmt.Sprintf("app-%d", i),
+			Name:      fmt.Sprintf("App %d", i),
+			Platforms: []string{"windows"},
+			Config:    models.ApplicationConfig{},
+			CreatedAt: now.Add(time.Duration(i) * time.Second).Format(time.RFC3339),
+			UpdatedAt: now.Format(time.RFC3339),
+		}
+		require.NoError(t, store.SaveApplication(ctx, app))
+	}
+
+	// Page 1: limit=2, no cursor
+	page1, total1, err := store.ListApplicationsPaged(ctx, 2, nil)
+	require.NoError(t, err)
+	assert.Len(t, page1, 2)
+	assert.Equal(t, 5, total1, "total_count on page 1 should be 5")
+
+	// Page 2: using cursor from last item on page 1
+	createdAt1, err := time.Parse(time.RFC3339, page1[len(page1)-1].CreatedAt)
+	require.NoError(t, err)
+	cursor := &models.ApplicationCursor{CreatedAt: createdAt1, ID: page1[len(page1)-1].ID}
+	page2, total2, err := store.ListApplicationsPaged(ctx, 2, cursor)
+	require.NoError(t, err)
+	assert.Len(t, page2, 2)
+	assert.Equal(t, 5, total2, "total_count on page 2 must equal total_count on page 1")
+}
+
+func TestSQLiteStorage_ListReleasesPaged_TotalCountStable(t *testing.T) {
+	store, err := NewSQLiteStorage(":memory:")
+	require.NoError(t, err)
+	defer store.Close()
+	ctx := context.Background()
+
+	app := &models.Application{
+		ID:        "app1",
+		Name:      "App1",
+		Platforms: []string{"windows"},
+		Config:    models.ApplicationConfig{},
+		CreatedAt: time.Now().UTC().Format(time.RFC3339),
+		UpdatedAt: time.Now().UTC().Format(time.RFC3339),
+	}
+	require.NoError(t, store.SaveApplication(ctx, app))
+
+	now := time.Now().UTC()
+	for i := range 5 {
+		r := &models.Release{
+			ID:            fmt.Sprintf("r%d", i),
+			ApplicationID: "app1",
+			Version:       fmt.Sprintf("1.0.%d", i),
+			Platform:      "windows",
+			Architecture:  "amd64",
+			DownloadURL:   "http://example.com",
+			Checksum:      "abc",
+			ChecksumType:  "sha256",
+			ReleaseDate:   now.Add(time.Duration(i) * time.Second),
+			CreatedAt:     now.Add(time.Duration(i) * time.Second),
+		}
+		require.NoError(t, store.SaveRelease(ctx, r))
+	}
+
+	// Page 1
+	page1, total1, err := store.ListReleasesPaged(ctx, "app1", models.ReleaseFilters{}, "release_date", "desc", 2, nil)
+	require.NoError(t, err)
+	assert.Len(t, page1, 2)
+	assert.Equal(t, 5, total1)
+
+	// Page 2 using cursor from last item on page 1
+	cursor := &models.ReleaseCursor{
+		SortBy:      "release_date",
+		SortOrder:   "desc",
+		ID:          page1[len(page1)-1].ID,
+		ReleaseDate: page1[len(page1)-1].ReleaseDate,
+	}
+	page2, total2, err := store.ListReleasesPaged(ctx, "app1", models.ReleaseFilters{}, "release_date", "desc", 2, cursor)
+	require.NoError(t, err)
+	assert.Len(t, page2, 2)
+	assert.Equal(t, 5, total2, "total_count on page 2 must equal total_count on page 1")
+}
+
+func TestSQLiteStorage_ListReleasesPaged_VersionSortPreReleaseOrder(t *testing.T) {
+	// Version sort DESC must give: stable, rc, beta, alpha (not stable, alpha, beta, rc).
+	store, err := NewSQLiteStorage(":memory:")
+	require.NoError(t, err)
+	defer store.Close()
+	ctx := context.Background()
+
+	app := &models.Application{
+		ID:        "app1",
+		Name:      "App1",
+		Platforms: []string{"windows"},
+		Config:    models.ApplicationConfig{},
+		CreatedAt: time.Now().UTC().Format(time.RFC3339),
+		UpdatedAt: time.Now().UTC().Format(time.RFC3339),
+	}
+	require.NoError(t, store.SaveApplication(ctx, app))
+
+	now := time.Now().UTC()
+	releases := []struct{ id, ver string }{
+		{"r1", "1.0.0"},
+		{"r2", "1.0.0-alpha"},
+		{"r3", "1.0.0-beta"},
+		{"r4", "1.0.0-rc"},
+	}
+	for i, rel := range releases {
+		r := &models.Release{
+			ID:            rel.id,
+			ApplicationID: "app1",
+			Version:       rel.ver,
+			Platform:      "windows",
+			Architecture:  "amd64",
+			DownloadURL:   "http://example.com",
+			Checksum:      "abc",
+			ChecksumType:  "sha256",
+			ReleaseDate:   now.Add(time.Duration(i) * time.Second),
+			CreatedAt:     now.Add(time.Duration(i) * time.Second),
+		}
+		require.NoError(t, store.SaveRelease(ctx, r))
+	}
+
+	results, _, err := store.ListReleasesPaged(ctx, "app1", models.ReleaseFilters{}, "version", "desc", 10, nil)
+	require.NoError(t, err)
+	require.Len(t, results, 4)
+	assert.Equal(t, "1.0.0", results[0].Version, "stable must be first in version DESC")
+	assert.Equal(t, "1.0.0-rc", results[1].Version, "rc must be second in version DESC")
+	assert.Equal(t, "1.0.0-beta", results[2].Version, "beta must be third in version DESC")
+	assert.Equal(t, "1.0.0-alpha", results[3].Version, "alpha must be last in version DESC")
 }
 
 func TestSQLiteStorageSaveRelease_VersionSortColumns(t *testing.T) {

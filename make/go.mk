@@ -22,7 +22,7 @@ integration-test: ## Run integration tests
 	$(GO_DOCKER) go test -tags integration ./internal/integration/...
 
 cover: ## Run tests with coverage report
-	$(GO_DOCKER) sh -c 'go test -coverprofile=coverage.out ./... && go tool cover -func=coverage.out | grep ^total'
+	$(GO_DOCKER) sh -c 'PKGS=$$(go list -tags integration ./... | grep -vE "/cmd/|/storage/sqlc/"); go test -tags integration -coverpkg=$$(echo $$PKGS | tr " " ",") -coverprofile=coverage.out ./... && go tool cover -func=coverage.out | grep ^total'
 
 fmt: ## Format code
 	$(GO_DOCKER) go fmt ./...

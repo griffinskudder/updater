@@ -110,8 +110,8 @@ func (r *Release) Validate() error {
 		return errors.New("version cannot be empty")
 	}
 
-	if _, err := semver.NewVersion(r.Version); err != nil {
-		return fmt.Errorf("invalid version format: %w", err)
+	if err := validateVersion(r.Version); err != nil {
+		return err
 	}
 
 	if !isValidPlatform(r.Platform) {
@@ -143,7 +143,7 @@ func (r *Release) Validate() error {
 	}
 
 	if r.MinimumVersion != "" {
-		if _, err := semver.NewVersion(r.MinimumVersion); err != nil {
+		if err := validateVersion(r.MinimumVersion); err != nil {
 			return fmt.Errorf("invalid minimum version: %w", err)
 		}
 	}

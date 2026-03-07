@@ -26,7 +26,7 @@ type ServiceInterface interface {
 	GetApplication(ctx context.Context, appID string) (*models.ApplicationInfoResponse, error)
 
 	// ListApplications returns a paginated list of applications
-	ListApplications(ctx context.Context, limit, offset int) (*models.ListApplicationsResponse, error)
+	ListApplications(ctx context.Context, req *models.ListApplicationsRequest) (*models.ListApplicationsResponse, error)
 
 	// UpdateApplication applies partial updates to an existing application
 	UpdateApplication(ctx context.Context, appID string, req *models.UpdateApplicationRequest) (*models.UpdateApplicationResponse, error)

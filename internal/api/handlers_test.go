@@ -63,11 +63,11 @@ func (m *mockStorage) DeleteAPIKey(_ context.Context, _ string) error {
 	return nil
 }
 
-func (m *mockStorage) ListApplicationsPaged(_ context.Context, _, _ int) ([]*models.Application, int, error) {
+func (m *mockStorage) ListApplicationsPaged(_ context.Context, _ int, _ *models.ApplicationCursor) ([]*models.Application, int, error) {
 	return nil, 0, nil
 }
 
-func (m *mockStorage) ListReleasesPaged(_ context.Context, _ string, _ models.ReleaseFilters, _, _ string, _, _ int) ([]*models.Release, int, error) {
+func (m *mockStorage) ListReleasesPaged(_ context.Context, _ string, _ models.ReleaseFilters, _, _ string, _ int, _ *models.ReleaseCursor) ([]*models.Release, int, error) {
 	return nil, 0, nil
 }
 
@@ -120,8 +120,8 @@ func (m *MockUpdateService) GetApplication(ctx context.Context, id string) (*mod
 	return args.Get(0).(*models.ApplicationInfoResponse), args.Error(1)
 }
 
-func (m *MockUpdateService) ListApplications(ctx context.Context, limit, offset int) (*models.ListApplicationsResponse, error) {
-	args := m.Called(ctx, limit, offset)
+func (m *MockUpdateService) ListApplications(ctx context.Context, req *models.ListApplicationsRequest) (*models.ListApplicationsResponse, error) {
+	args := m.Called(ctx, req)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
@@ -364,9 +364,7 @@ func TestHandlers_ListReleases_Success(t *testing.T) {
 	expectedResponse := &models.ListReleasesResponse{
 		Releases:   releaseInfos,
 		TotalCount: 2,
-		Page:       1,
-		PageSize:   10,
-		HasMore:    false,
+		NextCursor: "",
 	}
 
 	mockService.On("ListReleases", mock.Anything, mock.AnythingOfType("*models.ListReleasesRequest")).Return(expectedResponse, nil)
@@ -386,9 +384,7 @@ func TestHandlers_ListReleases_Success(t *testing.T) {
 
 	assert.Len(t, response.Releases, 2)
 	assert.Equal(t, 2, response.TotalCount)
-	assert.Equal(t, 10, response.PageSize)
-	assert.Equal(t, 1, response.Page)
-	assert.False(t, response.HasMore)
+	assert.Equal(t, "", response.NextCursor)
 
 	mockService.AssertExpectations(t)
 }
@@ -425,9 +421,7 @@ func TestHandlers_ListReleases_WithPagination(t *testing.T) {
 	expectedResponse := &models.ListReleasesResponse{
 		Releases:   releaseInfos2,
 		TotalCount: 5, // Total available
-		Page:       2, // (offset/limit) + 1 = (1/1) + 1 = 2
-		PageSize:   1,
-		HasMore:    true,
+		NextCursor: "next-page-cursor",
 	}
 
 	mockService.On("ListReleases", mock.Anything, mock.AnythingOfType("*models.ListReleasesRequest")).Return(expectedResponse, nil)
@@ -447,9 +441,7 @@ func TestHandlers_ListReleases_WithPagination(t *testing.T) {
 
 	assert.Len(t, response.Releases, 1)
 	assert.Equal(t, 5, response.TotalCount)
-	assert.Equal(t, 1, response.PageSize)
-	assert.Equal(t, 2, response.Page)
-	assert.True(t, response.HasMore)
+	assert.Equal(t, "next-page-cursor", response.NextCursor)
 
 	mockService.AssertExpectations(t)
 }
@@ -638,32 +630,29 @@ func TestHandlers_HTTPMethodNotAllowed(t *testing.T) {
 
 func TestHandlers_ParseQueryParams(t *testing.T) {
 	tests := []struct {
-		name           string
-		queryString    string
-		expectedAppID  string
-		expectedLimit  int
-		expectedOffset int
-		expectError    bool
+		name          string
+		queryString   string
+		expectedAppID string
+		expectedLimit int
+		expectError   bool
 	}{
 		{
-			name:           "valid params",
-			queryString:    "app_id=test-app&limit=5&offset=10",
-			expectedAppID:  "test-app",
-			expectedLimit:  5,
-			expectedOffset: 10,
-			expectError:    false,
+			name:          "valid params",
+			queryString:   "app_id=test-app&limit=5",
+			expectedAppID: "test-app",
+			expectedLimit: 5,
+			expectError:   false,
 		},
 		{
-			name:           "default limit and offset",
-			queryString:    "app_id=test-app",
-			expectedAppID:  "test-app",
-			expectedLimit:  10, // default
-			expectedOffset: 0,  // default
-			expectError:    false,
+			name:          "default limit",
+			queryString:   "app_id=test-app",
+			expectedAppID: "test-app",
+			expectedLimit: 10, // default
+			expectError:   false,
 		},
 		{
 			name:        "missing app_id",
-			queryString: "limit=5&offset=10",
+			queryString: "limit=5",
 			expectError: true,
 		},
 		{
@@ -672,18 +661,8 @@ func TestHandlers_ParseQueryParams(t *testing.T) {
 			expectError: true,
 		},
 		{
-			name:        "invalid offset",
-			queryString: "app_id=test-app&offset=invalid",
-			expectError: true,
-		},
-		{
 			name:        "negative limit",
 			queryString: "app_id=test-app&limit=-1",
-			expectError: true,
-		},
-		{
-			name:        "negative offset",
-			queryString: "app_id=test-app&offset=-1",
 			expectError: true,
 		},
 	}
@@ -696,7 +675,6 @@ func TestHandlers_ParseQueryParams(t *testing.T) {
 
 			appID := req.URL.Query().Get("app_id")
 			limitStr := req.URL.Query().Get("limit")
-			offsetStr := req.URL.Query().Get("offset")
 
 			// Test the logic that would be in the handler
 			if appID == "" && tt.expectError {
@@ -715,22 +693,9 @@ func TestHandlers_ParseQueryParams(t *testing.T) {
 				}
 			}
 
-			offset := 0 // default
-			if offsetStr != "" {
-				if parsed, err := parseInt(offsetStr); err != nil {
-					if tt.expectError {
-						return // Expected error case
-					}
-					t.Errorf("Unexpected error parsing offset: %v", err)
-				} else {
-					offset = parsed
-				}
-			}
-
 			if !tt.expectError {
 				assert.Equal(t, tt.expectedAppID, appID)
 				assert.Equal(t, tt.expectedLimit, limit)
-				assert.Equal(t, tt.expectedOffset, offset)
 			}
 		})
 	}

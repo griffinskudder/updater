@@ -36,11 +36,11 @@ All providers implement 19 methods covering application, release, and API key CR
 classDiagram
     class Storage {
         <<interface>>
-        +ListApplicationsPaged(ctx, limit, offset) []*Application, int, error
+        +ListApplicationsPaged(ctx, limit, cursor) []*Application, int, error
         +GetApplication(ctx, appID) *Application, error
         +SaveApplication(ctx, app) error
         +DeleteApplication(ctx, appID) error
-        +ListReleasesPaged(ctx, appID, filters, sortBy, sortOrder, limit, offset) []*Release, int, error
+        +ListReleasesPaged(ctx, appID, filters, sortBy, sortOrder, limit, cursor) []*Release, int, error
         +GetRelease(ctx, appID, version, platform, arch) *Release, error
         +SaveRelease(ctx, release) error
         +DeleteRelease(ctx, appID, version, platform, arch) error
@@ -60,23 +60,23 @@ classDiagram
 
 ### Pagination and Query Methods
 
-The four purpose-built query methods push pagination, filtering, and aggregation down to the storage layer rather than loading all records into memory.
+The four purpose-built query methods push pagination, filtering, and aggregation down to the storage layer rather than loading all records into memory. Both list methods use keyset (cursor) pagination: a `cursor` argument encodes the last item seen, and the storage layer appends a keyset `WHERE` condition so the database skips directly to the next page without scanning discarded rows.
 
 #### `ListApplicationsPaged`
 
 ```go
-ListApplicationsPaged(ctx context.Context, limit, offset int) ([]*models.Application, int, error)
+ListApplicationsPaged(ctx context.Context, limit int, cursor *models.ApplicationCursor) ([]*models.Application, int, error)
 ```
 
-Returns a page of applications sorted by name, and the total count of all applications. Callers use `limit` and `offset` to implement cursor-free offset pagination. The total count allows the caller to compute the number of pages without a separate query.
+Returns a page of applications sorted by `created_at DESC, id DESC`, and the total count of all applications. When `cursor` is non-nil the query returns only items that follow the cursor item (keyset pagination). Pass `nil` to fetch the first page. The total count reflects all applications regardless of cursor position.
 
 #### `ListReleasesPaged`
 
 ```go
-ListReleasesPaged(ctx context.Context, appID string, filters models.ReleaseFilters, sortBy, sortOrder string, limit, offset int) ([]*models.Release, int, error)
+ListReleasesPaged(ctx context.Context, appID string, filters models.ReleaseFilters, sortBy, sortOrder string, limit int, cursor *models.ReleaseCursor) ([]*models.Release, int, error)
 ```
 
-Returns a filtered, sorted page of releases for the given application, and the total count of matching releases. The `filters` parameter narrows the result set before pagination is applied (see [ReleaseFilters](#releasefilters) below).
+Returns a filtered, sorted page of releases for the given application, and the total count of matching releases. The `filters` parameter narrows the result set before pagination is applied (see [ReleaseFilters](#releasefilters) below). When `cursor` is non-nil the query returns only items that follow the cursor item (keyset pagination). Pass `nil` to fetch the first page.
 
 `sortBy` must be one of: `release_date`, `version`, `platform`, `architecture`, `created_at`.
 `sortOrder` must be `"asc"` or `"desc"`.

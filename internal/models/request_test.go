@@ -56,6 +56,17 @@ func TestUpdateCheckRequest_Validate(t *testing.T) {
 			errorMsg:    "invalid version format",
 		},
 		{
+			name: "version component overflows int64",
+			request: UpdateCheckRequest{
+				ApplicationID:  "test-app",
+				CurrentVersion: "9223372036854775808.0.0",
+				Platform:       "windows",
+				Architecture:   "amd64",
+			},
+			expectError: true,
+			errorMsg:    "version components exceed maximum allowed value",
+		},
+		{
 			name: "empty platform",
 			request: UpdateCheckRequest{
 				ApplicationID:  "test-app",
@@ -218,7 +229,6 @@ func TestListReleasesRequest_Validate(t *testing.T) {
 				Platform:      "windows",
 				Architecture:  "amd64",
 				Limit:         10,
-				Offset:        0,
 				SortBy:        "version",
 				SortOrder:     "desc",
 			},
@@ -267,6 +277,15 @@ func TestListReleasesRequest_Validate(t *testing.T) {
 			errorMsg:    "invalid version format",
 		},
 		{
+			name: "version component overflows int64",
+			request: ListReleasesRequest{
+				ApplicationID: "test-app",
+				Version:       "9223372036854775808.0.0",
+			},
+			expectError: true,
+			errorMsg:    "version components exceed maximum allowed value",
+		},
+		{
 			name: "negative limit",
 			request: ListReleasesRequest{
 				ApplicationID: "test-app",
@@ -274,15 +293,6 @@ func TestListReleasesRequest_Validate(t *testing.T) {
 			},
 			expectError: true,
 			errorMsg:    "limit cannot be negative",
-		},
-		{
-			name: "negative offset",
-			request: ListReleasesRequest{
-				ApplicationID: "test-app",
-				Offset:        -1,
-			},
-			expectError: true,
-			errorMsg:    "offset cannot be negative",
 		},
 		{
 			name: "invalid sort order",
@@ -310,6 +320,17 @@ func TestListReleasesRequest_Validate(t *testing.T) {
 			},
 			expectError: true,
 			errorMsg:    "invalid platform in platforms list: invalid",
+		},
+		{
+			name:        "limit exceeds max page size",
+			request:     ListReleasesRequest{ApplicationID: "test-app", Limit: 501},
+			expectError: true,
+			errorMsg:    "limit cannot exceed 500",
+		},
+		{
+			name:        "limit at max page size is valid",
+			request:     ListReleasesRequest{ApplicationID: "test-app", Limit: 500},
+			expectError: false,
 		},
 	}
 
@@ -517,6 +538,35 @@ func TestRegisterReleaseRequest_Validate(t *testing.T) {
 				Checksum:       "abc123",
 				ChecksumType:   "sha256",
 				MinimumVersion: "invalid",
+			},
+			expectError: true,
+			errorMsg:    "invalid minimum_version format",
+		},
+		{
+			name: "version component overflows int64",
+			request: RegisterReleaseRequest{
+				ApplicationID: "test-app",
+				Version:       "9223372036854775808.0.0",
+				Platform:      "windows",
+				Architecture:  "amd64",
+				DownloadURL:   "https://example.com/download",
+				Checksum:      "abc123",
+				ChecksumType:  "sha256",
+			},
+			expectError: true,
+			errorMsg:    "version components exceed maximum allowed value",
+		},
+		{
+			name: "minimum version component overflows int64",
+			request: RegisterReleaseRequest{
+				ApplicationID:  "test-app",
+				Version:        "1.2.3",
+				Platform:       "windows",
+				Architecture:   "amd64",
+				DownloadURL:    "https://example.com/download",
+				Checksum:       "abc123",
+				ChecksumType:   "sha256",
+				MinimumVersion: "9223372036854775808.0.0",
 			},
 			expectError: true,
 			errorMsg:    "invalid minimum_version format",
@@ -747,4 +797,80 @@ func TestUpdateApplicationRequest_Normalize(t *testing.T) {
 	assert.Nil(t, request2.Name)
 	assert.Nil(t, request2.Description)
 	assert.Nil(t, request2.Platforms)
+}
+
+func TestListApplicationsRequest_Validate(t *testing.T) {
+	tests := []struct {
+		name        string
+		request     ListApplicationsRequest
+		expectError bool
+		errorMsg    string
+	}{
+		{
+			name:        "valid zero limit (will be defaulted)",
+			request:     ListApplicationsRequest{},
+			expectError: false,
+		},
+		{
+			name:        "valid explicit limit",
+			request:     ListApplicationsRequest{Limit: 100},
+			expectError: false,
+		},
+		{
+			name:        "negative limit",
+			request:     ListApplicationsRequest{Limit: -1},
+			expectError: true,
+			errorMsg:    "limit cannot be negative",
+		},
+		{
+			name:        "limit exceeds max",
+			request:     ListApplicationsRequest{Limit: 501},
+			expectError: true,
+			errorMsg:    "limit cannot exceed 500",
+		},
+		{
+			name:        "limit at max is valid",
+			request:     ListApplicationsRequest{Limit: 500},
+			expectError: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.request.Validate()
+
+			if tt.expectError {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), tt.errorMsg)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestListApplicationsRequest_Normalize(t *testing.T) {
+	tests := []struct {
+		name          string
+		input         ListApplicationsRequest
+		expectedLimit int
+	}{
+		{
+			name:          "sets default limit when zero",
+			input:         ListApplicationsRequest{},
+			expectedLimit: 50,
+		},
+		{
+			name:          "preserves explicit limit",
+			input:         ListApplicationsRequest{Limit: 100},
+			expectedLimit: 100,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.input.Normalize()
+			assert.Equal(t, tt.expectedLimit, tt.input.Limit)
+		})
+	}
 }

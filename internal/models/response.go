@@ -3,7 +3,7 @@
 //
 // Response Design Principles:
 // - Consistent JSON structure across all endpoints
-// - Optional fields use omitempty to reduce response size
+// - Optional fields use omitempty to reduce response size; required contract fields do not
 // - Rich error information with codes and details for debugging
 // - Standardized pagination with metadata
 // - Helper methods for easy response construction
@@ -60,9 +60,7 @@ type LatestVersionResponse struct {
 type ListReleasesResponse struct {
 	Releases   []ReleaseInfo `json:"releases"`
 	TotalCount int           `json:"total_count"`
-	Page       int           `json:"page"`
-	PageSize   int           `json:"page_size"`
-	HasMore    bool          `json:"has_more"`
+	NextCursor string        `json:"next_cursor"`
 }
 
 type ReleaseInfo struct {
@@ -166,9 +164,7 @@ type ApplicationStats struct {
 type ListApplicationsResponse struct {
 	Applications []ApplicationSummary `json:"applications"`
 	TotalCount   int                  `json:"total_count"`
-	Page         int                  `json:"page"`
-	PageSize     int                  `json:"page_size"`
-	HasMore      bool                 `json:"has_more"`
+	NextCursor   string               `json:"next_cursor"`
 }
 
 type ApplicationSummary struct {

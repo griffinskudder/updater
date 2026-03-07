@@ -24,7 +24,7 @@ func TestMemoryStorage(t *testing.T) {
 	// Test application operations
 	t.Run("Application Operations", func(t *testing.T) {
 		// Test empty applications list
-		apps, _, err := storage.ListApplicationsPaged(ctx, 50, 0)
+		apps, _, err := storage.ListApplicationsPaged(ctx, 50, nil)
 		if err != nil {
 			t.Errorf("Failed to get applications: %v", err)
 		}
@@ -60,7 +60,7 @@ func TestMemoryStorage(t *testing.T) {
 		}
 
 		// Test applications list
-		apps, _, err = storage.ListApplicationsPaged(ctx, 50, 0)
+		apps, _, err = storage.ListApplicationsPaged(ctx, 50, nil)
 		if err != nil {
 			t.Errorf("Failed to get applications: %v", err)
 		}
@@ -78,7 +78,7 @@ func TestMemoryStorage(t *testing.T) {
 	// Test release operations
 	t.Run("Release Operations", func(t *testing.T) {
 		// Test empty releases list
-		releases, _, err := storage.ListReleasesPaged(ctx, "test-app", models.ReleaseFilters{}, "release_date", "desc", 50, 0)
+		releases, _, err := storage.ListReleasesPaged(ctx, "test-app", models.ReleaseFilters{}, "release_date", "desc", 50, nil)
 		if err != nil {
 			t.Errorf("Failed to get releases: %v", err)
 		}
@@ -117,7 +117,7 @@ func TestMemoryStorage(t *testing.T) {
 		}
 
 		// Test releases list
-		releases, _, err = storage.ListReleasesPaged(ctx, "test-app", models.ReleaseFilters{}, "release_date", "desc", 50, 0)
+		releases, _, err = storage.ListReleasesPaged(ctx, "test-app", models.ReleaseFilters{}, "release_date", "desc", 50, nil)
 		if err != nil {
 			t.Errorf("Failed to get releases: %v", err)
 		}
@@ -174,7 +174,7 @@ func TestMemoryStorage(t *testing.T) {
 		}
 
 		// Verify deletion
-		releases, _, err = storage.ListReleasesPaged(ctx, "test-app", models.ReleaseFilters{}, "release_date", "desc", 50, 0)
+		releases, _, err = storage.ListReleasesPaged(ctx, "test-app", models.ReleaseFilters{}, "release_date", "desc", 50, nil)
 		if err != nil {
 			t.Errorf("Failed to get releases: %v", err)
 		}
@@ -409,43 +409,38 @@ func TestMemoryStorage_ListApplicationsPaged(t *testing.T) {
 		name      string
 		setup     func(s *MemoryStorage)
 		limit     int
-		offset    int
+		cursor    *models.ApplicationCursor
 		wantCount int
 		wantTotal int
 		wantEmpty bool
 	}{
 		{
-			name: "page 2 of size 2 from 5 apps",
+			name: "first page of size 2 from 5 apps",
 			setup: func(s *MemoryStorage) {
 				for i := 1; i <= 5; i++ {
-					seedApp(t, s, fmt.Sprintf("app-%d", i), fmt.Sprintf("App %d", i))
+					require.NoError(t, s.SaveApplication(ctx, &models.Application{
+						ID:        fmt.Sprintf("app-%d", i),
+						Name:      fmt.Sprintf("App %d", i),
+						CreatedAt: time.Now().Add(time.Duration(i) * time.Second).Format(time.RFC3339),
+					}))
 				}
 			},
 			limit:     2,
-			offset:    2,
+			cursor:    nil,
 			wantCount: 2,
 			wantTotal: 5,
 		},
 		{
-			name: "offset beyond end returns empty",
-			setup: func(s *MemoryStorage) {
-				for i := 1; i <= 5; i++ {
-					seedApp(t, s, fmt.Sprintf("app-%d", i), fmt.Sprintf("App %d", i))
-				}
-			},
-			limit:     2,
-			offset:    10,
-			wantCount: 0,
-			wantTotal: 5,
-			wantEmpty: true,
-		},
-		{
 			name: "limit 0 returns empty",
 			setup: func(s *MemoryStorage) {
-				seedApp(t, s, "app-1", "App 1")
+				require.NoError(t, s.SaveApplication(ctx, &models.Application{
+					ID:        "app-1",
+					Name:      "App 1",
+					CreatedAt: time.Now().Format(time.RFC3339),
+				}))
 			},
 			limit:     0,
-			offset:    0,
+			cursor:    nil,
 			wantCount: 0,
 			wantTotal: 1,
 			wantEmpty: true,
@@ -460,7 +455,7 @@ func TestMemoryStorage_ListApplicationsPaged(t *testing.T) {
 
 			tt.setup(s)
 
-			apps, total, err := s.ListApplicationsPaged(ctx, tt.limit, tt.offset)
+			apps, total, err := s.ListApplicationsPaged(ctx, tt.limit, tt.cursor)
 			require.NoError(t, err)
 			assert.Equal(t, tt.wantTotal, total)
 			assert.Len(t, apps, tt.wantCount)
@@ -483,7 +478,7 @@ func TestMemoryStorage_ListReleasesPaged(t *testing.T) {
 		sortBy    string
 		sortOrder string
 		limit     int
-		offset    int
+		cursor    *models.ReleaseCursor
 		wantCount int
 		wantTotal int
 		wantEmpty bool
@@ -504,7 +499,7 @@ func TestMemoryStorage_ListReleasesPaged(t *testing.T) {
 			sortBy:    "release_date",
 			sortOrder: "asc",
 			limit:     10,
-			offset:    0,
+			cursor:    nil,
 			wantCount: 3,
 			wantTotal: 3,
 		},
@@ -519,7 +514,7 @@ func TestMemoryStorage_ListReleasesPaged(t *testing.T) {
 			sortBy:    "release_date",
 			sortOrder: "asc",
 			limit:     10,
-			offset:    0,
+			cursor:    nil,
 			wantCount: 2,
 			wantTotal: 2,
 		},
@@ -534,13 +529,13 @@ func TestMemoryStorage_ListReleasesPaged(t *testing.T) {
 			sortBy:           "version",
 			sortOrder:        "desc",
 			limit:            10,
-			offset:           0,
+			cursor:           nil,
 			wantCount:        3,
 			wantTotal:        3,
 			wantVersionOrder: []string{"2.0.0", "1.5.0", "1.0.0"},
 		},
 		{
-			name: "pagination limit 2 offset 0",
+			name: "first page limit 2",
 			setup: func(s *MemoryStorage) {
 				for i := 1; i <= 4; i++ {
 					seedRelease(t, s, appID, fmt.Sprintf("%d.0.0", i), "linux", "amd64", false, base.Add(time.Duration(i)*time.Hour))
@@ -550,7 +545,7 @@ func TestMemoryStorage_ListReleasesPaged(t *testing.T) {
 			sortBy:    "release_date",
 			sortOrder: "asc",
 			limit:     2,
-			offset:    0,
+			cursor:    nil,
 			wantCount: 2,
 			wantTotal: 4,
 		},
@@ -563,7 +558,7 @@ func TestMemoryStorage_ListReleasesPaged(t *testing.T) {
 			sortBy:    "release_date",
 			sortOrder: "asc",
 			limit:     10,
-			offset:    0,
+			cursor:    nil,
 			wantCount: 0,
 			wantTotal: 0,
 			wantEmpty: true,
@@ -578,7 +573,7 @@ func TestMemoryStorage_ListReleasesPaged(t *testing.T) {
 
 			tt.setup(s)
 
-			releases, total, err := s.ListReleasesPaged(ctx, appID, tt.filters, tt.sortBy, tt.sortOrder, tt.limit, tt.offset)
+			releases, total, err := s.ListReleasesPaged(ctx, appID, tt.filters, tt.sortBy, tt.sortOrder, tt.limit, tt.cursor)
 			require.NoError(t, err)
 			assert.Equal(t, tt.wantTotal, total)
 			assert.Len(t, releases, tt.wantCount)
@@ -713,4 +708,77 @@ func TestMemoryStorage_GetApplicationStats(t *testing.T) {
 			assert.Equal(t, tt.wantLatestVersion, stats.LatestVersion)
 		})
 	}
+}
+
+func TestMemoryStorage_ListApplicationsPaged_CursorNotFound(t *testing.T) {
+	store, err := NewMemoryStorage()
+	require.NoError(t, err)
+	defer store.Close()
+	ctx := context.Background()
+
+	now := time.Now()
+	for i := range 3 {
+		app := &models.Application{
+			ID:        fmt.Sprintf("app-%d", i),
+			Name:      fmt.Sprintf("App %d", i),
+			Platforms: []string{"windows"},
+			Config:    models.ApplicationConfig{},
+			CreatedAt: now.Add(time.Duration(i) * time.Second).Format(time.RFC3339),
+			UpdatedAt: now.Format(time.RFC3339),
+		}
+		require.NoError(t, store.SaveApplication(ctx, app))
+	}
+
+	// Cursor pointing to a non-existent item.
+	cursor := &models.ApplicationCursor{
+		CreatedAt: now.Add(-1 * time.Hour),
+		ID:        "does-not-exist",
+	}
+	results, _, err := store.ListApplicationsPaged(ctx, 10, cursor)
+	require.NoError(t, err)
+	assert.Empty(t, results, "cursor pointing to a deleted item must return empty slice, not restart pagination")
+}
+
+func TestMemoryStorage_ListReleasesPaged_CursorNotFound(t *testing.T) {
+	store, err := NewMemoryStorage()
+	require.NoError(t, err)
+	defer store.Close()
+	ctx := context.Background()
+
+	app := &models.Application{
+		ID:        "app1",
+		Name:      "App1",
+		Platforms: []string{"windows"},
+		Config:    models.ApplicationConfig{},
+		CreatedAt: time.Now().Format(time.RFC3339),
+		UpdatedAt: time.Now().Format(time.RFC3339),
+	}
+	require.NoError(t, store.SaveApplication(ctx, app))
+
+	now := time.Now()
+	for i := range 3 {
+		r := &models.Release{
+			ID:            fmt.Sprintf("r%d", i),
+			ApplicationID: "app1",
+			Version:       fmt.Sprintf("1.0.%d", i),
+			Platform:      "windows",
+			Architecture:  "amd64",
+			DownloadURL:   "http://example.com",
+			Checksum:      "abc",
+			ChecksumType:  "sha256",
+			ReleaseDate:   now.Add(time.Duration(i) * time.Second),
+			CreatedAt:     now.Add(time.Duration(i) * time.Second),
+		}
+		require.NoError(t, store.SaveRelease(ctx, r))
+	}
+
+	cursor := &models.ReleaseCursor{
+		SortBy:      "release_date",
+		SortOrder:   "desc",
+		ID:          "does-not-exist",
+		ReleaseDate: now,
+	}
+	results, _, err := store.ListReleasesPaged(ctx, "app1", models.ReleaseFilters{}, "release_date", "desc", 10, cursor)
+	require.NoError(t, err)
+	assert.Empty(t, results, "cursor pointing to a deleted item must return empty slice, not restart pagination")
 }

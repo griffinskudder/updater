@@ -55,6 +55,46 @@ nav:
   - Models:
     - Overview: models/index.md
     - Reference: models/auto/models.md
+  - Design Docs:
+    - Application Management API:
+      - Design: plans/2026-02-15-application-management-api-design.md
+      - Implementation: plans/2026-02-15-application-management-api-implementation.md
+    - Admin Key Management:
+      - Design: plans/2026-02-16-admin-key-management-design.md
+      - Implementation: plans/2026-02-16-admin-key-management.md
+    - Admin Frontend: plans/2026-02-16-admin-frontend.md
+    - GitHub CI:
+      - Design: plans/2026-02-16-github-ci-design.md
+      - Implementation: plans/2026-02-16-github-ci-implementation.md
+    - GitHub Pages:
+      - Design: plans/2026-02-16-github-pages-design.md
+      - Implementation: plans/2026-02-16-github-pages-implementation.md
+    - Issue Fixes:
+      - Design: plans/2026-02-16-issue-fixes-design.md
+      - Implementation: plans/2026-02-16-issue-fixes-implementation.md
+    - Makefile Restructure:
+      - Design: plans/2026-02-15-makefile-restructure-design.md
+      - Implementation: plans/2026-02-15-makefile-restructure-implementation.md
+    - Proxy Delegation:
+      - Design: plans/2026-02-18-proxy-delegation-design.md
+      - Implementation: plans/2026-02-18-proxy-delegation-implementation.md
+    - Rate Limiter:
+      - Design: plans/2026-02-15-rate-limiter-design.md
+      - Implementation: plans/2026-02-15-rate-limiter-implementation.md
+    - Architecture Review: plans/2026-02-27-architecture-review.md
+    - Architecture Cleanup:
+      - Design: plans/2026-03-02-architecture-cleanup-design.md
+      - Implementation: plans/2026-03-02-architecture-cleanup-implementation.md
+    - Observability Build Info:
+      - Design: plans/2026-03-07-observability-build-info-design.md
+      - Implementation: plans/2026-03-07-build-info-metric-implementation.md
+    - Storage Pagination Pushdown:
+      - Design: plans/2026-03-07-storage-pagination-pushdown-design.md
+      - Implementation: plans/2026-03-07-storage-pagination-pushdown-implementation.md
+    - Keyset Pagination:
+      - Design: plans/2026-03-07-keyset-pagination-design.md
+      - Implementation: plans/2026-03-07-keyset-pagination-implementation.md
+      - Bugfixes: plans/2026-03-07-keyset-pagination-bugfixes.md
   - Database:
     - Overview: db/README.md
     - applications: db/public.applications.md

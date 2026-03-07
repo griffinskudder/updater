@@ -161,7 +161,7 @@ func (m *MockStorage) DeleteAPIKey(_ context.Context, _ string) error {
 	return nil
 }
 
-func (m *MockStorage) ListApplicationsPaged(_ context.Context, limit, offset int) ([]*models.Application, int, error) {
+func (m *MockStorage) ListApplicationsPaged(_ context.Context, limit int, cursor *models.ApplicationCursor) ([]*models.Application, int, error) {
 	apps := make([]*models.Application, 0, len(m.applications))
 	for _, app := range m.applications {
 		copied := *app
@@ -169,17 +169,26 @@ func (m *MockStorage) ListApplicationsPaged(_ context.Context, limit, offset int
 	}
 	sort.Slice(apps, func(i, j int) bool { return apps[i].Name < apps[j].Name })
 	total := len(apps)
-	if offset >= total {
+	start := 0
+	if cursor != nil {
+		for idx, app := range apps {
+			if app.ID == cursor.ID {
+				start = idx + 1
+				break
+			}
+		}
+	}
+	if start >= total {
 		return []*models.Application{}, total, nil
 	}
-	end := offset + limit
+	end := start + limit
 	if end > total {
 		end = total
 	}
-	return apps[offset:end], total, nil
+	return apps[start:end], total, nil
 }
 
-func (m *MockStorage) ListReleasesPaged(_ context.Context, appID string, filters models.ReleaseFilters, sortBy, sortOrder string, limit, offset int) ([]*models.Release, int, error) {
+func (m *MockStorage) ListReleasesPaged(_ context.Context, appID string, filters models.ReleaseFilters, sortBy, sortOrder string, limit int, cursor *models.ReleaseCursor) ([]*models.Release, int, error) {
 	var filtered []*models.Release
 	for _, r := range m.releases[appID] {
 		if filters.Architecture != "" && r.Architecture != filters.Architecture {
@@ -207,14 +216,23 @@ func (m *MockStorage) ListReleasesPaged(_ context.Context, appID string, filters
 		filtered = append(filtered, &copied)
 	}
 	total := len(filtered)
-	if offset >= total {
+	start := 0
+	if cursor != nil {
+		for idx, r := range filtered {
+			if r.ID == cursor.ID {
+				start = idx + 1
+				break
+			}
+		}
+	}
+	if start >= total {
 		return []*models.Release{}, total, nil
 	}
-	end := offset + limit
+	end := start + limit
 	if end > total {
 		end = total
 	}
-	return filtered[offset:end], total, nil
+	return filtered[start:end], total, nil
 }
 
 func (m *MockStorage) GetLatestStableRelease(_ context.Context, appID, platform, arch string) (*models.Release, error) {
@@ -539,7 +557,6 @@ func TestService_ListReleases(t *testing.T) {
 			request: &models.ListReleasesRequest{
 				ApplicationID: "test-app",
 				Limit:         1,
-				Offset:        0,
 			},
 			expectedCount:      1, // Only 1 due to limit
 			expectedTotalCount: 3, // But total available is 3
@@ -848,19 +865,16 @@ func TestService_ListApplications(t *testing.T) {
 	tests := []struct {
 		name        string
 		setup       func(*MockStorage)
-		limit       int
-		offset      int
+		req         *models.ListApplicationsRequest
 		checkResult func(*testing.T, *models.ListApplicationsResponse)
 	}{
 		{
-			name:   "empty list",
-			setup:  func(m *MockStorage) {},
-			limit:  50,
-			offset: 0,
+			name:  "empty list",
+			setup: func(m *MockStorage) {},
+			req:   &models.ListApplicationsRequest{Limit: 50},
 			checkResult: func(t *testing.T, resp *models.ListApplicationsResponse) {
 				assert.Len(t, resp.Applications, 0)
 				assert.Equal(t, 0, resp.TotalCount)
-				assert.False(t, resp.HasMore)
 			},
 		},
 		{
@@ -874,18 +888,14 @@ func TestService_ListApplications(t *testing.T) {
 					m.applications[id] = app
 				}
 			},
-			limit:  50,
-			offset: 0,
+			req: &models.ListApplicationsRequest{Limit: 50},
 			checkResult: func(t *testing.T, resp *models.ListApplicationsResponse) {
 				assert.Len(t, resp.Applications, 3)
 				assert.Equal(t, 3, resp.TotalCount)
-				assert.False(t, resp.HasMore)
-				assert.Equal(t, 1, resp.Page)
-				assert.Equal(t, 50, resp.PageSize)
 			},
 		},
 		{
-			name: "pagination - first page",
+			name: "pagination - first page returns next_cursor",
 			setup: func(m *MockStorage) {
 				for i := 0; i < 5; i++ {
 					id := fmt.Sprintf("app-%d", i)
@@ -895,19 +905,17 @@ func TestService_ListApplications(t *testing.T) {
 					m.applications[id] = app
 				}
 			},
-			limit:  2,
-			offset: 0,
+			req: &models.ListApplicationsRequest{Limit: 2},
 			checkResult: func(t *testing.T, resp *models.ListApplicationsResponse) {
 				assert.Len(t, resp.Applications, 2)
 				assert.Equal(t, 5, resp.TotalCount)
-				assert.True(t, resp.HasMore)
-				assert.Equal(t, 1, resp.Page)
+				assert.NotEmpty(t, resp.NextCursor)
 			},
 		},
 		{
-			name: "pagination - second page",
+			name: "pagination - last page has no next_cursor",
 			setup: func(m *MockStorage) {
-				for i := 0; i < 5; i++ {
+				for i := 0; i < 3; i++ {
 					id := fmt.Sprintf("app-%d", i)
 					app := models.NewApplication(id, fmt.Sprintf("App %d", i), []string{"windows"})
 					app.CreatedAt = "2025-01-01T00:00:00Z"
@@ -915,13 +923,11 @@ func TestService_ListApplications(t *testing.T) {
 					m.applications[id] = app
 				}
 			},
-			limit:  2,
-			offset: 2,
+			req: &models.ListApplicationsRequest{Limit: 50},
 			checkResult: func(t *testing.T, resp *models.ListApplicationsResponse) {
-				assert.Len(t, resp.Applications, 2)
-				assert.Equal(t, 5, resp.TotalCount)
-				assert.True(t, resp.HasMore)
-				assert.Equal(t, 2, resp.Page)
+				assert.Len(t, resp.Applications, 3)
+				assert.Equal(t, 3, resp.TotalCount)
+				assert.Empty(t, resp.NextCursor)
 			},
 		},
 		{
@@ -932,12 +938,21 @@ func TestService_ListApplications(t *testing.T) {
 				app.UpdatedAt = "2025-01-01T00:00:00Z"
 				m.applications["app-1"] = app
 			},
-			limit:  0,
-			offset: 0,
+			req: &models.ListApplicationsRequest{Limit: 0},
 			checkResult: func(t *testing.T, resp *models.ListApplicationsResponse) {
 				assert.Len(t, resp.Applications, 1)
-				assert.Equal(t, 50, resp.PageSize)
 			},
+		},
+		{
+			name: "invalid cursor returns validation error",
+			setup: func(m *MockStorage) {
+				app := models.NewApplication("app-1", "App 1", []string{"windows"})
+				app.CreatedAt = "2025-01-01T00:00:00Z"
+				app.UpdatedAt = "2025-01-01T00:00:00Z"
+				m.applications["app-1"] = app
+			},
+			req:         &models.ListApplicationsRequest{Limit: 10, After: "not-a-valid-cursor"},
+			checkResult: nil,
 		},
 	}
 
@@ -948,7 +963,12 @@ func TestService_ListApplications(t *testing.T) {
 			service := NewService(mockStorage)
 			ctx := context.Background()
 
-			resp, err := service.ListApplications(ctx, tt.limit, tt.offset)
+			resp, err := service.ListApplications(ctx, tt.req)
+			if tt.req.After != "" && tt.checkResult == nil {
+				// Expect a validation error for invalid cursor tests
+				require.Error(t, err)
+				return
+			}
 			require.NoError(t, err)
 			require.NotNil(t, resp)
 			if tt.checkResult != nil {
@@ -1186,6 +1206,134 @@ func TestService_DeleteRelease(t *testing.T) {
 			assert.Error(t, getErr)
 		})
 	}
+}
+
+func TestListReleases_CursorEmittedWhenPageFull(t *testing.T) {
+	// Exactly limit items: cursor must be emitted since we can't know there's no next page.
+	store, err := storage.NewMemoryStorage()
+	require.NoError(t, err)
+	defer store.Close()
+	ctx := context.Background()
+
+	app := &models.Application{ID: "app1", Name: "App1", Platforms: []string{"windows"}, Config: models.ApplicationConfig{}}
+	require.NoError(t, store.SaveApplication(ctx, app))
+
+	now := time.Now()
+	for i := range 3 {
+		r := &models.Release{
+			ID: fmt.Sprintf("r%d", i), ApplicationID: "app1",
+			Version: fmt.Sprintf("1.0.%d", i), Platform: "windows", Architecture: "amd64",
+			DownloadURL: "http://example.com", Checksum: "abc", ChecksumType: "sha256",
+			ReleaseDate: now.Add(time.Duration(i) * time.Second),
+			CreatedAt:   now.Add(time.Duration(i) * time.Second),
+		}
+		require.NoError(t, store.SaveRelease(ctx, r))
+	}
+
+	svc := NewService(store)
+	req := &models.ListReleasesRequest{
+		ApplicationID: "app1",
+		Limit:         3,
+		SortBy:        "release_date",
+		SortOrder:     "desc",
+	}
+	resp, err := svc.ListReleases(ctx, req)
+	require.NoError(t, err)
+	assert.Len(t, resp.Releases, 3)
+	assert.NotEmpty(t, resp.NextCursor, "cursor must be emitted when page is full (len == limit)")
+}
+
+func TestListReleases_NoCursorWhenPagePartial(t *testing.T) {
+	store, err := storage.NewMemoryStorage()
+	require.NoError(t, err)
+	defer store.Close()
+	ctx := context.Background()
+
+	app := &models.Application{ID: "app1", Name: "App1", Platforms: []string{"windows"}, Config: models.ApplicationConfig{}}
+	require.NoError(t, store.SaveApplication(ctx, app))
+
+	now := time.Now()
+	for i := range 2 {
+		r := &models.Release{
+			ID: fmt.Sprintf("r%d", i), ApplicationID: "app1",
+			Version: fmt.Sprintf("1.0.%d", i), Platform: "windows", Architecture: "amd64",
+			DownloadURL: "http://example.com", Checksum: "abc", ChecksumType: "sha256",
+			ReleaseDate: now.Add(time.Duration(i) * time.Second),
+			CreatedAt:   now.Add(time.Duration(i) * time.Second),
+		}
+		require.NoError(t, store.SaveRelease(ctx, r))
+	}
+
+	svc := NewService(store)
+	req := &models.ListReleasesRequest{
+		ApplicationID: "app1",
+		Limit:         10,
+		SortBy:        "release_date",
+		SortOrder:     "desc",
+	}
+	resp, err := svc.ListReleases(ctx, req)
+	require.NoError(t, err)
+	assert.Len(t, resp.Releases, 2)
+	assert.Empty(t, resp.NextCursor, "cursor must not be emitted when page is partial (len < limit)")
+}
+
+func TestListReleases_NonSemverVersionNonVersionSort(t *testing.T) {
+	// Non-semver version must not block cursor emission when sort is not "version".
+	store, err := storage.NewMemoryStorage()
+	require.NoError(t, err)
+	defer store.Close()
+	ctx := context.Background()
+
+	app := &models.Application{ID: "app1", Name: "App1", Platforms: []string{"windows"}, Config: models.ApplicationConfig{}}
+	require.NoError(t, store.SaveApplication(ctx, app))
+
+	now := time.Now()
+	for i := range 3 {
+		r := &models.Release{
+			ID: fmt.Sprintf("r%d", i), ApplicationID: "app1",
+			Version: fmt.Sprintf("not-semver-%d", i), Platform: "windows", Architecture: "amd64",
+			DownloadURL: "http://example.com", Checksum: "abc", ChecksumType: "sha256",
+			ReleaseDate: now.Add(time.Duration(i) * time.Second),
+			CreatedAt:   now.Add(time.Duration(i) * time.Second),
+		}
+		require.NoError(t, store.SaveRelease(ctx, r))
+	}
+
+	svc := NewService(store)
+	req := &models.ListReleasesRequest{
+		ApplicationID: "app1",
+		Limit:         3,
+		SortBy:        "release_date",
+		SortOrder:     "desc",
+	}
+	resp, err := svc.ListReleases(ctx, req)
+	require.NoError(t, err)
+	assert.NotEmpty(t, resp.NextCursor, "cursor must be emitted for non-semver versions when sort is not 'version'")
+}
+
+func TestListApplications_CursorEmittedWhenPageFull(t *testing.T) {
+	store, err := storage.NewMemoryStorage()
+	require.NoError(t, err)
+	defer store.Close()
+	ctx := context.Background()
+
+	now := time.Now()
+	for i := range 3 {
+		app := &models.Application{
+			ID: fmt.Sprintf("app%d", i), Name: fmt.Sprintf("App%d", i),
+			Platforms: []string{"windows"}, Config: models.ApplicationConfig{},
+			CreatedAt: now.Add(time.Duration(i) * time.Second).Format(time.RFC3339),
+			UpdatedAt: now.Format(time.RFC3339),
+		}
+		require.NoError(t, store.SaveApplication(ctx, app))
+	}
+
+	svc := NewService(store)
+	req := &models.ListApplicationsRequest{Limit: 3}
+	resp, err := svc.ListApplications(ctx, req)
+	require.NoError(t, err)
+	assert.Len(t, resp.Applications, 3)
+	assert.NotEmpty(t, resp.NextCursor, "cursor must be emitted when page is full (len == limit)")
 }
 
 // Helper functions

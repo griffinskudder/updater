@@ -222,18 +222,18 @@ func (s *InstrumentedStorage) DeleteAPIKey(ctx context.Context, keyID string) er
 	return err
 }
 
-func (s *InstrumentedStorage) ListApplicationsPaged(ctx context.Context, limit, offset int) ([]*models.Application, int, error) {
+func (s *InstrumentedStorage) ListApplicationsPaged(ctx context.Context, limit int, cursor *models.ApplicationCursor) ([]*models.Application, int, error) {
 	ctx, span := s.startSpan(ctx, "ListApplicationsPaged")
 	start := time.Now()
-	apps, total, err := s.inner.ListApplicationsPaged(ctx, limit, offset)
+	apps, total, err := s.inner.ListApplicationsPaged(ctx, limit, cursor)
 	s.record(ctx, span, "ListApplicationsPaged", start, err)
 	return apps, total, err
 }
 
-func (s *InstrumentedStorage) ListReleasesPaged(ctx context.Context, appID string, filters models.ReleaseFilters, sortBy, sortOrder string, limit, offset int) ([]*models.Release, int, error) {
+func (s *InstrumentedStorage) ListReleasesPaged(ctx context.Context, appID string, filters models.ReleaseFilters, sortBy, sortOrder string, limit int, cursor *models.ReleaseCursor) ([]*models.Release, int, error) {
 	ctx, span := s.startSpan(ctx, "ListReleasesPaged", attribute.String("app_id", appID))
 	start := time.Now()
-	releases, total, err := s.inner.ListReleasesPaged(ctx, appID, filters, sortBy, sortOrder, limit, offset)
+	releases, total, err := s.inner.ListReleasesPaged(ctx, appID, filters, sortBy, sortOrder, limit, cursor)
 	s.record(ctx, span, "ListReleasesPaged", start, err)
 	return releases, total, err
 }

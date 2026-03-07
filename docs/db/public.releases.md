@@ -21,6 +21,10 @@
 | minimum_version | text |  | true |  |  |  |
 | metadata | jsonb | '{}'::jsonb | true |  |  |  |
 | created_at | timestamp with time zone | now() | false |  |  |  |
+| version_major | bigint | 0 | false |  |  |  |
+| version_minor | bigint | 0 | false |  |  |  |
+| version_patch | bigint | 0 | false |  |  |  |
+| version_pre_release | text |  | true |  |  |  |
 
 ## Constraints
 
@@ -43,6 +47,7 @@
 | idx_releases_required_date | CREATE INDEX idx_releases_required_date ON public.releases USING btree (required, release_date DESC) |
 | idx_releases_metadata_gin | CREATE INDEX idx_releases_metadata_gin ON public.releases USING gin (metadata) |
 | idx_releases_app_version | CREATE INDEX idx_releases_app_version ON public.releases USING btree (application_id, version) |
+| idx_releases_version_sort | CREATE INDEX idx_releases_version_sort ON public.releases USING btree (application_id, version_major DESC, version_minor DESC, version_patch DESC) |
 
 ## Relations
 

@@ -175,18 +175,20 @@ func (h *Handlers) ListReleases(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Parse limit and offset
-	if limitParam := r.URL.Query().Get("limit"); limitParam != "" {
-		if limit, err := strconv.Atoi(limitParam); err == nil {
-			req.Limit = limit
+	// Parse limit; reject non-positive values explicitly provided by the caller.
+	// Zero is the "not provided" sentinel, so it cannot be validated in Validate().
+	limitStr := r.URL.Query().Get("limit")
+	if limitStr != "" {
+		parsed, err := strconv.Atoi(limitStr)
+		if err != nil || parsed < 1 {
+			h.writeErrorResponse(w, http.StatusBadRequest, "INVALID_REQUEST", "limit must be a positive integer")
+			return
 		}
+		req.Limit = parsed
 	}
 
-	if offsetParam := r.URL.Query().Get("offset"); offsetParam != "" {
-		if offset, err := strconv.Atoi(offsetParam); err == nil {
-			req.Offset = offset
-		}
-	}
+	// Parse cursor for keyset pagination
+	req.After = r.URL.Query().Get("after")
 
 	// Parse platforms array
 	if platforms := r.URL.Query().Get("platforms"); platforms != "" {

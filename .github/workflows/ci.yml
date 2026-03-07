@@ -25,7 +25,7 @@ jobs:
         run: |
           set -euo pipefail
           COVERAGE=$(make cover | awk '/^total/ {gsub(/%/, "", $3); print $3}')
-          THRESHOLD=$(cat .github/coverage-threshold)
+          THRESHOLD=70.0
           echo "Coverage:  ${COVERAGE}%"
           echo "Threshold: ${THRESHOLD}%"
           awk "BEGIN {

@@ -182,6 +182,18 @@ func (s *Service) ListReleases(ctx context.Context, req *models.ListReleasesRequ
 	}
 	req.Normalize()
 
+	var cursor *models.ReleaseCursor
+	if req.After != "" {
+		var err error
+		cursor, err = models.DecodeReleaseCursor(req.After)
+		if err != nil {
+			return nil, NewValidationError("invalid cursor", err)
+		}
+		if cursor.SortBy != req.SortBy || cursor.SortOrder != req.SortOrder {
+			return nil, NewValidationError("cursor sort_by/sort_order mismatch", nil)
+		}
+	}
+
 	filters := models.ReleaseFilters{
 		Architecture: req.Architecture,
 		Version:      req.Version,
@@ -193,7 +205,7 @@ func (s *Service) ListReleases(ctx context.Context, req *models.ListReleasesRequ
 		filters.Platforms = req.Platforms
 	}
 
-	releases, totalCount, err := s.storage.ListReleasesPaged(ctx, req.ApplicationID, filters, req.SortBy, req.SortOrder, req.Limit, req.Offset)
+	releases, totalCount, err := s.storage.ListReleasesPaged(ctx, req.ApplicationID, filters, req.SortBy, req.SortOrder, req.Limit, cursor)
 	if err != nil {
 		return nil, NewInternalError("failed to get releases", err)
 	}
@@ -203,13 +215,47 @@ func (s *Service) ListReleases(ctx context.Context, req *models.ListReleasesRequ
 		releaseInfos[i].FromRelease(release)
 	}
 
-	end := req.Offset + len(releases)
+	var nextCursor string
+	if len(releases) > 0 && len(releases) == req.Limit {
+		last := releases[len(releases)-1]
+		c := &models.ReleaseCursor{
+			SortBy:       req.SortBy,
+			SortOrder:    req.SortOrder,
+			ID:           last.ID,
+			ReleaseDate:  last.ReleaseDate,
+			Platform:     last.Platform,
+			Architecture: last.Architecture,
+			CreatedAt:    last.CreatedAt,
+		}
+		generateCursor := true
+		if req.SortBy == "version" {
+			sv, err := semver.NewVersion(last.Version)
+			if err != nil {
+				// Cannot generate a keyset cursor for version sort when the last item has a
+				// non-semver version string. Pagination appears complete. This should not
+				// occur in normal operation since the API validates versions on write.
+				generateCursor = false
+			} else {
+				c.VersionMajor = int64(sv.Major()) //#nosec G115 -- components validated at API layer, within int64 range
+				c.VersionMinor = int64(sv.Minor()) //#nosec G115 -- components validated at API layer, within int64 range
+				c.VersionPatch = int64(sv.Patch()) //#nosec G115 -- components validated at API layer, within int64 range
+				c.VersionIsStable = sv.Prerelease() == ""
+				c.VersionPreRelease = sv.Prerelease()
+			}
+		}
+		if generateCursor {
+			encoded, err := c.Encode()
+			if err != nil {
+				return nil, NewInternalError("failed to encode pagination cursor", err)
+			}
+			nextCursor = encoded
+		}
+	}
+
 	return &models.ListReleasesResponse{
 		Releases:   releaseInfos,
 		TotalCount: totalCount,
-		Page:       (req.Offset / req.Limit) + 1,
-		PageSize:   req.Limit,
-		HasMore:    end < totalCount,
+		NextCursor: nextCursor,
 	}, nil
 }
 
@@ -328,15 +374,22 @@ func (s *Service) GetApplication(ctx context.Context, appID string) (*models.App
 }
 
 // ListApplications returns a paginated list of applications.
-func (s *Service) ListApplications(ctx context.Context, limit, offset int) (*models.ListApplicationsResponse, error) {
-	if limit <= 0 {
-		limit = 50
+func (s *Service) ListApplications(ctx context.Context, req *models.ListApplicationsRequest) (*models.ListApplicationsResponse, error) {
+	if err := req.Validate(); err != nil {
+		return nil, NewValidationError("invalid request", err)
 	}
-	if offset < 0 {
-		offset = 0
+	req.Normalize()
+
+	var cursor *models.ApplicationCursor
+	if req.After != "" {
+		var err error
+		cursor, err = models.DecodeApplicationCursor(req.After)
+		if err != nil {
+			return nil, NewValidationError("invalid cursor", err)
+		}
 	}
 
-	apps, totalCount, err := s.storage.ListApplicationsPaged(ctx, limit, offset)
+	apps, totalCount, err := s.storage.ListApplicationsPaged(ctx, req.Limit, cursor)
 	if err != nil {
 		return nil, NewInternalError("failed to list applications", err)
 	}
@@ -348,13 +401,25 @@ func (s *Service) ListApplications(ctx context.Context, limit, offset int) (*mod
 		summaries[i].UpdatedAt, _ = time.Parse(time.RFC3339, app.UpdatedAt)
 	}
 
-	end := offset + len(apps)
+	var nextCursor string
+	if len(apps) > 0 && len(apps) == req.Limit {
+		last := apps[len(apps)-1]
+		createdAt, _ := time.Parse(time.RFC3339, last.CreatedAt)
+		c := &models.ApplicationCursor{
+			CreatedAt: createdAt,
+			ID:        last.ID,
+		}
+		encoded, err := c.Encode()
+		if err != nil {
+			return nil, NewInternalError("failed to encode pagination cursor", err)
+		}
+		nextCursor = encoded
+	}
+
 	return &models.ListApplicationsResponse{
 		Applications: summaries,
 		TotalCount:   totalCount,
-		Page:         (offset / limit) + 1,
-		PageSize:     limit,
-		HasMore:      end < totalCount,
+		NextCursor:   nextCursor,
 	}, nil
 }
 

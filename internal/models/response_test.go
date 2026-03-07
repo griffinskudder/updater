@@ -1,6 +1,7 @@
 package models
 
 import (
+	"encoding/json"
 	"strings"
 	"testing"
 	"time"
@@ -232,16 +233,12 @@ func TestListReleasesResponse_Structure(t *testing.T) {
 	response := ListReleasesResponse{
 		Releases:   []ReleaseInfo{},
 		TotalCount: 100,
-		Page:       1,
-		PageSize:   20,
-		HasMore:    true,
+		NextCursor: "some-cursor",
 	}
 
 	assert.NotNil(t, response.Releases)
 	assert.Equal(t, 100, response.TotalCount)
-	assert.Equal(t, 1, response.Page)
-	assert.Equal(t, 20, response.PageSize)
-	assert.True(t, response.HasMore)
+	assert.Equal(t, "some-cursor", response.NextCursor)
 }
 
 func TestRegisterReleaseResponse_Structure(t *testing.T) {
@@ -357,4 +354,34 @@ func TestComponentHealth_Structure(t *testing.T) {
 	assert.Equal(t, "All systems operational", component.Message)
 	assert.Equal(t, 2, len(component.Details))
 	assert.Equal(t, now, component.Timestamp)
+}
+
+func TestListReleasesResponse_NextCursorAlwaysPresent(t *testing.T) {
+	resp := ListReleasesResponse{
+		Releases:   []ReleaseInfo{},
+		TotalCount: 0,
+		NextCursor: "",
+	}
+	b, err := json.Marshal(resp)
+	require.NoError(t, err)
+
+	var m map[string]interface{}
+	require.NoError(t, json.Unmarshal(b, &m))
+	_, ok := m["next_cursor"]
+	assert.True(t, ok, "next_cursor must be present in JSON even when empty")
+}
+
+func TestListApplicationsResponse_NextCursorAlwaysPresent(t *testing.T) {
+	resp := ListApplicationsResponse{
+		Applications: []ApplicationSummary{},
+		TotalCount:   0,
+		NextCursor:   "",
+	}
+	b, err := json.Marshal(resp)
+	require.NoError(t, err)
+
+	var m map[string]interface{}
+	require.NoError(t, json.Unmarshal(b, &m))
+	_, ok := m["next_cursor"]
+	assert.True(t, ok, "next_cursor must be present in JSON even when empty")
 }

@@ -380,7 +380,7 @@ components:
 
     ListReleasesResponse:
       type: object
-      required: [releases, total_count, page, page_size, has_more]
+      required: [releases, total_count, next_cursor]
       properties:
         releases:
           type: array
@@ -389,15 +389,9 @@ components:
         total_count:
           type: integer
           description: Total number of releases matching the filter
-        page:
-          type: integer
-          description: Current page number (1-based)
-        page_size:
-          type: integer
-          description: Number of results per page
-        has_more:
-          type: boolean
-          description: Whether additional pages exist
+        next_cursor:
+          type: string
+          description: Opaque cursor to retrieve the next page. Empty string when no further results exist.
 
     ApplicationConfig:
       type: object
@@ -561,7 +555,7 @@ components:
 
     ListApplicationsResponse:
       type: object
-      required: [applications, total_count, page, page_size, has_more]
+      required: [applications, total_count, next_cursor]
       properties:
         applications:
           type: array
@@ -570,15 +564,9 @@ components:
         total_count:
           type: integer
           description: Total number of applications
-        page:
-          type: integer
-          description: Current page number (1-based)
-        page_size:
-          type: integer
-          description: Number of results per page
-        has_more:
-          type: boolean
-          description: Whether additional pages exist
+        next_cursor:
+          type: string
+          description: Opaque cursor to retrieve the next page. Empty string when no further results exist.
 
     ComponentHealth:
       type: object
@@ -1098,18 +1086,19 @@ paths:
           description: Filter by required flag
         - name: limit
           in: query
+          description: Maximum number of releases to return (1–500). Defaults to 50 when omitted.
+          required: false
           schema:
             type: integer
             minimum: 1
+            maximum: 500
             default: 50
-          description: Page size
-        - name: offset
+        - name: after
           in: query
+          description: Opaque cursor returned in a previous response as next_cursor. Omit to retrieve the first page.
+          required: false
           schema:
-            type: integer
-            minimum: 0
-            default: 0
-          description: Page offset
+            type: string
         - name: sort_by
           in: query
           schema:
@@ -1142,9 +1131,7 @@ paths:
                     required: false
                     minimum_version: "1.0.0"
                 total_count: 1
-                page: 1
-                page_size: 50
-                has_more: false
+                next_cursor: ""
         "400":
           $ref: "#/components/responses/BadRequest"
         "401":
@@ -1153,6 +1140,8 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
         "500":
           $ref: "#/components/responses/InternalError"
 
@@ -1258,18 +1247,19 @@ paths:
       parameters:
         - name: limit
           in: query
+          description: Maximum number of applications to return (1–500). Defaults to 50 when omitted.
+          required: false
           schema:
             type: integer
             minimum: 1
+            maximum: 500
             default: 50
-          description: Page size
-        - name: offset
+        - name: after
           in: query
+          description: Opaque cursor returned in a previous response as next_cursor. Omit to retrieve the first page.
+          required: false
           schema:
-            type: integer
-            minimum: 0
-            default: 0
-          description: Page offset
+            type: string
       responses:
         "200":
           description: Paginated list of applications
@@ -1286,13 +1276,13 @@ paths:
                     created_at: "2026-01-01T00:00:00Z"
                     updated_at: "2026-02-01T00:00:00Z"
                 total_count: 1
-                page: 1
-                page_size: 50
-                has_more: false
+                next_cursor: ""
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
         "500":
           $ref: "#/components/responses/InternalError"
 
