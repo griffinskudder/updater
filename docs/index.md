@@ -94,7 +94,8 @@ graph TB
     mw --> logic
     logic --> models
     logic --> config
-    logic --> iface
+    logic --> instStorage
+    instStorage --> iface
     iface --> mem
     iface --> pg
     iface --> sqlite
@@ -104,7 +105,6 @@ graph TB
     api --> tracing
     api --> logger
     mw --> logger
-    instStorage --> iface
 
 ```
 
@@ -150,16 +150,18 @@ The service provides RESTful API endpoints for update management:
 - `GET /api/v1/docs` - Swagger UI
 - `GET /api/v1/openapi.yaml` - OpenAPI specification
 
-**Protected (read permission, requires `security.enable_auth: true`):**
+**Protected endpoints** require an API key and are only enforced when `security.enable_auth: true`.
+
+**Protected (read):**
 - `GET /api/v1/updates/{app_id}/releases` - List releases
 - `GET /api/v1/applications` - List applications
 - `GET /api/v1/applications/{app_id}` - Get application details
 
-**Protected (write permission, requires `security.enable_auth: true`):**
+**Protected (write):**
 - `POST /api/v1/updates/{app_id}/register` - Register new release
 - `POST /api/v1/applications` - Create application
 
-**Protected (admin permission, requires `security.enable_auth: true`):**
+**Protected (admin):**
 - `PUT /api/v1/applications/{app_id}` - Update application
 - `DELETE /api/v1/applications/{app_id}` - Delete application
 - `DELETE /api/v1/updates/{app_id}/releases/{version}/{platform}/{arch}` - Delete release
