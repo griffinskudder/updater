@@ -10,6 +10,11 @@ info:
     All request and response bodies use `application/json`. Timestamps follow RFC 3339 format
     and versions follow semantic versioning (semver).
 
+    ## Request Limits
+
+    All endpoints that accept a request body enforce a maximum size of **1 MiB** (1,048,576 bytes).
+    Requests exceeding this limit receive a `413 Payload Too Large` response.
+
     ## Authentication
 
     Protected endpoints require a Bearer token in the `Authorization` header:
@@ -815,6 +820,18 @@ components:
             code: VALIDATION_ERROR
             timestamp: "2026-02-16T10:00:00Z"
 
+    PayloadTooLarge:
+      description: Request body exceeds the maximum allowed size (1 MiB)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error: error
+            message: Request body too large
+            code: BAD_REQUEST
+            timestamp: "2026-02-16T10:00:00Z"
+
     InternalError:
       description: Unexpected server-side error
       content:
@@ -822,7 +839,7 @@ components:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
           example:
-            error: internal_error
+            error: error
             message: Internal server error
             code: INTERNAL_ERROR
             timestamp: "2026-02-16T10:00:00Z"
@@ -939,6 +956,8 @@ paths:
           $ref: "#/components/responses/BadRequest"
         "404":
           $ref: "#/components/responses/NotFound"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
         "500":
           $ref: "#/components/responses/InternalError"
 
@@ -1196,6 +1215,8 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "409":
           $ref: "#/components/responses/Conflict"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
         "422":
           $ref: "#/components/responses/UnprocessableEntity"
         "500":
@@ -1327,6 +1348,8 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "409":
           $ref: "#/components/responses/Conflict"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
         "422":
           $ref: "#/components/responses/UnprocessableEntity"
         "500":
@@ -1419,6 +1442,8 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
         "422":
           $ref: "#/components/responses/UnprocessableEntity"
         "500":
@@ -1502,6 +1527,8 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
         "500":
           $ref: "#/components/responses/InternalError"
 
@@ -1545,6 +1572,8 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
         "500":
           $ref: "#/components/responses/InternalError"
     delete:
@@ -1573,6 +1602,9 @@ paths:
       description: |
         Returns the service health status. When called with a valid Bearer token, the response
         includes additional component details and operational metrics.
+
+        Storage error details are never included in the public response to prevent
+        information disclosure. A generic status message is returned instead.
 
         Available at both `/health` and `/api/v1/health`.
       operationId: healthCheck

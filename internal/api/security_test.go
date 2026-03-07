@@ -601,9 +601,9 @@ func TestSecurityVulnerabilities(t *testing.T) {
 	})
 
 	t.Run("Large Payload Protection", func(t *testing.T) {
-		// Create a large JSON payload (>1MB)
+		// Create a large JSON payload (>1MB) that exceeds maxRequestBodySize
 		largeData := make(map[string]interface{})
-		largeString := strings.Repeat("x", 1024*1024) // 1MB string
+		largeString := strings.Repeat("x", 2*1024*1024) // 2MB string (exceeds 1MB limit)
 		largeData["large_field"] = largeString
 		largeData["version"] = "1.0.0"
 		largeData["platform"] = "windows"
@@ -618,12 +618,14 @@ func TestSecurityVulnerabilities(t *testing.T) {
 
 		router.ServeHTTP(rr, req)
 
-		// Should handle large payloads gracefully (either reject or process)
-		assert.True(t, rr.Code == http.StatusRequestEntityTooLarge ||
-			rr.Code == http.StatusBadRequest ||
-			rr.Code == http.StatusCreated || // Mock might accept the payload
-			rr.Code == http.StatusNotFound, // Handler not implemented
-			"Large payload should be handled gracefully, got: %d", rr.Code)
+		// Must be rejected with 413
+		assert.Equal(t, http.StatusRequestEntityTooLarge, rr.Code,
+			"Large payload must be rejected with 413")
+
+		var errorResp models.ErrorResponse
+		err = json.Unmarshal(rr.Body.Bytes(), &errorResp)
+		require.NoError(t, err)
+		assert.Contains(t, errorResp.Message, "Request body too large")
 	})
 
 	t.Run("Invalid JSON Protection", func(t *testing.T) {
@@ -722,6 +724,122 @@ func BenchmarkPermissionCheck(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		_ = apiKey.HasPermission(string(PermissionRead))
 	}
+}
+
+// TestRequestBodySizeLimit tests that POST endpoints enforce the body size limit (#48)
+func TestRequestBodySizeLimit(t *testing.T) {
+	config := &models.Config{
+		Security: models.SecurityConfig{EnableAuth: false},
+	}
+
+	mockService := &MockUpdateService{}
+	mockService.On("CheckForUpdate", mock.Anything, mock.Anything).
+		Return((*models.UpdateCheckResponse)(nil), update.NewApplicationNotFoundError("test")).Maybe()
+
+	handlers := NewHandlers(mockService)
+	router := SetupRoutes(handlers, config)
+
+	t.Run("small body accepted", func(t *testing.T) {
+		body := `{"application_id":"test","current_version":"1.0.0","platform":"windows","architecture":"amd64"}`
+		req := httptest.NewRequest("POST", "/api/v1/check", strings.NewReader(body))
+		req.Header.Set("Content-Type", "application/json")
+		rr := httptest.NewRecorder()
+		router.ServeHTTP(rr, req)
+		// Should reach the handler (app not found), not be rejected for size
+		assert.Equal(t, http.StatusNotFound, rr.Code)
+	})
+
+	t.Run("body over limit rejected with 413", func(t *testing.T) {
+		// Build a valid-looking JSON object that exceeds the 1 MiB limit.
+		padding := strings.Repeat("x", (1<<20)+1)
+		body := fmt.Sprintf(`{"application_id":"%s","current_version":"1.0.0","platform":"windows","architecture":"amd64"}`, padding)
+		req := httptest.NewRequest("POST", "/api/v1/check", strings.NewReader(body))
+		req.Header.Set("Content-Type", "application/json")
+		rr := httptest.NewRecorder()
+		router.ServeHTTP(rr, req)
+		assert.Equal(t, http.StatusRequestEntityTooLarge, rr.Code)
+	})
+}
+
+// TestInternalErrorSanitization tests that internal error details are not leaked (#49)
+func TestInternalErrorSanitization(t *testing.T) {
+	mockService := &MockUpdateService{}
+
+	// Return a raw (non-ServiceError) error containing internal details
+	internalErr := fmt.Errorf("pq: connection refused to host=db.internal:5432 user=admin dbname=updater")
+	mockService.On("CheckForUpdate", mock.Anything, mock.Anything).
+		Return((*models.UpdateCheckResponse)(nil), internalErr)
+
+	config := &models.Config{
+		Security: models.SecurityConfig{EnableAuth: false},
+	}
+
+	handlers := NewHandlers(mockService)
+	router := SetupRoutes(handlers, config)
+
+	body := `{"application_id":"test","current_version":"1.0.0","platform":"windows","architecture":"amd64"}`
+	req := httptest.NewRequest("POST", "/api/v1/check", strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	rr := httptest.NewRecorder()
+
+	router.ServeHTTP(rr, req)
+
+	assert.Equal(t, http.StatusInternalServerError, rr.Code)
+
+	var errorResp models.ErrorResponse
+	err := json.Unmarshal(rr.Body.Bytes(), &errorResp)
+	require.NoError(t, err)
+
+	// Must return generic message, never the raw error
+	assert.Equal(t, "Internal server error", errorResp.Message)
+	assert.NotContains(t, rr.Body.String(), "pq:")
+	assert.NotContains(t, rr.Body.String(), "db.internal")
+	assert.NotContains(t, rr.Body.String(), "connection refused")
+}
+
+// TestHealthEndpointHidesStorageErrors tests that storage errors are not leaked
+// to unauthenticated callers on the health endpoint (#50)
+func TestHealthEndpointHidesStorageErrors(t *testing.T) {
+	config := &models.Config{
+		Security: models.SecurityConfig{EnableAuth: false},
+	}
+
+	mockService := &MockUpdateService{}
+
+	// Create mock storage that returns a detailed error
+	store := &mockStorage{
+		pingErr: fmt.Errorf("dial tcp 10.0.0.5:5432: connection refused"),
+	}
+
+	handlers := NewHandlers(mockService, WithStorage(store))
+	router := SetupRoutes(handlers, config)
+
+	req := httptest.NewRequest("GET", "/health", nil)
+	rr := httptest.NewRecorder()
+
+	router.ServeHTTP(rr, req)
+
+	assert.Equal(t, http.StatusOK, rr.Code)
+
+	var healthResp models.HealthCheckResponse
+	err := json.Unmarshal(rr.Body.Bytes(), &healthResp)
+	require.NoError(t, err)
+
+	// Status should reflect the failure
+	assert.Equal(t, models.StatusDegraded, healthResp.Status)
+
+	// Storage component should show failure but no internal details
+	storageComponent, ok := healthResp.Components["storage"]
+	require.True(t, ok, "Expected storage component in health response")
+	assert.Equal(t, models.StatusUnhealthy, storageComponent.Status)
+	assert.Equal(t, "Storage ping failed", storageComponent.Message)
+
+	// Must not contain any internal details
+	responseBody := rr.Body.String()
+	assert.NotContains(t, responseBody, "10.0.0.5")
+	assert.NotContains(t, responseBody, "5432")
+	assert.NotContains(t, responseBody, "connection refused")
+	assert.NotContains(t, responseBody, "dial tcp")
 }
 
 // TestOptionalAuthMiddleware tests optional authentication functionality
