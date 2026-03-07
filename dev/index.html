@@ -2016,9 +2016,11 @@
 <ul>
 <li><strong>Semantic Versioning Support</strong>: Full semantic versioning compliance with flexible parsing</li>
 <li><strong>Multi-Platform Support</strong>: Windows, Linux, macOS, Android, and iOS compatibility</li>
-<li><strong>Security First</strong>: Strong cryptographic checksums and comprehensive validation</li>
-<li><strong>Performance Optimized</strong>: Caching-friendly design with efficient querying</li>
-<li><strong>Developer Friendly</strong>: Comprehensive API documentation and client libraries</li>
+<li><strong>Security First</strong>: API key authentication, role-based permissions, audit logging, and SHA256 checksums</li>
+<li><strong>Multi-Provider Storage</strong>: Memory, PostgreSQL, and SQLite backends with a unified interface</li>
+<li><strong>Observability</strong>: Prometheus metrics, OpenTelemetry tracing, and structured logging</li>
+<li><strong>Performance Optimized</strong>: Caching-friendly design with efficient querying and pagination</li>
+<li><strong>Developer Friendly</strong>: Swagger UI, OpenAPI specification, and comprehensive documentation</li>
 </ul>
 <h2 id="quick-navigation">Quick Navigation<a class="headerlink" href="#quick-navigation" title="Permanent link">&para;</a></h2>
 <h3 id="architecture-documentation"><a href="ARCHITECTURE/">Architecture Documentation</a><a class="headerlink" href="#architecture-documentation" title="Permanent link">&para;</a></h3>
@@ -2062,68 +2064,90 @@
 <td>Models Layer</td>
 <td>Complete</td>
 <td>Complete</td>
-<td>Planned</td>
+<td>Complete</td>
 </tr>
 <tr>
 <td>API Layer</td>
-<td>Planned</td>
 <td>Complete</td>
-<td>Planned</td>
+<td>Complete</td>
+<td>Complete</td>
 </tr>
 <tr>
 <td>Storage Layer</td>
-<td>Planned</td>
 <td>Complete</td>
-<td>Planned</td>
+<td>Complete</td>
+<td>Complete</td>
 </tr>
 <tr>
 <td>Business Logic</td>
-<td>Planned</td>
 <td>Complete</td>
-<td>Planned</td>
+<td>Complete</td>
+<td>Complete</td>
+</tr>
+<tr>
+<td>Observability</td>
+<td>Complete</td>
+<td>Complete</td>
+<td>Complete</td>
+</tr>
+<tr>
+<td>Logging</td>
+<td>Complete</td>
+<td>Complete</td>
+<td>Complete</td>
 </tr>
 </tbody>
 </table>
 <h2 id="architecture-overview">Architecture Overview<a class="headerlink" href="#architecture-overview" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>graph TB
-    subgraph "API Layer (Planned)"
+    subgraph "API Layer"
         api[HTTP Handlers &amp; Routing]
+        mw[Auth &amp; Permission Middleware]
     end
 
-    subgraph "Business Logic (Planned)"
+    subgraph "Business Logic"
         logic[Update Determination &amp; Version Comparison]
     end
 
-    subgraph "Models Layer (COMPLETE)"
-        subgraph "Core Models"
-            version[Version Models]
-            platform[Platform Models]
-            release[Release Models]
-            apimodels[API Models]
-        end
+    subgraph "Models Layer"
+        models[Application, Release, Request, Response, APIKey]
         config[Configuration Models]
     end
 
-    subgraph "Storage Layer (Planned)"
-        storage[Data Persistence &amp; Retrieval]
+    subgraph "Storage Layer"
+        iface[Storage Interface]
+        mem[Memory Provider]
+        pg[PostgreSQL Provider]
+        sqlite[SQLite Provider]
+        sqlc[sqlc-generated Queries]
     end
 
-    api --&gt; logic
-    logic --&gt; version
-    logic --&gt; platform
-    logic --&gt; release
-    logic --&gt; apimodels
+    subgraph "Observability"
+        metrics[Prometheus Metrics]
+        tracing[OpenTelemetry Tracing]
+        instStorage[Instrumented Storage Wrapper]
+    end
+
+    subgraph "Logging"
+        logger[Structured log/slog Logger]
+    end
+
+    api --&gt; mw
+    mw --&gt; logic
+    logic --&gt; models
     logic --&gt; config
-    version --&gt; storage
-    platform --&gt; storage
-    release --&gt; storage
-    config --&gt; storage
-
-    classDef complete fill:#4caf50,stroke:#2e7d32,color:#fff
-    classDef planned fill:#ff9800,stroke:#f57c00,color:#fff
-
-    class version,platform,release,apimodels,config complete
-    class api,logic,storage planned</code></pre>
+    logic --&gt; instStorage
+    instStorage --&gt; iface
+    iface --&gt; mem
+    iface --&gt; pg
+    iface --&gt; sqlite
+    pg --&gt; sqlc
+    sqlite --&gt; sqlc
+    api --&gt; metrics
+    api --&gt; tracing
+    api --&gt; logger
+    mw --&gt; logger
+</code></pre>
 <h2 id="core-principles">Core Principles<a class="headerlink" href="#core-principles" title="Permanent link">&para;</a></h2>
 <h3 id="security-first">Security First<a class="headerlink" href="#security-first" title="Permanent link">&para;</a></h3>
 <ul>
@@ -2155,18 +2179,39 @@
 </ul>
 <h2 id="api-endpoints">API Endpoints<a class="headerlink" href="#api-endpoints" title="Permanent link">&para;</a></h2>
 <p>The service provides RESTful API endpoints for update management:</p>
-<ul>
-<li><code>GET /api/v1/updates/{app_id}/check</code> - Check for available updates</li>
-<li><code>GET /api/v1/updates/{app_id}/latest</code> - Get latest version information</li>
-<li><code>GET /api/v1/updates/{app_id}/releases</code> - List all releases with filtering</li>
-<li><code>POST /api/v1/updates/{app_id}/register</code> - Register new release (admin)</li>
-</ul>
+<p><strong>Public:</strong>
+- <code>GET /api/v1/updates/{app_id}/check</code> - Check for available updates
+- <code>POST /api/v1/check</code> - Check for updates via JSON body
+- <code>GET /api/v1/updates/{app_id}/latest</code> - Get latest version information
+- <code>GET /api/v1/latest</code> - Get latest version with query params
+- <code>GET /health</code> - Health check
+- <code>GET /api/v1/health</code> - Versioned health check alias
+- <code>GET /version</code> - Version information
+- <code>GET /api/v1/version</code> - Versioned version information alias
+- <code>GET /api/v1/docs</code> - Swagger UI
+- <code>GET /api/v1/openapi.yaml</code> - OpenAPI specification</p>
+<p><strong>Protected endpoints</strong> require an API key and are only enforced when <code>security.enable_auth: true</code>.</p>
+<p><strong>Protected (read):</strong>
+- <code>GET /api/v1/updates/{app_id}/releases</code> - List releases
+- <code>GET /api/v1/applications</code> - List applications
+- <code>GET /api/v1/applications/{app_id}</code> - Get application details</p>
+<p><strong>Protected (write):</strong>
+- <code>POST /api/v1/updates/{app_id}/register</code> - Register new release
+- <code>POST /api/v1/applications</code> - Create application</p>
+<p><strong>Protected (admin):</strong>
+- <code>PUT /api/v1/applications/{app_id}</code> - Update application
+- <code>DELETE /api/v1/applications/{app_id}</code> - Delete application
+- <code>DELETE /api/v1/updates/{app_id}/releases/{version}/{platform}/{arch}</code> - Delete release
+- <code>GET /api/v1/admin/keys</code> - List API keys
+- <code>POST /api/v1/admin/keys</code> - Create API key
+- <code>PATCH /api/v1/admin/keys/{id}</code> - Update API key
+- <code>DELETE /api/v1/admin/keys/{id}</code> - Revoke API key</p>
 <p>Detailed API documentation is available in the <a href="ARCHITECTURE/">Architecture Documentation</a>.</p>
 <h2 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h2>
 <p>The service supports flexible configuration for different deployment scenarios:</p>
 <ul>
-<li><strong>Development</strong>: JSON file storage, permissive settings, debug logging</li>
-<li><strong>Production</strong>: Database storage, security hardening, structured logging</li>
+<li><strong>Development</strong>: SQLite file storage, permissive settings, debug logging</li>
+<li><strong>Production</strong>: PostgreSQL storage, security hardening, structured logging</li>
 <li><strong>Container</strong>: Environment variable configuration, health checks</li>
 </ul>
 <p>Full configuration options are documented in the <a href="models/auto/models/">Model Reference</a>.</p>
