@@ -17,6 +17,9 @@ import (
 	"github.com/Masterminds/semver/v3"
 )
 
+// MaxPageSize is the maximum number of items that can be requested per page.
+const MaxPageSize = 500
+
 // UpdateCheckRequest represents a request to check for available updates.
 //
 // Core API Design:
@@ -57,6 +60,7 @@ type ListReleasesRequest struct {
 	Required      *bool    `json:"required,omitempty"`
 	Limit         int      `json:"limit,omitempty"`
 	Offset        int      `json:"offset,omitempty"`
+	After         string   `json:"after,omitempty"`
 	SortBy        string   `json:"sort_by,omitempty"`
 	SortOrder     string   `json:"sort_order,omitempty"`
 	Platforms     []string `json:"platforms,omitempty"`
@@ -169,6 +173,10 @@ func (r *ListReleasesRequest) Validate() error {
 
 	if r.Limit < 0 {
 		return errors.New("limit cannot be negative")
+	}
+
+	if r.Limit > MaxPageSize {
+		return fmt.Errorf("limit cannot exceed %d", MaxPageSize)
 	}
 
 	if r.Offset < 0 {
