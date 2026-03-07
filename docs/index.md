@@ -102,7 +102,9 @@ graph TB
     sqlite --> sqlc
     api --> metrics
     api --> tracing
-    iface --> instStorage
+    api --> logger
+    mw --> logger
+    instStorage --> iface
 
     classDef complete fill:#4caf50,stroke:#2e7d32,color:#fff
     class api,mw,logic,models,config,iface,mem,pg,sqlite,sqlc,metrics,tracing,instStorage,logger complete
@@ -145,19 +147,21 @@ The service provides RESTful API endpoints for update management:
 - `GET /api/v1/latest` - Get latest version with query params
 - `GET /health` - Health check
 - `GET /api/v1/health` - Versioned health check alias
+- `GET /version` - Version information
+- `GET /api/v1/version` - Versioned version information alias
 - `GET /api/v1/docs` - Swagger UI
 - `GET /api/v1/openapi.yaml` - OpenAPI specification
 
-**Protected (read permission):**
+**Protected (read permission, requires `security.enable_auth: true`):**
 - `GET /api/v1/updates/{app_id}/releases` - List releases
 - `GET /api/v1/applications` - List applications
 - `GET /api/v1/applications/{app_id}` - Get application details
 
-**Protected (write permission):**
+**Protected (write permission, requires `security.enable_auth: true`):**
 - `POST /api/v1/updates/{app_id}/register` - Register new release
 - `POST /api/v1/applications` - Create application
 
-**Protected (admin permission):**
+**Protected (admin permission, requires `security.enable_auth: true`):**
 - `PUT /api/v1/applications/{app_id}` - Update application
 - `DELETE /api/v1/applications/{app_id}` - Delete application
 - `DELETE /api/v1/updates/{app_id}/releases/{version}/{platform}/{arch}` - Delete release
