@@ -76,6 +76,59 @@ func (q *Queries) GetApplicationByID(ctx context.Context, id string) (Applicatio
 	return i, err
 }
 
+const getApplicationsPaged = `-- name: GetApplicationsPaged :many
+SELECT id, name, description, platforms, config, created_at, updated_at,
+       COUNT(*) OVER() AS total_count
+FROM applications
+ORDER BY name
+LIMIT $1 OFFSET $2
+`
+
+type GetApplicationsPagedParams struct {
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+type GetApplicationsPagedRow struct {
+	ID          string             `json:"id"`
+	Name        string             `json:"name"`
+	Description pgtype.Text        `json:"description"`
+	Platforms   []byte             `json:"platforms"`
+	Config      []byte             `json:"config"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
+	TotalCount  int64              `json:"total_count"`
+}
+
+func (q *Queries) GetApplicationsPaged(ctx context.Context, arg GetApplicationsPagedParams) ([]GetApplicationsPagedRow, error) {
+	rows, err := q.db.Query(ctx, getApplicationsPaged, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetApplicationsPagedRow{}
+	for rows.Next() {
+		var i GetApplicationsPagedRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.Platforms,
+			&i.Config,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.TotalCount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const upsertApplication = `-- name: UpsertApplication :exec
 INSERT INTO applications (id, name, description, platforms, config, created_at, updated_at)
 VALUES ($1, $2, $3, $4, $5, $6, $7)

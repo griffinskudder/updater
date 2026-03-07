@@ -21,3 +21,10 @@ ON CONFLICT (id) DO UPDATE SET
 -- name: DeleteApplication :exec
 DELETE FROM applications
 WHERE id = $1;
+
+-- name: GetApplicationsPaged :many
+SELECT id, name, description, platforms, config, created_at, updated_at,
+       COUNT(*) OVER() AS total_count
+FROM applications
+ORDER BY name
+LIMIT $1 OFFSET $2;

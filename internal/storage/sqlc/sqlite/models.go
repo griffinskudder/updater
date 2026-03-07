@@ -30,19 +30,23 @@ type Application struct {
 }
 
 type Release struct {
-	ID             string         `json:"id"`
-	ApplicationID  string         `json:"application_id"`
-	Version        string         `json:"version"`
-	Platform       string         `json:"platform"`
-	Architecture   string         `json:"architecture"`
-	DownloadUrl    string         `json:"download_url"`
-	Checksum       string         `json:"checksum"`
-	ChecksumType   string         `json:"checksum_type"`
-	FileSize       int64          `json:"file_size"`
-	ReleaseNotes   sql.NullString `json:"release_notes"`
-	ReleaseDate    string         `json:"release_date"`
-	Required       bool           `json:"required"`
-	MinimumVersion sql.NullString `json:"minimum_version"`
-	Metadata       sql.NullString `json:"metadata"`
-	CreatedAt      string         `json:"created_at"`
+	ID                string         `json:"id"`
+	ApplicationID     string         `json:"application_id"`
+	Version           string         `json:"version"`
+	Platform          string         `json:"platform"`
+	Architecture      string         `json:"architecture"`
+	DownloadUrl       string         `json:"download_url"`
+	Checksum          string         `json:"checksum"`
+	ChecksumType      string         `json:"checksum_type"`
+	FileSize          int64          `json:"file_size"`
+	ReleaseNotes      sql.NullString `json:"release_notes"`
+	ReleaseDate       string         `json:"release_date"`
+	Required          bool           `json:"required"`
+	MinimumVersion    sql.NullString `json:"minimum_version"`
+	Metadata          sql.NullString `json:"metadata"`
+	CreatedAt         string         `json:"created_at"`
+	VersionMajor      int64          `json:"version_major"`
+	VersionMinor      int64          `json:"version_minor"`
+	VersionPatch      int64          `json:"version_patch"`
+	VersionPreRelease sql.NullString `json:"version_pre_release"`
 }
