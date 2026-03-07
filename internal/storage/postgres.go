@@ -546,7 +546,7 @@ func (ps *PostgresStorage) ListApplicationsPaged(ctx context.Context, limit int,
 // Using an allowlist prevents SQL injection from untrusted sortBy values.
 var pgReleaseListSortCols = map[string]string{
 	"release_date": "release_date",
-	"version":      "version_major DESC, version_minor DESC, version_patch DESC, (version_pre_release IS NULL) DESC, version_pre_release",
+	"version":      "version_major DESC, version_minor DESC, version_patch DESC, (version_pre_release IS NULL) DESC, version_pre_release DESC",
 	"platform":     "platform",
 	"architecture": "architecture",
 	"created_at":   "created_at",
@@ -614,7 +614,7 @@ func (ps *PostgresStorage) ListReleasesPaged(ctx context.Context, appID string, 
   OR (version_major = $%d AND version_minor < $%d)
   OR (version_major = $%d AND version_minor = $%d AND version_patch < $%d)
   OR (version_major = $%d AND version_minor = $%d AND version_patch = $%d AND CASE WHEN version_pre_release IS NULL THEN 1 ELSE 0 END < $%d)
-  OR (version_major = $%d AND version_minor = $%d AND version_patch = $%d AND CASE WHEN version_pre_release IS NULL THEN 1 ELSE 0 END = $%d AND COALESCE(version_pre_release, '') > $%d)
+  OR (version_major = $%d AND version_minor = $%d AND version_patch = $%d AND CASE WHEN version_pre_release IS NULL THEN 1 ELSE 0 END = $%d AND COALESCE(version_pre_release, '') < $%d)
   OR (version_major = $%d AND version_minor = $%d AND version_patch = $%d AND CASE WHEN version_pre_release IS NULL THEN 1 ELSE 0 END = $%d AND COALESCE(version_pre_release, '') = $%d AND id < $%d)
 )`,
 				n+1,
