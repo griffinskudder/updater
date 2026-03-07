@@ -56,6 +56,17 @@ func TestUpdateCheckRequest_Validate(t *testing.T) {
 			errorMsg:    "invalid version format",
 		},
 		{
+			name: "version component overflows int64",
+			request: UpdateCheckRequest{
+				ApplicationID:  "test-app",
+				CurrentVersion: "9223372036854775808.0.0",
+				Platform:       "windows",
+				Architecture:   "amd64",
+			},
+			expectError: true,
+			errorMsg:    "version components exceed maximum allowed value",
+		},
+		{
 			name: "empty platform",
 			request: UpdateCheckRequest{
 				ApplicationID:  "test-app",
@@ -264,6 +275,15 @@ func TestListReleasesRequest_Validate(t *testing.T) {
 			},
 			expectError: true,
 			errorMsg:    "invalid version format",
+		},
+		{
+			name: "version component overflows int64",
+			request: ListReleasesRequest{
+				ApplicationID: "test-app",
+				Version:       "9223372036854775808.0.0",
+			},
+			expectError: true,
+			errorMsg:    "version components exceed maximum allowed value",
 		},
 		{
 			name: "negative limit",
@@ -518,6 +538,35 @@ func TestRegisterReleaseRequest_Validate(t *testing.T) {
 				Checksum:       "abc123",
 				ChecksumType:   "sha256",
 				MinimumVersion: "invalid",
+			},
+			expectError: true,
+			errorMsg:    "invalid minimum_version format",
+		},
+		{
+			name: "version component overflows int64",
+			request: RegisterReleaseRequest{
+				ApplicationID: "test-app",
+				Version:       "9223372036854775808.0.0",
+				Platform:      "windows",
+				Architecture:  "amd64",
+				DownloadURL:   "https://example.com/download",
+				Checksum:      "abc123",
+				ChecksumType:  "sha256",
+			},
+			expectError: true,
+			errorMsg:    "version components exceed maximum allowed value",
+		},
+		{
+			name: "minimum version component overflows int64",
+			request: RegisterReleaseRequest{
+				ApplicationID:  "test-app",
+				Version:        "1.2.3",
+				Platform:       "windows",
+				Architecture:   "amd64",
+				DownloadURL:    "https://example.com/download",
+				Checksum:       "abc123",
+				ChecksumType:   "sha256",
+				MinimumVersion: "9223372036854775808.0.0",
 			},
 			expectError: true,
 			errorMsg:    "invalid minimum_version format",

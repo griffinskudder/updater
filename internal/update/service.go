@@ -225,9 +225,9 @@ func (s *Service) ListReleases(ctx context.Context, req *models.ListReleasesRequ
 				SortOrder:         req.SortOrder,
 				ID:                last.ID,
 				ReleaseDate:       last.ReleaseDate,
-				VersionMajor:      int64(sv.Major()),
-				VersionMinor:      int64(sv.Minor()),
-				VersionPatch:      int64(sv.Patch()),
+				VersionMajor:      int64(sv.Major()), //#nosec G115 -- components validated at API layer, within int64 range
+				VersionMinor:      int64(sv.Minor()), //#nosec G115 -- components validated at API layer, within int64 range
+				VersionPatch:      int64(sv.Patch()), //#nosec G115 -- components validated at API layer, within int64 range
 				VersionIsStable:   sv.Prerelease() == "",
 				VersionPreRelease: sv.Prerelease(),
 				Platform:          last.Platform,

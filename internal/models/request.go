@@ -12,6 +12,7 @@ package models
 import (
 	"errors"
 	"fmt"
+	"math"
 	"strings"
 
 	"github.com/Masterminds/semver/v3"
@@ -187,8 +188,8 @@ func (r *ListReleasesRequest) Validate() error {
 	}
 
 	if r.Version != "" {
-		if _, err := semver.NewVersion(r.Version); err != nil {
-			return fmt.Errorf("invalid version format: %w", err)
+		if err := validateVersion(r.Version); err != nil {
+			return err
 		}
 	}
 
@@ -277,7 +278,7 @@ func (r *RegisterReleaseRequest) Validate() error {
 	}
 
 	if r.MinimumVersion != "" {
-		if _, err := semver.NewVersion(r.MinimumVersion); err != nil {
+		if err := validateVersion(r.MinimumVersion); err != nil {
 			return fmt.Errorf("invalid minimum_version format: %w", err)
 		}
 	}
@@ -398,14 +399,21 @@ func validateRequiredFields(appID, platform, architecture string) error {
 	return nil
 }
 
-// validateVersion validates a semantic version string using semver library
+// validateVersion validates a semantic version string using semver library.
+// It also rejects versions where any component exceeds math.MaxInt64, since
+// components are stored as int64 in the database.
 func validateVersion(version string) error {
 	if version == "" {
 		return errors.New("version is required")
 	}
 
-	if _, err := semver.NewVersion(version); err != nil {
+	sv, err := semver.NewVersion(version)
+	if err != nil {
 		return fmt.Errorf("invalid version format: %w", err)
+	}
+
+	if sv.Major() > math.MaxInt64 || sv.Minor() > math.MaxInt64 || sv.Patch() > math.MaxInt64 {
+		return errors.New("version components exceed maximum allowed value")
 	}
 
 	return nil

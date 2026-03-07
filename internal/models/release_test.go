@@ -233,6 +233,37 @@ func TestRelease_Validate(t *testing.T) {
 			expectError: true,
 			errorMsg:    "invalid minimum version",
 		},
+		{
+			name: "version component overflows int64",
+			release: &Release{
+				ID:            "test-app-9223372036854775808.0.0-windows-amd64",
+				ApplicationID: "test-app",
+				Version:       "9223372036854775808.0.0",
+				Platform:      "windows",
+				Architecture:  "amd64",
+				DownloadURL:   "https://example.com/download",
+				Checksum:      "abc123",
+				ChecksumType:  "sha256",
+			},
+			expectError: true,
+			errorMsg:    "version components exceed maximum allowed value",
+		},
+		{
+			name: "minimum version component overflows int64",
+			release: &Release{
+				ID:             "test-app-1.2.3-windows-amd64",
+				ApplicationID:  "test-app",
+				Version:        "1.2.3",
+				Platform:       "windows",
+				Architecture:   "amd64",
+				DownloadURL:    "https://example.com/download",
+				Checksum:       "abc123",
+				ChecksumType:   "sha256",
+				MinimumVersion: "9223372036854775808.0.0",
+			},
+			expectError: true,
+			errorMsg:    "invalid minimum version",
+		},
 	}
 
 	for _, tt := range tests {
