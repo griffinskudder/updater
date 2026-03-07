@@ -107,7 +107,7 @@ func Setup(metrics models.MetricsConfig, obs models.ObservabilityConfig, ver ver
 		p.meterProvider = mp
 		otel.SetMeterProvider(mp)
 
-		if err := p.registerBuildInfo(ver); err != nil {
+		if err := p.registerBuildInfo(ver, getEnvironment()); err != nil {
 			slog.Warn("failed to register build_info metric", "error", err)
 		}
 	}
@@ -118,7 +118,7 @@ func Setup(metrics models.MetricsConfig, obs models.ObservabilityConfig, ver ver
 // registerBuildInfo registers an updater_build_info gauge that always returns 1
 // with version metadata as labels. This follows the standard Prometheus build_info
 // pattern, making version data queryable and enabling version-change alerting.
-func (p *Provider) registerBuildInfo(ver version.Info) error {
+func (p *Provider) registerBuildInfo(ver version.Info, env string) error {
 	meter := p.meterProvider.Meter("updater.build")
 
 	gauge, err := meter.Int64ObservableGauge(
@@ -134,9 +134,15 @@ func (p *Provider) registerBuildInfo(ver version.Info) error {
 		attribute.String("version", ver.Version),
 		attribute.String("git_commit", ver.GitCommit),
 		attribute.String("build_date", ver.BuildDate),
-		attribute.String("environment", getEnvironment()),
+		// environment is intentionally repeated as a direct label so it is queryable
+		// on the metric itself — resource attributes appear in target_info, not on
+		// individual metrics, in standard Prometheus scraping.
+		attribute.String("environment", env),
 	)
 
+	// The Registration is discarded because this is a process-lifetime gauge
+	// registered exactly once at startup. MeterProvider.Shutdown() stops all
+	// callbacks, so there is no leak.
 	_, err = meter.RegisterCallback(
 		func(_ context.Context, o metric.Observer) error {
 			o.ObserveInt64(gauge, 1, attrs)
