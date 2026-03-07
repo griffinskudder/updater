@@ -169,10 +169,10 @@ number of rows matching the filters, independent of the cursor.
 
 | Condition | Status | Code |
 |-----------|--------|------|
-| `limit > 500` | 400 | `INVALID_REQUEST` |
-| `limit < 0` | 400 | `INVALID_REQUEST` |
-| Cursor malformed (bad base64 or JSON) | 400 | `INVALID_REQUEST` |
-| Cursor `sort_by`/`sort_order` mismatch with request | 400 | `INVALID_REQUEST` |
+| `limit > 500` | 422 | `VALIDATION_ERROR` |
+| `limit < 0` | 422 | `VALIDATION_ERROR` |
+| Cursor malformed (bad base64 or JSON) | 422 | `VALIDATION_ERROR` |
+| Cursor `sort_by`/`sort_order` mismatch with request | 422 | `VALIDATION_ERROR` |
 
 ## Testing
 
@@ -183,4 +183,4 @@ number of rows matching the filters, independent of the cursor.
   from last item produces empty next page
 - **Service**: `NextCursor` populated when results remain; empty on last page; cursor
   validated before storage call
-- **Handler**: 400 on `limit > 500`; 400 on malformed cursor; updated response shape
+- **Handler**: 422 on `limit > 500`; 422 on malformed cursor; updated response shape
