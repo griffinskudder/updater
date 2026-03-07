@@ -767,20 +767,42 @@ func TestListApplicationsRequest_Validate(t *testing.T) {
 		expectError bool
 		errorMsg    string
 	}{
-		{name: "valid zero limit (will be defaulted)", request: ListApplicationsRequest{}, expectError: false},
-		{name: "valid explicit limit", request: ListApplicationsRequest{Limit: 100}, expectError: false},
-		{name: "negative limit", request: ListApplicationsRequest{Limit: -1}, expectError: true, errorMsg: "limit cannot be negative"},
-		{name: "limit exceeds max", request: ListApplicationsRequest{Limit: 501}, expectError: true, errorMsg: "limit cannot exceed 500"},
-		{name: "limit at max is valid", request: ListApplicationsRequest{Limit: 500}, expectError: false},
+		{
+			name:        "valid zero limit (will be defaulted)",
+			request:     ListApplicationsRequest{},
+			expectError: false,
+		},
+		{
+			name:        "valid explicit limit",
+			request:     ListApplicationsRequest{Limit: 100},
+			expectError: false,
+		},
+		{
+			name:        "negative limit",
+			request:     ListApplicationsRequest{Limit: -1},
+			expectError: true,
+			errorMsg:    "limit cannot be negative",
+		},
+		{
+			name:        "limit exceeds max",
+			request:     ListApplicationsRequest{Limit: 501},
+			expectError: true,
+			errorMsg:    "limit cannot exceed 500",
+		},
+		{
+			name:        "limit at max is valid",
+			request:     ListApplicationsRequest{Limit: 500},
+			expectError: false,
+		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			err := tt.request.Validate()
+
 			if tt.expectError {
 				assert.Error(t, err)
-				if tt.errorMsg != "" {
-					assert.Contains(t, err.Error(), tt.errorMsg)
-				}
+				assert.Contains(t, err.Error(), tt.errorMsg)
 			} else {
 				assert.NoError(t, err)
 			}
@@ -789,15 +811,27 @@ func TestListApplicationsRequest_Validate(t *testing.T) {
 }
 
 func TestListApplicationsRequest_Normalize(t *testing.T) {
-	t.Run("sets default limit when zero", func(t *testing.T) {
-		req := ListApplicationsRequest{}
-		req.Normalize()
-		assert.Equal(t, 50, req.Limit)
-	})
+	tests := []struct {
+		name          string
+		input         ListApplicationsRequest
+		expectedLimit int
+	}{
+		{
+			name:          "sets default limit when zero",
+			input:         ListApplicationsRequest{},
+			expectedLimit: 50,
+		},
+		{
+			name:          "preserves explicit limit",
+			input:         ListApplicationsRequest{Limit: 100},
+			expectedLimit: 100,
+		},
+	}
 
-	t.Run("preserves explicit limit", func(t *testing.T) {
-		req := ListApplicationsRequest{Limit: 100}
-		req.Normalize()
-		assert.Equal(t, 100, req.Limit)
-	})
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.input.Normalize()
+			assert.Equal(t, tt.expectedLimit, tt.input.Limit)
+		})
+	}
 }
