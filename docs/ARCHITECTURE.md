@@ -728,6 +728,7 @@ The following features have been implemented since the initial architecture desi
 - **PostgreSQL support** -- `internal/storage/postgres.go` with sqlc-generated queries
 - **SQLite support** -- `internal/storage/sqlite.go` with sqlc-generated queries (now the default file-based backend)
 - **Architecture cleanup** -- removed unused model types, factory pattern, JSON storage, admin UI, cache/log-rotation config; replaced read-then-write with SQL upserts
+- **Keyset cursor pagination** -- both list endpoints (`GET /applications`, `GET /updates/{app_id}/releases`) use keyset (cursor) pagination; the `offset` parameter is removed, `after` (opaque base64 cursor) is added, responses return `next_cursor` instead of `page`/`page_size`/`has_more`; maximum page size is 500
 
 ## Future Enhancements
 

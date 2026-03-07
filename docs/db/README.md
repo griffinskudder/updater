@@ -5,7 +5,7 @@
 | Name | Columns | Comment | Type |
 | ---- | ------- | ------- | ---- |
 | [public.applications](public.applications.md) | 7 |  | BASE TABLE |
-| [public.releases](public.releases.md) | 15 |  | BASE TABLE |
+| [public.releases](public.releases.md) | 19 |  | BASE TABLE |
 | [public.api_keys](public.api_keys.md) | 8 |  | BASE TABLE |
 
 ## Stored procedures and functions
