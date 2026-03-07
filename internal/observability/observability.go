@@ -6,12 +6,14 @@ package observability
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
 	"updater/internal/models"
 	"updater/internal/version"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/exporters/prometheus"
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
@@ -104,9 +106,49 @@ func Setup(metrics models.MetricsConfig, obs models.ObservabilityConfig, ver ver
 		)
 		p.meterProvider = mp
 		otel.SetMeterProvider(mp)
+
+		if err := p.registerBuildInfo(ver); err != nil {
+			slog.Warn("failed to register build_info metric", "error", err)
+		}
 	}
 
 	return p, nil
+}
+
+// registerBuildInfo registers an updater_build_info gauge that always returns 1
+// with version metadata as labels. This follows the standard Prometheus build_info
+// pattern, making version data queryable and enabling version-change alerting.
+func (p *Provider) registerBuildInfo(ver version.Info) error {
+	meter := p.meterProvider.Meter("updater.build")
+
+	gauge, err := meter.Int64ObservableGauge(
+		"updater_build_info",
+		metric.WithDescription("Build and version information (always 1)."),
+		metric.WithUnit("{info}"),
+	)
+	if err != nil {
+		return fmt.Errorf("register build_info gauge: %w", err)
+	}
+
+	attrs := metric.WithAttributes(
+		attribute.String("version", ver.Version),
+		attribute.String("git_commit", ver.GitCommit),
+		attribute.String("build_date", ver.BuildDate),
+		attribute.String("environment", getEnvironment()),
+	)
+
+	_, err = meter.RegisterCallback(
+		func(_ context.Context, o metric.Observer) error {
+			o.ObserveInt64(gauge, 1, attrs)
+			return nil
+		},
+		gauge,
+	)
+	if err != nil {
+		return fmt.Errorf("register build_info callback: %w", err)
+	}
+
+	return nil
 }
 
 func setupTracing(res *resource.Resource, cfg models.TracingConfig) (*sdktrace.TracerProvider, error) {
