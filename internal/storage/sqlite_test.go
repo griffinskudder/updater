@@ -34,7 +34,7 @@ func TestSQLiteStorageSchemaCreation(t *testing.T) {
 	ctx := context.Background()
 
 	// Verify tables exist by performing operations
-	apps, _, err := s.ListApplicationsPaged(ctx, 50, 0)
+	apps, _, err := s.ListApplicationsPaged(ctx, 50, nil)
 	if err != nil {
 		t.Fatalf("ListApplicationsPaged failed: %v", err)
 	}
@@ -42,7 +42,7 @@ func TestSQLiteStorageSchemaCreation(t *testing.T) {
 		t.Error("expected non-nil slice")
 	}
 
-	releases, _, err := s.ListReleasesPaged(ctx, "test-app", models.ReleaseFilters{}, "release_date", "desc", 50, 0)
+	releases, _, err := s.ListReleasesPaged(ctx, "test-app", models.ReleaseFilters{}, "release_date", "desc", 50, nil)
 	if err != nil {
 		t.Fatalf("ListReleasesPaged failed: %v", err)
 	}
@@ -99,7 +99,7 @@ func TestSQLiteStorageApplicationCRUD(t *testing.T) {
 	}
 
 	// List applications
-	apps, _, err := s.ListApplicationsPaged(ctx, 50, 0)
+	apps, _, err := s.ListApplicationsPaged(ctx, 50, nil)
 	if err != nil {
 		t.Fatalf("ListApplicationsPaged failed: %v", err)
 	}
@@ -113,7 +113,7 @@ func TestSQLiteStorageApplicationCRUD(t *testing.T) {
 		t.Fatalf("SaveApplication (second) failed: %v", err)
 	}
 
-	apps, _, err = s.ListApplicationsPaged(ctx, 50, 0)
+	apps, _, err = s.ListApplicationsPaged(ctx, 50, nil)
 	if err != nil {
 		t.Fatalf("ListApplicationsPaged failed: %v", err)
 	}
@@ -188,7 +188,7 @@ func TestSQLiteStorageReleaseCRUD(t *testing.T) {
 	}
 
 	// List releases
-	releases, _, err := s.ListReleasesPaged(ctx, "rel-app", models.ReleaseFilters{}, "release_date", "desc", 50, 0)
+	releases, _, err := s.ListReleasesPaged(ctx, "rel-app", models.ReleaseFilters{}, "release_date", "desc", 50, nil)
 	if err != nil {
 		t.Fatalf("ListReleasesPaged failed: %v", err)
 	}
@@ -220,7 +220,7 @@ func TestSQLiteStorageReleaseCRUD(t *testing.T) {
 	}
 
 	// Empty releases list
-	releases, _, err = s.ListReleasesPaged(ctx, "rel-app", models.ReleaseFilters{}, "release_date", "desc", 50, 0)
+	releases, _, err = s.ListReleasesPaged(ctx, "rel-app", models.ReleaseFilters{}, "release_date", "desc", 50, nil)
 	if err != nil {
 		t.Fatalf("ListReleasesPaged failed: %v", err)
 	}
@@ -349,7 +349,7 @@ func TestSQLiteStorageConcurrency(t *testing.T) {
 		go func() {
 			defer wg.Done()
 			for j := 0; j < 10; j++ {
-				_, _, err := s.ListApplicationsPaged(ctx, 50, 0)
+				_, _, err := s.ListApplicationsPaged(ctx, 50, nil)
 				if err != nil {
 					errs <- err
 					return
@@ -535,7 +535,7 @@ func TestSQLiteStorage_ListApplicationsPaged(t *testing.T) {
 	}
 
 	t.Run("first page returns 2 apps total=3", func(t *testing.T) {
-		apps, total, err := s.ListApplicationsPaged(ctx, 2, 0)
+		apps, total, err := s.ListApplicationsPaged(ctx, 2, nil)
 		if err != nil {
 			t.Fatalf("ListApplicationsPaged failed: %v", err)
 		}
@@ -547,26 +547,16 @@ func TestSQLiteStorage_ListApplicationsPaged(t *testing.T) {
 		}
 	})
 
-	t.Run("second page offset 2 returns 1 remaining app", func(t *testing.T) {
-		apps, total, err := s.ListApplicationsPaged(ctx, 2, 2)
+	t.Run("all apps returned with large limit", func(t *testing.T) {
+		apps, total, err := s.ListApplicationsPaged(ctx, 1000, nil)
 		if err != nil {
-			t.Fatalf("ListApplicationsPaged offset=2 failed: %v", err)
+			t.Fatalf("ListApplicationsPaged large limit failed: %v", err)
 		}
 		if total != 3 {
 			t.Errorf("expected total=3, got %d", total)
 		}
-		if len(apps) != 1 {
-			t.Errorf("expected 1 app on second page, got %d", len(apps))
-		}
-	})
-
-	t.Run("offset beyond total returns empty slice", func(t *testing.T) {
-		apps, _, err := s.ListApplicationsPaged(ctx, 2, 10000)
-		if err != nil {
-			t.Fatalf("ListApplicationsPaged offset beyond total failed: %v", err)
-		}
-		if len(apps) != 0 {
-			t.Errorf("expected empty apps, got %d", len(apps))
+		if len(apps) != 3 {
+			t.Errorf("expected 3 apps, got %d", len(apps))
 		}
 	})
 }
@@ -603,7 +593,7 @@ func TestSQLiteStorage_ListReleasesPaged(t *testing.T) {
 	}
 
 	t.Run("filter by linux platform returns 2 releases total=2", func(t *testing.T) {
-		rels, total, err := s.ListReleasesPaged(ctx, appID, models.ReleaseFilters{Platforms: []string{"linux"}}, "release_date", "asc", 10, 0)
+		rels, total, err := s.ListReleasesPaged(ctx, appID, models.ReleaseFilters{Platforms: []string{"linux"}}, "release_date", "asc", 10, nil)
 		if err != nil {
 			t.Fatalf("ListReleasesPaged failed: %v", err)
 		}
@@ -621,7 +611,7 @@ func TestSQLiteStorage_ListReleasesPaged(t *testing.T) {
 	})
 
 	t.Run("sort by version desc returns correct order", func(t *testing.T) {
-		rels, total, err := s.ListReleasesPaged(ctx, appID, models.ReleaseFilters{Platforms: []string{"linux"}}, "version", "desc", 10, 0)
+		rels, total, err := s.ListReleasesPaged(ctx, appID, models.ReleaseFilters{Platforms: []string{"linux"}}, "version", "desc", 10, nil)
 		if err != nil {
 			t.Fatalf("ListReleasesPaged sort by version failed: %v", err)
 		}
@@ -639,8 +629,8 @@ func TestSQLiteStorage_ListReleasesPaged(t *testing.T) {
 		}
 	})
 
-	t.Run("pagination limit=1 offset=0 returns one release total=3", func(t *testing.T) {
-		rels, total, err := s.ListReleasesPaged(ctx, appID, models.ReleaseFilters{}, "release_date", "asc", 1, 0)
+	t.Run("pagination limit=1 no cursor returns one release total=3", func(t *testing.T) {
+		rels, total, err := s.ListReleasesPaged(ctx, appID, models.ReleaseFilters{}, "release_date", "asc", 1, nil)
 		if err != nil {
 			t.Fatalf("ListReleasesPaged pagination failed: %v", err)
 		}
@@ -649,16 +639,6 @@ func TestSQLiteStorage_ListReleasesPaged(t *testing.T) {
 		}
 		if len(rels) != 1 {
 			t.Errorf("expected 1 release, got %d", len(rels))
-		}
-	})
-
-	t.Run("offset beyond total returns empty", func(t *testing.T) {
-		rels, _, err := s.ListReleasesPaged(ctx, appID, models.ReleaseFilters{}, "release_date", "asc", 10, 10000)
-		if err != nil {
-			t.Fatalf("ListReleasesPaged offset beyond total failed: %v", err)
-		}
-		if len(rels) != 0 {
-			t.Errorf("expected empty, got %d", len(rels))
 		}
 	})
 }

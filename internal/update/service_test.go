@@ -161,7 +161,7 @@ func (m *MockStorage) DeleteAPIKey(_ context.Context, _ string) error {
 	return nil
 }
 
-func (m *MockStorage) ListApplicationsPaged(_ context.Context, limit, offset int) ([]*models.Application, int, error) {
+func (m *MockStorage) ListApplicationsPaged(_ context.Context, limit int, cursor *models.ApplicationCursor) ([]*models.Application, int, error) {
 	apps := make([]*models.Application, 0, len(m.applications))
 	for _, app := range m.applications {
 		copied := *app
@@ -169,17 +169,26 @@ func (m *MockStorage) ListApplicationsPaged(_ context.Context, limit, offset int
 	}
 	sort.Slice(apps, func(i, j int) bool { return apps[i].Name < apps[j].Name })
 	total := len(apps)
-	if offset >= total {
+	start := 0
+	if cursor != nil {
+		for idx, app := range apps {
+			if app.ID == cursor.ID {
+				start = idx + 1
+				break
+			}
+		}
+	}
+	if start >= total {
 		return []*models.Application{}, total, nil
 	}
-	end := offset + limit
+	end := start + limit
 	if end > total {
 		end = total
 	}
-	return apps[offset:end], total, nil
+	return apps[start:end], total, nil
 }
 
-func (m *MockStorage) ListReleasesPaged(_ context.Context, appID string, filters models.ReleaseFilters, sortBy, sortOrder string, limit, offset int) ([]*models.Release, int, error) {
+func (m *MockStorage) ListReleasesPaged(_ context.Context, appID string, filters models.ReleaseFilters, sortBy, sortOrder string, limit int, cursor *models.ReleaseCursor) ([]*models.Release, int, error) {
 	var filtered []*models.Release
 	for _, r := range m.releases[appID] {
 		if filters.Architecture != "" && r.Architecture != filters.Architecture {
@@ -207,14 +216,23 @@ func (m *MockStorage) ListReleasesPaged(_ context.Context, appID string, filters
 		filtered = append(filtered, &copied)
 	}
 	total := len(filtered)
-	if offset >= total {
+	start := 0
+	if cursor != nil {
+		for idx, r := range filtered {
+			if r.ID == cursor.ID {
+				start = idx + 1
+				break
+			}
+		}
+	}
+	if start >= total {
 		return []*models.Release{}, total, nil
 	}
-	end := offset + limit
+	end := start + limit
 	if end > total {
 		end = total
 	}
-	return filtered[offset:end], total, nil
+	return filtered[start:end], total, nil
 }
 
 func (m *MockStorage) GetLatestStableRelease(_ context.Context, appID, platform, arch string) (*models.Release, error) {

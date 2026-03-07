@@ -321,9 +321,10 @@ func (m *MemoryStorage) DeleteAPIKey(ctx context.Context, id string) error {
 	return nil
 }
 
-// ListApplicationsPaged returns a page of applications sorted by name, and the
-// total count of all applications.
-func (m *MemoryStorage) ListApplicationsPaged(ctx context.Context, limit, offset int) ([]*models.Application, int, error) {
+// ListApplicationsPaged returns a page of applications sorted by created_at DESC, id DESC,
+// and the total count of all applications.
+// cursor, when non-nil, positions the query after the given item.
+func (m *MemoryStorage) ListApplicationsPaged(ctx context.Context, limit int, cursor *models.ApplicationCursor) ([]*models.Application, int, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 
@@ -332,17 +333,37 @@ func (m *MemoryStorage) ListApplicationsPaged(ctx context.Context, limit, offset
 		copied := *app
 		apps = append(apps, &copied)
 	}
-	sort.Slice(apps, func(i, j int) bool { return apps[i].Name < apps[j].Name })
+	// Sort by created_at DESC, id DESC to match the DB ordering.
+	sort.Slice(apps, func(i, j int) bool {
+		ti, _ := time.Parse(time.RFC3339, apps[i].CreatedAt)
+		tj, _ := time.Parse(time.RFC3339, apps[j].CreatedAt)
+		if !ti.Equal(tj) {
+			return ti.After(tj)
+		}
+		return apps[i].ID > apps[j].ID
+	})
 
 	total := len(apps)
-	if limit == 0 || offset >= total {
+
+	// Apply cursor-based offset: find the cursor item and start after it.
+	start := 0
+	if cursor != nil {
+		for idx, app := range apps {
+			if app.ID == cursor.ID {
+				start = idx + 1
+				break
+			}
+		}
+	}
+
+	if limit == 0 || start >= total {
 		return []*models.Application{}, total, nil
 	}
-	end := offset + limit
+	end := start + limit
 	if end > total {
 		end = total
 	}
-	return apps[offset:end], total, nil
+	return apps[start:end], total, nil
 }
 
 // memorySortReleases sorts a slice of releases in-place.
@@ -382,7 +403,8 @@ func memorySortReleases(releases []*models.Release, sortBy, sortOrder string) {
 // and the total count of matching releases.
 // sortBy must be one of: release_date, version, platform, architecture, created_at.
 // sortOrder must be "asc" or "desc".
-func (m *MemoryStorage) ListReleasesPaged(ctx context.Context, appID string, filters models.ReleaseFilters, sortBy, sortOrder string, limit, offset int) ([]*models.Release, int, error) {
+// cursor, when non-nil, positions the query after the given item.
+func (m *MemoryStorage) ListReleasesPaged(ctx context.Context, appID string, filters models.ReleaseFilters, sortBy, sortOrder string, limit int, cursor *models.ReleaseCursor) ([]*models.Release, int, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 
@@ -416,14 +438,26 @@ func (m *MemoryStorage) ListReleasesPaged(ctx context.Context, appID string, fil
 	memorySortReleases(filtered, sortBy, sortOrder)
 
 	total := len(filtered)
-	if offset >= total {
+
+	// Apply cursor-based offset: find the cursor item by ID and start after it.
+	start := 0
+	if cursor != nil {
+		for idx, r := range filtered {
+			if r.ID == cursor.ID {
+				start = idx + 1
+				break
+			}
+		}
+	}
+
+	if start >= total {
 		return []*models.Release{}, total, nil
 	}
-	end := offset + limit
+	end := start + limit
 	if end > total {
 		end = total
 	}
-	return filtered[offset:end], total, nil
+	return filtered[start:end], total, nil
 }
 
 // GetLatestStableRelease returns the highest non-prerelease version for the given

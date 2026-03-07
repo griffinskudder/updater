@@ -63,11 +63,11 @@ func (m *mockStorage) DeleteAPIKey(_ context.Context, _ string) error {
 	return nil
 }
 
-func (m *mockStorage) ListApplicationsPaged(_ context.Context, _, _ int) ([]*models.Application, int, error) {
+func (m *mockStorage) ListApplicationsPaged(_ context.Context, _ int, _ *models.ApplicationCursor) ([]*models.Application, int, error) {
 	return nil, 0, nil
 }
 
-func (m *mockStorage) ListReleasesPaged(_ context.Context, _ string, _ models.ReleaseFilters, _, _ string, _, _ int) ([]*models.Release, int, error) {
+func (m *mockStorage) ListReleasesPaged(_ context.Context, _ string, _ models.ReleaseFilters, _, _ string, _ int, _ *models.ReleaseCursor) ([]*models.Release, int, error) {
 	return nil, 0, nil
 }
 

@@ -472,35 +472,67 @@ func (ps *PostgresStorage) DeleteAPIKey(ctx context.Context, id string) error {
 	return nil
 }
 
-// ListApplicationsPaged returns a page of applications sorted by name and the total count.
-func (ps *PostgresStorage) ListApplicationsPaged(ctx context.Context, limit, offset int) ([]*models.Application, int, error) {
-	rows, err := ps.queries.GetApplicationsPaged(ctx, sqlcpg.GetApplicationsPagedParams{
-		Column1: int64(limit),
-		Column2: int64(offset),
-	})
+// ListApplicationsPaged returns a page of applications sorted by created_at DESC, id DESC
+// and the total count. cursor, when non-nil, positions the query after the given item.
+func (ps *PostgresStorage) ListApplicationsPaged(ctx context.Context, limit int, cursor *models.ApplicationCursor) ([]*models.Application, int, error) {
+	args := []interface{}{int64(limit)}
+	where := ""
+	if cursor != nil {
+		args = append(args,
+			cursor.CreatedAt.UTC().Format(time.RFC3339),
+			cursor.ID,
+		)
+		where = fmt.Sprintf(`WHERE (created_at < $%d::timestamptz OR (created_at = $%d::timestamptz AND id < $%d))`,
+			len(args)-1, len(args)-1, len(args))
+	}
+
+	query := fmt.Sprintf(`
+		SELECT id, name, description, platforms, config, created_at, updated_at,
+		       COUNT(*) OVER() AS total_count
+		FROM applications
+		%s
+		ORDER BY created_at DESC, id DESC
+		LIMIT $1`,
+		where)
+
+	pgxRows, err := ps.pool.Query(ctx, query, args...)
 	if err != nil {
 		return nil, 0, fmt.Errorf("failed to list applications: %w", err)
 	}
+	defer pgxRows.Close()
 
 	total := 0
-	apps := make([]*models.Application, 0, len(rows))
-	for i, row := range rows {
-		if i == 0 {
-			total = int(row.TotalCount)
+	apps := make([]*models.Application, 0)
+	for pgxRows.Next() {
+		var (
+			id, name   string
+			description pgtype.Text
+			platforms, config []byte
+			createdAt, updatedAt pgtype.Timestamptz
+			totalCount int64
+		)
+		if err := pgxRows.Scan(&id, &name, &description, &platforms, &config, &createdAt, &updatedAt, &totalCount); err != nil {
+			return nil, 0, fmt.Errorf("failed to scan application: %w", err)
+		}
+		if total == 0 {
+			total = int(totalCount)
 		}
 		app, err := pgAppToModel(sqlcpg.Application{
-			ID:          row.ID,
-			Name:        row.Name,
-			Description: row.Description,
-			Platforms:   row.Platforms,
-			Config:      row.Config,
-			CreatedAt:   row.CreatedAt,
-			UpdatedAt:   row.UpdatedAt,
+			ID:          id,
+			Name:        name,
+			Description: description,
+			Platforms:   platforms,
+			Config:      config,
+			CreatedAt:   createdAt,
+			UpdatedAt:   updatedAt,
 		})
 		if err != nil {
-			return nil, 0, fmt.Errorf("failed to convert application %s: %w", row.ID, err)
+			return nil, 0, fmt.Errorf("failed to convert application %s: %w", id, err)
 		}
 		apps = append(apps, app)
+	}
+	if err := pgxRows.Err(); err != nil {
+		return nil, 0, fmt.Errorf("failed to iterate applications: %w", err)
 	}
 	return apps, total, nil
 }
@@ -517,7 +549,7 @@ var pgReleaseListSortCols = map[string]string{
 }
 
 // ListReleasesPaged returns a filtered, sorted page of releases and the total count.
-func (ps *PostgresStorage) ListReleasesPaged(ctx context.Context, appID string, filters models.ReleaseFilters, sortBy, sortOrder string, limit, offset int) ([]*models.Release, int, error) {
+func (ps *PostgresStorage) ListReleasesPaged(ctx context.Context, appID string, filters models.ReleaseFilters, sortBy, sortOrder string, limit int, cursor *models.ReleaseCursor) ([]*models.Release, int, error) {
 	col, ok := pgReleaseListSortCols[sortBy]
 	if !ok {
 		col = pgReleaseListSortCols["release_date"]
@@ -553,7 +585,72 @@ func (ps *PostgresStorage) ListReleasesPaged(ctx context.Context, appID string, 
 		where += fmt.Sprintf(" AND platform = ANY($%d::text[])", len(args))
 	}
 
-	args = append(args, int64(limit), int64(offset))
+	// Keyset cursor condition.
+	if cursor != nil {
+		n := len(args)
+		switch sortBy {
+		case "version":
+			// Version is always DESC regardless of sortOrder.
+			// Stable releases (no prerelease) sort higher than prereleases.
+			isStable := 0
+			if cursor.VersionIsStable {
+				isStable = 1
+			}
+			args = append(args,
+				cursor.VersionMajor,
+				cursor.VersionMinor,
+				cursor.VersionPatch,
+				isStable,
+				cursor.VersionPreRelease,
+				cursor.ID,
+			)
+			where += fmt.Sprintf(` AND (
+  version_major < $%d
+  OR (version_major = $%d AND version_minor < $%d)
+  OR (version_major = $%d AND version_minor = $%d AND version_patch < $%d)
+  OR (version_major = $%d AND version_minor = $%d AND version_patch = $%d AND CASE WHEN version_pre_release IS NULL THEN 1 ELSE 0 END < $%d)
+  OR (version_major = $%d AND version_minor = $%d AND version_patch = $%d AND CASE WHEN version_pre_release IS NULL THEN 1 ELSE 0 END = $%d AND COALESCE(version_pre_release, '') > $%d)
+  OR (version_major = $%d AND version_minor = $%d AND version_patch = $%d AND CASE WHEN version_pre_release IS NULL THEN 1 ELSE 0 END = $%d AND COALESCE(version_pre_release, '') = $%d AND id < $%d)
+)`,
+				n+1,
+				n+1, n+2,
+				n+1, n+2, n+3,
+				n+1, n+2, n+3, n+4,
+				n+1, n+2, n+3, n+4, n+5,
+				n+1, n+2, n+3, n+4, n+5, n+6,
+			)
+		case "platform":
+			args = append(args, cursor.Platform, cursor.ID)
+			if sortOrder == "desc" {
+				where += fmt.Sprintf(" AND ((platform < $%d) OR (platform = $%d AND id < $%d))", n+1, n+1, n+2)
+			} else {
+				where += fmt.Sprintf(" AND ((platform > $%d) OR (platform = $%d AND id > $%d))", n+1, n+1, n+2)
+			}
+		case "architecture":
+			args = append(args, cursor.Architecture, cursor.ID)
+			if sortOrder == "desc" {
+				where += fmt.Sprintf(" AND ((architecture < $%d) OR (architecture = $%d AND id < $%d))", n+1, n+1, n+2)
+			} else {
+				where += fmt.Sprintf(" AND ((architecture > $%d) OR (architecture = $%d AND id > $%d))", n+1, n+1, n+2)
+			}
+		case "created_at":
+			args = append(args, cursor.CreatedAt.UTC().Format(time.RFC3339), cursor.ID)
+			if sortOrder == "desc" {
+				where += fmt.Sprintf(" AND ((created_at < $%d::timestamptz) OR (created_at = $%d::timestamptz AND id < $%d))", n+1, n+1, n+2)
+			} else {
+				where += fmt.Sprintf(" AND ((created_at > $%d::timestamptz) OR (created_at = $%d::timestamptz AND id > $%d))", n+1, n+1, n+2)
+			}
+		default: // release_date
+			args = append(args, cursor.ReleaseDate.UTC().Format(time.RFC3339), cursor.ID)
+			if sortOrder == "desc" {
+				where += fmt.Sprintf(" AND ((release_date < $%d::timestamptz) OR (release_date = $%d::timestamptz AND id < $%d))", n+1, n+1, n+2)
+			} else {
+				where += fmt.Sprintf(" AND ((release_date > $%d::timestamptz) OR (release_date = $%d::timestamptz AND id > $%d))", n+1, n+1, n+2)
+			}
+		}
+	}
+
+	args = append(args, int64(limit))
 	query := fmt.Sprintf(`
 		SELECT id, application_id, version, platform, architecture, download_url,
 		       checksum, checksum_type, file_size, release_notes, release_date,
@@ -563,8 +660,8 @@ func (ps *PostgresStorage) ListReleasesPaged(ctx context.Context, appID string, 
 		FROM releases
 		%s
 		ORDER BY %s
-		LIMIT $%d OFFSET $%d`,
-		where, orderClause, len(args)-1, len(args),
+		LIMIT $%d`,
+		where, orderClause, len(args),
 	)
 
 	pgxRows, err := ps.pool.Query(ctx, query, args...)

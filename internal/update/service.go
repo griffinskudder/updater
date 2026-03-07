@@ -193,7 +193,7 @@ func (s *Service) ListReleases(ctx context.Context, req *models.ListReleasesRequ
 		filters.Platforms = req.Platforms
 	}
 
-	releases, totalCount, err := s.storage.ListReleasesPaged(ctx, req.ApplicationID, filters, req.SortBy, req.SortOrder, req.Limit, req.Offset)
+	releases, totalCount, err := s.storage.ListReleasesPaged(ctx, req.ApplicationID, filters, req.SortBy, req.SortOrder, req.Limit, nil)
 	if err != nil {
 		return nil, NewInternalError("failed to get releases", err)
 	}
@@ -329,11 +329,8 @@ func (s *Service) ListApplications(ctx context.Context, limit, offset int) (*mod
 	if limit <= 0 {
 		limit = 50
 	}
-	if offset < 0 {
-		offset = 0
-	}
 
-	apps, totalCount, err := s.storage.ListApplicationsPaged(ctx, limit, offset)
+	apps, totalCount, err := s.storage.ListApplicationsPaged(ctx, limit, nil)
 	if err != nil {
 		return nil, NewInternalError("failed to list applications", err)
 	}

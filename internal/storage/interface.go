@@ -55,15 +55,17 @@ type Storage interface {
 	// DeleteAPIKey permanently removes an API key by ID.
 	DeleteAPIKey(ctx context.Context, id string) error
 
-	// ListApplicationsPaged returns a page of applications sorted by name,
+	// ListApplicationsPaged returns a page of applications sorted by created_at DESC, id DESC,
 	// and the total count of all applications.
-	ListApplicationsPaged(ctx context.Context, limit, offset int) ([]*models.Application, int, error)
+	// cursor, when non-nil, positions the query after the given item for keyset pagination.
+	ListApplicationsPaged(ctx context.Context, limit int, cursor *models.ApplicationCursor) ([]*models.Application, int, error)
 
 	// ListReleasesPaged returns a filtered, sorted page of releases for an application,
 	// and the total count of matching releases.
 	// sortBy must be one of: release_date, version, platform, architecture, created_at.
 	// sortOrder must be "asc" or "desc".
-	ListReleasesPaged(ctx context.Context, appID string, filters models.ReleaseFilters, sortBy, sortOrder string, limit, offset int) ([]*models.Release, int, error)
+	// cursor, when non-nil, positions the query after the given item for keyset pagination.
+	ListReleasesPaged(ctx context.Context, appID string, filters models.ReleaseFilters, sortBy, sortOrder string, limit int, cursor *models.ReleaseCursor) ([]*models.Release, int, error)
 
 	// GetLatestStableRelease returns the highest non-prerelease version for the given
 	// application, platform, and architecture.
