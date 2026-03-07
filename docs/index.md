@@ -106,8 +106,6 @@ graph TB
     mw --> logger
     instStorage --> iface
 
-    classDef complete fill:#4caf50,stroke:#2e7d32,color:#fff
-    class api,mw,logic,models,config,iface,mem,pg,sqlite,sqlc,metrics,tracing,instStorage,logger complete
 ```
 
 ## Core Principles
