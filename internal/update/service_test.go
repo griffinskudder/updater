@@ -89,47 +89,47 @@ func (m *MockStorage) DeleteRelease(ctx context.Context, appID, version, platfor
 }
 
 func (m *MockStorage) GetLatestRelease(ctx context.Context, appID, platform, arch string) (*models.Release, error) {
-	releases, exists := m.releases[appID]
-	if !exists {
-		return nil, fmt.Errorf("no releases found")
-	}
-
 	var latest *models.Release
-	for _, release := range releases {
+	var latestVer *semver.Version
+	for _, release := range m.releases[appID] {
 		if release.Platform != platform || release.Architecture != arch {
 			continue
 		}
-		if latest == nil {
-			latest = release
+		v, err := semver.NewVersion(release.Version)
+		if err != nil {
 			continue
 		}
-
-		// Simple version comparison for testing
-		if release.Version > latest.Version {
-			latest = release
+		if latest == nil || v.GreaterThan(latestVer) {
+			copied := *release
+			latest = &copied
+			latestVer = v
 		}
 	}
-
 	if latest == nil {
 		return nil, fmt.Errorf("no releases found for %s on %s-%s", appID, platform, arch)
 	}
-
 	return latest, nil
 }
 
 func (m *MockStorage) GetReleasesAfterVersion(ctx context.Context, appID, currentVersion, platform, arch string) ([]*models.Release, error) {
-	releases, exists := m.releases[appID]
-	if !exists {
-		return []*models.Release{}, nil
+	current, err := semver.NewVersion(currentVersion)
+	if err != nil {
+		return nil, fmt.Errorf("invalid current version: %w", err)
 	}
-
-	var newerReleases []*models.Release
-	for _, release := range releases {
-		if release.Platform == platform && release.Architecture == arch && release.Version > currentVersion {
-			newerReleases = append(newerReleases, release)
+	newerReleases := make([]*models.Release, 0)
+	for _, release := range m.releases[appID] {
+		if release.Platform != platform || release.Architecture != arch {
+			continue
+		}
+		v, err := semver.NewVersion(release.Version)
+		if err != nil {
+			continue
+		}
+		if v.GreaterThan(current) {
+			copied := *release
+			newerReleases = append(newerReleases, &copied)
 		}
 	}
-
 	return newerReleases, nil
 }
 
@@ -453,12 +453,10 @@ func TestService_CheckForUpdate_PreRelease(t *testing.T) {
 				AllowPrerelease: tt.allowPrerelease,
 			}
 
-			// Note: This test would work better with real semver comparison
-			// For now, we're testing the structure but the mock storage
-			// doesn't implement proper semver comparison
 			response, err := service.CheckForUpdate(ctx, request)
 			require.NoError(t, err)
 			assert.True(t, response.UpdateAvailable)
+			assert.Equal(t, tt.expectedVersion, response.LatestVersion)
 		})
 	}
 }
@@ -1334,6 +1332,53 @@ func TestListApplications_CursorEmittedWhenPageFull(t *testing.T) {
 	require.NoError(t, err)
 	assert.Len(t, resp.Applications, 3)
 	assert.NotEmpty(t, resp.NextCursor, "cursor must be emitted when page is full (len == limit)")
+}
+
+func TestMockStorage_GetReleasesAfterVersion_SemverOrdering(t *testing.T) {
+	// "1.10.0" > "1.9.0" semantically but "1.9.0" > "1.10.0" lexicographically.
+	// This test fails if GetReleasesAfterVersion uses string comparison.
+	mockStorage := NewMockStorage()
+	ctx := context.Background()
+
+	mockStorage.SaveRelease(ctx, createTestReleaseForUpdate("test-app", "1.8.0", "windows", "amd64"))
+	mockStorage.SaveRelease(ctx, createTestReleaseForUpdate("test-app", "1.9.0", "windows", "amd64"))
+	mockStorage.SaveRelease(ctx, createTestReleaseForUpdate("test-app", "1.10.0", "windows", "amd64"))
+
+	// With string comparison, "1.10.0" > "1.9.0" is false ('1' < '9'), so 1.10.0
+	// would be excluded. With semver it is correctly included.
+	releases, err := mockStorage.GetReleasesAfterVersion(ctx, "test-app", "1.9.0", "windows", "amd64")
+	require.NoError(t, err)
+	require.Len(t, releases, 1)
+	assert.Equal(t, "1.10.0", releases[0].Version)
+}
+
+func TestService_CheckForUpdate_SemverOrdering(t *testing.T) {
+	// "1.10.0" > "1.9.0" semantically but "1.9.0" > "1.10.0" lexicographically.
+	// This test fails if GetLatestRelease uses string comparison.
+	mockStorage := NewMockStorage()
+	service := NewService(mockStorage)
+	ctx := context.Background()
+
+	app := &models.Application{
+		ID:        "test-app",
+		Name:      "Test App",
+		Platforms: []string{"windows"},
+		Config:    models.ApplicationConfig{},
+	}
+	mockStorage.SaveApplication(ctx, app)
+
+	mockStorage.SaveRelease(ctx, createTestReleaseForUpdate("test-app", "1.9.0", "windows", "amd64"))
+	mockStorage.SaveRelease(ctx, createTestReleaseForUpdate("test-app", "1.10.0", "windows", "amd64"))
+
+	response, err := service.CheckForUpdate(ctx, &models.UpdateCheckRequest{
+		ApplicationID:  "test-app",
+		CurrentVersion: "1.8.0",
+		Platform:       "windows",
+		Architecture:   "amd64",
+	})
+	require.NoError(t, err)
+	assert.True(t, response.UpdateAvailable)
+	assert.Equal(t, "1.10.0", response.LatestVersion)
 }
 
 // Helper functions
