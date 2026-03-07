@@ -3,7 +3,7 @@
 //
 // Response Design Principles:
 // - Consistent JSON structure across all endpoints
-// - Optional fields use omitempty to reduce response size
+// - Optional fields use omitempty to reduce response size; required contract fields do not
 // - Rich error information with codes and details for debugging
 // - Standardized pagination with metadata
 // - Helper methods for easy response construction
