@@ -116,7 +116,7 @@ func (m *MockStorage) GetReleasesAfterVersion(ctx context.Context, appID, curren
 	if err != nil {
 		return nil, fmt.Errorf("invalid current version: %w", err)
 	}
-	var newerReleases []*models.Release
+	newerReleases := make([]*models.Release, 0)
 	for _, release := range m.releases[appID] {
 		if release.Platform != platform || release.Architecture != arch {
 			continue
@@ -1332,6 +1332,24 @@ func TestListApplications_CursorEmittedWhenPageFull(t *testing.T) {
 	require.NoError(t, err)
 	assert.Len(t, resp.Applications, 3)
 	assert.NotEmpty(t, resp.NextCursor, "cursor must be emitted when page is full (len == limit)")
+}
+
+func TestMockStorage_GetReleasesAfterVersion_SemverOrdering(t *testing.T) {
+	// "1.10.0" > "1.9.0" semantically but "1.9.0" > "1.10.0" lexicographically.
+	// This test fails if GetReleasesAfterVersion uses string comparison.
+	mockStorage := NewMockStorage()
+	ctx := context.Background()
+
+	mockStorage.SaveRelease(ctx, createTestReleaseForUpdate("test-app", "1.8.0", "windows", "amd64"))
+	mockStorage.SaveRelease(ctx, createTestReleaseForUpdate("test-app", "1.9.0", "windows", "amd64"))
+	mockStorage.SaveRelease(ctx, createTestReleaseForUpdate("test-app", "1.10.0", "windows", "amd64"))
+
+	// With string comparison, "1.10.0" > "1.9.0" is false ('1' < '9'), so 1.10.0
+	// would be excluded. With semver it is correctly included.
+	releases, err := mockStorage.GetReleasesAfterVersion(ctx, "test-app", "1.9.0", "windows", "amd64")
+	require.NoError(t, err)
+	require.Len(t, releases, 1)
+	assert.Equal(t, "1.10.0", releases[0].Version)
 }
 
 func TestService_CheckForUpdate_SemverOrdering(t *testing.T) {
