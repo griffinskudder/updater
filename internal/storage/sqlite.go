@@ -561,7 +561,7 @@ func (ss *SQLiteStorage) ListApplicationsPaged(ctx context.Context, limit int, c
 // Using an allowlist prevents SQL injection from untrusted sortBy values.
 var sqliteReleaseListSortCols = map[string]string{
 	"release_date": "release_date",
-	"version":      "version_major DESC, version_minor DESC, version_patch DESC, (version_pre_release IS NULL) DESC, version_pre_release",
+	"version":      "version_major DESC, version_minor DESC, version_patch DESC, (version_pre_release IS NULL) DESC, version_pre_release DESC",
 	"platform":     "platform",
 	"architecture": "architecture",
 	"created_at":   "created_at",
@@ -632,7 +632,7 @@ func (ss *SQLiteStorage) ListReleasesPaged(ctx context.Context, appID string, fi
   OR (version_major = ? AND version_minor < ?)
   OR (version_major = ? AND version_minor = ? AND version_patch < ?)
   OR (version_major = ? AND version_minor = ? AND version_patch = ? AND CASE WHEN version_pre_release IS NULL THEN 1 ELSE 0 END < ?)
-  OR (version_major = ? AND version_minor = ? AND version_patch = ? AND CASE WHEN version_pre_release IS NULL THEN 1 ELSE 0 END = ? AND COALESCE(version_pre_release, '') > ?)
+  OR (version_major = ? AND version_minor = ? AND version_patch = ? AND CASE WHEN version_pre_release IS NULL THEN 1 ELSE 0 END = ? AND COALESCE(version_pre_release, '') < ?)
   OR (version_major = ? AND version_minor = ? AND version_patch = ? AND CASE WHEN version_pre_release IS NULL THEN 1 ELSE 0 END = ? AND COALESCE(version_pre_release, '') = ? AND id < ?)
 )`
 		case "platform":

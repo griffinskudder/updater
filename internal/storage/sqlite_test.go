@@ -853,6 +853,55 @@ func TestSQLiteStorage_ListReleasesPaged_TotalCountStable(t *testing.T) {
 	assert.Equal(t, 5, total2, "total_count on page 2 must equal total_count on page 1")
 }
 
+func TestSQLiteStorage_ListReleasesPaged_VersionSortPreReleaseOrder(t *testing.T) {
+	// Version sort DESC must give: stable, rc, beta, alpha (not stable, alpha, beta, rc).
+	store, err := NewSQLiteStorage(":memory:")
+	require.NoError(t, err)
+	defer store.Close()
+	ctx := context.Background()
+
+	app := &models.Application{
+		ID:        "app1",
+		Name:      "App1",
+		Platforms: []string{"windows"},
+		Config:    models.ApplicationConfig{},
+		CreatedAt: time.Now().UTC().Format(time.RFC3339),
+		UpdatedAt: time.Now().UTC().Format(time.RFC3339),
+	}
+	require.NoError(t, store.SaveApplication(ctx, app))
+
+	now := time.Now().UTC()
+	releases := []struct{ id, ver string }{
+		{"r1", "1.0.0"},
+		{"r2", "1.0.0-alpha"},
+		{"r3", "1.0.0-beta"},
+		{"r4", "1.0.0-rc"},
+	}
+	for i, rel := range releases {
+		r := &models.Release{
+			ID:            rel.id,
+			ApplicationID: "app1",
+			Version:       rel.ver,
+			Platform:      "windows",
+			Architecture:  "amd64",
+			DownloadURL:   "http://example.com",
+			Checksum:      "abc",
+			ChecksumType:  "sha256",
+			ReleaseDate:   now.Add(time.Duration(i) * time.Second),
+			CreatedAt:     now.Add(time.Duration(i) * time.Second),
+		}
+		require.NoError(t, store.SaveRelease(ctx, r))
+	}
+
+	results, _, err := store.ListReleasesPaged(ctx, "app1", models.ReleaseFilters{}, "version", "desc", 10, nil)
+	require.NoError(t, err)
+	require.Len(t, results, 4)
+	assert.Equal(t, "1.0.0", results[0].Version, "stable must be first in version DESC")
+	assert.Equal(t, "1.0.0-rc", results[1].Version, "rc must be second in version DESC")
+	assert.Equal(t, "1.0.0-beta", results[2].Version, "beta must be third in version DESC")
+	assert.Equal(t, "1.0.0-alpha", results[3].Version, "alpha must be last in version DESC")
+}
+
 func TestSQLiteStorageSaveRelease_VersionSortColumns(t *testing.T) {
 	s := newSQLiteTestStorage(t)
 	ss := s.(*SQLiteStorage)
