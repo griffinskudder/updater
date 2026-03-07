@@ -34,20 +34,22 @@ func (q *Queries) DeleteRelease(ctx context.Context, arg DeleteReleaseParams) er
 }
 
 const getApplicationStats = `-- name: GetApplicationStats :one
+WITH app_releases AS (
+    SELECT id, application_id, version, platform, architecture, download_url, checksum, checksum_type, file_size, release_notes, release_date, required, minimum_version, metadata, created_at, version_major, version_minor, version_patch, version_pre_release FROM releases WHERE application_id = $1
+)
 SELECT
     COUNT(*) AS total_releases,
-    COUNT(*) FILTER (WHERE r1.required) AS required_releases,
-    COUNT(DISTINCT r1.platform) AS platform_count,
-    MAX(r1.release_date) AS latest_release_date,
+    COUNT(*) FILTER (WHERE required) AS required_releases,
+    COUNT(DISTINCT platform) AS platform_count,
+    MAX(release_date) AS latest_release_date,
     (
-        SELECT r2.version FROM releases r2
-        WHERE r2.application_id = $1
-        ORDER BY r2.version_major DESC, r2.version_minor DESC, r2.version_patch DESC,
-                 (r2.version_pre_release IS NULL) DESC,
-                 r2.version_pre_release ASC
+        SELECT version FROM app_releases
+        ORDER BY version_major DESC, version_minor DESC, version_patch DESC,
+                 (version_pre_release IS NULL) DESC,
+                 version_pre_release ASC
         LIMIT 1
     ) AS latest_version
-FROM releases r1 WHERE r1.application_id = $1
+FROM app_releases
 `
 
 type GetApplicationStatsRow struct {
