@@ -505,9 +505,12 @@ func (ss *SQLiteStorage) ListApplicationsPaged(ctx context.Context, limit int, c
 	args = append(args, int64(limit))
 
 	query := fmt.Sprintf(`
-		SELECT id, name, description, platforms, config, created_at, updated_at,
-		       COUNT(*) OVER() AS total_count
-		FROM applications
+		SELECT id, name, description, platforms, config, created_at, updated_at, total_count
+		FROM (
+			SELECT id, name, description, platforms, config, created_at, updated_at,
+			       COUNT(*) OVER() AS total_count
+			FROM applications
+		) AS counted
 		%s
 		ORDER BY created_at DESC, id DESC
 		LIMIT ?`,
@@ -582,19 +585,19 @@ func (ss *SQLiteStorage) ListReleasesPaged(ctx context.Context, appID string, fi
 	}
 
 	args := []interface{}{appID}
-	where := "WHERE application_id = ?"
+	businessWhere := "WHERE application_id = ?"
 
 	if filters.Architecture != "" {
 		args = append(args, filters.Architecture)
-		where += " AND architecture = ?"
+		businessWhere += " AND architecture = ?"
 	}
 	if filters.Version != "" {
 		args = append(args, filters.Version)
-		where += " AND version = ?"
+		businessWhere += " AND version = ?"
 	}
 	if filters.Required != nil {
 		args = append(args, *filters.Required)
-		where += " AND required = ?"
+		businessWhere += " AND required = ?"
 	}
 	if len(filters.Platforms) > 0 {
 		placeholders := make([]string, len(filters.Platforms))
@@ -602,10 +605,12 @@ func (ss *SQLiteStorage) ListReleasesPaged(ctx context.Context, appID string, fi
 			placeholders[i] = "?"
 			args = append(args, p)
 		}
-		where += " AND platform IN (" + strings.Join(placeholders, ",") + ")"
+		businessWhere += " AND platform IN (" + strings.Join(placeholders, ",") + ")"
 	}
 
-	// Keyset cursor condition.
+	// Keyset cursor condition — applied to the outer query so COUNT(*) OVER()
+	// counts all business-filtered rows, not just the remaining page rows.
+	keysetWhere := ""
 	if cursor != nil {
 		switch sortBy {
 		case "version":
@@ -622,7 +627,7 @@ func (ss *SQLiteStorage) ListReleasesPaged(ctx context.Context, appID string, fi
 				cursor.VersionMajor, cursor.VersionMinor, cursor.VersionPatch, isStable, cursor.VersionPreRelease,
 				cursor.VersionMajor, cursor.VersionMinor, cursor.VersionPatch, isStable, cursor.VersionPreRelease, cursor.ID,
 			)
-			where += ` AND (
+			keysetWhere = `WHERE (
   version_major < ?
   OR (version_major = ? AND version_minor < ?)
   OR (version_major = ? AND version_minor = ? AND version_patch < ?)
@@ -633,32 +638,32 @@ func (ss *SQLiteStorage) ListReleasesPaged(ctx context.Context, appID string, fi
 		case "platform":
 			args = append(args, cursor.Platform, cursor.Platform, cursor.ID)
 			if sortOrder == "desc" {
-				where += " AND ((platform < ?) OR (platform = ? AND id < ?))"
+				keysetWhere = "WHERE ((platform < ?) OR (platform = ? AND id < ?))"
 			} else {
-				where += " AND ((platform > ?) OR (platform = ? AND id > ?))"
+				keysetWhere = "WHERE ((platform > ?) OR (platform = ? AND id > ?))"
 			}
 		case "architecture":
 			args = append(args, cursor.Architecture, cursor.Architecture, cursor.ID)
 			if sortOrder == "desc" {
-				where += " AND ((architecture < ?) OR (architecture = ? AND id < ?))"
+				keysetWhere = "WHERE ((architecture < ?) OR (architecture = ? AND id < ?))"
 			} else {
-				where += " AND ((architecture > ?) OR (architecture = ? AND id > ?))"
+				keysetWhere = "WHERE ((architecture > ?) OR (architecture = ? AND id > ?))"
 			}
 		case "created_at":
 			createdAtStr := cursor.CreatedAt.UTC().Format(time.RFC3339)
 			args = append(args, createdAtStr, createdAtStr, cursor.ID)
 			if sortOrder == "desc" {
-				where += " AND ((created_at < ?) OR (created_at = ? AND id < ?))"
+				keysetWhere = "WHERE ((created_at < ?) OR (created_at = ? AND id < ?))"
 			} else {
-				where += " AND ((created_at > ?) OR (created_at = ? AND id > ?))"
+				keysetWhere = "WHERE ((created_at > ?) OR (created_at = ? AND id > ?))"
 			}
 		default: // release_date
 			releaseDateStr := cursor.ReleaseDate.UTC().Format(time.RFC3339)
 			args = append(args, releaseDateStr, releaseDateStr, cursor.ID)
 			if sortOrder == "desc" {
-				where += " AND ((release_date < ?) OR (release_date = ? AND id < ?))"
+				keysetWhere = "WHERE ((release_date < ?) OR (release_date = ? AND id < ?))"
 			} else {
-				where += " AND ((release_date > ?) OR (release_date = ? AND id > ?))"
+				keysetWhere = "WHERE ((release_date > ?) OR (release_date = ? AND id > ?))"
 			}
 		}
 	}
@@ -669,12 +674,20 @@ func (ss *SQLiteStorage) ListReleasesPaged(ctx context.Context, appID string, fi
 		       checksum, checksum_type, file_size, release_notes, release_date,
 		       required, minimum_version, metadata, created_at,
 		       version_major, version_minor, version_patch, version_pre_release,
-		       COUNT(*) OVER() AS total_count
-		FROM releases
+		       total_count
+		FROM (
+			SELECT id, application_id, version, platform, architecture, download_url,
+			       checksum, checksum_type, file_size, release_notes, release_date,
+			       required, minimum_version, metadata, created_at,
+			       version_major, version_minor, version_patch, version_pre_release,
+			       COUNT(*) OVER() AS total_count
+			FROM releases
+			%s
+		) AS counted
 		%s
 		ORDER BY %s
 		LIMIT ?`,
-		where, orderClause,
+		businessWhere, keysetWhere, orderClause,
 	)
 
 	sqlRows, err := ss.db.QueryContext(ctx, query, args...)

@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"testing"
 	"time"
@@ -763,6 +764,93 @@ func TestSQLiteStorage_GetApplicationStats(t *testing.T) {
 	if stats.LatestReleaseDate == nil {
 		t.Error("expected LatestReleaseDate to be non-nil")
 	}
+}
+
+func TestSQLiteStorage_ListApplicationsPaged_TotalCountStable(t *testing.T) {
+	store, err := NewSQLiteStorage(":memory:")
+	require.NoError(t, err)
+	defer store.Close()
+	ctx := context.Background()
+
+	now := time.Now().UTC()
+	for i := range 5 {
+		app := &models.Application{
+			ID:        fmt.Sprintf("app-%d", i),
+			Name:      fmt.Sprintf("App %d", i),
+			Platforms: []string{"windows"},
+			Config:    models.ApplicationConfig{},
+			CreatedAt: now.Add(time.Duration(i) * time.Second).Format(time.RFC3339),
+			UpdatedAt: now.Format(time.RFC3339),
+		}
+		require.NoError(t, store.SaveApplication(ctx, app))
+	}
+
+	// Page 1: limit=2, no cursor
+	page1, total1, err := store.ListApplicationsPaged(ctx, 2, nil)
+	require.NoError(t, err)
+	assert.Len(t, page1, 2)
+	assert.Equal(t, 5, total1, "total_count on page 1 should be 5")
+
+	// Page 2: using cursor from last item on page 1
+	createdAt1, err := time.Parse(time.RFC3339, page1[len(page1)-1].CreatedAt)
+	require.NoError(t, err)
+	cursor := &models.ApplicationCursor{CreatedAt: createdAt1, ID: page1[len(page1)-1].ID}
+	page2, total2, err := store.ListApplicationsPaged(ctx, 2, cursor)
+	require.NoError(t, err)
+	assert.Len(t, page2, 2)
+	assert.Equal(t, 5, total2, "total_count on page 2 must equal total_count on page 1")
+}
+
+func TestSQLiteStorage_ListReleasesPaged_TotalCountStable(t *testing.T) {
+	store, err := NewSQLiteStorage(":memory:")
+	require.NoError(t, err)
+	defer store.Close()
+	ctx := context.Background()
+
+	app := &models.Application{
+		ID:        "app1",
+		Name:      "App1",
+		Platforms: []string{"windows"},
+		Config:    models.ApplicationConfig{},
+		CreatedAt: time.Now().UTC().Format(time.RFC3339),
+		UpdatedAt: time.Now().UTC().Format(time.RFC3339),
+	}
+	require.NoError(t, store.SaveApplication(ctx, app))
+
+	now := time.Now().UTC()
+	for i := range 5 {
+		r := &models.Release{
+			ID:            fmt.Sprintf("r%d", i),
+			ApplicationID: "app1",
+			Version:       fmt.Sprintf("1.0.%d", i),
+			Platform:      "windows",
+			Architecture:  "amd64",
+			DownloadURL:   "http://example.com",
+			Checksum:      "abc",
+			ChecksumType:  "sha256",
+			ReleaseDate:   now.Add(time.Duration(i) * time.Second),
+			CreatedAt:     now.Add(time.Duration(i) * time.Second),
+		}
+		require.NoError(t, store.SaveRelease(ctx, r))
+	}
+
+	// Page 1
+	page1, total1, err := store.ListReleasesPaged(ctx, "app1", models.ReleaseFilters{}, "release_date", "desc", 2, nil)
+	require.NoError(t, err)
+	assert.Len(t, page1, 2)
+	assert.Equal(t, 5, total1)
+
+	// Page 2 using cursor from last item on page 1
+	cursor := &models.ReleaseCursor{
+		SortBy:      "release_date",
+		SortOrder:   "desc",
+		ID:          page1[len(page1)-1].ID,
+		ReleaseDate: page1[len(page1)-1].ReleaseDate,
+	}
+	page2, total2, err := store.ListReleasesPaged(ctx, "app1", models.ReleaseFilters{}, "release_date", "desc", 2, cursor)
+	require.NoError(t, err)
+	assert.Len(t, page2, 2)
+	assert.Equal(t, 5, total2, "total_count on page 2 must equal total_count on page 1")
 }
 
 func TestSQLiteStorageSaveRelease_VersionSortColumns(t *testing.T) {
