@@ -126,10 +126,10 @@ See `docs/ARCHITECTURE.md` for full design details and rationales.
 - ALWAYS: Generate code after modifying sql files.
 - NEVER: Use CGO. CGO IS NOT GO. EXCEPTION: Race detector requires CGO, but it is only used in tests and CI.
 - ALWAYS: Ensure all tests are passing before finalising the request. This doesn't include docs changes.
+- ALWAYS: Run `make check` as the pre-commit verification gate before considering any code change complete.
 - ALWAYS: Use context7 before using library code.
-- ALWAYS: Update the openapi file when updating the API. This is a manual process, but it is important to keep the openapi file up to date.
 - ALWAYS: Use the Makefile targets to run commands, rather than running commands directly. This is to ensure that the commands are run in a consistent environment and to avoid accidentally running commands that are not intended.
-- ALWAYS: Use the GitHub MCP instead of the GitHub CLI.
+- ALWAYS: Update the openapi spec BEFORE updating the API implementation. This is to ensure that the openapi spec is always up to date and that the API implementation is always consistent with the openapi spec.
 
 ## Gotchas
 
@@ -143,3 +143,4 @@ See `docs/ARCHITECTURE.md` for full design details and rationales.
 - **Distroless containers have no shell utilities**: The distroless base image has no `wget`, `curl`, or shell. Healthchecks must use application endpoints or be removed entirely.
 - **Structured logging tests capture attributes**: When testing `slog` output, capture and assert on `slog.Attr` values, not message strings. See `internal/config/config_test.go` for the `capturingSlogHandler` pattern.
 - **Config field removals require test updates**: When removing config fields, update integration test YAML blocks and remove assertions that reference the deleted fields (see `internal/integration/integration_test.go`).
+- **sqlc SQL file layout**: Schema files live in `internal/storage/sqlc/postgres/` and `internal/storage/sqlc/sqlite/` (e.g., `001_initial.sql`). Query files live alongside them (e.g., `queries.sql`). After editing either, run `make sqlc-generate`. Never edit generated files under those directories directly.
