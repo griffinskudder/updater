@@ -951,7 +951,7 @@ func TestService_ListApplications(t *testing.T) {
 				app.UpdatedAt = "2025-01-01T00:00:00Z"
 				m.applications["app-1"] = app
 			},
-			req: &models.ListApplicationsRequest{Limit: 10, After: "not-a-valid-cursor"},
+			req:         &models.ListApplicationsRequest{Limit: 10, After: "not-a-valid-cursor"},
 			checkResult: nil,
 		},
 	}

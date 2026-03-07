@@ -505,11 +505,11 @@ func (ps *PostgresStorage) ListApplicationsPaged(ctx context.Context, limit int,
 	apps := make([]*models.Application, 0)
 	for pgxRows.Next() {
 		var (
-			id, name   string
-			description pgtype.Text
-			platforms, config []byte
+			id, name             string
+			description          pgtype.Text
+			platforms, config    []byte
 			createdAt, updatedAt pgtype.Timestamptz
-			totalCount int64
+			totalCount           int64
 		)
 		if err := pgxRows.Scan(&id, &name, &description, &platforms, &config, &createdAt, &updatedAt, &totalCount); err != nil {
 			return nil, 0, fmt.Errorf("failed to scan application: %w", err)

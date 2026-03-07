@@ -524,8 +524,8 @@ func (ss *SQLiteStorage) ListApplicationsPaged(ctx context.Context, limit int, c
 	for sqlRows.Next() {
 		var (
 			id, name, platforms, config, createdAt, updatedAt string
-			description                                        sql.NullString
-			totalCount                                         int64
+			description                                       sql.NullString
+			totalCount                                        int64
 		)
 		if err := sqlRows.Scan(&id, &name, &description, &platforms, &config, &createdAt, &updatedAt, &totalCount); err != nil {
 			return nil, 0, fmt.Errorf("failed to scan application: %w", err)
