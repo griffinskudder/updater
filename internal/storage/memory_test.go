@@ -406,13 +406,13 @@ func TestMemoryStorage_ListApplicationsPaged(t *testing.T) {
 	ctx := context.Background()
 
 	tests := []struct {
-		name       string
-		setup      func(s *MemoryStorage)
-		limit      int
-		offset     int
-		wantCount  int
-		wantTotal  int
-		wantEmpty  bool
+		name      string
+		setup     func(s *MemoryStorage)
+		limit     int
+		offset    int
+		wantCount int
+		wantTotal int
+		wantEmpty bool
 	}{
 		{
 			name: "page 2 of size 2 from 5 apps",
@@ -477,16 +477,16 @@ func TestMemoryStorage_ListReleasesPaged(t *testing.T) {
 	base := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
 
 	tests := []struct {
-		name       string
-		setup      func(s *MemoryStorage)
-		filters    models.ReleaseFilters
-		sortBy     string
-		sortOrder  string
-		limit      int
-		offset     int
-		wantCount  int
-		wantTotal  int
-		wantEmpty  bool
+		name      string
+		setup     func(s *MemoryStorage)
+		filters   models.ReleaseFilters
+		sortBy    string
+		sortOrder string
+		limit     int
+		offset    int
+		wantCount int
+		wantTotal int
+		wantEmpty bool
 		// wantVersionOrder, if set, asserts the versions in the returned slice in order.
 		wantVersionOrder []string
 	}{

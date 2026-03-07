@@ -253,12 +253,12 @@ func TestUnmarshalPermissions(t *testing.T) {
 
 func TestParseSemverParts(t *testing.T) {
 	tests := []struct {
-		name       string
-		version    string
-		wantMajor  int64
-		wantMinor  int64
-		wantPatch  int64
-		wantPre    string
+		name      string
+		version   string
+		wantMajor int64
+		wantMinor int64
+		wantPatch int64
+		wantPre   string
 	}{
 		{
 			name:      "stable version",

@@ -438,4 +438,3 @@ func (s *Service) DeleteRelease(ctx context.Context, appID, version, platform, a
 		Message: fmt.Sprintf("Release '%s' deleted successfully", release.ID),
 	}, nil
 }
-
