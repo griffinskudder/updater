@@ -759,3 +759,45 @@ func TestUpdateApplicationRequest_Normalize(t *testing.T) {
 	assert.Nil(t, request2.Description)
 	assert.Nil(t, request2.Platforms)
 }
+
+func TestListApplicationsRequest_Validate(t *testing.T) {
+	tests := []struct {
+		name        string
+		request     ListApplicationsRequest
+		expectError bool
+		errorMsg    string
+	}{
+		{name: "valid zero limit (will be defaulted)", request: ListApplicationsRequest{}, expectError: false},
+		{name: "valid explicit limit", request: ListApplicationsRequest{Limit: 100}, expectError: false},
+		{name: "negative limit", request: ListApplicationsRequest{Limit: -1}, expectError: true, errorMsg: "limit cannot be negative"},
+		{name: "limit exceeds max", request: ListApplicationsRequest{Limit: 501}, expectError: true, errorMsg: "limit cannot exceed 500"},
+		{name: "limit at max is valid", request: ListApplicationsRequest{Limit: 500}, expectError: false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.request.Validate()
+			if tt.expectError {
+				assert.Error(t, err)
+				if tt.errorMsg != "" {
+					assert.Contains(t, err.Error(), tt.errorMsg)
+				}
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestListApplicationsRequest_Normalize(t *testing.T) {
+	t.Run("sets default limit when zero", func(t *testing.T) {
+		req := ListApplicationsRequest{}
+		req.Normalize()
+		assert.Equal(t, 50, req.Limit)
+	})
+
+	t.Run("preserves explicit limit", func(t *testing.T) {
+		req := ListApplicationsRequest{Limit: 100}
+		req.Normalize()
+		assert.Equal(t, 100, req.Limit)
+	})
+}

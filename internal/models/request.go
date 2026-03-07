@@ -111,6 +111,28 @@ type UpdateApplicationRequest struct {
 	Config      *ApplicationConfig `json:"config,omitempty"`
 }
 
+// ListApplicationsRequest represents a request to list applications with keyset pagination.
+type ListApplicationsRequest struct {
+	Limit int    `json:"limit,omitempty"` // Maximum items per page (1–500); 0 means use default (50)
+	After string `json:"after,omitempty"` // Opaque keyset cursor from a previous response
+}
+
+func (r *ListApplicationsRequest) Validate() error {
+	if r.Limit < 0 {
+		return errors.New("limit cannot be negative")
+	}
+	if r.Limit > MaxPageSize {
+		return fmt.Errorf("limit cannot exceed %d", MaxPageSize)
+	}
+	return nil
+}
+
+func (r *ListApplicationsRequest) Normalize() {
+	if r.Limit == 0 {
+		r.Limit = 50
+	}
+}
+
 type DeleteReleaseRequest struct {
 	ApplicationID string `json:"application_id" validate:"required"`
 	ReleaseID     string `json:"release_id" validate:"required"`
