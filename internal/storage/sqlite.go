@@ -527,27 +527,223 @@ func (ss *SQLiteStorage) DeleteAPIKey(ctx context.Context, id string) error {
 }
 
 // ListApplicationsPaged returns a page of applications sorted by name and the total count.
-// TODO(Task 8): implement with sqlc query.
 func (ss *SQLiteStorage) ListApplicationsPaged(ctx context.Context, limit, offset int) ([]*models.Application, int, error) {
-	return nil, 0, fmt.Errorf("ListApplicationsPaged: not yet implemented for SQLite")
+	rows, err := ss.queries.GetApplicationsPaged(ctx, sqlcite.GetApplicationsPagedParams{
+		Limit:  int64(limit),
+		Offset: int64(offset),
+	})
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to list applications: %w", err)
+	}
+
+	total := 0
+	apps := make([]*models.Application, 0, len(rows))
+	for i, row := range rows {
+		if i == 0 {
+			total = int(row.TotalCount)
+		}
+		app, err := sqliteAppToModel(sqlcite.Application{
+			ID:          row.ID,
+			Name:        row.Name,
+			Description: row.Description,
+			Platforms:   row.Platforms,
+			Config:      row.Config,
+			CreatedAt:   row.CreatedAt,
+			UpdatedAt:   row.UpdatedAt,
+		})
+		if err != nil {
+			return nil, 0, fmt.Errorf("failed to convert application %s: %w", row.ID, err)
+		}
+		apps = append(apps, app)
+	}
+	return apps, total, nil
+}
+
+// sqliteReleaseListSortCols maps sortBy values to safe SQL ORDER BY fragments.
+// Version sort uses the split numeric columns for correct semver ordering.
+// Using an allowlist prevents SQL injection from untrusted sortBy values.
+var sqliteReleaseListSortCols = map[string]string{
+	"release_date": "release_date",
+	"version":      "version_major DESC, version_minor DESC, version_patch DESC, (version_pre_release IS NULL) DESC, version_pre_release",
+	"platform":     "platform",
+	"architecture": "architecture",
+	"created_at":   "created_at",
 }
 
 // ListReleasesPaged returns a filtered, sorted page of releases and the total count.
-// TODO(Task 8): implement with sqlc query.
 func (ss *SQLiteStorage) ListReleasesPaged(ctx context.Context, appID string, filters models.ReleaseFilters, sortBy, sortOrder string, limit, offset int) ([]*models.Release, int, error) {
-	return nil, 0, fmt.Errorf("ListReleasesPaged: not yet implemented for SQLite")
+	col, ok := sqliteReleaseListSortCols[sortBy]
+	if !ok {
+		col = sqliteReleaseListSortCols["release_date"]
+	}
+
+	// Version sort has direction embedded; other columns get an explicit direction suffix.
+	orderClause := col
+	if sortBy != "version" {
+		if sortOrder == "asc" {
+			orderClause += " ASC"
+		} else {
+			orderClause += " DESC"
+		}
+	}
+
+	args := []interface{}{appID}
+	where := "WHERE application_id = ?"
+
+	if filters.Architecture != "" {
+		args = append(args, filters.Architecture)
+		where += " AND architecture = ?"
+	}
+	if filters.Version != "" {
+		args = append(args, filters.Version)
+		where += " AND version = ?"
+	}
+	if filters.Required != nil {
+		args = append(args, *filters.Required)
+		where += " AND required = ?"
+	}
+	if len(filters.Platforms) > 0 {
+		placeholders := make([]string, len(filters.Platforms))
+		for i, p := range filters.Platforms {
+			placeholders[i] = "?"
+			args = append(args, p)
+		}
+		where += " AND platform IN (" + strings.Join(placeholders, ",") + ")"
+	}
+
+	args = append(args, int64(limit), int64(offset))
+	query := fmt.Sprintf(`
+		SELECT id, application_id, version, platform, architecture, download_url,
+		       checksum, checksum_type, file_size, release_notes, release_date,
+		       required, minimum_version, metadata, created_at,
+		       version_major, version_minor, version_patch, version_pre_release,
+		       COUNT(*) OVER() AS total_count
+		FROM releases
+		%s
+		ORDER BY %s
+		LIMIT ? OFFSET ?`,
+		where, orderClause,
+	)
+
+	sqlRows, err := ss.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to query releases: %w", err)
+	}
+	defer sqlRows.Close()
+
+	releases := make([]*models.Release, 0)
+	total := 0
+	for sqlRows.Next() {
+		var (
+			id, appIDField, version, platform, arch, downloadURL string
+			checksum, checksumType                               string
+			fileSize                                             int64
+			releaseNotes                                         sql.NullString
+			releaseDate                                          string
+			required                                             bool
+			minimumVersion                                       sql.NullString
+			metadata                                             sql.NullString
+			createdAt                                            string
+			versionMajor, versionMinor, versionPatch             int64
+			versionPreRelease                                    sql.NullString
+			totalCount                                           int64
+		)
+		if err := sqlRows.Scan(
+			&id, &appIDField, &version, &platform, &arch, &downloadURL,
+			&checksum, &checksumType, &fileSize,
+			&releaseNotes, &releaseDate, &required, &minimumVersion,
+			&metadata, &createdAt,
+			&versionMajor, &versionMinor, &versionPatch, &versionPreRelease,
+			&totalCount,
+		); err != nil {
+			return nil, 0, fmt.Errorf("failed to scan release: %w", err)
+		}
+		if total == 0 {
+			total = int(totalCount)
+		}
+		row := sqlcite.Release{
+			ID:                id,
+			ApplicationID:     appIDField,
+			Version:           version,
+			Platform:          platform,
+			Architecture:      arch,
+			DownloadUrl:       downloadURL,
+			Checksum:          checksum,
+			ChecksumType:      checksumType,
+			FileSize:          fileSize,
+			ReleaseNotes:      releaseNotes,
+			ReleaseDate:       releaseDate,
+			Required:          required,
+			MinimumVersion:    minimumVersion,
+			Metadata:          metadata,
+			CreatedAt:         createdAt,
+			VersionMajor:      versionMajor,
+			VersionMinor:      versionMinor,
+			VersionPatch:      versionPatch,
+			VersionPreRelease: versionPreRelease,
+		}
+		release, err := sqliteReleaseToModel(row)
+		if err != nil {
+			return nil, 0, fmt.Errorf("failed to convert release %s: %w", id, err)
+		}
+		releases = append(releases, release)
+	}
+	if err := sqlRows.Err(); err != nil {
+		return nil, 0, fmt.Errorf("failed to iterate releases: %w", err)
+	}
+	return releases, total, nil
 }
 
 // GetLatestStableRelease returns the highest non-prerelease version for the given platform/arch.
-// TODO(Task 8): implement with sqlc query.
+// Returns ErrNotFound if no stable release exists.
 func (ss *SQLiteStorage) GetLatestStableRelease(ctx context.Context, appID, platform, arch string) (*models.Release, error) {
-	return nil, fmt.Errorf("GetLatestStableRelease: not yet implemented for SQLite")
+	row, err := ss.queries.GetLatestStableRelease(ctx, sqlcite.GetLatestStableReleaseParams{
+		ApplicationID: appID,
+		Platform:      platform,
+		Architecture:  arch,
+	})
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrNotFound
+		}
+		return nil, fmt.Errorf("failed to get latest stable release: %w", err)
+	}
+	return sqliteReleaseToModel(row)
 }
 
 // GetApplicationStats returns aggregate statistics for an application.
-// TODO(Task 8): implement with sqlc query.
 func (ss *SQLiteStorage) GetApplicationStats(ctx context.Context, appID string) (models.ApplicationStats, error) {
-	return models.ApplicationStats{}, fmt.Errorf("GetApplicationStats: not yet implemented for SQLite")
+	row, err := ss.queries.GetApplicationStats(ctx, appID)
+	if err != nil {
+		return models.ApplicationStats{}, fmt.Errorf("failed to get application stats: %w", err)
+	}
+
+	stats := models.ApplicationStats{
+		TotalReleases: int(row.TotalReleases),
+		PlatformCount: int(row.PlatformCount),
+		LatestVersion: row.LatestVersion,
+	}
+
+	// RequiredReleases is sql.NullFloat64 because sqlc infers float from SUM aggregation.
+	if row.RequiredReleases.Valid {
+		stats.RequiredReleases = int(row.RequiredReleases.Float64)
+	}
+
+	// LatestReleaseDate is interface{} in the generated code because sqlc cannot
+	// determine the concrete type for aggregated nullable timestamps.
+	// modernc.org/sqlite returns the value as a string in RFC3339 format for DATETIME columns.
+	if row.LatestReleaseDate != nil {
+		switch v := row.LatestReleaseDate.(type) {
+		case string:
+			if t, err := time.Parse(time.RFC3339, v); err == nil {
+				stats.LatestReleaseDate = &t
+			}
+		case time.Time:
+			stats.LatestReleaseDate = &v
+		}
+	}
+
+	return stats, nil
 }
 
 // runSQLiteMigrations applies any unapplied migration files from the embedded
