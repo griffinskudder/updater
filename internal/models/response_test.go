@@ -1,6 +1,7 @@
 package models
 
 import (
+	"encoding/json"
 	"strings"
 	"testing"
 	"time"
@@ -353,4 +354,34 @@ func TestComponentHealth_Structure(t *testing.T) {
 	assert.Equal(t, "All systems operational", component.Message)
 	assert.Equal(t, 2, len(component.Details))
 	assert.Equal(t, now, component.Timestamp)
+}
+
+func TestListReleasesResponse_NextCursorAlwaysPresent(t *testing.T) {
+	resp := ListReleasesResponse{
+		Releases:   []ReleaseInfo{},
+		TotalCount: 0,
+		NextCursor: "",
+	}
+	b, err := json.Marshal(resp)
+	require.NoError(t, err)
+
+	var m map[string]interface{}
+	require.NoError(t, json.Unmarshal(b, &m))
+	_, ok := m["next_cursor"]
+	assert.True(t, ok, "next_cursor must be present in JSON even when empty")
+}
+
+func TestListApplicationsResponse_NextCursorAlwaysPresent(t *testing.T) {
+	resp := ListApplicationsResponse{
+		Applications: []ApplicationSummary{},
+		TotalCount:   0,
+		NextCursor:   "",
+	}
+	b, err := json.Marshal(resp)
+	require.NoError(t, err)
+
+	var m map[string]interface{}
+	require.NoError(t, json.Unmarshal(b, &m))
+	_, ok := m["next_cursor"]
+	assert.True(t, ok, "next_cursor must be present in JSON even when empty")
 }

@@ -60,7 +60,7 @@ type LatestVersionResponse struct {
 type ListReleasesResponse struct {
 	Releases   []ReleaseInfo `json:"releases"`
 	TotalCount int           `json:"total_count"`
-	NextCursor string        `json:"next_cursor,omitempty"`
+	NextCursor string        `json:"next_cursor"`
 }
 
 type ReleaseInfo struct {
@@ -164,7 +164,7 @@ type ApplicationStats struct {
 type ListApplicationsResponse struct {
 	Applications []ApplicationSummary `json:"applications"`
 	TotalCount   int                  `json:"total_count"`
-	NextCursor   string               `json:"next_cursor,omitempty"`
+	NextCursor   string               `json:"next_cursor"`
 }
 
 type ApplicationSummary struct {
