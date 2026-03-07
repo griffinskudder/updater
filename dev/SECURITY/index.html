@@ -4365,8 +4365,11 @@
 </li>
 <li>Input validation and sanitization</li>
 <li>SQL injection prevention</li>
+<li>Path traversal protection</li>
+<li>Request body size limiting (1 MiB maximum)</li>
+<li>Internal error message sanitization (generic messages returned to clients)</li>
 <li>
-<p>Path traversal protection</p>
+<p>Health endpoint information disclosure prevention</p>
 </li>
 <li>
 <p><strong>Operational Security</strong></p>
@@ -4578,9 +4581,15 @@ See <a href="../reverse-proxy/">Reverse Proxy</a> for nginx and Traefik configur
 <p><strong>Scenario</strong>: Service overwhelmed by requests</p>
 <p><strong>Defense</strong>:
 - Per-IP rate limiting
-- Request size limits
+- Request body size limit (1 MiB) enforced via <code>http.MaxBytesReader</code> middleware
 - Connection timeouts
 - Graceful degradation</p>
+<h4 id="4-information-disclosure">4. Information Disclosure<a class="headerlink" href="#4-information-disclosure" title="Permanent link">&para;</a></h4>
+<p><strong>Scenario</strong>: Internal implementation details leaked via error messages or health endpoint</p>
+<p><strong>Defense</strong>:
+- Non-<code>ServiceError</code> errors return a generic "Internal server error" message; raw errors are logged server-side only
+- Health endpoint storage errors return "Storage ping failed" without connection strings, hostnames, or driver details
+- All detailed errors are logged via structured logging for debugging</p>
 <h2 id="production-security-configuration">Production Security Configuration<a class="headerlink" href="#production-security-configuration" title="Permanent link">&para;</a></h2>
 <h3 id="httpstls-configuration">HTTPS/TLS Configuration<a class="headerlink" href="#httpstls-configuration" title="Permanent link">&para;</a></h3>
 <p>TLS termination is handled by the reverse proxy. The service does not need TLS

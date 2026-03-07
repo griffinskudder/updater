@@ -3454,6 +3454,11 @@ permission hierarchy is cumulative:</p>
 <td>Malformed request format</td>
 </tr>
 <tr>
+<td><code>BAD_REQUEST</code></td>
+<td>413</td>
+<td>Request body exceeds the 1 MiB size limit</td>
+</tr>
+<tr>
 <td><code>INVALID_REQUEST</code></td>
 <td>400</td>
 <td>Invalid request data or method</td>
@@ -3466,7 +3471,7 @@ permission hierarchy is cumulative:</p>
 <tr>
 <td><code>INTERNAL_ERROR</code></td>
 <td>500</td>
-<td>Unexpected server-side error</td>
+<td>Unexpected server-side error (generic message only; details logged server-side)</td>
 </tr>
 <tr>
 <td><code>UNAUTHORIZED</code></td>
