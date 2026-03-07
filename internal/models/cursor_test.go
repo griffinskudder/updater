@@ -92,3 +92,9 @@ func TestDecodeApplicationCursor_Invalid(t *testing.T) {
 	_, err := DecodeApplicationCursor("not-base64!!!")
 	assert.Error(t, err)
 }
+
+func TestDecodeApplicationCursor_InvalidJSON(t *testing.T) {
+	// base64("not json") = "bm90IGpzb24="
+	_, err := DecodeApplicationCursor("bm90IGpzb24=")
+	assert.Error(t, err)
+}
