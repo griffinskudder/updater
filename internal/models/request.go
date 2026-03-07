@@ -59,8 +59,7 @@ type ListReleasesRequest struct {
 	Version       string   `json:"version,omitempty"`
 	Required      *bool    `json:"required,omitempty"`
 	Limit         int      `json:"limit,omitempty"`
-	Offset        int      `json:"offset,omitempty"`
-	After         string   `json:"after,omitempty"`          // Opaque keyset cursor; mutually exclusive with Offset
+	After         string   `json:"after,omitempty"` // Opaque keyset cursor
 	SortBy        string   `json:"sort_by,omitempty"`
 	SortOrder     string   `json:"sort_order,omitempty"`
 	Platforms     []string `json:"platforms,omitempty"`
@@ -199,10 +198,6 @@ func (r *ListReleasesRequest) Validate() error {
 
 	if r.Limit > MaxPageSize {
 		return fmt.Errorf("limit cannot exceed %d", MaxPageSize)
-	}
-
-	if r.Offset < 0 {
-		return errors.New("offset cannot be negative")
 	}
 
 	if r.SortOrder != "" && r.SortOrder != "asc" && r.SortOrder != "desc" {

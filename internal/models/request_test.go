@@ -218,7 +218,6 @@ func TestListReleasesRequest_Validate(t *testing.T) {
 				Platform:      "windows",
 				Architecture:  "amd64",
 				Limit:         10,
-				Offset:        0,
 				SortBy:        "version",
 				SortOrder:     "desc",
 			},
@@ -274,15 +273,6 @@ func TestListReleasesRequest_Validate(t *testing.T) {
 			},
 			expectError: true,
 			errorMsg:    "limit cannot be negative",
-		},
-		{
-			name: "negative offset",
-			request: ListReleasesRequest{
-				ApplicationID: "test-app",
-				Offset:        -1,
-			},
-			expectError: true,
-			errorMsg:    "offset cannot be negative",
 		},
 		{
 			name: "invalid sort order",

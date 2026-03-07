@@ -557,7 +557,6 @@ func TestService_ListReleases(t *testing.T) {
 			request: &models.ListReleasesRequest{
 				ApplicationID: "test-app",
 				Limit:         1,
-				Offset:        0,
 			},
 			expectedCount:      1, // Only 1 due to limit
 			expectedTotalCount: 3, // But total available is 3

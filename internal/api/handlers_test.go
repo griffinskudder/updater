@@ -630,32 +630,29 @@ func TestHandlers_HTTPMethodNotAllowed(t *testing.T) {
 
 func TestHandlers_ParseQueryParams(t *testing.T) {
 	tests := []struct {
-		name           string
-		queryString    string
-		expectedAppID  string
-		expectedLimit  int
-		expectedOffset int
-		expectError    bool
+		name          string
+		queryString   string
+		expectedAppID string
+		expectedLimit int
+		expectError   bool
 	}{
 		{
-			name:           "valid params",
-			queryString:    "app_id=test-app&limit=5&offset=10",
-			expectedAppID:  "test-app",
-			expectedLimit:  5,
-			expectedOffset: 10,
-			expectError:    false,
+			name:          "valid params",
+			queryString:   "app_id=test-app&limit=5",
+			expectedAppID: "test-app",
+			expectedLimit: 5,
+			expectError:   false,
 		},
 		{
-			name:           "default limit and offset",
-			queryString:    "app_id=test-app",
-			expectedAppID:  "test-app",
-			expectedLimit:  10, // default
-			expectedOffset: 0,  // default
-			expectError:    false,
+			name:          "default limit",
+			queryString:   "app_id=test-app",
+			expectedAppID: "test-app",
+			expectedLimit: 10, // default
+			expectError:   false,
 		},
 		{
 			name:        "missing app_id",
-			queryString: "limit=5&offset=10",
+			queryString: "limit=5",
 			expectError: true,
 		},
 		{
@@ -664,18 +661,8 @@ func TestHandlers_ParseQueryParams(t *testing.T) {
 			expectError: true,
 		},
 		{
-			name:        "invalid offset",
-			queryString: "app_id=test-app&offset=invalid",
-			expectError: true,
-		},
-		{
 			name:        "negative limit",
 			queryString: "app_id=test-app&limit=-1",
-			expectError: true,
-		},
-		{
-			name:        "negative offset",
-			queryString: "app_id=test-app&offset=-1",
 			expectError: true,
 		},
 	}
@@ -688,7 +675,6 @@ func TestHandlers_ParseQueryParams(t *testing.T) {
 
 			appID := req.URL.Query().Get("app_id")
 			limitStr := req.URL.Query().Get("limit")
-			offsetStr := req.URL.Query().Get("offset")
 
 			// Test the logic that would be in the handler
 			if appID == "" && tt.expectError {
@@ -707,22 +693,9 @@ func TestHandlers_ParseQueryParams(t *testing.T) {
 				}
 			}
 
-			offset := 0 // default
-			if offsetStr != "" {
-				if parsed, err := parseInt(offsetStr); err != nil {
-					if tt.expectError {
-						return // Expected error case
-					}
-					t.Errorf("Unexpected error parsing offset: %v", err)
-				} else {
-					offset = parsed
-				}
-			}
-
 			if !tt.expectError {
 				assert.Equal(t, tt.expectedAppID, appID)
 				assert.Equal(t, tt.expectedLimit, limit)
-				assert.Equal(t, tt.expectedOffset, offset)
 			}
 		})
 	}
