@@ -43,6 +43,12 @@ func TestAPIKeyHasPermission(t *testing.T) {
 		{"read denied write", []string{"read"}, true, "write", false},
 		{"wildcard grants all", []string{"*"}, true, "admin", true},
 		{"disabled key denied", []string{"admin"}, false, "read", false},
+		// Multi-permission keys: result must not depend on slice order.
+		{"write then admin grants admin", []string{"write", "admin"}, true, "admin", true},
+		{"admin then write grants read", []string{"admin", "write"}, true, "read", true},
+		{"write then admin grants read", []string{"write", "admin"}, true, "read", true},
+		{"read then write grants write", []string{"read", "write"}, true, "write", true},
+		{"write then read grants read", []string{"write", "read"}, true, "read", true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

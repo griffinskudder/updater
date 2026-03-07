@@ -78,21 +78,17 @@ func NewKeyID() string {
 }
 
 // HasPermission returns true when the key is enabled and possesses the required permission.
+// Permission hierarchy: admin (and "*") grant everything; write grants read and write.
+// Result is independent of the order of elements in Permissions.
 func (ak *APIKey) HasPermission(required string) bool {
 	if ak == nil || !ak.Enabled {
 		return false
 	}
+	perms := make(map[string]bool, len(ak.Permissions))
 	for _, p := range ak.Permissions {
-		switch p {
-		case "*", "admin":
-			return true
-		case "write":
-			if required == "read" || required == "write" {
-				return true
-			}
-		case required:
-			return true
-		}
+		perms[p] = true
 	}
-	return false
+	return perms["*"] || perms["admin"] ||
+		(perms["write"] && (required == "read" || required == "write")) ||
+		perms[required]
 }
