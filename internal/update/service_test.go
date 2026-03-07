@@ -860,7 +860,6 @@ func TestService_ListApplications(t *testing.T) {
 			checkResult: func(t *testing.T, resp *models.ListApplicationsResponse) {
 				assert.Len(t, resp.Applications, 0)
 				assert.Equal(t, 0, resp.TotalCount)
-				assert.False(t, resp.HasMore)
 			},
 		},
 		{
@@ -879,9 +878,6 @@ func TestService_ListApplications(t *testing.T) {
 			checkResult: func(t *testing.T, resp *models.ListApplicationsResponse) {
 				assert.Len(t, resp.Applications, 3)
 				assert.Equal(t, 3, resp.TotalCount)
-				assert.False(t, resp.HasMore)
-				assert.Equal(t, 1, resp.Page)
-				assert.Equal(t, 50, resp.PageSize)
 			},
 		},
 		{
@@ -900,8 +896,6 @@ func TestService_ListApplications(t *testing.T) {
 			checkResult: func(t *testing.T, resp *models.ListApplicationsResponse) {
 				assert.Len(t, resp.Applications, 2)
 				assert.Equal(t, 5, resp.TotalCount)
-				assert.True(t, resp.HasMore)
-				assert.Equal(t, 1, resp.Page)
 			},
 		},
 		{
@@ -920,8 +914,6 @@ func TestService_ListApplications(t *testing.T) {
 			checkResult: func(t *testing.T, resp *models.ListApplicationsResponse) {
 				assert.Len(t, resp.Applications, 2)
 				assert.Equal(t, 5, resp.TotalCount)
-				assert.True(t, resp.HasMore)
-				assert.Equal(t, 2, resp.Page)
 			},
 		},
 		{
@@ -936,7 +928,6 @@ func TestService_ListApplications(t *testing.T) {
 			offset: 0,
 			checkResult: func(t *testing.T, resp *models.ListApplicationsResponse) {
 				assert.Len(t, resp.Applications, 1)
-				assert.Equal(t, 50, resp.PageSize)
 			},
 		},
 	}

@@ -232,16 +232,12 @@ func TestListReleasesResponse_Structure(t *testing.T) {
 	response := ListReleasesResponse{
 		Releases:   []ReleaseInfo{},
 		TotalCount: 100,
-		Page:       1,
-		PageSize:   20,
-		HasMore:    true,
+		NextCursor: "some-cursor",
 	}
 
 	assert.NotNil(t, response.Releases)
 	assert.Equal(t, 100, response.TotalCount)
-	assert.Equal(t, 1, response.Page)
-	assert.Equal(t, 20, response.PageSize)
-	assert.True(t, response.HasMore)
+	assert.Equal(t, "some-cursor", response.NextCursor)
 }
 
 func TestRegisterReleaseResponse_Structure(t *testing.T) {

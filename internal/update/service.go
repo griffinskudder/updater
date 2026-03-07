@@ -203,13 +203,10 @@ func (s *Service) ListReleases(ctx context.Context, req *models.ListReleasesRequ
 		releaseInfos[i].FromRelease(release)
 	}
 
-	end := req.Offset + len(releases)
 	return &models.ListReleasesResponse{
 		Releases:   releaseInfos,
 		TotalCount: totalCount,
-		Page:       (req.Offset / req.Limit) + 1,
-		PageSize:   req.Limit,
-		HasMore:    end < totalCount,
+		NextCursor: "",
 	}, nil
 }
 
@@ -348,13 +345,10 @@ func (s *Service) ListApplications(ctx context.Context, limit, offset int) (*mod
 		summaries[i].UpdatedAt, _ = time.Parse(time.RFC3339, app.UpdatedAt)
 	}
 
-	end := offset + len(apps)
 	return &models.ListApplicationsResponse{
 		Applications: summaries,
 		TotalCount:   totalCount,
-		Page:         (offset / limit) + 1,
-		PageSize:     limit,
-		HasMore:      end < totalCount,
+		NextCursor:   "",
 	}, nil
 }
 

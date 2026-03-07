@@ -667,8 +667,6 @@ func TestIntegration_PaginationAndFiltering(t *testing.T) {
 
 	assert.Len(t, listResponse.Releases, 3)
 	assert.Equal(t, 10, listResponse.TotalCount)
-	assert.Equal(t, 3, listResponse.PageSize)
-	assert.Equal(t, 1, listResponse.Page) // Page is calculated as (offset/limit) + 1 = (2/3) + 1 = 0 + 1 = 1 (integer division)
 
 	// Test 3: Platform filtering
 	resp, err = http.Get(server.URL + "/api/v1/updates/pagination-test-app/releases?platform=windows")
@@ -692,8 +690,6 @@ func TestIntegration_PaginationAndFiltering(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Len(t, listResponse.Releases, 2)
-	assert.Equal(t, 2, listResponse.PageSize)
-	assert.Equal(t, 1, listResponse.Page) // Page is calculated as (offset/limit) + 1 = (1/2) + 1 = 0 + 1 = 1 (integer division)
 	for _, release := range listResponse.Releases {
 		assert.Equal(t, "linux", release.Platform)
 	}

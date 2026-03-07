@@ -60,9 +60,7 @@ type LatestVersionResponse struct {
 type ListReleasesResponse struct {
 	Releases   []ReleaseInfo `json:"releases"`
 	TotalCount int           `json:"total_count"`
-	Page       int           `json:"page"`
-	PageSize   int           `json:"page_size"`
-	HasMore    bool          `json:"has_more"`
+	NextCursor string        `json:"next_cursor,omitempty"`
 }
 
 type ReleaseInfo struct {
@@ -166,9 +164,7 @@ type ApplicationStats struct {
 type ListApplicationsResponse struct {
 	Applications []ApplicationSummary `json:"applications"`
 	TotalCount   int                  `json:"total_count"`
-	Page         int                  `json:"page"`
-	PageSize     int                  `json:"page_size"`
-	HasMore      bool                 `json:"has_more"`
+	NextCursor   string               `json:"next_cursor,omitempty"`
 }
 
 type ApplicationSummary struct {

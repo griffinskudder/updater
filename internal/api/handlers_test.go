@@ -364,9 +364,7 @@ func TestHandlers_ListReleases_Success(t *testing.T) {
 	expectedResponse := &models.ListReleasesResponse{
 		Releases:   releaseInfos,
 		TotalCount: 2,
-		Page:       1,
-		PageSize:   10,
-		HasMore:    false,
+		NextCursor: "",
 	}
 
 	mockService.On("ListReleases", mock.Anything, mock.AnythingOfType("*models.ListReleasesRequest")).Return(expectedResponse, nil)
@@ -386,9 +384,7 @@ func TestHandlers_ListReleases_Success(t *testing.T) {
 
 	assert.Len(t, response.Releases, 2)
 	assert.Equal(t, 2, response.TotalCount)
-	assert.Equal(t, 10, response.PageSize)
-	assert.Equal(t, 1, response.Page)
-	assert.False(t, response.HasMore)
+	assert.Equal(t, "", response.NextCursor)
 
 	mockService.AssertExpectations(t)
 }
@@ -425,9 +421,7 @@ func TestHandlers_ListReleases_WithPagination(t *testing.T) {
 	expectedResponse := &models.ListReleasesResponse{
 		Releases:   releaseInfos2,
 		TotalCount: 5, // Total available
-		Page:       2, // (offset/limit) + 1 = (1/1) + 1 = 2
-		PageSize:   1,
-		HasMore:    true,
+		NextCursor: "next-page-cursor",
 	}
 
 	mockService.On("ListReleases", mock.Anything, mock.AnythingOfType("*models.ListReleasesRequest")).Return(expectedResponse, nil)
@@ -447,9 +441,7 @@ func TestHandlers_ListReleases_WithPagination(t *testing.T) {
 
 	assert.Len(t, response.Releases, 1)
 	assert.Equal(t, 5, response.TotalCount)
-	assert.Equal(t, 1, response.PageSize)
-	assert.Equal(t, 2, response.Page)
-	assert.True(t, response.HasMore)
+	assert.Equal(t, "next-page-cursor", response.NextCursor)
 
 	mockService.AssertExpectations(t)
 }
