@@ -30,22 +30,24 @@ graph TD
 
 ## Storage Interface
 
-All providers implement 15 methods covering application, release, and API key CRUD operations, plus health and lifecycle management:
+All providers implement 19 methods covering application, release, and API key CRUD operations, plus pagination, filtering, aggregate statistics, and health and lifecycle management:
 
 ```mermaid
 classDiagram
     class Storage {
         <<interface>>
-        +Applications(ctx) []*Application, error
+        +ListApplicationsPaged(ctx, limit, offset) []*Application, int, error
         +GetApplication(ctx, appID) *Application, error
         +SaveApplication(ctx, app) error
         +DeleteApplication(ctx, appID) error
-        +Releases(ctx, appID) []*Release, error
+        +ListReleasesPaged(ctx, appID, filters, sortBy, sortOrder, limit, offset) []*Release, int, error
         +GetRelease(ctx, appID, version, platform, arch) *Release, error
         +SaveRelease(ctx, release) error
         +DeleteRelease(ctx, appID, version, platform, arch) error
         +GetLatestRelease(ctx, appID, platform, arch) *Release, error
+        +GetLatestStableRelease(ctx, appID, platform, arch) *Release, error
         +GetReleasesAfterVersion(ctx, appID, version, platform, arch) []*Release, error
+        +GetApplicationStats(ctx, appID) ApplicationStats, error
         +Ping(ctx) error
         +Close() error
         +CreateAPIKey(ctx, key) error
@@ -55,6 +57,79 @@ classDiagram
         +DeleteAPIKey(ctx, id) error
     }
 ```
+
+### Pagination and Query Methods
+
+The four purpose-built query methods push pagination, filtering, and aggregation down to the storage layer rather than loading all records into memory.
+
+#### `ListApplicationsPaged`
+
+```go
+ListApplicationsPaged(ctx context.Context, limit, offset int) ([]*models.Application, int, error)
+```
+
+Returns a page of applications sorted by name, and the total count of all applications. Callers use `limit` and `offset` to implement cursor-free offset pagination. The total count allows the caller to compute the number of pages without a separate query.
+
+#### `ListReleasesPaged`
+
+```go
+ListReleasesPaged(ctx context.Context, appID string, filters models.ReleaseFilters, sortBy, sortOrder string, limit, offset int) ([]*models.Release, int, error)
+```
+
+Returns a filtered, sorted page of releases for the given application, and the total count of matching releases. The `filters` parameter narrows the result set before pagination is applied (see [ReleaseFilters](#releasefilters) below).
+
+`sortBy` must be one of: `release_date`, `version`, `platform`, `architecture`, `created_at`.
+`sortOrder` must be `"asc"` or `"desc"`.
+
+When `sortBy` is `"version"`, releases are ordered using the dedicated version sort columns (see [Semver Sort Columns](#semver-sort-columns)); for all other columns, the value is used directly in the `ORDER BY` clause.
+
+#### `GetLatestStableRelease`
+
+```go
+GetLatestStableRelease(ctx context.Context, appID, platform, arch string) (*models.Release, error)
+```
+
+Returns the highest non-prerelease version for the given application, platform, and architecture. Ordering is performed at the SQL level using the version sort columns. Returns `storage.ErrNotFound` if no stable release exists.
+
+#### `GetApplicationStats`
+
+```go
+GetApplicationStats(ctx context.Context, appID string) (models.ApplicationStats, error)
+```
+
+Returns aggregate statistics for an application computed in a single query. The returned `ApplicationStats` struct contains:
+
+| Field | Type | Description |
+|---|---|---|
+| `TotalReleases` | `int` | Total number of releases for the application |
+| `RequiredReleases` | `int` | Number of releases marked as required |
+| `PlatformCount` | `int` | Number of distinct platforms with releases |
+| `LatestVersion` | `string` | Version string of the most recent stable release |
+| `LatestReleaseDate` | `*time.Time` | Release date of the most recent release |
+
+### ReleaseFilters
+
+`models.ReleaseFilters` specifies optional filters for `ListReleasesPaged`. A zero value or empty field means no filter is applied for that field.
+
+| Field | Type | Description |
+|---|---|---|
+| `Platforms` | `[]string` | OR filter — a release matches if its platform equals any entry in the list |
+| `Architecture` | `string` | Exact match on release architecture |
+| `Version` | `string` | Exact match on release version string |
+| `Required` | `*bool` | Filter by the required flag; `nil` means no filter |
+
+### Semver Sort Columns
+
+To enable SQL-level semantic version ordering without a regex function, each row in the `releases` table stores four additional integer/text columns populated by `SaveRelease`:
+
+| Column | Type | Description |
+|---|---|---|
+| `version_major` | integer | Major version component |
+| `version_minor` | integer | Minor version component |
+| `version_patch` | integer | Patch version component |
+| `version_pre_release` | text (nullable) | Pre-release label, or `NULL` for stable releases |
+
+When sorting by version the storage layer constructs an `ORDER BY` clause over these four columns. Stable releases (`version_pre_release IS NULL`) sort above pre-release builds. Pre-release ordering within the same `major.minor.patch` is lexicographic, which approximates but does not fully replicate the SemVer 2.0 pre-release precedence rules.
 
 ## Configuration
 
@@ -96,7 +171,7 @@ Uses the `modernc.org/sqlite` pure-Go driver (no CGO required). The schema is au
 - **WAL mode** enabled for better concurrent read performance
 - **Foreign keys** enabled for referential integrity
 - **Single connection** to prevent concurrency issues with SQLite's single-writer model
-- **Semantic version comparison** performed in Go after fetching results
+- **Semver sort columns**: `version_major`, `version_minor`, `version_patch`, `version_pre_release` columns enable SQL-level version ordering
 - **Upsert pattern**: SQL upserts (`INSERT ... ON CONFLICT`) for `SaveApplication` and `SaveRelease`
 
 ### PostgreSQL Storage
@@ -107,7 +182,7 @@ Uses `pgx/v5` with connection pooling via `pgxpool`. All queries are generated b
 - **JSONB columns** for platforms, config, and metadata fields
 - **Timestamptz** for proper timezone-aware timestamps
 - **Cascade deletes** from applications to releases
-- **Semantic version comparison** performed in Go after fetching results
+- **Semver sort columns**: `version_major`, `version_minor`, `version_patch`, `version_pre_release` columns enable SQL-level version ordering
 - **Upsert pattern**: SQL upserts (`INSERT ... ON CONFLICT`) for `SaveApplication` and `SaveRelease`
 
 ## Database Schema
@@ -129,6 +204,10 @@ erDiagram
         TEXT id PK
         TEXT application_id FK
         TEXT version
+        INTEGER version_major
+        INTEGER version_minor
+        INTEGER version_patch
+        TEXT version_pre_release
         TEXT platform
         TEXT architecture
         TEXT download_url
