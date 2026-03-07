@@ -1217,7 +1217,7 @@ func TestIntegration_MaxLimitValidation(t *testing.T) {
 	assert.Equal(t, http.StatusUnprocessableEntity, resp.StatusCode)
 
 	// limit=501 exceeds MaxPageSize (500) on applications endpoint
-	// Applications endpoint requires auth; use a server with auth disabled for simplicity
+	// Auth is disabled for this entire test server (zero-value Config); no key needed.
 	resp2, err := http.Get(server.URL + "/api/v1/applications?limit=501")
 	require.NoError(t, err)
 	defer resp2.Body.Close()
