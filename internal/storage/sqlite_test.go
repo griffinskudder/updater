@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 	"updater/internal/models"
+	sqlcite "updater/internal/storage/sqlc/sqlite"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -518,4 +519,67 @@ func TestSQLiteStorage_DeleteAPIKey_NotFound(t *testing.T) {
 	s := newSQLiteTestStorage(t)
 	err := s.DeleteAPIKey(context.Background(), "missing")
 	assert.ErrorIs(t, err, ErrNotFound)
+}
+
+func TestSQLiteStorageSaveRelease_VersionSortColumns(t *testing.T) {
+	s := newSQLiteTestStorage(t)
+	ss := s.(*SQLiteStorage)
+	ctx := context.Background()
+
+	app := models.NewApplication("ver-sort-app", "Version Sort App", []string{"linux"})
+	require.NoError(t, s.SaveApplication(ctx, app))
+
+	tests := []struct {
+		name         string
+		version      string
+		wantMajor    int64
+		wantMinor    int64
+		wantPatch    int64
+		wantPreValid bool
+		wantPreStr   string
+	}{
+		{
+			name:         "pre-release version",
+			version:      "2.3.4-beta.1",
+			wantMajor:    2,
+			wantMinor:    3,
+			wantPatch:    4,
+			wantPreValid: true,
+			wantPreStr:   "beta.1",
+		},
+		{
+			name:         "stable version",
+			version:      "1.5.0",
+			wantMajor:    1,
+			wantMinor:    5,
+			wantPatch:    0,
+			wantPreValid: false,
+			wantPreStr:   "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			release := models.NewRelease("ver-sort-app", tt.version, "linux", "amd64", "https://example.com/"+tt.version)
+			release.Checksum = "chk-" + tt.version
+			release.FileSize = 512
+			require.NoError(t, s.SaveRelease(ctx, release))
+
+			row, err := ss.queries.GetRelease(ctx, sqlcite.GetReleaseParams{
+				ApplicationID: "ver-sort-app",
+				Version:       tt.version,
+				Platform:      "linux",
+				Architecture:  "amd64",
+			})
+			require.NoError(t, err)
+
+			assert.Equal(t, tt.wantMajor, row.VersionMajor, "VersionMajor")
+			assert.Equal(t, tt.wantMinor, row.VersionMinor, "VersionMinor")
+			assert.Equal(t, tt.wantPatch, row.VersionPatch, "VersionPatch")
+			assert.Equal(t, tt.wantPreValid, row.VersionPreRelease.Valid, "VersionPreRelease.Valid")
+			if tt.wantPreValid {
+				assert.Equal(t, tt.wantPreStr, row.VersionPreRelease.String, "VersionPreRelease.String")
+			}
+		})
+	}
 }

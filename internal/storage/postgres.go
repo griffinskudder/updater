@@ -349,22 +349,28 @@ func modelToPgUpsertRelease(r *models.Release) (sqlcpg.UpsertReleaseParams, erro
 		return sqlcpg.UpsertReleaseParams{}, err
 	}
 
+	major, minor, patch, pre := parseSemverParts(r.Version)
+
 	return sqlcpg.UpsertReleaseParams{
-		ID:             r.ID,
-		ApplicationID:  r.ApplicationID,
-		Version:        r.Version,
-		Platform:       r.Platform,
-		Architecture:   r.Architecture,
-		DownloadUrl:    r.DownloadURL,
-		Checksum:       r.Checksum,
-		ChecksumType:   r.ChecksumType,
-		FileSize:       r.FileSize,
-		ReleaseNotes:   stringToPgText(r.ReleaseNotes),
-		ReleaseDate:    timeToPgTimestamptz(r.ReleaseDate),
-		Required:       r.Required,
-		MinimumVersion: stringToPgText(r.MinimumVersion),
-		Metadata:       metadata,
-		CreatedAt:      timeToPgTimestamptz(r.CreatedAt),
+		ID:                r.ID,
+		ApplicationID:     r.ApplicationID,
+		Version:           r.Version,
+		Platform:          r.Platform,
+		Architecture:      r.Architecture,
+		DownloadUrl:       r.DownloadURL,
+		Checksum:          r.Checksum,
+		ChecksumType:      r.ChecksumType,
+		FileSize:          r.FileSize,
+		ReleaseNotes:      stringToPgText(r.ReleaseNotes),
+		ReleaseDate:       timeToPgTimestamptz(r.ReleaseDate),
+		Required:          r.Required,
+		MinimumVersion:    stringToPgText(r.MinimumVersion),
+		Metadata:          metadata,
+		CreatedAt:         timeToPgTimestamptz(r.CreatedAt),
+		VersionMajor:      int32(major),
+		VersionMinor:      int32(minor),
+		VersionPatch:      int32(patch),
+		VersionPreRelease: pgtype.Text{String: pre, Valid: pre != ""},
 	}, nil
 }
 

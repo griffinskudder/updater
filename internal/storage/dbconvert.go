@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"updater/internal/models"
+
+	"github.com/Masterminds/semver/v3"
 )
 
 // marshalPlatforms converts a string slice of platforms to JSON bytes.
@@ -109,4 +111,14 @@ func unmarshalPermissions(data string) ([]string, error) {
 		perms = []string{}
 	}
 	return perms, nil
+}
+
+// parseSemverParts extracts major, minor, patch, and pre-release from a semver string.
+// Returns zeros and empty string if the version cannot be parsed.
+func parseSemverParts(version string) (major, minor, patch int64, preRelease string) {
+	v, err := semver.NewVersion(version)
+	if err != nil {
+		return 0, 0, 0, ""
+	}
+	return int64(v.Major()), int64(v.Minor()), int64(v.Patch()), v.Prerelease()
 }

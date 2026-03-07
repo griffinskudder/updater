@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 	"updater/internal/models"
+	sqlcpg "updater/internal/storage/sqlc/postgres"
 )
 
 func getPostgresDSN(t *testing.T) string {
@@ -387,5 +388,82 @@ func TestPostgresStorage_DeleteAPIKey_NotFound(t *testing.T) {
 	err := s.DeleteAPIKey(context.Background(), "missing")
 	if err == nil {
 		t.Error("expected ErrNotFound, got nil")
+	}
+}
+
+func TestPostgresStorageSaveRelease_VersionSortColumns(t *testing.T) {
+	s := newPostgresTestStorage(t)
+	ps := s.(*PostgresStorage)
+	ctx := context.Background()
+
+	app := models.NewApplication("pg-ver-sort-app", "PG Version Sort App", []string{"linux"})
+	if err := s.SaveApplication(ctx, app); err != nil {
+		t.Fatalf("SaveApplication failed: %v", err)
+	}
+
+	tests := []struct {
+		name         string
+		version      string
+		wantMajor    int32
+		wantMinor    int32
+		wantPatch    int32
+		wantPreValid bool
+		wantPreStr   string
+	}{
+		{
+			name:         "pre-release version",
+			version:      "2.3.4-beta.1",
+			wantMajor:    2,
+			wantMinor:    3,
+			wantPatch:    4,
+			wantPreValid: true,
+			wantPreStr:   "beta.1",
+		},
+		{
+			name:         "stable version",
+			version:      "1.5.0",
+			wantMajor:    1,
+			wantMinor:    5,
+			wantPatch:    0,
+			wantPreValid: false,
+			wantPreStr:   "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			release := models.NewRelease("pg-ver-sort-app", tt.version, "linux", "amd64", "https://example.com/"+tt.version)
+			release.Checksum = "chk-" + tt.version
+			release.FileSize = 512
+			if err := s.SaveRelease(ctx, release); err != nil {
+				t.Fatalf("SaveRelease failed: %v", err)
+			}
+
+			row, err := ps.queries.GetRelease(ctx, sqlcpg.GetReleaseParams{
+				ApplicationID: "pg-ver-sort-app",
+				Version:       tt.version,
+				Platform:      "linux",
+				Architecture:  "amd64",
+			})
+			if err != nil {
+				t.Fatalf("GetRelease failed: %v", err)
+			}
+
+			if row.VersionMajor != tt.wantMajor {
+				t.Errorf("VersionMajor: want %d, got %d", tt.wantMajor, row.VersionMajor)
+			}
+			if row.VersionMinor != tt.wantMinor {
+				t.Errorf("VersionMinor: want %d, got %d", tt.wantMinor, row.VersionMinor)
+			}
+			if row.VersionPatch != tt.wantPatch {
+				t.Errorf("VersionPatch: want %d, got %d", tt.wantPatch, row.VersionPatch)
+			}
+			if row.VersionPreRelease.Valid != tt.wantPreValid {
+				t.Errorf("VersionPreRelease.Valid: want %v, got %v", tt.wantPreValid, row.VersionPreRelease.Valid)
+			}
+			if tt.wantPreValid && row.VersionPreRelease.String != tt.wantPreStr {
+				t.Errorf("VersionPreRelease.String: want %q, got %q", tt.wantPreStr, row.VersionPreRelease.String)
+			}
+		})
 	}
 }

@@ -365,22 +365,28 @@ func modelToSqliteUpsertRelease(r *models.Release) (sqlcite.UpsertReleaseParams,
 		return sqlcite.UpsertReleaseParams{}, err
 	}
 
+	major, minor, patch, pre := parseSemverParts(r.Version)
+
 	return sqlcite.UpsertReleaseParams{
-		ID:             r.ID,
-		ApplicationID:  r.ApplicationID,
-		Version:        r.Version,
-		Platform:       r.Platform,
-		Architecture:   r.Architecture,
-		DownloadUrl:    r.DownloadURL,
-		Checksum:       r.Checksum,
-		ChecksumType:   r.ChecksumType,
-		FileSize:       r.FileSize,
-		ReleaseNotes:   stringToNullString(r.ReleaseNotes),
-		ReleaseDate:    r.ReleaseDate.UTC().Format(time.RFC3339),
-		Required:       r.Required,
-		MinimumVersion: stringToNullString(r.MinimumVersion),
-		Metadata:       stringToNullString(string(metadata)),
-		CreatedAt:      r.CreatedAt.UTC().Format(time.RFC3339),
+		ID:                r.ID,
+		ApplicationID:     r.ApplicationID,
+		Version:           r.Version,
+		Platform:          r.Platform,
+		Architecture:      r.Architecture,
+		DownloadUrl:       r.DownloadURL,
+		Checksum:          r.Checksum,
+		ChecksumType:      r.ChecksumType,
+		FileSize:          r.FileSize,
+		ReleaseNotes:      stringToNullString(r.ReleaseNotes),
+		ReleaseDate:       r.ReleaseDate.UTC().Format(time.RFC3339),
+		Required:          r.Required,
+		MinimumVersion:    stringToNullString(r.MinimumVersion),
+		Metadata:          stringToNullString(string(metadata)),
+		CreatedAt:         r.CreatedAt.UTC().Format(time.RFC3339),
+		VersionMajor:      major,
+		VersionMinor:      minor,
+		VersionPatch:      patch,
+		VersionPreRelease: sql.NullString{String: pre, Valid: pre != ""},
 	}, nil
 }
 
