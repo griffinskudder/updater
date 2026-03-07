@@ -43,25 +43,6 @@ func NewPostgresStorage(dsn string) (Storage, error) {
 	}, nil
 }
 
-// Applications returns all registered applications.
-func (ps *PostgresStorage) Applications(ctx context.Context) ([]*models.Application, error) {
-	rows, err := ps.queries.GetAllApplications(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get applications: %w", err)
-	}
-
-	apps := make([]*models.Application, 0, len(rows))
-	for _, row := range rows {
-		app, err := pgAppToModel(row)
-		if err != nil {
-			return nil, fmt.Errorf("failed to convert application %s: %w", row.ID, err)
-		}
-		apps = append(apps, app)
-	}
-
-	return apps, nil
-}
-
 // GetApplication retrieves an application by its ID.
 func (ps *PostgresStorage) GetApplication(ctx context.Context, appID string) (*models.Application, error) {
 	row, err := ps.queries.GetApplicationByID(ctx, appID)
@@ -94,25 +75,6 @@ func (ps *PostgresStorage) DeleteApplication(ctx context.Context, appID string) 
 		return fmt.Errorf("failed to delete application %s: %w", appID, err)
 	}
 	return nil
-}
-
-// Releases returns all releases for a given application.
-func (ps *PostgresStorage) Releases(ctx context.Context, appID string) ([]*models.Release, error) {
-	rows, err := ps.queries.GetReleasesByAppID(ctx, appID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get releases: %w", err)
-	}
-
-	releases := make([]*models.Release, 0, len(rows))
-	for _, row := range rows {
-		release, err := pgReleaseToModel(row)
-		if err != nil {
-			return nil, fmt.Errorf("failed to convert release %s: %w", row.ID, err)
-		}
-		releases = append(releases, release)
-	}
-
-	return releases, nil
 }
 
 // GetRelease retrieves a specific release by application ID, version, platform, and architecture.

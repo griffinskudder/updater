@@ -80,14 +80,6 @@ func (s *InstrumentedStorage) record(ctx context.Context, span trace.Span, opera
 	span.End()
 }
 
-func (s *InstrumentedStorage) Applications(ctx context.Context) ([]*models.Application, error) {
-	ctx, span := s.startSpan(ctx, "Applications")
-	start := time.Now()
-	result, err := s.inner.Applications(ctx)
-	s.record(ctx, span, "Applications", start, err)
-	return result, err
-}
-
 func (s *InstrumentedStorage) GetApplication(ctx context.Context, appID string) (*models.Application, error) {
 	ctx, span := s.startSpan(ctx, "GetApplication", attribute.String("app_id", appID))
 	start := time.Now()
@@ -112,14 +104,6 @@ func (s *InstrumentedStorage) DeleteApplication(ctx context.Context, appID strin
 	err := s.inner.DeleteApplication(ctx, appID)
 	s.record(ctx, span, "DeleteApplication", start, err)
 	return err
-}
-
-func (s *InstrumentedStorage) Releases(ctx context.Context, appID string) ([]*models.Release, error) {
-	ctx, span := s.startSpan(ctx, "Releases", attribute.String("app_id", appID))
-	start := time.Now()
-	result, err := s.inner.Releases(ctx, appID)
-	s.record(ctx, span, "Releases", start, err)
-	return result, err
 }
 
 func (s *InstrumentedStorage) GetRelease(ctx context.Context, appID, version, platform, arch string) (*models.Release, error) {

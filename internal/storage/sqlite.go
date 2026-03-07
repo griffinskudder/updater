@@ -71,25 +71,6 @@ func NewSQLiteStorage(dsn string) (Storage, error) {
 	}, nil
 }
 
-// Applications returns all registered applications.
-func (ss *SQLiteStorage) Applications(ctx context.Context) ([]*models.Application, error) {
-	rows, err := ss.queries.GetAllApplications(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get applications: %w", err)
-	}
-
-	apps := make([]*models.Application, 0, len(rows))
-	for _, row := range rows {
-		app, err := sqliteAppToModel(row)
-		if err != nil {
-			return nil, fmt.Errorf("failed to convert application %s: %w", row.ID, err)
-		}
-		apps = append(apps, app)
-	}
-
-	return apps, nil
-}
-
 // GetApplication retrieves an application by its ID.
 func (ss *SQLiteStorage) GetApplication(ctx context.Context, appID string) (*models.Application, error) {
 	row, err := ss.queries.GetApplicationByID(ctx, appID)
@@ -122,25 +103,6 @@ func (ss *SQLiteStorage) DeleteApplication(ctx context.Context, appID string) er
 		return fmt.Errorf("failed to delete application %s: %w", appID, err)
 	}
 	return nil
-}
-
-// Releases returns all releases for a given application.
-func (ss *SQLiteStorage) Releases(ctx context.Context, appID string) ([]*models.Release, error) {
-	rows, err := ss.queries.GetReleasesByAppID(ctx, appID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get releases: %w", err)
-	}
-
-	releases := make([]*models.Release, 0, len(rows))
-	for _, row := range rows {
-		release, err := sqliteReleaseToModel(row)
-		if err != nil {
-			return nil, fmt.Errorf("failed to convert release %s: %w", row.ID, err)
-		}
-		releases = append(releases, release)
-	}
-
-	return releases, nil
 }
 
 // GetRelease retrieves a specific release by application ID, version, platform, and architecture.

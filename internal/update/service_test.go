@@ -27,14 +27,6 @@ func NewMockStorage() *MockStorage {
 	}
 }
 
-func (m *MockStorage) Applications(ctx context.Context) ([]*models.Application, error) {
-	apps := make([]*models.Application, 0, len(m.applications))
-	for _, app := range m.applications {
-		apps = append(apps, app)
-	}
-	return apps, nil
-}
-
 func (m *MockStorage) GetApplication(ctx context.Context, appID string) (*models.Application, error) {
 	app, exists := m.applications[appID]
 	if !exists {
@@ -57,14 +49,6 @@ func (m *MockStorage) DeleteApplication(ctx context.Context, appID string) error
 	}
 	delete(m.applications, appID)
 	return nil
-}
-
-func (m *MockStorage) Releases(ctx context.Context, appID string) ([]*models.Release, error) {
-	releases, exists := m.releases[appID]
-	if !exists {
-		return []*models.Release{}, nil
-	}
-	return releases, nil
 }
 
 func (m *MockStorage) GetRelease(ctx context.Context, appID, version, platform, arch string) (*models.Release, error) {
@@ -606,8 +590,7 @@ func TestService_RegisterRelease(t *testing.T) {
 	assert.NotZero(t, response.CreatedAt)
 
 	// Verify release was saved
-	releases, err := mockStorage.Releases(ctx, "test-app")
-	require.NoError(t, err)
+	releases := mockStorage.releases["test-app"]
 	assert.Len(t, releases, 1)
 	assert.Equal(t, "1.0.0", releases[0].Version)
 }

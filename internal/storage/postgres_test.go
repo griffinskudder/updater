@@ -84,9 +84,9 @@ func TestPostgresStorageApplicationCRUD(t *testing.T) {
 	}
 
 	// List applications
-	apps, err := s.Applications(ctx)
+	apps, _, err := s.ListApplicationsPaged(ctx, 50, 0)
 	if err != nil {
-		t.Fatalf("Applications failed: %v", err)
+		t.Fatalf("ListApplicationsPaged failed: %v", err)
 	}
 	found := false
 	for _, a := range apps {
@@ -157,9 +157,9 @@ func TestPostgresStorageReleaseCRUD(t *testing.T) {
 	}
 
 	// List releases
-	releases, err := s.Releases(ctx, "pg-rel-app")
+	releases, _, err := s.ListReleasesPaged(ctx, "pg-rel-app", models.ReleaseFilters{}, "release_date", "desc", 50, 0)
 	if err != nil {
-		t.Fatalf("Releases failed: %v", err)
+		t.Fatalf("ListReleasesPaged failed: %v", err)
 	}
 	if len(releases) == 0 {
 		t.Error("expected at least one release")

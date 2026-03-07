@@ -34,17 +34,17 @@ func TestSQLiteStorageSchemaCreation(t *testing.T) {
 	ctx := context.Background()
 
 	// Verify tables exist by performing operations
-	apps, err := s.Applications(ctx)
+	apps, _, err := s.ListApplicationsPaged(ctx, 50, 0)
 	if err != nil {
-		t.Fatalf("Applications failed: %v", err)
+		t.Fatalf("ListApplicationsPaged failed: %v", err)
 	}
 	if apps == nil {
 		t.Error("expected non-nil slice")
 	}
 
-	releases, err := s.Releases(ctx, "test-app")
+	releases, _, err := s.ListReleasesPaged(ctx, "test-app", models.ReleaseFilters{}, "release_date", "desc", 50, 0)
 	if err != nil {
-		t.Fatalf("Releases failed: %v", err)
+		t.Fatalf("ListReleasesPaged failed: %v", err)
 	}
 	if releases == nil {
 		t.Error("expected non-nil slice")
@@ -99,9 +99,9 @@ func TestSQLiteStorageApplicationCRUD(t *testing.T) {
 	}
 
 	// List applications
-	apps, err := s.Applications(ctx)
+	apps, _, err := s.ListApplicationsPaged(ctx, 50, 0)
 	if err != nil {
-		t.Fatalf("Applications failed: %v", err)
+		t.Fatalf("ListApplicationsPaged failed: %v", err)
 	}
 	if len(apps) != 1 {
 		t.Errorf("expected 1 application, got %d", len(apps))
@@ -113,9 +113,9 @@ func TestSQLiteStorageApplicationCRUD(t *testing.T) {
 		t.Fatalf("SaveApplication (second) failed: %v", err)
 	}
 
-	apps, err = s.Applications(ctx)
+	apps, _, err = s.ListApplicationsPaged(ctx, 50, 0)
 	if err != nil {
-		t.Fatalf("Applications failed: %v", err)
+		t.Fatalf("ListApplicationsPaged failed: %v", err)
 	}
 	if len(apps) != 2 {
 		t.Errorf("expected 2 applications, got %d", len(apps))
@@ -188,9 +188,9 @@ func TestSQLiteStorageReleaseCRUD(t *testing.T) {
 	}
 
 	// List releases
-	releases, err := s.Releases(ctx, "rel-app")
+	releases, _, err := s.ListReleasesPaged(ctx, "rel-app", models.ReleaseFilters{}, "release_date", "desc", 50, 0)
 	if err != nil {
-		t.Fatalf("Releases failed: %v", err)
+		t.Fatalf("ListReleasesPaged failed: %v", err)
 	}
 	if len(releases) != 1 {
 		t.Errorf("expected 1 release, got %d", len(releases))
@@ -220,9 +220,9 @@ func TestSQLiteStorageReleaseCRUD(t *testing.T) {
 	}
 
 	// Empty releases list
-	releases, err = s.Releases(ctx, "rel-app")
+	releases, _, err = s.ListReleasesPaged(ctx, "rel-app", models.ReleaseFilters{}, "release_date", "desc", 50, 0)
 	if err != nil {
-		t.Fatalf("Releases failed: %v", err)
+		t.Fatalf("ListReleasesPaged failed: %v", err)
 	}
 	if len(releases) != 0 {
 		t.Errorf("expected 0 releases after deletion, got %d", len(releases))
@@ -349,7 +349,7 @@ func TestSQLiteStorageConcurrency(t *testing.T) {
 		go func() {
 			defer wg.Done()
 			for j := 0; j < 10; j++ {
-				_, err := s.Applications(ctx)
+				_, _, err := s.ListApplicationsPaged(ctx, 50, 0)
 				if err != nil {
 					errs <- err
 					return

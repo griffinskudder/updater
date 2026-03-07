@@ -32,21 +32,6 @@ func NewMemoryStorage() (*MemoryStorage, error) {
 	}, nil
 }
 
-// Applications returns all registered applications
-func (m *MemoryStorage) Applications(ctx context.Context) ([]*models.Application, error) {
-	m.mu.RLock()
-	defer m.mu.RUnlock()
-
-	apps := make([]*models.Application, 0, len(m.applications))
-	for _, app := range m.applications {
-		// Return a copy to prevent external modification
-		appCopy := *app
-		apps = append(apps, &appCopy)
-	}
-
-	return apps, nil
-}
-
 // GetApplication retrieves an application by its ID
 func (m *MemoryStorage) GetApplication(ctx context.Context, appID string) (*models.Application, error) {
 	m.mu.RLock()
@@ -90,31 +75,6 @@ func (m *MemoryStorage) DeleteApplication(ctx context.Context, appID string) err
 
 	delete(m.applications, appID)
 	return nil
-}
-
-// Releases returns all releases for a given application
-func (m *MemoryStorage) Releases(ctx context.Context, appID string) ([]*models.Release, error) {
-	m.mu.RLock()
-	defer m.mu.RUnlock()
-
-	releases, exists := m.releases[appID]
-	if !exists {
-		return []*models.Release{}, nil
-	}
-
-	// Return copies to prevent external modification
-	result := make([]*models.Release, len(releases))
-	for i, release := range releases {
-		releaseCopy := *release
-		result[i] = &releaseCopy
-	}
-
-	// Sort by release date (latest first)
-	sort.Slice(result, func(i, j int) bool {
-		return result[j].ReleaseDate.Before(result[i].ReleaseDate)
-	})
-
-	return result, nil
 }
 
 // GetRelease retrieves a specific release by application ID, version, platform, and architecture

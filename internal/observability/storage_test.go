@@ -79,9 +79,10 @@ func TestInstrumentedStorage_ApplicationOperations(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "test-app", result.ID)
 
-	// Applications
-	apps, err := instrumented.Applications(ctx)
+	// ListApplicationsPaged
+	apps, total, err := instrumented.ListApplicationsPaged(ctx, 50, 0)
 	assert.NoError(t, err)
+	assert.Equal(t, 1, total)
 	assert.Len(t, apps, 1)
 }
 
@@ -143,8 +144,8 @@ func TestInstrumentedStorage_ReleaseOperations(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "1.0.0", result.Version)
 
-	// Releases
-	releases, err := instrumented.Releases(ctx, "test-app")
+	// ListReleasesPaged
+	releases, _, err := instrumented.ListReleasesPaged(ctx, "test-app", models.ReleaseFilters{}, "release_date", "desc", 50, 0)
 	assert.NoError(t, err)
 	assert.Len(t, releases, 1)
 

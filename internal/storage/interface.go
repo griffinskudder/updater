@@ -9,9 +9,6 @@ import (
 // It provides a clean abstraction that can be implemented by different backends
 // such as JSON files, databases, or external APIs.
 type Storage interface {
-	// Applications returns all registered applications
-	Applications(ctx context.Context) ([]*models.Application, error)
-
 	// GetApplication retrieves an application by its ID
 	GetApplication(ctx context.Context, appID string) (*models.Application, error)
 
@@ -20,9 +17,6 @@ type Storage interface {
 
 	// DeleteApplication removes an application by its ID
 	DeleteApplication(ctx context.Context, appID string) error
-
-	// Releases returns all releases for a given application
-	Releases(ctx context.Context, appID string) ([]*models.Release, error)
 
 	// GetRelease retrieves a specific release by application ID, version, platform, and architecture
 	GetRelease(ctx context.Context, appID, version, platform, arch string) (*models.Release, error)

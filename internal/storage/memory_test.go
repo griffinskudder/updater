@@ -24,7 +24,7 @@ func TestMemoryStorage(t *testing.T) {
 	// Test application operations
 	t.Run("Application Operations", func(t *testing.T) {
 		// Test empty applications list
-		apps, err := storage.Applications(ctx)
+		apps, _, err := storage.ListApplicationsPaged(ctx, 50, 0)
 		if err != nil {
 			t.Errorf("Failed to get applications: %v", err)
 		}
@@ -60,7 +60,7 @@ func TestMemoryStorage(t *testing.T) {
 		}
 
 		// Test applications list
-		apps, err = storage.Applications(ctx)
+		apps, _, err = storage.ListApplicationsPaged(ctx, 50, 0)
 		if err != nil {
 			t.Errorf("Failed to get applications: %v", err)
 		}
@@ -78,7 +78,7 @@ func TestMemoryStorage(t *testing.T) {
 	// Test release operations
 	t.Run("Release Operations", func(t *testing.T) {
 		// Test empty releases list
-		releases, err := storage.Releases(ctx, "test-app")
+		releases, _, err := storage.ListReleasesPaged(ctx, "test-app", models.ReleaseFilters{}, "release_date", "desc", 50, 0)
 		if err != nil {
 			t.Errorf("Failed to get releases: %v", err)
 		}
@@ -117,7 +117,7 @@ func TestMemoryStorage(t *testing.T) {
 		}
 
 		// Test releases list
-		releases, err = storage.Releases(ctx, "test-app")
+		releases, _, err = storage.ListReleasesPaged(ctx, "test-app", models.ReleaseFilters{}, "release_date", "desc", 50, 0)
 		if err != nil {
 			t.Errorf("Failed to get releases: %v", err)
 		}
@@ -174,7 +174,7 @@ func TestMemoryStorage(t *testing.T) {
 		}
 
 		// Verify deletion
-		releases, err = storage.Releases(ctx, "test-app")
+		releases, _, err = storage.ListReleasesPaged(ctx, "test-app", models.ReleaseFilters{}, "release_date", "desc", 50, 0)
 		if err != nil {
 			t.Errorf("Failed to get releases: %v", err)
 		}
