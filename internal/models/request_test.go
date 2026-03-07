@@ -313,13 +313,13 @@ func TestListReleasesRequest_Validate(t *testing.T) {
 		},
 		{
 			name:        "limit exceeds max page size",
-			request:     ListReleasesRequest{ApplicationID: "app", Limit: 501},
+			request:     ListReleasesRequest{ApplicationID: "test-app", Limit: 501},
 			expectError: true,
 			errorMsg:    "limit cannot exceed 500",
 		},
 		{
 			name:        "limit at max page size is valid",
-			request:     ListReleasesRequest{ApplicationID: "app", Limit: 500},
+			request:     ListReleasesRequest{ApplicationID: "test-app", Limit: 500},
 			expectError: false,
 		},
 	}

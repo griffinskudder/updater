@@ -60,7 +60,7 @@ type ListReleasesRequest struct {
 	Required      *bool    `json:"required,omitempty"`
 	Limit         int      `json:"limit,omitempty"`
 	Offset        int      `json:"offset,omitempty"`
-	After         string   `json:"after,omitempty"`
+	After         string   `json:"after,omitempty"`          // Opaque keyset cursor; mutually exclusive with Offset
 	SortBy        string   `json:"sort_by,omitempty"`
 	SortOrder     string   `json:"sort_order,omitempty"`
 	Platforms     []string `json:"platforms,omitempty"`
