@@ -1059,6 +1059,45 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Storage Interface">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pagination-and-query-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pagination and Query Methods
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#releasefilters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ReleaseFilters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#semver-sort-columns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Semver Sort Columns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1685,6 +1724,45 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Storage Interface">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pagination-and-query-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pagination and Query Methods
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#releasefilters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ReleaseFilters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#semver-sort-columns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Semver Sort Columns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1944,20 +2022,22 @@
 </tbody>
 </table>
 <h2 id="storage-interface">Storage Interface<a class="headerlink" href="#storage-interface" title="Permanent link">&para;</a></h2>
-<p>All providers implement 15 methods covering application, release, and API key CRUD operations, plus health and lifecycle management:</p>
+<p>All providers implement 19 methods covering application, release, and API key CRUD operations, plus pagination, filtering, aggregate statistics, and health and lifecycle management:</p>
 <pre class="mermaid"><code>classDiagram
     class Storage {
         &lt;&lt;interface&gt;&gt;
-        +Applications(ctx) []*Application, error
+        +ListApplicationsPaged(ctx, limit, offset) []*Application, int, error
         +GetApplication(ctx, appID) *Application, error
         +SaveApplication(ctx, app) error
         +DeleteApplication(ctx, appID) error
-        +Releases(ctx, appID) []*Release, error
+        +ListReleasesPaged(ctx, appID, filters, sortBy, sortOrder, limit, offset) []*Release, int, error
         +GetRelease(ctx, appID, version, platform, arch) *Release, error
         +SaveRelease(ctx, release) error
         +DeleteRelease(ctx, appID, version, platform, arch) error
         +GetLatestRelease(ctx, appID, platform, arch) *Release, error
+        +GetLatestStableRelease(ctx, appID, platform, arch) *Release, error
         +GetReleasesAfterVersion(ctx, appID, version, platform, arch) []*Release, error
+        +GetApplicationStats(ctx, appID) ApplicationStats, error
         +Ping(ctx) error
         +Close() error
         +CreateAPIKey(ctx, key) error
@@ -1966,22 +2046,146 @@
         +UpdateAPIKey(ctx, key) error
         +DeleteAPIKey(ctx, id) error
     }</code></pre>
+<h3 id="pagination-and-query-methods">Pagination and Query Methods<a class="headerlink" href="#pagination-and-query-methods" title="Permanent link">&para;</a></h3>
+<p>The four purpose-built query methods push pagination, filtering, and aggregation down to the storage layer rather than loading all records into memory.</p>
+<h4 id="listapplicationspaged"><code>ListApplicationsPaged</code><a class="headerlink" href="#listapplicationspaged" title="Permanent link">&para;</a></h4>
+<div class="language-go highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nx">ListApplicationsPaged</span><span class="p">(</span><span class="nx">ctx</span><span class="w"> </span><span class="nx">context</span><span class="p">.</span><span class="nx">Context</span><span class="p">,</span><span class="w"> </span><span class="nx">limit</span><span class="p">,</span><span class="w"> </span><span class="nx">offset</span><span class="w"> </span><span class="kt">int</span><span class="p">)</span><span class="w"> </span><span class="p">([]</span><span class="o">*</span><span class="nx">models</span><span class="p">.</span><span class="nx">Application</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">error</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Returns a page of applications sorted by name, and the total count of all applications. Callers use <code>limit</code> and <code>offset</code> to implement cursor-free offset pagination. The total count allows the caller to compute the number of pages without a separate query.</p>
+<h4 id="listreleasespaged"><code>ListReleasesPaged</code><a class="headerlink" href="#listreleasespaged" title="Permanent link">&para;</a></h4>
+<div class="language-go highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nx">ListReleasesPaged</span><span class="p">(</span><span class="nx">ctx</span><span class="w"> </span><span class="nx">context</span><span class="p">.</span><span class="nx">Context</span><span class="p">,</span><span class="w"> </span><span class="nx">appID</span><span class="w"> </span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="nx">filters</span><span class="w"> </span><span class="nx">models</span><span class="p">.</span><span class="nx">ReleaseFilters</span><span class="p">,</span><span class="w"> </span><span class="nx">sortBy</span><span class="p">,</span><span class="w"> </span><span class="nx">sortOrder</span><span class="w"> </span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="nx">limit</span><span class="p">,</span><span class="w"> </span><span class="nx">offset</span><span class="w"> </span><span class="kt">int</span><span class="p">)</span><span class="w"> </span><span class="p">([]</span><span class="o">*</span><span class="nx">models</span><span class="p">.</span><span class="nx">Release</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">error</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Returns a filtered, sorted page of releases for the given application, and the total count of matching releases. The <code>filters</code> parameter narrows the result set before pagination is applied (see <a href="#releasefilters">ReleaseFilters</a> below).</p>
+<p><code>sortBy</code> must be one of: <code>release_date</code>, <code>version</code>, <code>platform</code>, <code>architecture</code>, <code>created_at</code>.
+<code>sortOrder</code> must be <code>"asc"</code> or <code>"desc"</code>.</p>
+<p>When <code>sortBy</code> is <code>"version"</code>, releases are ordered using the dedicated version sort columns (see <a href="#semver-sort-columns">Semver Sort Columns</a>); for all other columns, the value is used directly in the <code>ORDER BY</code> clause.</p>
+<h4 id="getlateststablerelease"><code>GetLatestStableRelease</code><a class="headerlink" href="#getlateststablerelease" title="Permanent link">&para;</a></h4>
+<div class="language-go highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nx">GetLatestStableRelease</span><span class="p">(</span><span class="nx">ctx</span><span class="w"> </span><span class="nx">context</span><span class="p">.</span><span class="nx">Context</span><span class="p">,</span><span class="w"> </span><span class="nx">appID</span><span class="p">,</span><span class="w"> </span><span class="nx">platform</span><span class="p">,</span><span class="w"> </span><span class="nx">arch</span><span class="w"> </span><span class="kt">string</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="nx">models</span><span class="p">.</span><span class="nx">Release</span><span class="p">,</span><span class="w"> </span><span class="kt">error</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Returns the highest non-prerelease version for the given application, platform, and architecture. Ordering is performed at the SQL level using the version sort columns. Returns <code>storage.ErrNotFound</code> if no stable release exists.</p>
+<h4 id="getapplicationstats"><code>GetApplicationStats</code><a class="headerlink" href="#getapplicationstats" title="Permanent link">&para;</a></h4>
+<div class="language-go highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nx">GetApplicationStats</span><span class="p">(</span><span class="nx">ctx</span><span class="w"> </span><span class="nx">context</span><span class="p">.</span><span class="nx">Context</span><span class="p">,</span><span class="w"> </span><span class="nx">appID</span><span class="w"> </span><span class="kt">string</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="nx">models</span><span class="p">.</span><span class="nx">ApplicationStats</span><span class="p">,</span><span class="w"> </span><span class="kt">error</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Returns aggregate statistics for an application computed in a single query. The returned <code>ApplicationStats</code> struct contains:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>TotalReleases</code></td>
+<td><code>int</code></td>
+<td>Total number of releases for the application</td>
+</tr>
+<tr>
+<td><code>RequiredReleases</code></td>
+<td><code>int</code></td>
+<td>Number of releases marked as required</td>
+</tr>
+<tr>
+<td><code>PlatformCount</code></td>
+<td><code>int</code></td>
+<td>Number of distinct platforms with releases</td>
+</tr>
+<tr>
+<td><code>LatestVersion</code></td>
+<td><code>string</code></td>
+<td>Version string of the most recent stable release</td>
+</tr>
+<tr>
+<td><code>LatestReleaseDate</code></td>
+<td><code>*time.Time</code></td>
+<td>Release date of the most recent release</td>
+</tr>
+</tbody>
+</table>
+<h3 id="releasefilters">ReleaseFilters<a class="headerlink" href="#releasefilters" title="Permanent link">&para;</a></h3>
+<p><code>models.ReleaseFilters</code> specifies optional filters for <code>ListReleasesPaged</code>. A zero value or empty field means no filter is applied for that field.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Platforms</code></td>
+<td><code>[]string</code></td>
+<td>OR filter — a release matches if its platform equals any entry in the list</td>
+</tr>
+<tr>
+<td><code>Architecture</code></td>
+<td><code>string</code></td>
+<td>Exact match on release architecture</td>
+</tr>
+<tr>
+<td><code>Version</code></td>
+<td><code>string</code></td>
+<td>Exact match on release version string</td>
+</tr>
+<tr>
+<td><code>Required</code></td>
+<td><code>*bool</code></td>
+<td>Filter by the required flag; <code>nil</code> means no filter</td>
+</tr>
+</tbody>
+</table>
+<h3 id="semver-sort-columns">Semver Sort Columns<a class="headerlink" href="#semver-sort-columns" title="Permanent link">&para;</a></h3>
+<p>To enable SQL-level semantic version ordering without a regex function, each row in the <code>releases</code> table stores four additional integer/text columns populated by <code>SaveRelease</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>version_major</code></td>
+<td>integer</td>
+<td>Major version component</td>
+</tr>
+<tr>
+<td><code>version_minor</code></td>
+<td>integer</td>
+<td>Minor version component</td>
+</tr>
+<tr>
+<td><code>version_patch</code></td>
+<td>integer</td>
+<td>Patch version component</td>
+</tr>
+<tr>
+<td><code>version_pre_release</code></td>
+<td>text (nullable)</td>
+<td>Pre-release label, or <code>NULL</code> for stable releases</td>
+</tr>
+</tbody>
+</table>
+<p>When sorting by version the storage layer constructs an <code>ORDER BY</code> clause over these four columns. Stable releases (<code>version_pre_release IS NULL</code>) sort above pre-release builds. Pre-release ordering within the same <code>major.minor.patch</code> is lexicographic, which approximates but does not fully replicate the SemVer 2.0 pre-release precedence rules.</p>
 <h2 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h2>
 <h3 id="memory-storage">Memory Storage<a class="headerlink" href="#memory-storage" title="Permanent link">&para;</a></h3>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">storage</span><span class="p">:</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">memory</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">storage</span><span class="p">:</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">memory</span>
 </span></code></pre></div>
 <h3 id="sqlite-storage">SQLite Storage<a class="headerlink" href="#sqlite-storage" title="Permanent link">&para;</a></h3>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">storage</span><span class="p">:</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sqlite</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">database</span><span class="p">:</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="nt">dsn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data/updater.db</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nt">storage</span><span class="p">:</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sqlite</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">  </span><span class="nt">database</span><span class="p">:</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span><span class="nt">dsn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data/updater.db</span>
 </span></code></pre></div>
 <h3 id="postgresql-storage">PostgreSQL Storage<a class="headerlink" href="#postgresql-storage" title="Permanent link">&para;</a></h3>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">storage</span><span class="p">:</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">postgres</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span><span class="nt">database</span><span class="p">:</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="nt">dsn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">postgres://user:password@localhost:5432/updater?sslmode=disable</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nt">storage</span><span class="p">:</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">postgres</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span><span class="nt">database</span><span class="p">:</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">    </span><span class="nt">dsn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">postgres://user:password@localhost:5432/updater?sslmode=disable</span>
 </span></code></pre></div>
 <h2 id="provider-details">Provider Details<a class="headerlink" href="#provider-details" title="Permanent link">&para;</a></h2>
 <h3 id="memory-storage_1">Memory Storage<a class="headerlink" href="#memory-storage_1" title="Permanent link">&para;</a></h3>
@@ -1992,7 +2196,7 @@
 <li><strong>WAL mode</strong> enabled for better concurrent read performance</li>
 <li><strong>Foreign keys</strong> enabled for referential integrity</li>
 <li><strong>Single connection</strong> to prevent concurrency issues with SQLite's single-writer model</li>
-<li><strong>Semantic version comparison</strong> performed in Go after fetching results</li>
+<li><strong>Semver sort columns</strong>: <code>version_major</code>, <code>version_minor</code>, <code>version_patch</code>, <code>version_pre_release</code> columns enable SQL-level version ordering</li>
 <li><strong>Upsert pattern</strong>: SQL upserts (<code>INSERT ... ON CONFLICT</code>) for <code>SaveApplication</code> and <code>SaveRelease</code></li>
 </ul>
 <h3 id="postgresql-storage_1">PostgreSQL Storage<a class="headerlink" href="#postgresql-storage_1" title="Permanent link">&para;</a></h3>
@@ -2002,7 +2206,7 @@
 <li><strong>JSONB columns</strong> for platforms, config, and metadata fields</li>
 <li><strong>Timestamptz</strong> for proper timezone-aware timestamps</li>
 <li><strong>Cascade deletes</strong> from applications to releases</li>
-<li><strong>Semantic version comparison</strong> performed in Go after fetching results</li>
+<li><strong>Semver sort columns</strong>: <code>version_major</code>, <code>version_minor</code>, <code>version_patch</code>, <code>version_pre_release</code> columns enable SQL-level version ordering</li>
 <li><strong>Upsert pattern</strong>: SQL upserts (<code>INSERT ... ON CONFLICT</code>) for <code>SaveApplication</code> and <code>SaveRelease</code></li>
 </ul>
 <h2 id="database-schema">Database Schema<a class="headerlink" href="#database-schema" title="Permanent link">&para;</a></h2>
@@ -2021,6 +2225,10 @@
         TEXT id PK
         TEXT application_id FK
         TEXT version
+        INTEGER version_major
+        INTEGER version_minor
+        INTEGER version_patch
+        TEXT version_pre_release
         TEXT platform
         TEXT architecture
         TEXT download_url
@@ -2090,7 +2298,7 @@
 <p>The auto-generated schema reference (including ER diagrams per table) lives in
 the <a href="../db/">Database</a> section. It is generated from the live
 PostgreSQL schema by running:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>make<span class="w"> </span>docs-db
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>make<span class="w"> </span>docs-db
 </span></code></pre></div>
 <h2 id="testing">Testing<a class="headerlink" href="#testing" title="Permanent link">&para;</a></h2>
 <ul>
