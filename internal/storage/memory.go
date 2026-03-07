@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sort"
 	"sync"
+	"time"
 	"updater/internal/models"
 
 	"github.com/Masterminds/semver/v3"
@@ -29,21 +30,6 @@ func NewMemoryStorage() (*MemoryStorage, error) {
 		apiKeys:      make(map[string]*models.APIKey),
 		apiKeyHashes: make(map[string]string),
 	}, nil
-}
-
-// Applications returns all registered applications
-func (m *MemoryStorage) Applications(ctx context.Context) ([]*models.Application, error) {
-	m.mu.RLock()
-	defer m.mu.RUnlock()
-
-	apps := make([]*models.Application, 0, len(m.applications))
-	for _, app := range m.applications {
-		// Return a copy to prevent external modification
-		appCopy := *app
-		apps = append(apps, &appCopy)
-	}
-
-	return apps, nil
 }
 
 // GetApplication retrieves an application by its ID
@@ -73,7 +59,8 @@ func (m *MemoryStorage) SaveApplication(ctx context.Context, app *models.Applica
 	return nil
 }
 
-// DeleteApplication removes an application by its ID
+// DeleteApplication removes an application by its ID.
+// Returns ErrHasDependencies if the application has existing releases.
 func (m *MemoryStorage) DeleteApplication(ctx context.Context, appID string) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -82,33 +69,12 @@ func (m *MemoryStorage) DeleteApplication(ctx context.Context, appID string) err
 		return fmt.Errorf("application %s not found", appID)
 	}
 
+	if len(m.releases[appID]) > 0 {
+		return ErrHasDependencies
+	}
+
 	delete(m.applications, appID)
 	return nil
-}
-
-// Releases returns all releases for a given application
-func (m *MemoryStorage) Releases(ctx context.Context, appID string) ([]*models.Release, error) {
-	m.mu.RLock()
-	defer m.mu.RUnlock()
-
-	releases, exists := m.releases[appID]
-	if !exists {
-		return []*models.Release{}, nil
-	}
-
-	// Return copies to prevent external modification
-	result := make([]*models.Release, len(releases))
-	for i, release := range releases {
-		releaseCopy := *release
-		result[i] = &releaseCopy
-	}
-
-	// Sort by release date (latest first)
-	sort.Slice(result, func(i, j int) bool {
-		return result[j].ReleaseDate.Before(result[i].ReleaseDate)
-	})
-
-	return result, nil
 }
 
 // GetRelease retrieves a specific release by application ID, version, platform, and architecture
@@ -353,4 +319,175 @@ func (m *MemoryStorage) DeleteAPIKey(ctx context.Context, id string) error {
 	delete(m.apiKeyHashes, k.KeyHash)
 	delete(m.apiKeys, id)
 	return nil
+}
+
+// ListApplicationsPaged returns a page of applications sorted by name, and the
+// total count of all applications.
+func (m *MemoryStorage) ListApplicationsPaged(ctx context.Context, limit, offset int) ([]*models.Application, int, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	apps := make([]*models.Application, 0, len(m.applications))
+	for _, app := range m.applications {
+		copied := *app
+		apps = append(apps, &copied)
+	}
+	sort.Slice(apps, func(i, j int) bool { return apps[i].Name < apps[j].Name })
+
+	total := len(apps)
+	if limit == 0 || offset >= total {
+		return []*models.Application{}, total, nil
+	}
+	end := offset + limit
+	if end > total {
+		end = total
+	}
+	return apps[offset:end], total, nil
+}
+
+// memorySortReleases sorts a slice of releases in-place.
+// sortBy must be one of: release_date (default), version, platform, architecture, created_at.
+// sortOrder must be "asc" or "desc".
+func memorySortReleases(releases []*models.Release, sortBy, sortOrder string) {
+	if len(releases) <= 1 {
+		return
+	}
+	less := func(i, j int) bool {
+		switch sortBy {
+		case "version":
+			vi, ei := semver.NewVersion(releases[i].Version)
+			vj, ej := semver.NewVersion(releases[j].Version)
+			if ei == nil && ej == nil {
+				return vi.LessThan(vj)
+			}
+			return releases[i].Version < releases[j].Version
+		case "platform":
+			return releases[i].Platform < releases[j].Platform
+		case "architecture":
+			return releases[i].Architecture < releases[j].Architecture
+		case "created_at":
+			return releases[i].CreatedAt.Before(releases[j].CreatedAt)
+		default: // release_date
+			return releases[i].ReleaseDate.Before(releases[j].ReleaseDate)
+		}
+	}
+	if sortOrder == "desc" {
+		orig := less
+		less = func(i, j int) bool { return orig(j, i) }
+	}
+	sort.Slice(releases, less)
+}
+
+// ListReleasesPaged returns a filtered, sorted page of releases for an application,
+// and the total count of matching releases.
+// sortBy must be one of: release_date, version, platform, architecture, created_at.
+// sortOrder must be "asc" or "desc".
+func (m *MemoryStorage) ListReleasesPaged(ctx context.Context, appID string, filters models.ReleaseFilters, sortBy, sortOrder string, limit, offset int) ([]*models.Release, int, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	var filtered []*models.Release
+	for _, r := range m.releases[appID] {
+		if filters.Architecture != "" && r.Architecture != filters.Architecture {
+			continue
+		}
+		if filters.Version != "" && r.Version != filters.Version {
+			continue
+		}
+		if filters.Required != nil && r.Required != *filters.Required {
+			continue
+		}
+		if len(filters.Platforms) > 0 {
+			match := false
+			for _, p := range filters.Platforms {
+				if r.Platform == p {
+					match = true
+					break
+				}
+			}
+			if !match {
+				continue
+			}
+		}
+		copied := *r
+		filtered = append(filtered, &copied)
+	}
+
+	memorySortReleases(filtered, sortBy, sortOrder)
+
+	total := len(filtered)
+	if offset >= total {
+		return []*models.Release{}, total, nil
+	}
+	end := offset + limit
+	if end > total {
+		end = total
+	}
+	return filtered[offset:end], total, nil
+}
+
+// GetLatestStableRelease returns the highest non-prerelease version for the given
+// application, platform, and architecture.
+// Returns ErrNotFound if no stable release exists.
+func (m *MemoryStorage) GetLatestStableRelease(ctx context.Context, appID, platform, arch string) (*models.Release, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	var latest *models.Release
+	var latestVer *semver.Version
+
+	for _, r := range m.releases[appID] {
+		if r.Platform != platform || r.Architecture != arch {
+			continue
+		}
+		v, err := semver.NewVersion(r.Version)
+		if err != nil || v.Prerelease() != "" {
+			continue
+		}
+		if latestVer == nil || v.GreaterThan(latestVer) {
+			latestVer = v
+			copied := *r
+			latest = &copied
+		}
+	}
+	if latest == nil {
+		return nil, ErrNotFound
+	}
+	return latest, nil
+}
+
+// GetApplicationStats returns aggregate statistics for an application.
+func (m *MemoryStorage) GetApplicationStats(ctx context.Context, appID string) (models.ApplicationStats, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	releases := m.releases[appID]
+	stats := models.ApplicationStats{TotalReleases: len(releases)}
+	if len(releases) == 0 {
+		return stats, nil
+	}
+
+	platforms := make(map[string]struct{})
+	var latestVer *semver.Version
+	var latestDate *time.Time
+
+	for _, r := range releases {
+		platforms[r.Platform] = struct{}{}
+		if r.Required {
+			stats.RequiredReleases++
+		}
+		if v, err := semver.NewVersion(r.Version); err == nil {
+			if latestVer == nil || v.GreaterThan(latestVer) {
+				latestVer = v
+				stats.LatestVersion = r.Version
+			}
+		}
+		if latestDate == nil || r.ReleaseDate.After(*latestDate) {
+			rd := r.ReleaseDate
+			latestDate = &rd
+		}
+	}
+	stats.PlatformCount = len(platforms)
+	stats.LatestReleaseDate = latestDate
+	return stats, nil
 }

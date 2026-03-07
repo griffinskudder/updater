@@ -80,14 +80,6 @@ func (s *InstrumentedStorage) record(ctx context.Context, span trace.Span, opera
 	span.End()
 }
 
-func (s *InstrumentedStorage) Applications(ctx context.Context) ([]*models.Application, error) {
-	ctx, span := s.startSpan(ctx, "Applications")
-	start := time.Now()
-	result, err := s.inner.Applications(ctx)
-	s.record(ctx, span, "Applications", start, err)
-	return result, err
-}
-
 func (s *InstrumentedStorage) GetApplication(ctx context.Context, appID string) (*models.Application, error) {
 	ctx, span := s.startSpan(ctx, "GetApplication", attribute.String("app_id", appID))
 	start := time.Now()
@@ -112,14 +104,6 @@ func (s *InstrumentedStorage) DeleteApplication(ctx context.Context, appID strin
 	err := s.inner.DeleteApplication(ctx, appID)
 	s.record(ctx, span, "DeleteApplication", start, err)
 	return err
-}
-
-func (s *InstrumentedStorage) Releases(ctx context.Context, appID string) ([]*models.Release, error) {
-	ctx, span := s.startSpan(ctx, "Releases", attribute.String("app_id", appID))
-	start := time.Now()
-	result, err := s.inner.Releases(ctx, appID)
-	s.record(ctx, span, "Releases", start, err)
-	return result, err
 }
 
 func (s *InstrumentedStorage) GetRelease(ctx context.Context, appID, version, platform, arch string) (*models.Release, error) {
@@ -236,4 +220,40 @@ func (s *InstrumentedStorage) DeleteAPIKey(ctx context.Context, keyID string) er
 	err := s.inner.DeleteAPIKey(ctx, keyID)
 	s.record(ctx, span, "DeleteAPIKey", start, err)
 	return err
+}
+
+func (s *InstrumentedStorage) ListApplicationsPaged(ctx context.Context, limit, offset int) ([]*models.Application, int, error) {
+	ctx, span := s.startSpan(ctx, "ListApplicationsPaged")
+	start := time.Now()
+	apps, total, err := s.inner.ListApplicationsPaged(ctx, limit, offset)
+	s.record(ctx, span, "ListApplicationsPaged", start, err)
+	return apps, total, err
+}
+
+func (s *InstrumentedStorage) ListReleasesPaged(ctx context.Context, appID string, filters models.ReleaseFilters, sortBy, sortOrder string, limit, offset int) ([]*models.Release, int, error) {
+	ctx, span := s.startSpan(ctx, "ListReleasesPaged", attribute.String("app_id", appID))
+	start := time.Now()
+	releases, total, err := s.inner.ListReleasesPaged(ctx, appID, filters, sortBy, sortOrder, limit, offset)
+	s.record(ctx, span, "ListReleasesPaged", start, err)
+	return releases, total, err
+}
+
+func (s *InstrumentedStorage) GetLatestStableRelease(ctx context.Context, appID, platform, arch string) (*models.Release, error) {
+	ctx, span := s.startSpan(ctx, "GetLatestStableRelease",
+		attribute.String("app_id", appID),
+		attribute.String("platform", platform),
+		attribute.String("arch", arch),
+	)
+	start := time.Now()
+	release, err := s.inner.GetLatestStableRelease(ctx, appID, platform, arch)
+	s.record(ctx, span, "GetLatestStableRelease", start, err)
+	return release, err
+}
+
+func (s *InstrumentedStorage) GetApplicationStats(ctx context.Context, appID string) (models.ApplicationStats, error) {
+	ctx, span := s.startSpan(ctx, "GetApplicationStats", attribute.String("app_id", appID))
+	start := time.Now()
+	stats, err := s.inner.GetApplicationStats(ctx, appID)
+	s.record(ctx, span, "GetApplicationStats", start, err)
+	return stats, err
 }

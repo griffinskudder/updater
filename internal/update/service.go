@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"sort"
 	"time"
 	"updater/internal/models"
 	"updater/internal/storage"
@@ -71,18 +70,23 @@ func (s *Service) CheckForUpdate(ctx context.Context, req *models.UpdateCheckReq
 	if latestVersion.GreaterThan(currentVersion) {
 		// Check pre-release handling
 		if !req.AllowPrerelease && latestVersion.Prerelease() != "" {
-			latestStable, err := s.findLatestStableRelease(ctx, req.ApplicationID, req.Platform, req.Architecture, req.CurrentVersion)
+			stableRelease, err := s.storage.GetLatestStableRelease(ctx, req.ApplicationID, req.Platform, req.Architecture)
 			if err != nil {
+				if errors.Is(err, storage.ErrNotFound) {
+					response.SetNoUpdateAvailable(req.CurrentVersion)
+					return response, nil
+				}
 				return nil, NewInternalError("failed to find stable release", err)
 			}
-
-			if latestStable != nil {
-				latestRelease = latestStable
-			} else {
-				// No stable update available
+			stableVer, err := semver.NewVersion(stableRelease.Version)
+			if err != nil {
+				return nil, NewInternalError("invalid stable release version", err)
+			}
+			if !stableVer.GreaterThan(currentVersion) {
 				response.SetNoUpdateAvailable(req.CurrentVersion)
 				return response, nil
 			}
+			latestRelease = stableRelease
 		}
 
 		// Check minimum version requirement
@@ -148,16 +152,14 @@ func (s *Service) GetLatestVersion(ctx context.Context, req *models.LatestVersio
 		}
 
 		if latestVersion.Prerelease() != "" {
-			latestStable, err := s.findLatestStableRelease(ctx, req.ApplicationID, req.Platform, req.Architecture, "")
+			stableRelease, err := s.storage.GetLatestStableRelease(ctx, req.ApplicationID, req.Platform, req.Architecture)
 			if err != nil {
+				if errors.Is(err, storage.ErrNotFound) {
+					return nil, NewApplicationNotFoundError(fmt.Sprintf("%s on %s-%s (no stable releases)", req.ApplicationID, req.Platform, req.Architecture))
+				}
 				return nil, NewInternalError("failed to find stable release", err)
 			}
-
-			if latestStable != nil {
-				latestRelease = latestStable
-			} else {
-				return nil, NewApplicationNotFoundError(fmt.Sprintf("%s on %s-%s (no stable releases)", req.ApplicationID, req.Platform, req.Architecture))
-			}
+			latestRelease = stableRelease
 		}
 	}
 
@@ -180,75 +182,28 @@ func (s *Service) ListReleases(ctx context.Context, req *models.ListReleasesRequ
 	}
 	req.Normalize()
 
-	// Get all releases for the application
-	allReleases, err := s.storage.Releases(ctx, req.ApplicationID)
+	filters := models.ReleaseFilters{
+		Architecture: req.Architecture,
+		Version:      req.Version,
+		Required:     req.Required,
+	}
+	if req.Platform != "" {
+		filters.Platforms = []string{req.Platform}
+	} else {
+		filters.Platforms = req.Platforms
+	}
+
+	releases, totalCount, err := s.storage.ListReleasesPaged(ctx, req.ApplicationID, filters, req.SortBy, req.SortOrder, req.Limit, req.Offset)
 	if err != nil {
 		return nil, NewInternalError("failed to get releases", err)
 	}
 
-	// Apply filters
-	var filteredReleases []*models.Release
-	for _, release := range allReleases {
-		// Platform filter
-		if req.Platform != "" && release.Platform != req.Platform {
-			continue
-		}
-
-		// Architecture filter
-		if req.Architecture != "" && release.Architecture != req.Architecture {
-			continue
-		}
-
-		// Version filter
-		if req.Version != "" && release.Version != req.Version {
-			continue
-		}
-
-		// Required filter
-		if req.Required != nil && release.Required != *req.Required {
-			continue
-		}
-
-		// Platforms filter (multiple platforms)
-		if len(req.Platforms) > 0 {
-			found := false
-			for _, platform := range req.Platforms {
-				if release.Platform == platform {
-					found = true
-					break
-				}
-			}
-			if !found {
-				continue
-			}
-		}
-
-		filteredReleases = append(filteredReleases, release)
-	}
-
-	// Sort releases
-	s.sortReleases(filteredReleases, req.SortBy, req.SortOrder)
-
-	// Apply pagination
-	totalCount := len(filteredReleases)
-	start := req.Offset
-	end := start + req.Limit
-
-	if start > totalCount {
-		start = totalCount
-	}
-	if end > totalCount {
-		end = totalCount
-	}
-
-	paginatedReleases := filteredReleases[start:end]
-
-	// Convert to response format
-	releaseInfos := make([]models.ReleaseInfo, len(paginatedReleases))
-	for i, release := range paginatedReleases {
+	releaseInfos := make([]models.ReleaseInfo, len(releases))
+	for i, release := range releases {
 		releaseInfos[i].FromRelease(release)
 	}
 
+	end := req.Offset + len(releases)
 	return &models.ListReleasesResponse{
 		Releases:   releaseInfos,
 		TotalCount: totalCount,
@@ -311,104 +266,6 @@ func (s *Service) RegisterRelease(ctx context.Context, req *models.RegisterRelea
 	}, nil
 }
 
-// sortReleases sorts releases based on the specified field and order
-func (s *Service) sortReleases(releases []*models.Release, sortBy, sortOrder string) {
-	if len(releases) <= 1 {
-		return
-	}
-
-	// Default ascending comparison function
-	less := func(i, j int) bool {
-		switch sortBy {
-		case "version":
-			versionI, errI := semver.NewVersion(releases[i].Version)
-			versionJ, errJ := semver.NewVersion(releases[j].Version)
-			if errI == nil && errJ == nil {
-				return versionI.LessThan(versionJ)
-			}
-			return releases[i].Version < releases[j].Version
-		case "release_date":
-			return releases[i].ReleaseDate.Before(releases[j].ReleaseDate)
-		case "platform":
-			return releases[i].Platform < releases[j].Platform
-		case "architecture":
-			return releases[i].Architecture < releases[j].Architecture
-		case "created_at":
-			return releases[i].CreatedAt.Before(releases[j].CreatedAt)
-		default:
-			return releases[i].ReleaseDate.Before(releases[j].ReleaseDate)
-		}
-	}
-
-	// Reverse comparison for descending order
-	if sortOrder == "desc" {
-		originalLess := less
-		less = func(i, j int) bool {
-			return originalLess(j, i)
-		}
-	}
-
-	// Sort the releases
-	sort.Slice(releases, less)
-}
-
-// findLatestStableRelease finds the latest non-prerelease version that's newer than the current version
-// for the specified platform and architecture. Returns nil if no suitable stable release is found.
-func (s *Service) findLatestStableRelease(ctx context.Context, appID, platform, arch, currentVersion string) (*models.Release, error) {
-	releases, err := s.storage.Releases(ctx, appID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get releases: %w", err)
-	}
-
-	var currentVer *semver.Version
-	if currentVersion != "" {
-		currentVer, err = semver.NewVersion(currentVersion)
-		if err != nil {
-			return nil, fmt.Errorf("invalid current version: %w", err)
-		}
-	}
-
-	var latestStable *models.Release
-	for _, release := range releases {
-		if release.Platform != platform || release.Architecture != arch {
-			continue
-		}
-
-		releaseVer, err := semver.NewVersion(release.Version)
-		if err != nil {
-			continue
-		}
-
-		// Skip pre-release versions
-		if releaseVer.Prerelease() != "" {
-			continue
-		}
-
-		// Skip if not newer than current version
-		if currentVer != nil && !releaseVer.GreaterThan(currentVer) {
-			continue
-		}
-
-		// Check if this is the latest stable version we've seen
-		if latestStable == nil {
-			latestStable = release
-			continue
-		}
-
-		stableVer, err := semver.NewVersion(latestStable.Version)
-		if err != nil {
-			latestStable = release
-			continue
-		}
-
-		if releaseVer.GreaterThan(stableVer) {
-			latestStable = release
-		}
-	}
-
-	return latestStable, nil
-}
-
 // CreateApplication creates a new application after validating and normalizing the request.
 func (s *Service) CreateApplication(ctx context.Context, req *models.CreateApplicationRequest) (*models.CreateApplicationResponse, error) {
 	// Validate and normalize request
@@ -450,13 +307,10 @@ func (s *Service) GetApplication(ctx context.Context, appID string) (*models.App
 		return nil, NewApplicationNotFoundError(appID)
 	}
 
-	// Fetch releases to compute stats
-	releases, err := s.storage.Releases(ctx, appID)
+	stats, err := s.storage.GetApplicationStats(ctx, appID)
 	if err != nil {
-		return nil, NewInternalError("failed to get releases", err)
+		return nil, NewInternalError("failed to get application stats", err)
 	}
-
-	stats := computeApplicationStats(releases)
 
 	createdAt, _ := time.Parse(time.RFC3339, app.CreatedAt)
 	updatedAt, _ := time.Parse(time.RFC3339, app.UpdatedAt)
@@ -482,32 +336,19 @@ func (s *Service) ListApplications(ctx context.Context, limit, offset int) (*mod
 		offset = 0
 	}
 
-	allApps, err := s.storage.Applications(ctx)
+	apps, totalCount, err := s.storage.ListApplicationsPaged(ctx, limit, offset)
 	if err != nil {
 		return nil, NewInternalError("failed to list applications", err)
 	}
 
-	totalCount := len(allApps)
-
-	// Apply pagination
-	start := offset
-	end := start + limit
-	if start > totalCount {
-		start = totalCount
-	}
-	if end > totalCount {
-		end = totalCount
-	}
-
-	paginatedApps := allApps[start:end]
-
-	summaries := make([]models.ApplicationSummary, len(paginatedApps))
-	for i, app := range paginatedApps {
+	summaries := make([]models.ApplicationSummary, len(apps))
+	for i, app := range apps {
 		summaries[i].FromApplication(app)
 		summaries[i].CreatedAt, _ = time.Parse(time.RFC3339, app.CreatedAt)
 		summaries[i].UpdatedAt, _ = time.Parse(time.RFC3339, app.UpdatedAt)
 	}
 
+	end := offset + len(apps)
 	return &models.ListApplicationsResponse{
 		Applications: summaries,
 		TotalCount:   totalCount,
@@ -568,15 +409,6 @@ func (s *Service) DeleteApplication(ctx context.Context, appID string) error {
 		return NewApplicationNotFoundError(appID)
 	}
 
-	// Check for existing releases
-	releases, err := s.storage.Releases(ctx, appID)
-	if err != nil {
-		return NewInternalError("failed to check releases", err)
-	}
-	if len(releases) > 0 {
-		return NewConflictError(fmt.Sprintf("cannot delete application '%s': has %d existing releases", appID, len(releases)))
-	}
-
 	// Delete application
 	if err := s.storage.DeleteApplication(ctx, appID); err != nil {
 		if errors.Is(err, storage.ErrHasDependencies) {
@@ -605,47 +437,4 @@ func (s *Service) DeleteRelease(ctx context.Context, appID, version, platform, a
 		ID:      release.ID,
 		Message: fmt.Sprintf("Release '%s' deleted successfully", release.ID),
 	}, nil
-}
-
-// computeApplicationStats computes statistics from a list of releases.
-func computeApplicationStats(releases []*models.Release) models.ApplicationStats {
-	stats := models.ApplicationStats{
-		TotalReleases: len(releases),
-	}
-
-	if len(releases) == 0 {
-		return stats
-	}
-
-	platforms := make(map[string]struct{})
-	var latestVersion *semver.Version
-	var latestReleaseDate *time.Time
-
-	for _, release := range releases {
-		platforms[release.Platform] = struct{}{}
-
-		if release.Required {
-			stats.RequiredReleases++
-		}
-
-		// Track latest version
-		ver, err := semver.NewVersion(release.Version)
-		if err == nil {
-			if latestVersion == nil || ver.GreaterThan(latestVersion) {
-				latestVersion = ver
-				stats.LatestVersion = release.Version
-			}
-		}
-
-		// Track latest release date
-		if latestReleaseDate == nil || release.ReleaseDate.After(*latestReleaseDate) {
-			rd := release.ReleaseDate
-			latestReleaseDate = &rd
-		}
-	}
-
-	stats.PlatformCount = len(platforms)
-	stats.LatestReleaseDate = latestReleaseDate
-
-	return stats
 }

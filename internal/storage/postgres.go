@@ -43,25 +43,6 @@ func NewPostgresStorage(dsn string) (Storage, error) {
 	}, nil
 }
 
-// Applications returns all registered applications.
-func (ps *PostgresStorage) Applications(ctx context.Context) ([]*models.Application, error) {
-	rows, err := ps.queries.GetAllApplications(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get applications: %w", err)
-	}
-
-	apps := make([]*models.Application, 0, len(rows))
-	for _, row := range rows {
-		app, err := pgAppToModel(row)
-		if err != nil {
-			return nil, fmt.Errorf("failed to convert application %s: %w", row.ID, err)
-		}
-		apps = append(apps, app)
-	}
-
-	return apps, nil
-}
-
 // GetApplication retrieves an application by its ID.
 func (ps *PostgresStorage) GetApplication(ctx context.Context, appID string) (*models.Application, error) {
 	row, err := ps.queries.GetApplicationByID(ctx, appID)
@@ -94,25 +75,6 @@ func (ps *PostgresStorage) DeleteApplication(ctx context.Context, appID string) 
 		return fmt.Errorf("failed to delete application %s: %w", appID, err)
 	}
 	return nil
-}
-
-// Releases returns all releases for a given application.
-func (ps *PostgresStorage) Releases(ctx context.Context, appID string) ([]*models.Release, error) {
-	rows, err := ps.queries.GetReleasesByAppID(ctx, appID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get releases: %w", err)
-	}
-
-	releases := make([]*models.Release, 0, len(rows))
-	for _, row := range rows {
-		release, err := pgReleaseToModel(row)
-		if err != nil {
-			return nil, fmt.Errorf("failed to convert release %s: %w", row.ID, err)
-		}
-		releases = append(releases, release)
-	}
-
-	return releases, nil
 }
 
 // GetRelease retrieves a specific release by application ID, version, platform, and architecture.
@@ -349,22 +311,28 @@ func modelToPgUpsertRelease(r *models.Release) (sqlcpg.UpsertReleaseParams, erro
 		return sqlcpg.UpsertReleaseParams{}, err
 	}
 
+	major, minor, patch, pre := parseSemverParts(r.Version)
+
 	return sqlcpg.UpsertReleaseParams{
-		ID:             r.ID,
-		ApplicationID:  r.ApplicationID,
-		Version:        r.Version,
-		Platform:       r.Platform,
-		Architecture:   r.Architecture,
-		DownloadUrl:    r.DownloadURL,
-		Checksum:       r.Checksum,
-		ChecksumType:   r.ChecksumType,
-		FileSize:       r.FileSize,
-		ReleaseNotes:   stringToPgText(r.ReleaseNotes),
-		ReleaseDate:    timeToPgTimestamptz(r.ReleaseDate),
-		Required:       r.Required,
-		MinimumVersion: stringToPgText(r.MinimumVersion),
-		Metadata:       metadata,
-		CreatedAt:      timeToPgTimestamptz(r.CreatedAt),
+		ID:                r.ID,
+		ApplicationID:     r.ApplicationID,
+		Version:           r.Version,
+		Platform:          r.Platform,
+		Architecture:      r.Architecture,
+		DownloadUrl:       r.DownloadURL,
+		Checksum:          r.Checksum,
+		ChecksumType:      r.ChecksumType,
+		FileSize:          r.FileSize,
+		ReleaseNotes:      stringToPgText(r.ReleaseNotes),
+		ReleaseDate:       timeToPgTimestamptz(r.ReleaseDate),
+		Required:          r.Required,
+		MinimumVersion:    stringToPgText(r.MinimumVersion),
+		Metadata:          metadata,
+		CreatedAt:         timeToPgTimestamptz(r.CreatedAt),
+		VersionMajor:      major,
+		VersionMinor:      minor,
+		VersionPatch:      patch,
+		VersionPreRelease: pgtype.Text{String: pre, Valid: pre != ""},
 	}, nil
 }
 
@@ -502,4 +470,212 @@ func (ps *PostgresStorage) DeleteAPIKey(ctx context.Context, id string) error {
 		return ErrNotFound
 	}
 	return nil
+}
+
+// ListApplicationsPaged returns a page of applications sorted by name and the total count.
+func (ps *PostgresStorage) ListApplicationsPaged(ctx context.Context, limit, offset int) ([]*models.Application, int, error) {
+	rows, err := ps.queries.GetApplicationsPaged(ctx, sqlcpg.GetApplicationsPagedParams{
+		Column1: int64(limit),
+		Column2: int64(offset),
+	})
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to list applications: %w", err)
+	}
+
+	total := 0
+	apps := make([]*models.Application, 0, len(rows))
+	for i, row := range rows {
+		if i == 0 {
+			total = int(row.TotalCount)
+		}
+		app, err := pgAppToModel(sqlcpg.Application{
+			ID:          row.ID,
+			Name:        row.Name,
+			Description: row.Description,
+			Platforms:   row.Platforms,
+			Config:      row.Config,
+			CreatedAt:   row.CreatedAt,
+			UpdatedAt:   row.UpdatedAt,
+		})
+		if err != nil {
+			return nil, 0, fmt.Errorf("failed to convert application %s: %w", row.ID, err)
+		}
+		apps = append(apps, app)
+	}
+	return apps, total, nil
+}
+
+// pgReleaseListSortCols maps sortBy values to safe SQL ORDER BY fragments.
+// Version sort uses the split numeric columns for correct semver ordering.
+// Using an allowlist prevents SQL injection from untrusted sortBy values.
+var pgReleaseListSortCols = map[string]string{
+	"release_date": "release_date",
+	"version":      "version_major DESC, version_minor DESC, version_patch DESC, (version_pre_release IS NULL) DESC, version_pre_release",
+	"platform":     "platform",
+	"architecture": "architecture",
+	"created_at":   "created_at",
+}
+
+// ListReleasesPaged returns a filtered, sorted page of releases and the total count.
+func (ps *PostgresStorage) ListReleasesPaged(ctx context.Context, appID string, filters models.ReleaseFilters, sortBy, sortOrder string, limit, offset int) ([]*models.Release, int, error) {
+	col, ok := pgReleaseListSortCols[sortBy]
+	if !ok {
+		col = pgReleaseListSortCols["release_date"]
+	}
+
+	// Version sort has direction embedded; other columns get an explicit direction suffix.
+	orderClause := col
+	if sortBy != "version" {
+		if sortOrder == "asc" {
+			orderClause += " ASC"
+		} else {
+			orderClause += " DESC"
+		}
+	}
+
+	args := []interface{}{appID}
+	where := "WHERE application_id = $1"
+
+	if filters.Architecture != "" {
+		args = append(args, filters.Architecture)
+		where += fmt.Sprintf(" AND architecture = $%d", len(args))
+	}
+	if filters.Version != "" {
+		args = append(args, filters.Version)
+		where += fmt.Sprintf(" AND version = $%d", len(args))
+	}
+	if filters.Required != nil {
+		args = append(args, *filters.Required)
+		where += fmt.Sprintf(" AND required = $%d", len(args))
+	}
+	if len(filters.Platforms) > 0 {
+		args = append(args, filters.Platforms)
+		where += fmt.Sprintf(" AND platform = ANY($%d::text[])", len(args))
+	}
+
+	args = append(args, int64(limit), int64(offset))
+	query := fmt.Sprintf(`
+		SELECT id, application_id, version, platform, architecture, download_url,
+		       checksum, checksum_type, file_size, release_notes, release_date,
+		       required, minimum_version, metadata, created_at,
+		       version_major, version_minor, version_patch, version_pre_release,
+		       COUNT(*) OVER() AS total_count
+		FROM releases
+		%s
+		ORDER BY %s
+		LIMIT $%d OFFSET $%d`,
+		where, orderClause, len(args)-1, len(args),
+	)
+
+	pgxRows, err := ps.pool.Query(ctx, query, args...)
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to query releases: %w", err)
+	}
+	defer pgxRows.Close()
+
+	releases := make([]*models.Release, 0)
+	total := 0
+	for pgxRows.Next() {
+		var (
+			id, appIDField, version, platform, arch, downloadURL string
+			checksum, checksumType                               string
+			fileSize                                             int64
+			releaseNotes                                         pgtype.Text
+			releaseDate                                          pgtype.Timestamptz
+			required                                             bool
+			minimumVersion                                       pgtype.Text
+			metadata                                             []byte
+			createdAt                                            pgtype.Timestamptz
+			versionMajor, versionMinor, versionPatch             int64
+			versionPreRelease                                    pgtype.Text
+			totalCount                                           int64
+		)
+		if err := pgxRows.Scan(
+			&id, &appIDField, &version, &platform, &arch, &downloadURL,
+			&checksum, &checksumType, &fileSize,
+			&releaseNotes, &releaseDate, &required, &minimumVersion,
+			&metadata, &createdAt,
+			&versionMajor, &versionMinor, &versionPatch, &versionPreRelease,
+			&totalCount,
+		); err != nil {
+			return nil, 0, fmt.Errorf("failed to scan release: %w", err)
+		}
+		if total == 0 {
+			total = int(totalCount)
+		}
+		row := sqlcpg.Release{
+			ID:                id,
+			ApplicationID:     appIDField,
+			Version:           version,
+			Platform:          platform,
+			Architecture:      arch,
+			DownloadUrl:       downloadURL,
+			Checksum:          checksum,
+			ChecksumType:      checksumType,
+			FileSize:          fileSize,
+			ReleaseNotes:      releaseNotes,
+			ReleaseDate:       releaseDate,
+			Required:          required,
+			MinimumVersion:    minimumVersion,
+			Metadata:          metadata,
+			CreatedAt:         createdAt,
+			VersionMajor:      versionMajor,
+			VersionMinor:      versionMinor,
+			VersionPatch:      versionPatch,
+			VersionPreRelease: versionPreRelease,
+		}
+		release, err := pgReleaseToModel(row)
+		if err != nil {
+			return nil, 0, fmt.Errorf("failed to convert release %s: %w", id, err)
+		}
+		releases = append(releases, release)
+	}
+	if err := pgxRows.Err(); err != nil {
+		return nil, 0, fmt.Errorf("failed to iterate releases: %w", err)
+	}
+	return releases, total, nil
+}
+
+// GetLatestStableRelease returns the highest non-prerelease version for the given platform/arch.
+// Returns ErrNotFound if no stable release exists.
+func (ps *PostgresStorage) GetLatestStableRelease(ctx context.Context, appID, platform, arch string) (*models.Release, error) {
+	row, err := ps.queries.GetLatestStableRelease(ctx, sqlcpg.GetLatestStableReleaseParams{
+		ApplicationID: appID,
+		Platform:      platform,
+		Architecture:  arch,
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrNotFound
+		}
+		return nil, fmt.Errorf("failed to get latest stable release: %w", err)
+	}
+	return pgReleaseToModel(row)
+}
+
+// GetApplicationStats returns aggregate statistics for an application.
+func (ps *PostgresStorage) GetApplicationStats(ctx context.Context, appID string) (models.ApplicationStats, error) {
+	row, err := ps.queries.GetApplicationStats(ctx, appID)
+	if err != nil {
+		return models.ApplicationStats{}, fmt.Errorf("failed to get application stats: %w", err)
+	}
+
+	stats := models.ApplicationStats{
+		TotalReleases:    int(row.TotalReleases),
+		RequiredReleases: int(row.RequiredReleases),
+		PlatformCount:    int(row.PlatformCount),
+		LatestVersion:    row.LatestVersion,
+	}
+
+	// LatestReleaseDate is interface{} in the generated code because sqlc cannot
+	// determine the concrete type for aggregated nullable timestamps.
+	// pgx/v5 returns pgtype.Timestamptz for TIMESTAMPTZ columns.
+	if row.LatestReleaseDate != nil {
+		if ts, ok := row.LatestReleaseDate.(pgtype.Timestamptz); ok && ts.Valid {
+			t := ts.Time
+			stats.LatestReleaseDate = &t
+		}
+	}
+
+	return stats, nil
 }

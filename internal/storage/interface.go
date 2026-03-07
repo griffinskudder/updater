@@ -9,9 +9,6 @@ import (
 // It provides a clean abstraction that can be implemented by different backends
 // such as JSON files, databases, or external APIs.
 type Storage interface {
-	// Applications returns all registered applications
-	Applications(ctx context.Context) ([]*models.Application, error)
-
 	// GetApplication retrieves an application by its ID
 	GetApplication(ctx context.Context, appID string) (*models.Application, error)
 
@@ -20,9 +17,6 @@ type Storage interface {
 
 	// DeleteApplication removes an application by its ID
 	DeleteApplication(ctx context.Context, appID string) error
-
-	// Releases returns all releases for a given application
-	Releases(ctx context.Context, appID string) ([]*models.Release, error)
 
 	// GetRelease retrieves a specific release by application ID, version, platform, and architecture
 	GetRelease(ctx context.Context, appID, version, platform, arch string) (*models.Release, error)
@@ -60,4 +54,22 @@ type Storage interface {
 
 	// DeleteAPIKey permanently removes an API key by ID.
 	DeleteAPIKey(ctx context.Context, id string) error
+
+	// ListApplicationsPaged returns a page of applications sorted by name,
+	// and the total count of all applications.
+	ListApplicationsPaged(ctx context.Context, limit, offset int) ([]*models.Application, int, error)
+
+	// ListReleasesPaged returns a filtered, sorted page of releases for an application,
+	// and the total count of matching releases.
+	// sortBy must be one of: release_date, version, platform, architecture, created_at.
+	// sortOrder must be "asc" or "desc".
+	ListReleasesPaged(ctx context.Context, appID string, filters models.ReleaseFilters, sortBy, sortOrder string, limit, offset int) ([]*models.Release, int, error)
+
+	// GetLatestStableRelease returns the highest non-prerelease version for the given
+	// application, platform, and architecture.
+	// Returns storage.ErrNotFound if no stable release exists.
+	GetLatestStableRelease(ctx context.Context, appID, platform, arch string) (*models.Release, error)
+
+	// GetApplicationStats returns aggregate statistics for an application.
+	GetApplicationStats(ctx context.Context, appID string) (models.ApplicationStats, error)
 }

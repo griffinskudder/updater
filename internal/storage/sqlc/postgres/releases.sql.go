@@ -33,10 +33,96 @@ func (q *Queries) DeleteRelease(ctx context.Context, arg DeleteReleaseParams) er
 	return err
 }
 
+const getApplicationStats = `-- name: GetApplicationStats :one
+WITH app_releases AS (
+    SELECT id, application_id, version, platform, architecture, download_url, checksum, checksum_type, file_size, release_notes, release_date, required, minimum_version, metadata, created_at, version_major, version_minor, version_patch, version_pre_release FROM releases WHERE application_id = $1
+)
+SELECT
+    COUNT(*) AS total_releases,
+    COUNT(*) FILTER (WHERE required) AS required_releases,
+    COUNT(DISTINCT platform) AS platform_count,
+    MAX(release_date) AS latest_release_date,
+    (
+        SELECT version FROM app_releases
+        ORDER BY version_major DESC, version_minor DESC, version_patch DESC,
+                 (version_pre_release IS NULL) DESC,
+                 version_pre_release ASC
+        LIMIT 1
+    ) AS latest_version
+FROM app_releases
+`
+
+type GetApplicationStatsRow struct {
+	TotalReleases     int64       `json:"total_releases"`
+	RequiredReleases  int64       `json:"required_releases"`
+	PlatformCount     int64       `json:"platform_count"`
+	LatestReleaseDate interface{} `json:"latest_release_date"`
+	LatestVersion     string      `json:"latest_version"`
+}
+
+func (q *Queries) GetApplicationStats(ctx context.Context, applicationID string) (GetApplicationStatsRow, error) {
+	row := q.db.QueryRow(ctx, getApplicationStats, applicationID)
+	var i GetApplicationStatsRow
+	err := row.Scan(
+		&i.TotalReleases,
+		&i.RequiredReleases,
+		&i.PlatformCount,
+		&i.LatestReleaseDate,
+		&i.LatestVersion,
+	)
+	return i, err
+}
+
+const getLatestStableRelease = `-- name: GetLatestStableRelease :one
+SELECT id, application_id, version, platform, architecture, download_url,
+       checksum, checksum_type, file_size, release_notes, release_date,
+       required, minimum_version, metadata, created_at,
+       version_major, version_minor, version_patch, version_pre_release
+FROM releases
+WHERE application_id = $1 AND platform = $2 AND architecture = $3
+  AND version_pre_release IS NULL
+ORDER BY version_major DESC, version_minor DESC, version_patch DESC
+LIMIT 1
+`
+
+type GetLatestStableReleaseParams struct {
+	ApplicationID string `json:"application_id"`
+	Platform      string `json:"platform"`
+	Architecture  string `json:"architecture"`
+}
+
+func (q *Queries) GetLatestStableRelease(ctx context.Context, arg GetLatestStableReleaseParams) (Release, error) {
+	row := q.db.QueryRow(ctx, getLatestStableRelease, arg.ApplicationID, arg.Platform, arg.Architecture)
+	var i Release
+	err := row.Scan(
+		&i.ID,
+		&i.ApplicationID,
+		&i.Version,
+		&i.Platform,
+		&i.Architecture,
+		&i.DownloadUrl,
+		&i.Checksum,
+		&i.ChecksumType,
+		&i.FileSize,
+		&i.ReleaseNotes,
+		&i.ReleaseDate,
+		&i.Required,
+		&i.MinimumVersion,
+		&i.Metadata,
+		&i.CreatedAt,
+		&i.VersionMajor,
+		&i.VersionMinor,
+		&i.VersionPatch,
+		&i.VersionPreRelease,
+	)
+	return i, err
+}
+
 const getRelease = `-- name: GetRelease :one
 SELECT id, application_id, version, platform, architecture, download_url,
        checksum, checksum_type, file_size, release_notes, release_date,
-       required, minimum_version, metadata, created_at
+       required, minimum_version, metadata, created_at,
+       version_major, version_minor, version_patch, version_pre_release
 FROM releases
 WHERE application_id = $1 AND version = $2 AND platform = $3 AND architecture = $4
 `
@@ -72,6 +158,10 @@ func (q *Queries) GetRelease(ctx context.Context, arg GetReleaseParams) (Release
 		&i.MinimumVersion,
 		&i.Metadata,
 		&i.CreatedAt,
+		&i.VersionMajor,
+		&i.VersionMinor,
+		&i.VersionPatch,
+		&i.VersionPreRelease,
 	)
 	return i, err
 }
@@ -79,7 +169,8 @@ func (q *Queries) GetRelease(ctx context.Context, arg GetReleaseParams) (Release
 const getReleaseByID = `-- name: GetReleaseByID :one
 SELECT id, application_id, version, platform, architecture, download_url,
        checksum, checksum_type, file_size, release_notes, release_date,
-       required, minimum_version, metadata, created_at
+       required, minimum_version, metadata, created_at,
+       version_major, version_minor, version_patch, version_pre_release
 FROM releases
 WHERE id = $1
 `
@@ -103,6 +194,10 @@ func (q *Queries) GetReleaseByID(ctx context.Context, id string) (Release, error
 		&i.MinimumVersion,
 		&i.Metadata,
 		&i.CreatedAt,
+		&i.VersionMajor,
+		&i.VersionMinor,
+		&i.VersionPatch,
+		&i.VersionPreRelease,
 	)
 	return i, err
 }
@@ -110,7 +205,8 @@ func (q *Queries) GetReleaseByID(ctx context.Context, id string) (Release, error
 const getReleasesByAppID = `-- name: GetReleasesByAppID :many
 SELECT id, application_id, version, platform, architecture, download_url,
        checksum, checksum_type, file_size, release_notes, release_date,
-       required, minimum_version, metadata, created_at
+       required, minimum_version, metadata, created_at,
+       version_major, version_minor, version_patch, version_pre_release
 FROM releases
 WHERE application_id = $1
 ORDER BY release_date DESC
@@ -141,6 +237,10 @@ func (q *Queries) GetReleasesByAppID(ctx context.Context, applicationID string) 
 			&i.MinimumVersion,
 			&i.Metadata,
 			&i.CreatedAt,
+			&i.VersionMajor,
+			&i.VersionMinor,
+			&i.VersionPatch,
+			&i.VersionPreRelease,
 		); err != nil {
 			return nil, err
 		}
@@ -155,7 +255,8 @@ func (q *Queries) GetReleasesByAppID(ctx context.Context, applicationID string) 
 const getReleasesByPlatformArch = `-- name: GetReleasesByPlatformArch :many
 SELECT id, application_id, version, platform, architecture, download_url,
        checksum, checksum_type, file_size, release_notes, release_date,
-       required, minimum_version, metadata, created_at
+       required, minimum_version, metadata, created_at,
+       version_major, version_minor, version_patch, version_pre_release
 FROM releases
 WHERE application_id = $1 AND platform = $2 AND architecture = $3
 ORDER BY release_date DESC
@@ -192,6 +293,10 @@ func (q *Queries) GetReleasesByPlatformArch(ctx context.Context, arg GetReleases
 			&i.MinimumVersion,
 			&i.Metadata,
 			&i.CreatedAt,
+			&i.VersionMajor,
+			&i.VersionMinor,
+			&i.VersionPatch,
+			&i.VersionPreRelease,
 		); err != nil {
 			return nil, err
 		}
@@ -207,37 +312,46 @@ const upsertRelease = `-- name: UpsertRelease :exec
 INSERT INTO releases (
     id, application_id, version, platform, architecture, download_url,
     checksum, checksum_type, file_size, release_notes, release_date,
-    required, minimum_version, metadata, created_at
+    required, minimum_version, metadata, created_at,
+    version_major, version_minor, version_patch, version_pre_release
 )
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
 ON CONFLICT (application_id, version, platform, architecture) DO UPDATE SET
-    download_url = EXCLUDED.download_url,
-    checksum = EXCLUDED.checksum,
-    checksum_type = EXCLUDED.checksum_type,
-    file_size = EXCLUDED.file_size,
-    release_notes = EXCLUDED.release_notes,
-    release_date = EXCLUDED.release_date,
-    required = EXCLUDED.required,
-    minimum_version = EXCLUDED.minimum_version,
-    metadata = EXCLUDED.metadata
+    download_url        = EXCLUDED.download_url,
+    checksum            = EXCLUDED.checksum,
+    checksum_type       = EXCLUDED.checksum_type,
+    file_size           = EXCLUDED.file_size,
+    release_notes       = EXCLUDED.release_notes,
+    release_date        = EXCLUDED.release_date,
+    required            = EXCLUDED.required,
+    minimum_version     = EXCLUDED.minimum_version,
+    metadata            = EXCLUDED.metadata,
+    version_major       = EXCLUDED.version_major,
+    version_minor       = EXCLUDED.version_minor,
+    version_patch       = EXCLUDED.version_patch,
+    version_pre_release = EXCLUDED.version_pre_release
 `
 
 type UpsertReleaseParams struct {
-	ID             string             `json:"id"`
-	ApplicationID  string             `json:"application_id"`
-	Version        string             `json:"version"`
-	Platform       string             `json:"platform"`
-	Architecture   string             `json:"architecture"`
-	DownloadUrl    string             `json:"download_url"`
-	Checksum       string             `json:"checksum"`
-	ChecksumType   string             `json:"checksum_type"`
-	FileSize       int64              `json:"file_size"`
-	ReleaseNotes   pgtype.Text        `json:"release_notes"`
-	ReleaseDate    pgtype.Timestamptz `json:"release_date"`
-	Required       bool               `json:"required"`
-	MinimumVersion pgtype.Text        `json:"minimum_version"`
-	Metadata       []byte             `json:"metadata"`
-	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+	ID                string             `json:"id"`
+	ApplicationID     string             `json:"application_id"`
+	Version           string             `json:"version"`
+	Platform          string             `json:"platform"`
+	Architecture      string             `json:"architecture"`
+	DownloadUrl       string             `json:"download_url"`
+	Checksum          string             `json:"checksum"`
+	ChecksumType      string             `json:"checksum_type"`
+	FileSize          int64              `json:"file_size"`
+	ReleaseNotes      pgtype.Text        `json:"release_notes"`
+	ReleaseDate       pgtype.Timestamptz `json:"release_date"`
+	Required          bool               `json:"required"`
+	MinimumVersion    pgtype.Text        `json:"minimum_version"`
+	Metadata          []byte             `json:"metadata"`
+	CreatedAt         pgtype.Timestamptz `json:"created_at"`
+	VersionMajor      int64              `json:"version_major"`
+	VersionMinor      int64              `json:"version_minor"`
+	VersionPatch      int64              `json:"version_patch"`
+	VersionPreRelease pgtype.Text        `json:"version_pre_release"`
 }
 
 func (q *Queries) UpsertRelease(ctx context.Context, arg UpsertReleaseParams) error {
@@ -257,6 +371,10 @@ func (q *Queries) UpsertRelease(ctx context.Context, arg UpsertReleaseParams) er
 		arg.MinimumVersion,
 		arg.Metadata,
 		arg.CreatedAt,
+		arg.VersionMajor,
+		arg.VersionMinor,
+		arg.VersionPatch,
+		arg.VersionPreRelease,
 	)
 	return err
 }

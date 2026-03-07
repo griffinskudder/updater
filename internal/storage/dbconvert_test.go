@@ -250,3 +250,64 @@ func TestUnmarshalPermissions(t *testing.T) {
 		})
 	}
 }
+
+func TestParseSemverParts(t *testing.T) {
+	tests := []struct {
+		name      string
+		version   string
+		wantMajor int64
+		wantMinor int64
+		wantPatch int64
+		wantPre   string
+	}{
+		{
+			name:      "stable version",
+			version:   "1.5.0",
+			wantMajor: 1,
+			wantMinor: 5,
+			wantPatch: 0,
+			wantPre:   "",
+		},
+		{
+			name:      "pre-release version",
+			version:   "2.3.4-beta.1",
+			wantMajor: 2,
+			wantMinor: 3,
+			wantPatch: 4,
+			wantPre:   "beta.1",
+		},
+		{
+			name:      "invalid version returns zeros",
+			version:   "not-a-version",
+			wantMajor: 0,
+			wantMinor: 0,
+			wantPatch: 0,
+			wantPre:   "",
+		},
+		{
+			name:      "empty string returns zeros",
+			version:   "",
+			wantMajor: 0,
+			wantMinor: 0,
+			wantPatch: 0,
+			wantPre:   "",
+		},
+		{
+			name:      "alpha pre-release",
+			version:   "0.1.0-alpha",
+			wantMajor: 0,
+			wantMinor: 1,
+			wantPatch: 0,
+			wantPre:   "alpha",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			major, minor, patch, pre := parseSemverParts(tt.version)
+			assert.Equal(t, tt.wantMajor, major, "major")
+			assert.Equal(t, tt.wantMinor, minor, "minor")
+			assert.Equal(t, tt.wantPatch, patch, "patch")
+			assert.Equal(t, tt.wantPre, pre, "preRelease")
+		})
+	}
+}

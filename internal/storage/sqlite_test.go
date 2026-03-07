@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 	"updater/internal/models"
+	sqlcite "updater/internal/storage/sqlc/sqlite"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -33,17 +34,17 @@ func TestSQLiteStorageSchemaCreation(t *testing.T) {
 	ctx := context.Background()
 
 	// Verify tables exist by performing operations
-	apps, err := s.Applications(ctx)
+	apps, _, err := s.ListApplicationsPaged(ctx, 50, 0)
 	if err != nil {
-		t.Fatalf("Applications failed: %v", err)
+		t.Fatalf("ListApplicationsPaged failed: %v", err)
 	}
 	if apps == nil {
 		t.Error("expected non-nil slice")
 	}
 
-	releases, err := s.Releases(ctx, "test-app")
+	releases, _, err := s.ListReleasesPaged(ctx, "test-app", models.ReleaseFilters{}, "release_date", "desc", 50, 0)
 	if err != nil {
-		t.Fatalf("Releases failed: %v", err)
+		t.Fatalf("ListReleasesPaged failed: %v", err)
 	}
 	if releases == nil {
 		t.Error("expected non-nil slice")
@@ -98,9 +99,9 @@ func TestSQLiteStorageApplicationCRUD(t *testing.T) {
 	}
 
 	// List applications
-	apps, err := s.Applications(ctx)
+	apps, _, err := s.ListApplicationsPaged(ctx, 50, 0)
 	if err != nil {
-		t.Fatalf("Applications failed: %v", err)
+		t.Fatalf("ListApplicationsPaged failed: %v", err)
 	}
 	if len(apps) != 1 {
 		t.Errorf("expected 1 application, got %d", len(apps))
@@ -112,9 +113,9 @@ func TestSQLiteStorageApplicationCRUD(t *testing.T) {
 		t.Fatalf("SaveApplication (second) failed: %v", err)
 	}
 
-	apps, err = s.Applications(ctx)
+	apps, _, err = s.ListApplicationsPaged(ctx, 50, 0)
 	if err != nil {
-		t.Fatalf("Applications failed: %v", err)
+		t.Fatalf("ListApplicationsPaged failed: %v", err)
 	}
 	if len(apps) != 2 {
 		t.Errorf("expected 2 applications, got %d", len(apps))
@@ -187,9 +188,9 @@ func TestSQLiteStorageReleaseCRUD(t *testing.T) {
 	}
 
 	// List releases
-	releases, err := s.Releases(ctx, "rel-app")
+	releases, _, err := s.ListReleasesPaged(ctx, "rel-app", models.ReleaseFilters{}, "release_date", "desc", 50, 0)
 	if err != nil {
-		t.Fatalf("Releases failed: %v", err)
+		t.Fatalf("ListReleasesPaged failed: %v", err)
 	}
 	if len(releases) != 1 {
 		t.Errorf("expected 1 release, got %d", len(releases))
@@ -219,9 +220,9 @@ func TestSQLiteStorageReleaseCRUD(t *testing.T) {
 	}
 
 	// Empty releases list
-	releases, err = s.Releases(ctx, "rel-app")
+	releases, _, err = s.ListReleasesPaged(ctx, "rel-app", models.ReleaseFilters{}, "release_date", "desc", 50, 0)
 	if err != nil {
-		t.Fatalf("Releases failed: %v", err)
+		t.Fatalf("ListReleasesPaged failed: %v", err)
 	}
 	if len(releases) != 0 {
 		t.Errorf("expected 0 releases after deletion, got %d", len(releases))
@@ -348,7 +349,7 @@ func TestSQLiteStorageConcurrency(t *testing.T) {
 		go func() {
 			defer wg.Done()
 			for j := 0; j < 10; j++ {
-				_, err := s.Applications(ctx)
+				_, _, err := s.ListApplicationsPaged(ctx, 50, 0)
 				if err != nil {
 					errs <- err
 					return
@@ -518,4 +519,331 @@ func TestSQLiteStorage_DeleteAPIKey_NotFound(t *testing.T) {
 	s := newSQLiteTestStorage(t)
 	err := s.DeleteAPIKey(context.Background(), "missing")
 	assert.ErrorIs(t, err, ErrNotFound)
+}
+
+func TestSQLiteStorage_ListApplicationsPaged(t *testing.T) {
+	s := newSQLiteTestStorage(t)
+	ctx := context.Background()
+
+	// Seed 3 apps
+	appIDs := []string{"sqlite-paged-app-a", "sqlite-paged-app-b", "sqlite-paged-app-c"}
+	for _, id := range appIDs {
+		app := models.NewApplication(id, "Name "+id, []string{"linux"})
+		if err := s.SaveApplication(ctx, app); err != nil {
+			t.Fatalf("SaveApplication %s failed: %v", id, err)
+		}
+	}
+
+	t.Run("first page returns 2 apps total=3", func(t *testing.T) {
+		apps, total, err := s.ListApplicationsPaged(ctx, 2, 0)
+		if err != nil {
+			t.Fatalf("ListApplicationsPaged failed: %v", err)
+		}
+		if total != 3 {
+			t.Errorf("expected total=3, got %d", total)
+		}
+		if len(apps) != 2 {
+			t.Errorf("expected 2 apps, got %d", len(apps))
+		}
+	})
+
+	t.Run("second page offset 2 returns 1 remaining app", func(t *testing.T) {
+		apps, total, err := s.ListApplicationsPaged(ctx, 2, 2)
+		if err != nil {
+			t.Fatalf("ListApplicationsPaged offset=2 failed: %v", err)
+		}
+		if total != 3 {
+			t.Errorf("expected total=3, got %d", total)
+		}
+		if len(apps) != 1 {
+			t.Errorf("expected 1 app on second page, got %d", len(apps))
+		}
+	})
+
+	t.Run("offset beyond total returns empty slice", func(t *testing.T) {
+		apps, _, err := s.ListApplicationsPaged(ctx, 2, 10000)
+		if err != nil {
+			t.Fatalf("ListApplicationsPaged offset beyond total failed: %v", err)
+		}
+		if len(apps) != 0 {
+			t.Errorf("expected empty apps, got %d", len(apps))
+		}
+	})
+}
+
+func TestSQLiteStorage_ListReleasesPaged(t *testing.T) {
+	s := newSQLiteTestStorage(t)
+	ctx := context.Background()
+
+	appID := "sqlite-paged-rel-app"
+	app := models.NewApplication(appID, "SQLite Paged Release App", []string{"linux", "windows"})
+	if err := s.SaveApplication(ctx, app); err != nil {
+		t.Fatalf("SaveApplication failed: %v", err)
+	}
+
+	base := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+	releases := []struct {
+		version  string
+		platform string
+		arch     string
+		offset   time.Duration
+	}{
+		{"1.0.0", "linux", "amd64", 0},
+		{"1.5.0", "linux", "amd64", time.Hour},
+		{"2.0.0", "windows", "amd64", 2 * time.Hour},
+	}
+	for _, r := range releases {
+		rel := models.NewRelease(appID, r.version, r.platform, r.arch, "https://example.com/"+r.version)
+		rel.Checksum = "chk-" + r.version
+		rel.FileSize = 512
+		rel.ReleaseDate = base.Add(r.offset)
+		if err := s.SaveRelease(ctx, rel); err != nil {
+			t.Fatalf("SaveRelease %s failed: %v", r.version, err)
+		}
+	}
+
+	t.Run("filter by linux platform returns 2 releases total=2", func(t *testing.T) {
+		rels, total, err := s.ListReleasesPaged(ctx, appID, models.ReleaseFilters{Platforms: []string{"linux"}}, "release_date", "asc", 10, 0)
+		if err != nil {
+			t.Fatalf("ListReleasesPaged failed: %v", err)
+		}
+		if total != 2 {
+			t.Errorf("expected total=2, got %d", total)
+		}
+		if len(rels) != 2 {
+			t.Errorf("expected 2 releases, got %d", len(rels))
+		}
+		for _, r := range rels {
+			if r.Platform != "linux" {
+				t.Errorf("expected linux platform, got %s", r.Platform)
+			}
+		}
+	})
+
+	t.Run("sort by version desc returns correct order", func(t *testing.T) {
+		rels, total, err := s.ListReleasesPaged(ctx, appID, models.ReleaseFilters{Platforms: []string{"linux"}}, "version", "desc", 10, 0)
+		if err != nil {
+			t.Fatalf("ListReleasesPaged sort by version failed: %v", err)
+		}
+		if total != 2 {
+			t.Errorf("expected total=2, got %d", total)
+		}
+		if len(rels) != 2 {
+			t.Fatalf("expected 2 releases, got %d", len(rels))
+		}
+		if rels[0].Version != "1.5.0" {
+			t.Errorf("expected first release 1.5.0, got %s", rels[0].Version)
+		}
+		if rels[1].Version != "1.0.0" {
+			t.Errorf("expected second release 1.0.0, got %s", rels[1].Version)
+		}
+	})
+
+	t.Run("pagination limit=1 offset=0 returns one release total=3", func(t *testing.T) {
+		rels, total, err := s.ListReleasesPaged(ctx, appID, models.ReleaseFilters{}, "release_date", "asc", 1, 0)
+		if err != nil {
+			t.Fatalf("ListReleasesPaged pagination failed: %v", err)
+		}
+		if total != 3 {
+			t.Errorf("expected total=3, got %d", total)
+		}
+		if len(rels) != 1 {
+			t.Errorf("expected 1 release, got %d", len(rels))
+		}
+	})
+
+	t.Run("offset beyond total returns empty", func(t *testing.T) {
+		rels, _, err := s.ListReleasesPaged(ctx, appID, models.ReleaseFilters{}, "release_date", "asc", 10, 10000)
+		if err != nil {
+			t.Fatalf("ListReleasesPaged offset beyond total failed: %v", err)
+		}
+		if len(rels) != 0 {
+			t.Errorf("expected empty, got %d", len(rels))
+		}
+	})
+}
+
+func TestSQLiteStorage_GetLatestStableRelease(t *testing.T) {
+	s := newSQLiteTestStorage(t)
+	ctx := context.Background()
+
+	appID := "sqlite-stable-rel-app"
+	app := models.NewApplication(appID, "SQLite Stable Release App", []string{"linux"})
+	if err := s.SaveApplication(ctx, app); err != nil {
+		t.Fatalf("SaveApplication failed: %v", err)
+	}
+
+	base := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+	seeds := []struct {
+		version  string
+		platform string
+		arch     string
+	}{
+		{"1.0.0", "linux", "amd64"},
+		{"2.0.0-beta", "linux", "amd64"},
+		{"1.5.0", "linux", "amd64"},
+	}
+	for i, r := range seeds {
+		rel := models.NewRelease(appID, r.version, r.platform, r.arch, "https://example.com/"+r.version)
+		rel.Checksum = "chk-" + r.version
+		rel.FileSize = 512
+		rel.ReleaseDate = base.Add(time.Duration(i) * time.Hour)
+		if err := s.SaveRelease(ctx, rel); err != nil {
+			t.Fatalf("SaveRelease %s failed: %v", r.version, err)
+		}
+	}
+
+	t.Run("returns highest stable version ignoring pre-releases", func(t *testing.T) {
+		release, err := s.GetLatestStableRelease(ctx, appID, "linux", "amd64")
+		if err != nil {
+			t.Fatalf("GetLatestStableRelease failed: %v", err)
+		}
+		if release.Version != "1.5.0" {
+			t.Errorf("expected 1.5.0, got %s", release.Version)
+		}
+	})
+
+	t.Run("only pre-releases returns ErrNotFound", func(t *testing.T) {
+		appID2 := "sqlite-stable-pre-only-app"
+		app2 := models.NewApplication(appID2, "SQLite Stable Pre-only App", []string{"linux"})
+		if err := s.SaveApplication(ctx, app2); err != nil {
+			t.Fatalf("SaveApplication failed: %v", err)
+		}
+		rel := models.NewRelease(appID2, "1.0.0-beta", "linux", "amd64", "https://example.com/1.0.0-beta")
+		rel.Checksum = "chk-beta"
+		rel.FileSize = 512
+		if err := s.SaveRelease(ctx, rel); err != nil {
+			t.Fatalf("SaveRelease failed: %v", err)
+		}
+		_, err := s.GetLatestStableRelease(ctx, appID2, "linux", "amd64")
+		if err == nil {
+			t.Error("expected error for pre-release only app, got nil")
+		}
+	})
+
+	t.Run("no releases returns ErrNotFound", func(t *testing.T) {
+		_, err := s.GetLatestStableRelease(ctx, appID, "windows", "amd64")
+		if err == nil {
+			t.Error("expected error for platform with no releases, got nil")
+		}
+	})
+}
+
+func TestSQLiteStorage_GetApplicationStats(t *testing.T) {
+	s := newSQLiteTestStorage(t)
+	ctx := context.Background()
+
+	appID := "sqlite-stats-app"
+	app := models.NewApplication(appID, "SQLite Stats App", []string{"linux", "windows"})
+	if err := s.SaveApplication(ctx, app); err != nil {
+		t.Fatalf("SaveApplication failed: %v", err)
+	}
+
+	base := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	// Seed: 1 required linux release, 1 non-required linux release, 1 non-required windows pre-release
+	seeds := []struct {
+		version  string
+		platform string
+		arch     string
+		required bool
+		offset   time.Duration
+	}{
+		{"1.0.0", "linux", "amd64", true, 0},
+		{"1.5.0", "linux", "amd64", false, time.Hour},
+		{"2.0.0-beta", "windows", "amd64", false, 2 * time.Hour},
+	}
+	for _, r := range seeds {
+		rel := models.NewRelease(appID, r.version, r.platform, r.arch, "https://example.com/"+r.version)
+		rel.Checksum = "chk-" + r.version
+		rel.FileSize = 512
+		rel.Required = r.required
+		rel.ReleaseDate = base.Add(r.offset)
+		if err := s.SaveRelease(ctx, rel); err != nil {
+			t.Fatalf("SaveRelease %s failed: %v", r.version, err)
+		}
+	}
+
+	stats, err := s.GetApplicationStats(ctx, appID)
+	if err != nil {
+		t.Fatalf("GetApplicationStats failed: %v", err)
+	}
+	if stats.TotalReleases != 3 {
+		t.Errorf("expected TotalReleases=3, got %d", stats.TotalReleases)
+	}
+	if stats.RequiredReleases != 1 {
+		t.Errorf("expected RequiredReleases=1, got %d", stats.RequiredReleases)
+	}
+	if stats.PlatformCount != 2 {
+		t.Errorf("expected PlatformCount=2, got %d", stats.PlatformCount)
+	}
+	if stats.LatestVersion != "2.0.0-beta" {
+		t.Errorf("expected LatestVersion=2.0.0-beta, got %q", stats.LatestVersion)
+	}
+	if stats.LatestReleaseDate == nil {
+		t.Error("expected LatestReleaseDate to be non-nil")
+	}
+}
+
+func TestSQLiteStorageSaveRelease_VersionSortColumns(t *testing.T) {
+	s := newSQLiteTestStorage(t)
+	ss := s.(*SQLiteStorage)
+	ctx := context.Background()
+
+	app := models.NewApplication("ver-sort-app", "Version Sort App", []string{"linux"})
+	require.NoError(t, s.SaveApplication(ctx, app))
+
+	tests := []struct {
+		name         string
+		version      string
+		wantMajor    int64
+		wantMinor    int64
+		wantPatch    int64
+		wantPreValid bool
+		wantPreStr   string
+	}{
+		{
+			name:         "pre-release version",
+			version:      "2.3.4-beta.1",
+			wantMajor:    2,
+			wantMinor:    3,
+			wantPatch:    4,
+			wantPreValid: true,
+			wantPreStr:   "beta.1",
+		},
+		{
+			name:         "stable version",
+			version:      "1.5.0",
+			wantMajor:    1,
+			wantMinor:    5,
+			wantPatch:    0,
+			wantPreValid: false,
+			wantPreStr:   "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			release := models.NewRelease("ver-sort-app", tt.version, "linux", "amd64", "https://example.com/"+tt.version)
+			release.Checksum = "chk-" + tt.version
+			release.FileSize = 512
+			require.NoError(t, s.SaveRelease(ctx, release))
+
+			row, err := ss.queries.GetRelease(ctx, sqlcite.GetReleaseParams{
+				ApplicationID: "ver-sort-app",
+				Version:       tt.version,
+				Platform:      "linux",
+				Architecture:  "amd64",
+			})
+			require.NoError(t, err)
+
+			assert.Equal(t, tt.wantMajor, row.VersionMajor, "VersionMajor")
+			assert.Equal(t, tt.wantMinor, row.VersionMinor, "VersionMinor")
+			assert.Equal(t, tt.wantPatch, row.VersionPatch, "VersionPatch")
+			assert.Equal(t, tt.wantPreValid, row.VersionPreRelease.Valid, "VersionPreRelease.Valid")
+			if tt.wantPreValid {
+				assert.Equal(t, tt.wantPreStr, row.VersionPreRelease.String, "VersionPreRelease.String")
+			}
+		})
+	}
 }

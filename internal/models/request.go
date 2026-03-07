@@ -112,6 +112,17 @@ type DeleteReleaseRequest struct {
 	ReleaseID     string `json:"release_id" validate:"required"`
 }
 
+// ReleaseFilters specifies optional filters for paginated release queries.
+// An empty string or nil value means no filter is applied for that field.
+// Platforms is an OR filter: a release matches if its platform equals any entry.
+// If both a single platform and Platforms are provided, Platforms takes precedence.
+type ReleaseFilters struct {
+	Platforms    []string
+	Architecture string
+	Version      string
+	Required     *bool
+}
+
 func (r *UpdateCheckRequest) Validate() error {
 	if err := validateRequiredFields(r.ApplicationID, r.Platform, r.Architecture); err != nil {
 		return err
