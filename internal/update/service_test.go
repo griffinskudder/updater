@@ -1208,6 +1208,134 @@ func TestService_DeleteRelease(t *testing.T) {
 	}
 }
 
+func TestListReleases_CursorEmittedWhenPageFull(t *testing.T) {
+	// Exactly limit items: cursor must be emitted since we can't know there's no next page.
+	store, err := storage.NewMemoryStorage()
+	require.NoError(t, err)
+	defer store.Close()
+	ctx := context.Background()
+
+	app := &models.Application{ID: "app1", Name: "App1", Platforms: []string{"windows"}, Config: models.ApplicationConfig{}}
+	require.NoError(t, store.SaveApplication(ctx, app))
+
+	now := time.Now()
+	for i := range 3 {
+		r := &models.Release{
+			ID: fmt.Sprintf("r%d", i), ApplicationID: "app1",
+			Version: fmt.Sprintf("1.0.%d", i), Platform: "windows", Architecture: "amd64",
+			DownloadURL: "http://example.com", Checksum: "abc", ChecksumType: "sha256",
+			ReleaseDate: now.Add(time.Duration(i) * time.Second),
+			CreatedAt:   now.Add(time.Duration(i) * time.Second),
+		}
+		require.NoError(t, store.SaveRelease(ctx, r))
+	}
+
+	svc := NewService(store)
+	req := &models.ListReleasesRequest{
+		ApplicationID: "app1",
+		Limit:         3,
+		SortBy:        "release_date",
+		SortOrder:     "desc",
+	}
+	resp, err := svc.ListReleases(ctx, req)
+	require.NoError(t, err)
+	assert.Len(t, resp.Releases, 3)
+	assert.NotEmpty(t, resp.NextCursor, "cursor must be emitted when page is full (len == limit)")
+}
+
+func TestListReleases_NoCursorWhenPagePartial(t *testing.T) {
+	store, err := storage.NewMemoryStorage()
+	require.NoError(t, err)
+	defer store.Close()
+	ctx := context.Background()
+
+	app := &models.Application{ID: "app1", Name: "App1", Platforms: []string{"windows"}, Config: models.ApplicationConfig{}}
+	require.NoError(t, store.SaveApplication(ctx, app))
+
+	now := time.Now()
+	for i := range 2 {
+		r := &models.Release{
+			ID: fmt.Sprintf("r%d", i), ApplicationID: "app1",
+			Version: fmt.Sprintf("1.0.%d", i), Platform: "windows", Architecture: "amd64",
+			DownloadURL: "http://example.com", Checksum: "abc", ChecksumType: "sha256",
+			ReleaseDate: now.Add(time.Duration(i) * time.Second),
+			CreatedAt:   now.Add(time.Duration(i) * time.Second),
+		}
+		require.NoError(t, store.SaveRelease(ctx, r))
+	}
+
+	svc := NewService(store)
+	req := &models.ListReleasesRequest{
+		ApplicationID: "app1",
+		Limit:         10,
+		SortBy:        "release_date",
+		SortOrder:     "desc",
+	}
+	resp, err := svc.ListReleases(ctx, req)
+	require.NoError(t, err)
+	assert.Len(t, resp.Releases, 2)
+	assert.Empty(t, resp.NextCursor, "cursor must not be emitted when page is partial (len < limit)")
+}
+
+func TestListReleases_NonSemverVersionNonVersionSort(t *testing.T) {
+	// Non-semver version must not block cursor emission when sort is not "version".
+	store, err := storage.NewMemoryStorage()
+	require.NoError(t, err)
+	defer store.Close()
+	ctx := context.Background()
+
+	app := &models.Application{ID: "app1", Name: "App1", Platforms: []string{"windows"}, Config: models.ApplicationConfig{}}
+	require.NoError(t, store.SaveApplication(ctx, app))
+
+	now := time.Now()
+	for i := range 3 {
+		r := &models.Release{
+			ID: fmt.Sprintf("r%d", i), ApplicationID: "app1",
+			Version: fmt.Sprintf("not-semver-%d", i), Platform: "windows", Architecture: "amd64",
+			DownloadURL: "http://example.com", Checksum: "abc", ChecksumType: "sha256",
+			ReleaseDate: now.Add(time.Duration(i) * time.Second),
+			CreatedAt:   now.Add(time.Duration(i) * time.Second),
+		}
+		require.NoError(t, store.SaveRelease(ctx, r))
+	}
+
+	svc := NewService(store)
+	req := &models.ListReleasesRequest{
+		ApplicationID: "app1",
+		Limit:         3,
+		SortBy:        "release_date",
+		SortOrder:     "desc",
+	}
+	resp, err := svc.ListReleases(ctx, req)
+	require.NoError(t, err)
+	assert.NotEmpty(t, resp.NextCursor, "cursor must be emitted for non-semver versions when sort is not 'version'")
+}
+
+func TestListApplications_CursorEmittedWhenPageFull(t *testing.T) {
+	store, err := storage.NewMemoryStorage()
+	require.NoError(t, err)
+	defer store.Close()
+	ctx := context.Background()
+
+	now := time.Now()
+	for i := range 3 {
+		app := &models.Application{
+			ID: fmt.Sprintf("app%d", i), Name: fmt.Sprintf("App%d", i),
+			Platforms: []string{"windows"}, Config: models.ApplicationConfig{},
+			CreatedAt: now.Add(time.Duration(i) * time.Second).Format(time.RFC3339),
+			UpdatedAt: now.Format(time.RFC3339),
+		}
+		require.NoError(t, store.SaveApplication(ctx, app))
+	}
+
+	svc := NewService(store)
+	req := &models.ListApplicationsRequest{Limit: 3}
+	resp, err := svc.ListApplications(ctx, req)
+	require.NoError(t, err)
+	assert.Len(t, resp.Applications, 3)
+	assert.NotEmpty(t, resp.NextCursor, "cursor must be emitted when page is full (len == limit)")
+}
+
 // Helper functions
 
 func createTestReleaseForUpdate(appID, version, platform, arch string) *models.Release {

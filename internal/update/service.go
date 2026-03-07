@@ -216,25 +216,39 @@ func (s *Service) ListReleases(ctx context.Context, req *models.ListReleasesRequ
 	}
 
 	var nextCursor string
-	if len(releases) > 0 && len(releases) < totalCount {
+	if len(releases) > 0 && len(releases) == req.Limit {
 		last := releases[len(releases)-1]
-		sv, err := semver.NewVersion(last.Version)
-		if err == nil {
-			c := &models.ReleaseCursor{
-				SortBy:            req.SortBy,
-				SortOrder:         req.SortOrder,
-				ID:                last.ID,
-				ReleaseDate:       last.ReleaseDate,
-				VersionMajor:      int64(sv.Major()), //#nosec G115 -- components validated at API layer, within int64 range
-				VersionMinor:      int64(sv.Minor()), //#nosec G115 -- components validated at API layer, within int64 range
-				VersionPatch:      int64(sv.Patch()), //#nosec G115 -- components validated at API layer, within int64 range
-				VersionIsStable:   sv.Prerelease() == "",
-				VersionPreRelease: sv.Prerelease(),
-				Platform:          last.Platform,
-				Architecture:      last.Architecture,
-				CreatedAt:         last.CreatedAt,
+		c := &models.ReleaseCursor{
+			SortBy:       req.SortBy,
+			SortOrder:    req.SortOrder,
+			ID:           last.ID,
+			ReleaseDate:  last.ReleaseDate,
+			Platform:     last.Platform,
+			Architecture: last.Architecture,
+			CreatedAt:    last.CreatedAt,
+		}
+		generateCursor := true
+		if req.SortBy == "version" {
+			sv, err := semver.NewVersion(last.Version)
+			if err != nil {
+				// Cannot generate a keyset cursor for version sort when the last item has a
+				// non-semver version string. Pagination appears complete. This should not
+				// occur in normal operation since the API validates versions on write.
+				generateCursor = false
+			} else {
+				c.VersionMajor = int64(sv.Major())      //#nosec G115 -- components validated at API layer, within int64 range
+				c.VersionMinor = int64(sv.Minor())      //#nosec G115 -- components validated at API layer, within int64 range
+				c.VersionPatch = int64(sv.Patch())      //#nosec G115 -- components validated at API layer, within int64 range
+				c.VersionIsStable = sv.Prerelease() == ""
+				c.VersionPreRelease = sv.Prerelease()
 			}
-			nextCursor, _ = c.Encode()
+		}
+		if generateCursor {
+			encoded, err := c.Encode()
+			if err != nil {
+				return nil, NewInternalError("failed to encode pagination cursor", err)
+			}
+			nextCursor = encoded
 		}
 	}
 
@@ -388,14 +402,18 @@ func (s *Service) ListApplications(ctx context.Context, req *models.ListApplicat
 	}
 
 	var nextCursor string
-	if len(apps) > 0 && len(apps) < totalCount {
+	if len(apps) > 0 && len(apps) == req.Limit {
 		last := apps[len(apps)-1]
 		createdAt, _ := time.Parse(time.RFC3339, last.CreatedAt)
 		c := &models.ApplicationCursor{
 			CreatedAt: createdAt,
 			ID:        last.ID,
 		}
-		nextCursor, _ = c.Encode()
+		encoded, err := c.Encode()
+		if err != nil {
+			return nil, NewInternalError("failed to encode pagination cursor", err)
+		}
+		nextCursor = encoded
 	}
 
 	return &models.ListApplicationsResponse{
