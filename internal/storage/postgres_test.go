@@ -669,9 +669,9 @@ func TestPostgresStorageSaveRelease_VersionSortColumns(t *testing.T) {
 	tests := []struct {
 		name         string
 		version      string
-		wantMajor    int32
-		wantMinor    int32
-		wantPatch    int32
+		wantMajor    int64
+		wantMinor    int64
+		wantPatch    int64
 		wantPreValid bool
 		wantPreStr   string
 	}{

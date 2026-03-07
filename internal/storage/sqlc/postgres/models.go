@@ -45,8 +45,8 @@ type Release struct {
 	MinimumVersion    pgtype.Text        `json:"minimum_version"`
 	Metadata          []byte             `json:"metadata"`
 	CreatedAt         pgtype.Timestamptz `json:"created_at"`
-	VersionMajor      int32              `json:"version_major"`
-	VersionMinor      int32              `json:"version_minor"`
-	VersionPatch      int32              `json:"version_patch"`
+	VersionMajor      int64              `json:"version_major"`
+	VersionMinor      int64              `json:"version_minor"`
+	VersionPatch      int64              `json:"version_patch"`
 	VersionPreRelease pgtype.Text        `json:"version_pre_release"`
 }

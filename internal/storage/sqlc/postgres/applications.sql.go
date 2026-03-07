@@ -81,12 +81,12 @@ SELECT id, name, description, platforms, config, created_at, updated_at,
        COUNT(*) OVER() AS total_count
 FROM applications
 ORDER BY name
-LIMIT $1 OFFSET $2
+LIMIT $1::bigint OFFSET $2::bigint
 `
 
 type GetApplicationsPagedParams struct {
-	Limit  int32 `json:"limit"`
-	Offset int32 `json:"offset"`
+	Column1 int64 `json:"column_1"`
+	Column2 int64 `json:"column_2"`
 }
 
 type GetApplicationsPagedRow struct {
@@ -101,7 +101,7 @@ type GetApplicationsPagedRow struct {
 }
 
 func (q *Queries) GetApplicationsPaged(ctx context.Context, arg GetApplicationsPagedParams) ([]GetApplicationsPagedRow, error) {
-	rows, err := q.db.Query(ctx, getApplicationsPaged, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, getApplicationsPaged, arg.Column1, arg.Column2)
 	if err != nil {
 		return nil, err
 	}

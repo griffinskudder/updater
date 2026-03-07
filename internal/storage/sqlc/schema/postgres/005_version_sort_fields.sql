@@ -1,8 +1,8 @@
 -- Add version sort columns for SQL-level semver ordering
 
-ALTER TABLE releases ADD COLUMN version_major      INTEGER NOT NULL DEFAULT 0;
-ALTER TABLE releases ADD COLUMN version_minor      INTEGER NOT NULL DEFAULT 0;
-ALTER TABLE releases ADD COLUMN version_patch      INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE releases ADD COLUMN version_major      BIGINT NOT NULL DEFAULT 0;
+ALTER TABLE releases ADD COLUMN version_minor      BIGINT NOT NULL DEFAULT 0;
+ALTER TABLE releases ADD COLUMN version_patch      BIGINT NOT NULL DEFAULT 0;
 ALTER TABLE releases ADD COLUMN version_pre_release TEXT;
 
 -- Backfill existing rows using postgres regex

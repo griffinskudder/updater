@@ -3,6 +3,7 @@ package storage
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"updater/internal/models"
 
 	"github.com/Masterminds/semver/v3"
@@ -115,10 +116,18 @@ func unmarshalPermissions(data string) ([]string, error) {
 
 // parseSemverParts extracts major, minor, patch, and pre-release from a semver string.
 // Returns zeros and empty string if the version cannot be parsed.
+// Version components are capped at math.MaxInt64 to safely convert from uint64.
+// Real-world semver numbers are always small enough that this cap is never reached.
 func parseSemverParts(version string) (major, minor, patch int64, preRelease string) {
 	v, err := semver.NewVersion(version)
 	if err != nil {
 		return 0, 0, 0, ""
 	}
-	return int64(v.Major()), int64(v.Minor()), int64(v.Patch()), v.Prerelease()
+	toInt64 := func(u uint64) int64 {
+		if u > math.MaxInt64 {
+			return math.MaxInt64
+		}
+		return int64(u) //#nosec G115 -- value is bounded to math.MaxInt64 above
+	}
+	return toInt64(v.Major()), toInt64(v.Minor()), toInt64(v.Patch()), v.Prerelease()
 }

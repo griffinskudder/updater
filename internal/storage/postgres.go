@@ -329,9 +329,9 @@ func modelToPgUpsertRelease(r *models.Release) (sqlcpg.UpsertReleaseParams, erro
 		MinimumVersion:    stringToPgText(r.MinimumVersion),
 		Metadata:          metadata,
 		CreatedAt:         timeToPgTimestamptz(r.CreatedAt),
-		VersionMajor:      int32(major),
-		VersionMinor:      int32(minor),
-		VersionPatch:      int32(patch),
+		VersionMajor:      major,
+		VersionMinor:      minor,
+		VersionPatch:      patch,
 		VersionPreRelease: pgtype.Text{String: pre, Valid: pre != ""},
 	}, nil
 }
@@ -475,8 +475,8 @@ func (ps *PostgresStorage) DeleteAPIKey(ctx context.Context, id string) error {
 // ListApplicationsPaged returns a page of applications sorted by name and the total count.
 func (ps *PostgresStorage) ListApplicationsPaged(ctx context.Context, limit, offset int) ([]*models.Application, int, error) {
 	rows, err := ps.queries.GetApplicationsPaged(ctx, sqlcpg.GetApplicationsPagedParams{
-		Limit:  int32(limit),
-		Offset: int32(offset),
+		Column1: int64(limit),
+		Column2: int64(offset),
 	})
 	if err != nil {
 		return nil, 0, fmt.Errorf("failed to list applications: %w", err)
@@ -586,7 +586,7 @@ func (ps *PostgresStorage) ListReleasesPaged(ctx context.Context, appID string, 
 			minimumVersion                                       pgtype.Text
 			metadata                                             []byte
 			createdAt                                            pgtype.Timestamptz
-			versionMajor, versionMinor, versionPatch             int32
+			versionMajor, versionMinor, versionPatch             int64
 			versionPreRelease                                    pgtype.Text
 			totalCount                                           int64
 		)
