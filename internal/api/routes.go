@@ -177,7 +177,7 @@ const maxRequestBodySize = 1 << 20
 // denial-of-service via unbounded reads (see #48).
 func maxBytesMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Body != nil && r.ContentLength != 0 {
+		if r.Body != nil {
 			r.Body = http.MaxBytesReader(w, r.Body, maxRequestBodySize)
 		}
 		next.ServeHTTP(w, r)
