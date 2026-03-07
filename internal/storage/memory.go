@@ -348,11 +348,16 @@ func (m *MemoryStorage) ListApplicationsPaged(ctx context.Context, limit int, cu
 	// Apply cursor-based offset: find the cursor item and start after it.
 	start := 0
 	if cursor != nil {
+		found := false
 		for idx, app := range apps {
 			if app.ID == cursor.ID {
 				start = idx + 1
+				found = true
 				break
 			}
+		}
+		if !found {
+			return []*models.Application{}, total, nil
 		}
 	}
 
@@ -442,11 +447,16 @@ func (m *MemoryStorage) ListReleasesPaged(ctx context.Context, appID string, fil
 	// Apply cursor-based offset: find the cursor item by ID and start after it.
 	start := 0
 	if cursor != nil {
+		found := false
 		for idx, r := range filtered {
 			if r.ID == cursor.ID {
 				start = idx + 1
+				found = true
 				break
 			}
+		}
+		if !found {
+			return []*models.Release{}, total, nil
 		}
 	}
 

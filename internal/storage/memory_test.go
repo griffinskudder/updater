@@ -709,3 +709,76 @@ func TestMemoryStorage_GetApplicationStats(t *testing.T) {
 		})
 	}
 }
+
+func TestMemoryStorage_ListApplicationsPaged_CursorNotFound(t *testing.T) {
+	store, err := NewMemoryStorage()
+	require.NoError(t, err)
+	defer store.Close()
+	ctx := context.Background()
+
+	now := time.Now()
+	for i := range 3 {
+		app := &models.Application{
+			ID:        fmt.Sprintf("app-%d", i),
+			Name:      fmt.Sprintf("App %d", i),
+			Platforms: []string{"windows"},
+			Config:    models.ApplicationConfig{},
+			CreatedAt: now.Add(time.Duration(i) * time.Second).Format(time.RFC3339),
+			UpdatedAt: now.Format(time.RFC3339),
+		}
+		require.NoError(t, store.SaveApplication(ctx, app))
+	}
+
+	// Cursor pointing to a non-existent item.
+	cursor := &models.ApplicationCursor{
+		CreatedAt: now.Add(-1 * time.Hour),
+		ID:        "does-not-exist",
+	}
+	results, _, err := store.ListApplicationsPaged(ctx, 10, cursor)
+	require.NoError(t, err)
+	assert.Empty(t, results, "cursor pointing to a deleted item must return empty slice, not restart pagination")
+}
+
+func TestMemoryStorage_ListReleasesPaged_CursorNotFound(t *testing.T) {
+	store, err := NewMemoryStorage()
+	require.NoError(t, err)
+	defer store.Close()
+	ctx := context.Background()
+
+	app := &models.Application{
+		ID:        "app1",
+		Name:      "App1",
+		Platforms: []string{"windows"},
+		Config:    models.ApplicationConfig{},
+		CreatedAt: time.Now().Format(time.RFC3339),
+		UpdatedAt: time.Now().Format(time.RFC3339),
+	}
+	require.NoError(t, store.SaveApplication(ctx, app))
+
+	now := time.Now()
+	for i := range 3 {
+		r := &models.Release{
+			ID:            fmt.Sprintf("r%d", i),
+			ApplicationID: "app1",
+			Version:       fmt.Sprintf("1.0.%d", i),
+			Platform:      "windows",
+			Architecture:  "amd64",
+			DownloadURL:   "http://example.com",
+			Checksum:      "abc",
+			ChecksumType:  "sha256",
+			ReleaseDate:   now.Add(time.Duration(i) * time.Second),
+			CreatedAt:     now.Add(time.Duration(i) * time.Second),
+		}
+		require.NoError(t, store.SaveRelease(ctx, r))
+	}
+
+	cursor := &models.ReleaseCursor{
+		SortBy:      "release_date",
+		SortOrder:   "desc",
+		ID:          "does-not-exist",
+		ReleaseDate: now,
+	}
+	results, _, err := store.ListReleasesPaged(ctx, "app1", models.ReleaseFilters{}, "release_date", "desc", 10, cursor)
+	require.NoError(t, err)
+	assert.Empty(t, results, "cursor pointing to a deleted item must return empty slice, not restart pagination")
+}
