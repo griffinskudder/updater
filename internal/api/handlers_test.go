@@ -11,6 +11,7 @@ import (
 	"time"
 	"updater/internal/models"
 	"updater/internal/storage"
+	"updater/internal/update"
 
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
@@ -509,8 +510,8 @@ func TestHandlers_RegisterRelease_InvalidRequest(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	recorder := httptest.NewRecorder()
 
-	// Mock service should return validation error
-	mockService.On("RegisterRelease", mock.Anything, mock.AnythingOfType("*models.RegisterReleaseRequest")).Return((*models.RegisterReleaseResponse)(nil), fmt.Errorf("invalid request: missing required fields"))
+	// Mock service should return validation error as a proper ServiceError
+	mockService.On("RegisterRelease", mock.Anything, mock.AnythingOfType("*models.RegisterReleaseRequest")).Return((*models.RegisterReleaseResponse)(nil), update.NewInvalidRequestError("invalid request: missing required fields", nil))
 
 	handlers.RegisterRelease(recorder, req)
 
@@ -587,7 +588,7 @@ func TestHandlers_HealthCheck_StorageDegraded(t *testing.T) {
 	components := response["components"].(map[string]interface{})
 	storageComp := components["storage"].(map[string]interface{})
 	assert.Equal(t, "unhealthy", storageComp["status"])
-	assert.Contains(t, storageComp["message"], "connection refused")
+	assert.Equal(t, "Storage ping failed", storageComp["message"])
 }
 
 func TestHandlers_VersionInfo(t *testing.T) {

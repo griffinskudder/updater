@@ -90,9 +90,10 @@ All errors follow a consistent JSON structure:
 | `NOT_FOUND` | 404 | Requested resource does not exist |
 | `APPLICATION_NOT_FOUND` | 404 | Application does not exist |
 | `BAD_REQUEST` | 400 | Malformed request format |
+| `BAD_REQUEST` | 413 | Request body exceeds the 1 MiB size limit |
 | `INVALID_REQUEST` | 400 | Invalid request data or method |
 | `VALIDATION_ERROR` | 422 | Input validation failed |
-| `INTERNAL_ERROR` | 500 | Unexpected server-side error |
+| `INTERNAL_ERROR` | 500 | Unexpected server-side error (generic message only; details logged server-side) |
 | `UNAUTHORIZED` | 401 | Authentication required or invalid credentials |
 | `FORBIDDEN` | 403 | Insufficient permissions |
 | `CONFLICT` | 409 | Resource already exists or state conflict |

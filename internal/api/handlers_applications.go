@@ -34,6 +34,10 @@ func (h *Handlers) CreateApplication(w http.ResponseWriter, r *http.Request) {
 	// Parse request body
 	var req models.CreateApplicationRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		if isMaxBytesError(err) {
+			h.writeErrorResponse(w, http.StatusRequestEntityTooLarge, models.ErrorCodeBadRequest, "Request body too large")
+			return
+		}
 		slog.Warn("Invalid JSON in application creation",
 			"event", "security_audit",
 			"api_key", getAPIKeyName(apiKey))
@@ -137,6 +141,10 @@ func (h *Handlers) UpdateApplication(w http.ResponseWriter, r *http.Request) {
 	// Parse request body
 	var req models.UpdateApplicationRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		if isMaxBytesError(err) {
+			h.writeErrorResponse(w, http.StatusRequestEntityTooLarge, models.ErrorCodeBadRequest, "Request body too large")
+			return
+		}
 		slog.Warn("Invalid JSON in application update",
 			"event", "security_audit",
 			"app_id", appID,

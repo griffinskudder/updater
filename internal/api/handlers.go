@@ -77,6 +77,10 @@ func (h *Handlers) CheckForUpdates(w http.ResponseWriter, r *http.Request) {
 		// Handle POST request with JSON body
 		var requestBody models.UpdateCheckRequest
 		if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
+			if isMaxBytesError(err) {
+				h.writeErrorResponse(w, http.StatusRequestEntityTooLarge, models.ErrorCodeBadRequest, "Request body too large")
+				return
+			}
 			h.writeErrorResponse(w, http.StatusBadRequest, models.ErrorCodeInvalidRequest, "Invalid JSON body")
 			return
 		}
@@ -226,6 +230,10 @@ func (h *Handlers) RegisterRelease(w http.ResponseWriter, r *http.Request) {
 	// Parse request body
 	var req models.RegisterReleaseRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		if isMaxBytesError(err) {
+			h.writeErrorResponse(w, http.StatusRequestEntityTooLarge, models.ErrorCodeBadRequest, "Request body too large")
+			return
+		}
 		slog.Warn("Invalid JSON in release registration",
 			"event", "security_audit",
 			"app_id", appID,
@@ -277,7 +285,7 @@ func (h *Handlers) HealthCheck(w http.ResponseWriter, r *http.Request) {
 		defer cancel()
 		if err := h.storage.Ping(pingCtx); err != nil {
 			storageStatus = models.StatusUnhealthy
-			storageMessage = "Storage ping failed: " + err.Error()
+			storageMessage = "Storage ping failed"
 			response.Status = models.StatusDegraded
 			slog.Warn("Storage health check failed", "error", err)
 		}
@@ -340,20 +348,24 @@ func (h *Handlers) writeErrorResponse(w http.ResponseWriter, statusCode int, err
 	h.writeJSONResponse(w, statusCode, errorResp)
 }
 
-// writeServiceErrorResponse maps service errors to appropriate HTTP responses
+// writeServiceErrorResponse maps service errors to appropriate HTTP responses.
+// Non-ServiceError errors are logged server-side and a generic message is
+// returned to the client to prevent internal detail leakage (see #49).
 func (h *Handlers) writeServiceErrorResponse(w http.ResponseWriter, err error) {
 	var serviceError *update.ServiceError
 	if errors.As(err, &serviceError) {
 		h.writeErrorResponse(w, serviceError.StatusCode, serviceError.Code, serviceError.Message)
 	} else {
-		// Check if it's a validation error (for backward compatibility with tests)
-		if strings.Contains(err.Error(), "invalid request") || strings.Contains(err.Error(), "missing required fields") {
-			h.writeErrorResponse(w, http.StatusBadRequest, models.ErrorCodeInvalidRequest, err.Error())
-		} else {
-			// Fallback for unexpected errors
-			h.writeErrorResponse(w, http.StatusInternalServerError, models.ErrorCodeInternalError, err.Error())
-		}
+		slog.Error("Unexpected error in request handler", "error", err)
+		h.writeErrorResponse(w, http.StatusInternalServerError, models.ErrorCodeInternalError, "Internal server error")
 	}
+}
+
+// isMaxBytesError reports whether err was caused by the request body exceeding
+// the http.MaxBytesReader limit.
+func isMaxBytesError(err error) bool {
+	var maxBytesErr *http.MaxBytesError
+	return errors.As(err, &maxBytesErr)
 }
 
 // splitAndTrim splits a string by delimiter and trims whitespace

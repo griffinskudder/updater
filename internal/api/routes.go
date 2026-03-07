@@ -92,6 +92,7 @@ func SetupRoutes(handlers *Handlers, config *models.Config, opts ...RouteOption)
 
 	router.Use(loggingMiddleware)
 	router.Use(recoveryMiddleware)
+	router.Use(maxBytesMiddleware)
 
 	router.MethodNotAllowedHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -167,6 +168,20 @@ func methodNotAllowedHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusMethodNotAllowed)
 	errorResp := models.NewErrorResponse("Method not allowed", models.ErrorCodeInvalidRequest)
 	json.NewEncoder(w).Encode(errorResp)
+}
+
+// maxRequestBodySize is the maximum allowed request body size (1 MiB).
+const maxRequestBodySize = 1 << 20
+
+// maxBytesMiddleware limits the size of incoming request bodies to prevent
+// denial-of-service via unbounded reads (see #48).
+func maxBytesMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Body != nil {
+			r.Body = http.MaxBytesReader(w, r.Body, maxRequestBodySize)
+		}
+		next.ServeHTTP(w, r)
+	})
 }
 
 // loggingMiddleware logs HTTP requests

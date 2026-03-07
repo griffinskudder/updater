@@ -44,6 +44,9 @@ graph TB
    - Input validation and sanitization
    - SQL injection prevention
    - Path traversal protection
+   - Request body size limiting (1 MiB maximum)
+   - Internal error message sanitization (generic messages returned to clients)
+   - Health endpoint information disclosure prevention
 
 5. **Operational Security**
    - Comprehensive audit logging
@@ -186,9 +189,17 @@ See [Reverse Proxy](reverse-proxy.md) for nginx and Traefik configuration exampl
 
 **Defense**:
 - Per-IP rate limiting
-- Request size limits
+- Request body size limit (1 MiB) enforced via `http.MaxBytesReader` middleware
 - Connection timeouts
 - Graceful degradation
+
+#### 4. Information Disclosure
+**Scenario**: Internal implementation details leaked via error messages or health endpoint
+
+**Defense**:
+- Non-`ServiceError` errors return a generic "Internal server error" message; raw errors are logged server-side only
+- Health endpoint storage errors return "Storage ping failed" without connection strings, hostnames, or driver details
+- All detailed errors are logged via structured logging for debugging
 
 ## Production Security Configuration
 

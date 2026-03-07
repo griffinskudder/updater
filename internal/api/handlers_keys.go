@@ -78,6 +78,10 @@ func (h *Handlers) ListAPIKeys(w http.ResponseWriter, r *http.Request) {
 func (h *Handlers) CreateAPIKey(w http.ResponseWriter, r *http.Request) {
 	var req createAPIKeyRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		if isMaxBytesError(err) {
+			h.writeErrorResponse(w, http.StatusRequestEntityTooLarge, models.ErrorCodeBadRequest, "Request body too large")
+			return
+		}
 		h.writeErrorResponse(w, http.StatusBadRequest, models.ErrorCodeInvalidRequest, "invalid request body")
 		return
 	}
@@ -126,6 +130,10 @@ func (h *Handlers) UpdateAPIKey(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 	var req updateAPIKeyRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		if isMaxBytesError(err) {
+			h.writeErrorResponse(w, http.StatusRequestEntityTooLarge, models.ErrorCodeBadRequest, "Request body too large")
+			return
+		}
 		h.writeErrorResponse(w, http.StatusBadRequest, models.ErrorCodeInvalidRequest, "invalid request body")
 		return
 	}
