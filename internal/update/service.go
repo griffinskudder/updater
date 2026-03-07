@@ -236,9 +236,9 @@ func (s *Service) ListReleases(ctx context.Context, req *models.ListReleasesRequ
 				// occur in normal operation since the API validates versions on write.
 				generateCursor = false
 			} else {
-				c.VersionMajor = int64(sv.Major())      //#nosec G115 -- components validated at API layer, within int64 range
-				c.VersionMinor = int64(sv.Minor())      //#nosec G115 -- components validated at API layer, within int64 range
-				c.VersionPatch = int64(sv.Patch())      //#nosec G115 -- components validated at API layer, within int64 range
+				c.VersionMajor = int64(sv.Major()) //#nosec G115 -- components validated at API layer, within int64 range
+				c.VersionMinor = int64(sv.Minor()) //#nosec G115 -- components validated at API layer, within int64 range
+				c.VersionPatch = int64(sv.Patch()) //#nosec G115 -- components validated at API layer, within int64 range
 				c.VersionIsStable = sv.Prerelease() == ""
 				c.VersionPreRelease = sv.Prerelease()
 			}
