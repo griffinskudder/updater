@@ -12,7 +12,7 @@
         <meta name="author" content="Updater Service Team">
       
       
-        <link rel="canonical" href="https://griffinskudder.github.io/updater/dev/plans/future-enhancements/">
+        <link rel="canonical" href="https://griffinskudder.github.io/updater/dev/plans/2026-03-07-observability-build-info-design/">
       
       
       
@@ -25,7 +25,7 @@
     
     
       
-        <title>Future Enhancements - Updater Service Documentation</title>
+        <title>Design: build_info Prometheus Gauge - Updater Service Documentation</title>
       
     
     
@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#future-enhancements" class="md-skip">
+        <a href="#design-build_info-prometheus-gauge" class="md-skip">
           Skip to content
         </a>
       
@@ -116,7 +116,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Future Enhancements
+              Design: build_info Prometheus Gauge
             
           </span>
         </div>
@@ -1408,22 +1408,44 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-config-cleanup" class="md-nav__link">
+  <a href="#background" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Config Cleanup
+        Background
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="1. Config Cleanup">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#goal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Goal
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#design" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Design">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#dead-fields" class="md-nav__link">
+  <a href="#metric-definition" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Dead fields
+        Metric definition
       
     </span>
   </a>
@@ -1431,10 +1453,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#options" class="md-nav__link">
+  <a href="#implementation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Options
+        Implementation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files-changed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Files changed
       
     </span>
   </a>
@@ -1447,49 +1480,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-observability-quick-wins" class="md-nav__link">
+  <a href="#testing" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Observability Quick Wins
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="2. Observability Quick Wins">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#2a-build-info-metric" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2a. Build info metric
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2b-prune-stale-future-enhancementsmd" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2b. Prune stale future-enhancements.md
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3-storage-pagination-pushdown" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Storage Pagination Pushdown
+        Testing
       
     </span>
   </a>
@@ -1497,10 +1491,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-error-response-metadata" class="md-nav__link">
+  <a href="#example-prometheus-output" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Error Response Metadata
+        Example Prometheus output
       
     </span>
   </a>
@@ -1508,32 +1502,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-version-comparison-endpoint" class="md-nav__link">
+  <a href="#example-promql" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Version Comparison Endpoint
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-deployment-history-tracking" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. Deployment History Tracking
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#implementation-priority" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Implementation Priority
+        Example PromQL
       
     </span>
   </a>
@@ -1568,244 +1540,154 @@
   
 
 
-<h1 id="future-enhancements">Future Enhancements<a class="headerlink" href="#future-enhancements" title="Permanent link">&para;</a></h1>
-<p>This document tracks potential enhancements and improvements that could be made
-to the updater service. These are not currently planned for implementation but
-represent opportunities for future development.</p>
-<h2 id="1-config-cleanup">1. Config Cleanup<a class="headerlink" href="#1-config-cleanup" title="Permanent link">&para;</a></h2>
-<p><strong>Status:</strong> Not Implemented
-<strong>Priority:</strong> Medium
+<h1 id="design-build_info-prometheus-gauge">Design: <code>build_info</code> Prometheus Gauge<a class="headerlink" href="#design-build_info-prometheus-gauge" title="Permanent link">&para;</a></h1>
+<p><strong>Date:</strong> 2026-03-07
+<strong>Status:</strong> Approved
 <strong>Effort:</strong> Small (1-2 hours)</p>
-<p>Several fields in the configuration structs are defined and validated but never
-consumed at runtime. They add surface area without providing any behaviour.</p>
-<h3 id="dead-fields">Dead fields<a class="headerlink" href="#dead-fields" title="Permanent link">&para;</a></h3>
+<h2 id="background">Background<a class="headerlink" href="#background" title="Permanent link">&para;</a></h2>
+<p>The observability package exposes HTTP request metrics and business metrics
+(update checks, release registrations) via the OTel Prometheus exporter.
+Version metadata (version string, git commit, build date, environment) is
+already attached to the OTel resource and appears in <code>target_info</code>, but it is
+not queryable as a standalone metric.</p>
+<p>The <code>build_info</code> pattern is standard across the Prometheus ecosystem
+(Prometheus itself, Kubernetes, VictoriaMetrics, etc.): a gauge that always
+returns 1 with version metadata as labels, making it trivial to join version
+information onto other metrics and alert on version changes in a cluster.</p>
+<h2 id="goal">Goal<a class="headerlink" href="#goal" title="Permanent link">&para;</a></h2>
+<p>Add <code>updater_build_info</code> — an <code>Int64ObservableGauge</code> that always returns 1
+with labels carrying the build and runtime metadata already available in
+<code>version.Info</code>.</p>
+<h2 id="design">Design<a class="headerlink" href="#design" title="Permanent link">&para;</a></h2>
+<h3 id="metric-definition">Metric definition<a class="headerlink" href="#metric-definition" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
-<th>Field</th>
-<th>Struct</th>
-<th>Issue</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>StorageConfig.Path</code></td>
-<td><code>models/config.go</code></td>
-<td>Never read; SQLite uses <code>Database.DSN</code></td>
-</tr>
-<tr>
-<td><code>DatabaseConfig.Driver</code></td>
-<td><code>models/config.go</code></td>
-<td>Never read; storage type dispatch uses <code>Storage.Type</code></td>
-</tr>
-<tr>
-<td><code>DatabaseConfig.MaxOpenConns</code></td>
-<td><code>models/config.go</code></td>
-<td>Defined but not applied to DB connections</td>
-</tr>
-<tr>
-<td><code>DatabaseConfig.MaxIdleConns</code></td>
-<td><code>models/config.go</code></td>
-<td>Defined but not applied to DB connections</td>
-</tr>
-<tr>
-<td><code>DatabaseConfig.ConnMaxLifetime</code></td>
-<td><code>models/config.go</code></td>
-<td>Defined but not applied to DB connections</td>
-</tr>
-<tr>
-<td><code>DatabaseConfig.ConnMaxIdleTime</code></td>
-<td><code>models/config.go</code></td>
-<td>Defined but not applied to DB connections</td>
-</tr>
-</tbody>
-</table>
-<h3 id="options">Options<a class="headerlink" href="#options" title="Permanent link">&para;</a></h3>
-<p><strong>Option A — Remove:</strong> Delete <code>Path</code>, <code>Driver</code>, and the four connection pool
-fields. Simplest; reduces config surface area.</p>
-<p><strong>Option B — Implement connection pooling:</strong> Keep the four <code>DatabaseConfig</code>
-pool fields and apply them via <code>sql.DB.SetMaxOpenConns</code> etc. in the Postgres
-and SQLite constructors. This makes the config fields functional and gives
-operators tuning control. <code>Path</code> and <code>Driver</code> can still be removed as they
-are truly redundant.</p>
-<p>Option B is the better choice — connection pool tuning is useful in
-production and the fields already exist in the config schema.</p>
-<p><strong>Files to modify:</strong>
-- <code>internal/models/config.go</code> — remove <code>Path</code> and <code>Driver</code>
-- <code>internal/models/config_test.go</code> — update tests
-- <code>internal/storage/postgres.go</code> — apply pool settings after <code>sql.Open</code>
-- <code>internal/storage/sqlite.go</code> — apply pool settings after <code>sql.Open</code>
-- <code>internal/api/openapi/openapi.yaml</code> — update config schema if documented
-- <code>examples/config.yaml</code> — remove <code>path</code> and <code>driver</code> fields
-- <code>docs/storage.md</code> — update config reference</p>
-<hr />
-<h2 id="2-observability-quick-wins">2. Observability Quick Wins<a class="headerlink" href="#2-observability-quick-wins" title="Permanent link">&para;</a></h2>
-<p><strong>Status:</strong> Not Implemented
-<strong>Priority:</strong> Medium
-<strong>Effort:</strong> Small (1-2 hours)</p>
-<h3 id="2a-build-info-metric">2a. Build info metric<a class="headerlink" href="#2a-build-info-metric" title="Permanent link">&para;</a></h3>
-<p>Add a standard Prometheus <code>build_info</code> gauge with version metadata as labels.
-This is a widely-used pattern (Prometheus itself, Kubernetes, etc.) that makes
-version information queryable and enables version-change alerting in Grafana.</p>
-<p><strong>Implementation:</strong> Register an <code>Int64ObservableGauge</code> named <code>build_info</code> in
-<code>internal/observability/observability.go</code> that always returns 1, with labels
-<code>version</code>, <code>git_commit</code>, <code>build_date</code>, and <code>environment</code>. Wire it up in
-<code>Setup()</code> after the <code>MeterProvider</code> is created.</p>
-<p><strong>Files to modify:</strong>
-- <code>internal/observability/observability.go</code>
-- <code>internal/observability/observability_test.go</code>
-- <code>docs/observability.md</code></p>
-<h3 id="2b-prune-stale-future-enhancementsmd">2b. Prune stale <code>future-enhancements.md</code><a class="headerlink" href="#2b-prune-stale-future-enhancementsmd" title="Permanent link">&para;</a></h3>
-<p>The "Admin UI Version Display" item referenced the admin UI removed in PR #26.
-Removed in this revision.</p>
-<hr />
-<h2 id="3-storage-pagination-pushdown">3. Storage Pagination Pushdown<a class="headerlink" href="#3-storage-pagination-pushdown" title="Permanent link">&para;</a></h2>
-<p><strong>Status:</strong> Not Implemented
-<strong>Priority:</strong> Medium
-<strong>Effort:</strong> Medium (half-day)</p>
-<p><code>ListApplications</code> and <code>ListReleases</code> currently call <code>storage.Applications()</code>
-and <code>storage.Releases(appID)</code> respectively, which load all records into memory,
-then paginate in the service layer. This works for small datasets but will not
-scale.</p>
-<p><strong>Approach:</strong> Add <code>limit</code> and <code>offset</code> parameters to the storage interface
-methods (or add new <code>ListApplications</code>/<code>ListReleases</code> interface methods), update
-SQL queries to use <code>LIMIT</code>/<code>OFFSET</code>, and remove in-process slicing from the
-service.</p>
-<p><strong>Files to modify:</strong>
-- <code>internal/storage/interface.go</code> — new interface methods
-- <code>internal/storage/memory.go</code> — in-memory implementation
-- <code>internal/storage/postgres.go</code> + sqlc queries
-- <code>internal/storage/sqlite.go</code> + sqlc queries
-- <code>internal/update/service.go</code> — remove in-process pagination
-- All provider tests</p>
-<hr />
-<h2 id="4-error-response-metadata">4. Error Response Metadata<a class="headerlink" href="#4-error-response-metadata" title="Permanent link">&para;</a></h2>
-<p><strong>Status:</strong> Not Implemented
-<strong>Priority:</strong> Low
-<strong>Effort:</strong> Small (1-2 hours)</p>
-<p>Include build metadata in error responses to help with debugging and support.</p>
-<p><strong>Current error response:</strong>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">&quot;error&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;application not found&quot;</span><span class="p">,</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">&quot;details&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;application &#39;myapp&#39; does not exist&quot;</span><span class="p">,</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">404</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="p">}</span>
-</span></code></pre></div></p>
-<p><strong>Enhanced error response:</strong>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">{</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">&quot;error&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;application not found&quot;</span><span class="p">,</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">&quot;details&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;application &#39;myapp&#39; does not exist&quot;</span><span class="p">,</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">404</span><span class="p">,</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">  </span><span class="nt">&quot;metadata&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">    </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;v1.0.0&quot;</span><span class="p">,</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">    </span><span class="nt">&quot;instance_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;550e8400-e29b-41d4-a716-446655440000&quot;</span><span class="p">,</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">    </span><span class="nt">&quot;timestamp&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-03-07T10:30:00Z&quot;</span>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">  </span><span class="p">}</span>
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="p">}</span>
-</span></code></pre></div></p>
-<p><strong>Files to modify:</strong>
-- <code>internal/models/response.go</code> — add optional <code>metadata</code> field to error type
-- <code>internal/api/handlers.go</code> — inject version info into error responses
-- <code>internal/api/openapi/openapi.yaml</code> — update error response schema
-- <code>docs/</code> — update API reference</p>
-<hr />
-<h2 id="5-version-comparison-endpoint">5. Version Comparison Endpoint<a class="headerlink" href="#5-version-comparison-endpoint" title="Permanent link">&para;</a></h2>
-<p><strong>Status:</strong> Not Implemented
-<strong>Priority:</strong> Low
-<strong>Effort:</strong> Medium (3-4 hours)</p>
-<p>Add a <code>GET /api/v1/version/compare?version=v1.0.0</code> endpoint that compares the
-service version against a provided semver string. Useful for client
-compatibility checks in rolling deployments.</p>
-<p><strong>Files to modify:</strong>
-- <code>internal/version/version.go</code> — add <code>Compare()</code> function
-- <code>internal/api/handlers.go</code> — add <code>CompareVersion</code> handler
-- <code>internal/api/routes.go</code> — register route
-- <code>internal/api/openapi/openapi.yaml</code> — document endpoint</p>
-<hr />
-<h2 id="6-deployment-history-tracking">6. Deployment History Tracking<a class="headerlink" href="#6-deployment-history-tracking" title="Permanent link">&para;</a></h2>
-<p><strong>Status:</strong> Not Implemented
-<strong>Priority:</strong> Low
-<strong>Effort:</strong> Large (2-3 days)</p>
-<p>Track deployment history by persisting version information to storage on
-startup, creating an audit trail of deployments.</p>
-<p><strong>New endpoints:</strong>
-- <code>GET /api/v1/admin/deployments</code> — list deployment history
-- <code>GET /api/v1/admin/deployments/current</code> — show currently running instances</p>
-<p><strong>Data model:</strong>
-<div class="language-go highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kd">type</span><span class="w"> </span><span class="nx">DeploymentRecord</span><span class="w"> </span><span class="kd">struct</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="nx">ID</span><span class="w">          </span><span class="kt">string</span><span class="w">     </span><span class="s">`json:&quot;id&quot;`</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="nx">Version</span><span class="w">     </span><span class="kt">string</span><span class="w">     </span><span class="s">`json:&quot;version&quot;`</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="nx">GitCommit</span><span class="w">   </span><span class="kt">string</span><span class="w">     </span><span class="s">`json:&quot;git_commit&quot;`</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span><span class="nx">BuildDate</span><span class="w">   </span><span class="kt">string</span><span class="w">     </span><span class="s">`json:&quot;build_date&quot;`</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">    </span><span class="nx">InstanceID</span><span class="w">  </span><span class="kt">string</span><span class="w">     </span><span class="s">`json:&quot;instance_id&quot;`</span>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">    </span><span class="nx">Hostname</span><span class="w">    </span><span class="kt">string</span><span class="w">     </span><span class="s">`json:&quot;hostname&quot;`</span>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">    </span><span class="nx">Environment</span><span class="w"> </span><span class="kt">string</span><span class="w">     </span><span class="s">`json:&quot;environment&quot;`</span>
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">    </span><span class="nx">StartTime</span><span class="w">   </span><span class="nx">time</span><span class="p">.</span><span class="nx">Time</span><span class="w">  </span><span class="s">`json:&quot;start_time&quot;`</span>
-</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">    </span><span class="nx">EndTime</span><span class="w">     </span><span class="o">*</span><span class="nx">time</span><span class="p">.</span><span class="nx">Time</span><span class="w"> </span><span class="s">`json:&quot;end_time,omitempty&quot;`</span>
-</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="p">}</span>
-</span></code></pre></div></p>
-<p><strong>Implementation considerations:</strong>
-- New <code>deployment_history</code> table in both Postgres and SQLite schemas
-- Record deployment on service startup, mark ended on graceful shutdown
-- Handle multiple concurrent instances (Kubernetes)
-- Add retention policy (e.g. last 100 deployments or 90 days)
-- Requires admin permission</p>
-<p><strong>Files to modify:</strong>
-- <code>internal/storage/sqlc/schemas/*/002_deployment_history.sql</code>
-- <code>internal/storage/sqlc/queries/*/deployments.sql</code>
-- <code>internal/models/deployment.go</code>
-- <code>cmd/updater/updater.go</code>
-- <code>internal/api/handlers.go</code> + routes + OpenAPI spec</p>
-<hr />
-<h2 id="implementation-priority">Implementation Priority<a class="headerlink" href="#implementation-priority" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>#</th>
-<th>Enhancement</th>
-<th>Effort</th>
+<th>Property</th>
 <th>Value</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>1</td>
-<td>Config cleanup (implement pool settings)</td>
-<td>Small</td>
-<td>Medium</td>
+<td>Name</td>
+<td><code>updater_build_info</code></td>
 </tr>
 <tr>
-<td>2</td>
-<td>Build info metric</td>
-<td>Small</td>
-<td>High</td>
+<td>Type</td>
+<td><code>Int64ObservableGauge</code> (OTel) / <code>gauge</code> (Prometheus)</td>
 </tr>
 <tr>
-<td>3</td>
-<td>Storage pagination pushdown</td>
-<td>Medium</td>
-<td>Medium</td>
+<td>Value</td>
+<td>Always <code>1</code></td>
 </tr>
 <tr>
-<td>4</td>
-<td>Error response metadata</td>
-<td>Small</td>
-<td>Low</td>
+<td>Labels</td>
+<td><code>version</code>, <code>git_commit</code>, <code>build_date</code>, <code>environment</code></td>
 </tr>
 <tr>
-<td>5</td>
-<td>Version comparison endpoint</td>
-<td>Medium</td>
-<td>Low</td>
-</tr>
-<tr>
-<td>6</td>
-<td>Deployment history tracking</td>
-<td>Large</td>
-<td>Low</td>
+<td>Instrument scope</td>
+<td><code>updater.build</code></td>
 </tr>
 </tbody>
 </table>
+<p>Labels:</p>
+<ul>
+<li><code>version</code> — from <code>version.Info.Version</code> (e.g. <code>v1.2.3</code> or <code>unknown</code>)</li>
+<li><code>git_commit</code> — from <code>version.Info.GitCommit</code></li>
+<li><code>build_date</code> — from <code>version.Info.BuildDate</code></li>
+<li><code>environment</code> — from <code>getEnvironment()</code> (reads <code>ENVIRONMENT</code> or
+  <code>DEPLOYMENT_ENV</code> env var, defaults to <code>development</code>)</li>
+</ul>
+<p><code>instance_id</code> and <code>hostname</code> are omitted from <code>build_info</code> labels because
+they are high-cardinality per-instance values already present on the OTel
+resource (and thus in <code>target_info</code>). Putting them on <code>build_info</code> would
+create a new time series per instance restart.</p>
+<h3 id="implementation">Implementation<a class="headerlink" href="#implementation" title="Permanent link">&para;</a></h3>
+<p>Add a private <code>registerBuildInfo(ver version.Info, env string) error</code> method to
+<code>Provider</code>. <code>Setup()</code> calls <code>getEnvironment()</code> once, then calls <code>registerBuildInfo</code>
+immediately after <code>p.meterProvider</code> is assigned:</p>
+<div class="language-go highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kd">func</span><span class="w"> </span><span class="p">(</span><span class="nx">p</span><span class="w"> </span><span class="o">*</span><span class="nx">Provider</span><span class="p">)</span><span class="w"> </span><span class="nx">registerBuildInfo</span><span class="p">(</span><span class="nx">ver</span><span class="w"> </span><span class="nx">version</span><span class="p">.</span><span class="nx">Info</span><span class="p">,</span><span class="w"> </span><span class="nx">env</span><span class="w"> </span><span class="kt">string</span><span class="p">)</span><span class="w"> </span><span class="kt">error</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="nx">meter</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="nx">p</span><span class="p">.</span><span class="nx">meterProvider</span><span class="p">.</span><span class="nx">Meter</span><span class="p">(</span><span class="s">&quot;updater.build&quot;</span><span class="p">)</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="nx">gauge</span><span class="p">,</span><span class="w"> </span><span class="nx">err</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="nx">meter</span><span class="p">.</span><span class="nx">Int64ObservableGauge</span><span class="p">(</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">        </span><span class="s">&quot;updater_build_info&quot;</span><span class="p">,</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">        </span><span class="nx">metric</span><span class="p">.</span><span class="nx">WithDescription</span><span class="p">(</span><span class="s">&quot;Build and version information (always 1).&quot;</span><span class="p">),</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">        </span><span class="nx">metric</span><span class="p">.</span><span class="nx">WithUnit</span><span class="p">(</span><span class="s">&quot;{info}&quot;</span><span class="p">),</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span><span class="p">)</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="nx">err</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">nil</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nx">fmt</span><span class="p">.</span><span class="nx">Errorf</span><span class="p">(</span><span class="s">&quot;register build_info gauge: %w&quot;</span><span class="p">,</span><span class="w"> </span><span class="nx">err</span><span class="p">)</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">    </span><span class="nx">attrs</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="nx">metric</span><span class="p">.</span><span class="nx">WithAttributes</span><span class="p">(</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">        </span><span class="nx">attribute</span><span class="p">.</span><span class="nx">String</span><span class="p">(</span><span class="s">&quot;version&quot;</span><span class="p">,</span><span class="w"> </span><span class="nx">ver</span><span class="p">.</span><span class="nx">Version</span><span class="p">),</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">        </span><span class="nx">attribute</span><span class="p">.</span><span class="nx">String</span><span class="p">(</span><span class="s">&quot;git_commit&quot;</span><span class="p">,</span><span class="w"> </span><span class="nx">ver</span><span class="p">.</span><span class="nx">GitCommit</span><span class="p">),</span>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">        </span><span class="nx">attribute</span><span class="p">.</span><span class="nx">String</span><span class="p">(</span><span class="s">&quot;build_date&quot;</span><span class="p">,</span><span class="w"> </span><span class="nx">ver</span><span class="p">.</span><span class="nx">BuildDate</span><span class="p">),</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">        </span><span class="nx">attribute</span><span class="p">.</span><span class="nx">String</span><span class="p">(</span><span class="s">&quot;environment&quot;</span><span class="p">,</span><span class="w"> </span><span class="nx">env</span><span class="p">),</span>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="w">    </span><span class="p">)</span>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">    </span><span class="nx">_</span><span class="p">,</span><span class="w"> </span><span class="nx">err</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nx">meter</span><span class="p">.</span><span class="nx">RegisterCallback</span><span class="p">(</span>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="w">        </span><span class="kd">func</span><span class="p">(</span><span class="nx">_</span><span class="w"> </span><span class="nx">context</span><span class="p">.</span><span class="nx">Context</span><span class="p">,</span><span class="w"> </span><span class="nx">o</span><span class="w"> </span><span class="nx">metric</span><span class="p">.</span><span class="nx">Observer</span><span class="p">)</span><span class="w"> </span><span class="kt">error</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="w">            </span><span class="nx">o</span><span class="p">.</span><span class="nx">ObserveInt64</span><span class="p">(</span><span class="nx">gauge</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nx">attrs</span><span class="p">)</span>
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="kc">nil</span>
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="w">        </span><span class="p">},</span>
+</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a><span class="w">        </span><span class="nx">gauge</span><span class="p">,</span>
+</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a><span class="w">    </span><span class="p">)</span>
+</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nx">err</span>
+</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a><span class="p">}</span>
+</span></code></pre></div>
+<p><code>Setup()</code> calls <code>getEnvironment()</code> once and passes the result to both
+<code>resource.WithAttributes</code> and <code>registerBuildInfo</code>:</p>
+<div class="language-go highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nx">env</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="nx">getEnvironment</span><span class="p">()</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="c1">// ... resource creation uses env ...</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="c1">// registerBuildInfo failure is non-fatal: a missing build_info gauge should</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1">// not prevent the service from starting.</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="k">if</span><span class="w"> </span><span class="nx">err</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="nx">p</span><span class="p">.</span><span class="nx">registerBuildInfo</span><span class="p">(</span><span class="nx">ver</span><span class="p">,</span><span class="w"> </span><span class="nx">env</span><span class="p">);</span><span class="w"> </span><span class="nx">err</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">nil</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">    </span><span class="nx">slog</span><span class="p">.</span><span class="nx">Warn</span><span class="p">(</span><span class="s">&quot;failed to register build_info metric&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;error&quot;</span><span class="p">,</span><span class="w"> </span><span class="nx">err</span><span class="p">)</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="p">}</span>
+</span></code></pre></div>
+<p>The error is treated as non-fatal (logged as a warning) because a missing
+<code>build_info</code> gauge should not prevent the service from starting.</p>
+<h3 id="files-changed">Files changed<a class="headerlink" href="#files-changed" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Change</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>internal/observability/observability.go</code></td>
+<td>Add <code>registerBuildInfo</code>, call from <code>Setup()</code></td>
+</tr>
+<tr>
+<td><code>internal/observability/observability_test.go</code></td>
+<td>Add test asserting label values</td>
+</tr>
+<tr>
+<td><code>docs/observability.md</code></td>
+<td>Add "Build Info Metric" section with PromQL example</td>
+</tr>
+</tbody>
+</table>
+<h2 id="testing">Testing<a class="headerlink" href="#testing" title="Permanent link">&para;</a></h2>
+<p>One test case added to <code>observability_test.go</code>:</p>
+<ol>
+<li>Call <code>Setup()</code> with a known <code>version.Info{Version: "v9.9.9", GitCommit: "abc123", BuildDate: "2026-03-07"}</code>.</li>
+<li>Collect metrics from the Prometheus registry.</li>
+<li>Assert a metric family named <code>updater_build_info</code> exists.</li>
+<li>Assert the single sample has value <code>1</code>.</li>
+<li>Assert label values match the input <code>version.Info</code>.</li>
+</ol>
+<h2 id="example-prometheus-output">Example Prometheus output<a class="headerlink" href="#example-prometheus-output" title="Permanent link">&para;</a></h2>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a># HELP updater_build_info Build and version information (always 1).
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a># TYPE updater_build_info gauge
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>updater_build_info{build_date=&quot;2026-03-07&quot;,environment=&quot;production&quot;,git_commit=&quot;7fd6828&quot;,version=&quot;v1.2.3&quot;} 1
+</span></code></pre></div>
+<h2 id="example-promql">Example PromQL<a class="headerlink" href="#example-promql" title="Permanent link">&para;</a></h2>
+<div class="language-promql highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Is more than one version running? (useful in rolling deployments)</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="k">count</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="o">(</span><span class="nv">version</span><span class="o">)</span><span class="w"> </span><span class="o">(</span><span class="nv">updater_build_info</span><span class="o">)</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># Alert when version changes</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="kr">changes</span><span class="o">(</span><span class="nv">updater_build_info</span><span class="p">[</span><span class="s">10m</span><span class="p">]</span><span class="o">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span>
+</span></code></pre></div>
 
 
 
