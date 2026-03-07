@@ -81,12 +81,16 @@ func (h *Handlers) GetApplication(w http.ResponseWriter, r *http.Request) {
 // ListApplications handles application listing requests
 // GET /api/v1/applications
 func (h *Handlers) ListApplications(w http.ResponseWriter, r *http.Request) {
-	// Parse limit from query parameter; 0 means use default
+	// Parse limit; reject non-positive values explicitly provided by the caller.
+	// Zero is the "not provided" sentinel, so it cannot be validated in Validate().
 	var limit int
-	if limitParam := r.URL.Query().Get("limit"); limitParam != "" {
-		if parsed, err := strconv.Atoi(limitParam); err == nil {
-			limit = parsed
+	if limitStr := r.URL.Query().Get("limit"); limitStr != "" {
+		parsed, err := strconv.Atoi(limitStr)
+		if err != nil || parsed < 1 {
+			h.writeErrorResponse(w, http.StatusBadRequest, "INVALID_REQUEST", "limit must be a positive integer")
+			return
 		}
+		limit = parsed
 	}
 
 	after := r.URL.Query().Get("after")
