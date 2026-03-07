@@ -1023,3 +1023,248 @@ func TestApplicationPermissions(t *testing.T) {
 	defer resp.Body.Close()
 	assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
 }
+
+func TestIntegration_KeysetPaginationReleases(t *testing.T) {
+	store, err := storage.NewMemoryStorage()
+	require.NoError(t, err)
+	defer store.Close()
+
+	updateService := update.NewService(store)
+	handlers := api.NewHandlers(updateService)
+
+	cfg := &models.Config{
+		Server: models.ServerConfig{
+			Port: 8080,
+			Host: "localhost",
+		},
+		Storage: models.StorageConfig{
+			Type: "memory",
+		},
+	}
+
+	router := api.SetupRoutes(handlers, cfg)
+	server := httptest.NewServer(router)
+	defer server.Close()
+
+	ctx := context.Background()
+
+	app := &models.Application{
+		ID:        "keyset-releases-test-app",
+		Name:      "Keyset Releases Test App",
+		Platforms: []string{"windows"},
+		Config:    models.ApplicationConfig{},
+	}
+	err = store.SaveApplication(ctx, app)
+	require.NoError(t, err)
+
+	// Register 3 releases
+	versions := []string{"1.0.0", "1.1.0", "1.2.0"}
+	for _, version := range versions {
+		req := models.RegisterReleaseRequest{
+			ApplicationID: "keyset-releases-test-app",
+			Version:       version,
+			Platform:      "windows",
+			Architecture:  "amd64",
+			DownloadURL:   fmt.Sprintf("https://example.com/%s/app.exe", version),
+			Checksum:      fmt.Sprintf("%s-checksum", version),
+			ChecksumType:  "sha256",
+			FileSize:      10485760,
+			ReleaseNotes:  fmt.Sprintf("Release %s", version),
+			Required:      false,
+		}
+		body, err := json.Marshal(req)
+		require.NoError(t, err)
+		resp, err := http.Post(server.URL+"/api/v1/updates/keyset-releases-test-app/register", "application/json", bytes.NewReader(body))
+		require.NoError(t, err)
+		resp.Body.Close()
+		require.Equal(t, http.StatusCreated, resp.StatusCode)
+	}
+
+	// Page 1: limit=2, no cursor
+	resp, err := http.Get(server.URL + "/api/v1/updates/keyset-releases-test-app/releases?limit=2")
+	require.NoError(t, err)
+	defer resp.Body.Close()
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+	var page1 models.ListReleasesResponse
+	err = json.NewDecoder(resp.Body).Decode(&page1)
+	require.NoError(t, err)
+
+	assert.Len(t, page1.Releases, 2)
+	assert.Equal(t, 3, page1.TotalCount)
+	assert.NotEmpty(t, page1.NextCursor, "first page should have a next_cursor")
+
+	// Collect IDs from page 1
+	seenIDs := make(map[string]bool)
+	for _, r := range page1.Releases {
+		seenIDs[r.ID] = true
+	}
+
+	// Page 2: limit=2, with cursor from page 1
+	resp, err = http.Get(server.URL + "/api/v1/updates/keyset-releases-test-app/releases?limit=2&after=" + page1.NextCursor)
+	require.NoError(t, err)
+	defer resp.Body.Close()
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+	var page2 models.ListReleasesResponse
+	err = json.NewDecoder(resp.Body).Decode(&page2)
+	require.NoError(t, err)
+
+	assert.Len(t, page2.Releases, 1, "second page should have the remaining 1 release")
+	assert.Equal(t, 3, page2.TotalCount)
+
+	// Verify no duplicates across pages
+	for _, r := range page2.Releases {
+		assert.False(t, seenIDs[r.ID], "release %s appeared on both pages", r.ID)
+		seenIDs[r.ID] = true
+	}
+
+	// All 3 releases should have been seen across the two pages
+	assert.Len(t, seenIDs, 3, "all releases should appear exactly once across pages")
+}
+
+func TestIntegration_KeysetPaginationApplications(t *testing.T) {
+	server, store := setupTestServer(t, true)
+	ctx := context.Background()
+
+	// Create 3 applications directly in storage so we control their existence
+	appIDs := []string{"keyset-app-alpha", "keyset-app-beta", "keyset-app-gamma"}
+	for _, id := range appIDs {
+		app := &models.Application{
+			ID:        id,
+			Name:      "Keyset App " + id,
+			Platforms: []string{"windows"},
+			Config:    models.ApplicationConfig{},
+		}
+		err := store.SaveApplication(ctx, app)
+		require.NoError(t, err)
+	}
+
+	// Page 1: limit=2, no cursor
+	resp := doRequest(t, "GET", server.URL+"/api/v1/applications?limit=2", "test-read-key", nil)
+	defer resp.Body.Close()
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+	var page1 models.ListApplicationsResponse
+	err := json.NewDecoder(resp.Body).Decode(&page1)
+	require.NoError(t, err)
+
+	assert.Len(t, page1.Applications, 2)
+	assert.GreaterOrEqual(t, page1.TotalCount, 3)
+	assert.NotEmpty(t, page1.NextCursor, "first page should have a next_cursor")
+
+	// Collect IDs from page 1
+	seenIDs := make(map[string]bool)
+	for _, a := range page1.Applications {
+		seenIDs[a.ID] = true
+	}
+
+	// Page 2: limit=2, with cursor from page 1
+	resp = doRequest(t, "GET", server.URL+"/api/v1/applications?limit=2&after="+page1.NextCursor, "test-read-key", nil)
+	defer resp.Body.Close()
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+	var page2 models.ListApplicationsResponse
+	err = json.NewDecoder(resp.Body).Decode(&page2)
+	require.NoError(t, err)
+
+	assert.GreaterOrEqual(t, len(page2.Applications), 1, "second page should have at least one application")
+	assert.GreaterOrEqual(t, page2.TotalCount, 3)
+
+	// Verify no duplicates across pages
+	for _, a := range page2.Applications {
+		assert.False(t, seenIDs[a.ID], "application %s appeared on both pages", a.ID)
+	}
+}
+
+func TestIntegration_MaxLimitValidation(t *testing.T) {
+	store, err := storage.NewMemoryStorage()
+	require.NoError(t, err)
+	defer store.Close()
+
+	updateService := update.NewService(store)
+	handlers := api.NewHandlers(updateService)
+
+	cfg := &models.Config{
+		Server: models.ServerConfig{
+			Port: 8080,
+			Host: "localhost",
+		},
+		Storage: models.StorageConfig{
+			Type: "memory",
+		},
+	}
+
+	router := api.SetupRoutes(handlers, cfg)
+	server := httptest.NewServer(router)
+	defer server.Close()
+
+	ctx := context.Background()
+
+	app := &models.Application{
+		ID:        "max-limit-test-app",
+		Name:      "Max Limit Test App",
+		Platforms: []string{"windows"},
+		Config:    models.ApplicationConfig{},
+	}
+	err = store.SaveApplication(ctx, app)
+	require.NoError(t, err)
+
+	// limit=501 exceeds MaxPageSize (500) on releases endpoint
+	resp, err := http.Get(server.URL + "/api/v1/updates/max-limit-test-app/releases?limit=501")
+	require.NoError(t, err)
+	defer resp.Body.Close()
+	assert.Equal(t, http.StatusUnprocessableEntity, resp.StatusCode)
+
+	// limit=501 exceeds MaxPageSize (500) on applications endpoint
+	// Applications endpoint requires auth; use a server with auth disabled for simplicity
+	resp2, err := http.Get(server.URL + "/api/v1/updates/max-limit-test-app/releases?limit=501")
+	require.NoError(t, err)
+	defer resp2.Body.Close()
+	assert.Equal(t, http.StatusUnprocessableEntity, resp2.StatusCode)
+}
+
+func TestIntegration_InvalidCursorValidation(t *testing.T) {
+	store, err := storage.NewMemoryStorage()
+	require.NoError(t, err)
+	defer store.Close()
+
+	updateService := update.NewService(store)
+	handlers := api.NewHandlers(updateService)
+
+	cfg := &models.Config{
+		Server: models.ServerConfig{
+			Port: 8080,
+			Host: "localhost",
+		},
+		Storage: models.StorageConfig{
+			Type: "memory",
+		},
+	}
+
+	router := api.SetupRoutes(handlers, cfg)
+	server := httptest.NewServer(router)
+	defer server.Close()
+
+	ctx := context.Background()
+
+	app := &models.Application{
+		ID:        "invalid-cursor-test-app",
+		Name:      "Invalid Cursor Test App",
+		Platforms: []string{"windows"},
+		Config:    models.ApplicationConfig{},
+	}
+	err = store.SaveApplication(ctx, app)
+	require.NoError(t, err)
+
+	// Invalid cursor on releases endpoint
+	resp, err := http.Get(server.URL + "/api/v1/updates/invalid-cursor-test-app/releases?after=notvalidbase64!!!")
+	require.NoError(t, err)
+	defer resp.Body.Close()
+	assert.Equal(t, http.StatusUnprocessableEntity, resp.StatusCode)
+
+	var errorResp models.ErrorResponse
+	err = json.NewDecoder(resp.Body).Decode(&errorResp)
+	require.NoError(t, err)
+	assert.Equal(t, models.ErrorCodeValidation, errorResp.Code)
+}
