@@ -509,3 +509,27 @@ func (ps *PostgresStorage) DeleteAPIKey(ctx context.Context, id string) error {
 	}
 	return nil
 }
+
+// ListApplicationsPaged returns a page of applications sorted by name and the total count.
+// TODO(Task 7): implement with sqlc query.
+func (ps *PostgresStorage) ListApplicationsPaged(ctx context.Context, limit, offset int) ([]*models.Application, int, error) {
+	return nil, 0, fmt.Errorf("ListApplicationsPaged: not yet implemented for PostgreSQL")
+}
+
+// ListReleasesPaged returns a filtered, sorted page of releases and the total count.
+// TODO(Task 7): implement with sqlc query.
+func (ps *PostgresStorage) ListReleasesPaged(ctx context.Context, appID string, filters models.ReleaseFilters, sortBy, sortOrder string, limit, offset int) ([]*models.Release, int, error) {
+	return nil, 0, fmt.Errorf("ListReleasesPaged: not yet implemented for PostgreSQL")
+}
+
+// GetLatestStableRelease returns the highest non-prerelease version for the given platform/arch.
+// TODO(Task 7): implement with sqlc query.
+func (ps *PostgresStorage) GetLatestStableRelease(ctx context.Context, appID, platform, arch string) (*models.Release, error) {
+	return nil, fmt.Errorf("GetLatestStableRelease: not yet implemented for PostgreSQL")
+}
+
+// GetApplicationStats returns aggregate statistics for an application.
+// TODO(Task 7): implement with sqlc query.
+func (ps *PostgresStorage) GetApplicationStats(ctx context.Context, appID string) (models.ApplicationStats, error) {
+	return models.ApplicationStats{}, fmt.Errorf("GetApplicationStats: not yet implemented for PostgreSQL")
+}

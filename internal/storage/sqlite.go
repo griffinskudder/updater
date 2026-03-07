@@ -526,6 +526,30 @@ func (ss *SQLiteStorage) DeleteAPIKey(ctx context.Context, id string) error {
 	return nil
 }
 
+// ListApplicationsPaged returns a page of applications sorted by name and the total count.
+// TODO(Task 8): implement with sqlc query.
+func (ss *SQLiteStorage) ListApplicationsPaged(ctx context.Context, limit, offset int) ([]*models.Application, int, error) {
+	return nil, 0, fmt.Errorf("ListApplicationsPaged: not yet implemented for SQLite")
+}
+
+// ListReleasesPaged returns a filtered, sorted page of releases and the total count.
+// TODO(Task 8): implement with sqlc query.
+func (ss *SQLiteStorage) ListReleasesPaged(ctx context.Context, appID string, filters models.ReleaseFilters, sortBy, sortOrder string, limit, offset int) ([]*models.Release, int, error) {
+	return nil, 0, fmt.Errorf("ListReleasesPaged: not yet implemented for SQLite")
+}
+
+// GetLatestStableRelease returns the highest non-prerelease version for the given platform/arch.
+// TODO(Task 8): implement with sqlc query.
+func (ss *SQLiteStorage) GetLatestStableRelease(ctx context.Context, appID, platform, arch string) (*models.Release, error) {
+	return nil, fmt.Errorf("GetLatestStableRelease: not yet implemented for SQLite")
+}
+
+// GetApplicationStats returns aggregate statistics for an application.
+// TODO(Task 8): implement with sqlc query.
+func (ss *SQLiteStorage) GetApplicationStats(ctx context.Context, appID string) (models.ApplicationStats, error) {
+	return models.ApplicationStats{}, fmt.Errorf("GetApplicationStats: not yet implemented for SQLite")
+}
+
 // runSQLiteMigrations applies any unapplied migration files from the embedded
 // sqlc/schema/sqlite directory. Applied migrations are tracked in a
 // schema_migrations table so each file is executed at most once.

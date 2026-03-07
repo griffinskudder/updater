@@ -374,3 +374,343 @@ func TestMemoryStorage_DeleteAPIKey_NotFound(t *testing.T) {
 	err = s.DeleteAPIKey(context.Background(), "missing")
 	assert.ErrorIs(t, err, ErrNotFound)
 }
+
+// seedApp is a helper that saves an application with the given id/name.
+func seedApp(t *testing.T, s *MemoryStorage, id, name string) {
+	t.Helper()
+	require.NoError(t, s.SaveApplication(context.Background(), &models.Application{
+		ID:   id,
+		Name: name,
+	}))
+}
+
+// seedRelease is a helper that saves a release with the given fields.
+func seedRelease(t *testing.T, s *MemoryStorage, appID, version, platform, arch string, required bool, releaseDate time.Time) {
+	t.Helper()
+	require.NoError(t, s.SaveRelease(context.Background(), &models.Release{
+		ID:            fmt.Sprintf("%s-%s-%s-%s", appID, version, platform, arch),
+		ApplicationID: appID,
+		Version:       version,
+		Platform:      platform,
+		Architecture:  arch,
+		DownloadURL:   "https://example.com/download",
+		Checksum:      "abc123",
+		ChecksumType:  "sha256",
+		ReleaseDate:   releaseDate,
+		Required:      required,
+		CreatedAt:     releaseDate,
+	}))
+}
+
+func TestMemoryStorage_ListApplicationsPaged(t *testing.T) {
+	ctx := context.Background()
+
+	tests := []struct {
+		name       string
+		setup      func(s *MemoryStorage)
+		limit      int
+		offset     int
+		wantCount  int
+		wantTotal  int
+		wantEmpty  bool
+	}{
+		{
+			name: "page 2 of size 2 from 5 apps",
+			setup: func(s *MemoryStorage) {
+				for i := 1; i <= 5; i++ {
+					seedApp(t, s, fmt.Sprintf("app-%d", i), fmt.Sprintf("App %d", i))
+				}
+			},
+			limit:     2,
+			offset:    2,
+			wantCount: 2,
+			wantTotal: 5,
+		},
+		{
+			name: "offset beyond end returns empty",
+			setup: func(s *MemoryStorage) {
+				for i := 1; i <= 5; i++ {
+					seedApp(t, s, fmt.Sprintf("app-%d", i), fmt.Sprintf("App %d", i))
+				}
+			},
+			limit:     2,
+			offset:    10,
+			wantCount: 0,
+			wantTotal: 5,
+			wantEmpty: true,
+		},
+		{
+			name: "limit 0 returns empty",
+			setup: func(s *MemoryStorage) {
+				seedApp(t, s, "app-1", "App 1")
+			},
+			limit:     0,
+			offset:    0,
+			wantCount: 0,
+			wantTotal: 1,
+			wantEmpty: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s, err := NewMemoryStorage()
+			require.NoError(t, err)
+			defer s.Close()
+
+			tt.setup(s)
+
+			apps, total, err := s.ListApplicationsPaged(ctx, tt.limit, tt.offset)
+			require.NoError(t, err)
+			assert.Equal(t, tt.wantTotal, total)
+			assert.Len(t, apps, tt.wantCount)
+			if tt.wantEmpty {
+				assert.Empty(t, apps)
+			}
+		})
+	}
+}
+
+func TestMemoryStorage_ListReleasesPaged(t *testing.T) {
+	ctx := context.Background()
+	appID := "test-app"
+	base := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	tests := []struct {
+		name       string
+		setup      func(s *MemoryStorage)
+		filters    models.ReleaseFilters
+		sortBy     string
+		sortOrder  string
+		limit      int
+		offset     int
+		wantCount  int
+		wantTotal  int
+		wantEmpty  bool
+		// wantVersionOrder, if set, asserts the versions in the returned slice in order.
+		wantVersionOrder []string
+	}{
+		{
+			name: "filter by platform linux",
+			setup: func(s *MemoryStorage) {
+				for i := 0; i < 3; i++ {
+					seedRelease(t, s, appID, fmt.Sprintf("1.%d.0", i), "linux", "amd64", false, base.Add(time.Duration(i)*time.Hour))
+				}
+				for i := 0; i < 2; i++ {
+					seedRelease(t, s, appID, fmt.Sprintf("2.%d.0", i), "windows", "amd64", false, base.Add(time.Duration(i)*time.Hour))
+				}
+			},
+			filters:   models.ReleaseFilters{Platforms: []string{"linux"}},
+			sortBy:    "release_date",
+			sortOrder: "asc",
+			limit:     10,
+			offset:    0,
+			wantCount: 3,
+			wantTotal: 3,
+		},
+		{
+			name: "filter by architecture amd64",
+			setup: func(s *MemoryStorage) {
+				seedRelease(t, s, appID, "1.0.0", "linux", "amd64", false, base)
+				seedRelease(t, s, appID, "1.0.0", "linux", "arm64", false, base)
+				seedRelease(t, s, appID, "2.0.0", "linux", "amd64", false, base.Add(time.Hour))
+			},
+			filters:   models.ReleaseFilters{Architecture: "amd64"},
+			sortBy:    "release_date",
+			sortOrder: "asc",
+			limit:     10,
+			offset:    0,
+			wantCount: 2,
+			wantTotal: 2,
+		},
+		{
+			name: "sort by version desc",
+			setup: func(s *MemoryStorage) {
+				seedRelease(t, s, appID, "1.0.0", "linux", "amd64", false, base)
+				seedRelease(t, s, appID, "1.5.0", "linux", "amd64", false, base.Add(time.Hour))
+				seedRelease(t, s, appID, "2.0.0", "linux", "amd64", false, base.Add(2*time.Hour))
+			},
+			filters:          models.ReleaseFilters{},
+			sortBy:           "version",
+			sortOrder:        "desc",
+			limit:            10,
+			offset:           0,
+			wantCount:        3,
+			wantTotal:        3,
+			wantVersionOrder: []string{"2.0.0", "1.5.0", "1.0.0"},
+		},
+		{
+			name: "pagination limit 2 offset 0",
+			setup: func(s *MemoryStorage) {
+				for i := 1; i <= 4; i++ {
+					seedRelease(t, s, appID, fmt.Sprintf("%d.0.0", i), "linux", "amd64", false, base.Add(time.Duration(i)*time.Hour))
+				}
+			},
+			filters:   models.ReleaseFilters{},
+			sortBy:    "release_date",
+			sortOrder: "asc",
+			limit:     2,
+			offset:    0,
+			wantCount: 2,
+			wantTotal: 4,
+		},
+		{
+			name: "empty result for non-existent version filter",
+			setup: func(s *MemoryStorage) {
+				seedRelease(t, s, appID, "1.0.0", "linux", "amd64", false, base)
+			},
+			filters:   models.ReleaseFilters{Version: "9.9.9"},
+			sortBy:    "release_date",
+			sortOrder: "asc",
+			limit:     10,
+			offset:    0,
+			wantCount: 0,
+			wantTotal: 0,
+			wantEmpty: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s, err := NewMemoryStorage()
+			require.NoError(t, err)
+			defer s.Close()
+
+			tt.setup(s)
+
+			releases, total, err := s.ListReleasesPaged(ctx, appID, tt.filters, tt.sortBy, tt.sortOrder, tt.limit, tt.offset)
+			require.NoError(t, err)
+			assert.Equal(t, tt.wantTotal, total)
+			assert.Len(t, releases, tt.wantCount)
+			if tt.wantEmpty {
+				assert.Empty(t, releases)
+			}
+			if len(tt.wantVersionOrder) > 0 {
+				require.Len(t, releases, len(tt.wantVersionOrder))
+				for i, v := range tt.wantVersionOrder {
+					assert.Equal(t, v, releases[i].Version, "index %d", i)
+				}
+			}
+		})
+	}
+}
+
+func TestMemoryStorage_GetLatestStableRelease(t *testing.T) {
+	ctx := context.Background()
+	appID := "test-app"
+	base := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	tests := []struct {
+		name        string
+		setup       func(s *MemoryStorage)
+		platform    string
+		arch        string
+		wantVersion string
+		wantErr     error
+	}{
+		{
+			name: "returns highest stable version, ignoring pre-releases",
+			setup: func(s *MemoryStorage) {
+				seedRelease(t, s, appID, "1.0.0", "linux", "amd64", false, base)
+				seedRelease(t, s, appID, "2.0.0-beta", "linux", "amd64", false, base.Add(time.Hour))
+				seedRelease(t, s, appID, "1.5.0", "linux", "amd64", false, base.Add(2*time.Hour))
+			},
+			platform:    "linux",
+			arch:        "amd64",
+			wantVersion: "1.5.0",
+		},
+		{
+			name: "only pre-releases returns ErrNotFound",
+			setup: func(s *MemoryStorage) {
+				seedRelease(t, s, appID, "1.0.0-beta", "linux", "amd64", false, base)
+			},
+			platform: "linux",
+			arch:     "amd64",
+			wantErr:  ErrNotFound,
+		},
+		{
+			name: "wrong platform returns ErrNotFound",
+			setup: func(s *MemoryStorage) {
+				seedRelease(t, s, appID, "1.0.0", "linux", "amd64", false, base)
+			},
+			platform: "windows",
+			arch:     "amd64",
+			wantErr:  ErrNotFound,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s, err := NewMemoryStorage()
+			require.NoError(t, err)
+			defer s.Close()
+
+			tt.setup(s)
+
+			release, err := s.GetLatestStableRelease(ctx, appID, tt.platform, tt.arch)
+			if tt.wantErr != nil {
+				assert.ErrorIs(t, err, tt.wantErr)
+				assert.Nil(t, release)
+				return
+			}
+			require.NoError(t, err)
+			assert.Equal(t, tt.wantVersion, release.Version)
+		})
+	}
+}
+
+func TestMemoryStorage_GetApplicationStats(t *testing.T) {
+	ctx := context.Background()
+	appID := "test-app"
+	base := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	tests := []struct {
+		name              string
+		setup             func(s *MemoryStorage)
+		wantTotalReleases int
+		wantRequired      int
+		wantPlatformCount int
+		wantLatestVersion string
+	}{
+		{
+			name: "app with multiple releases across platforms",
+			setup: func(s *MemoryStorage) {
+				// 1 required release on linux
+				seedRelease(t, s, appID, "1.0.0", "linux", "amd64", true, base)
+				// 1 non-required on linux
+				seedRelease(t, s, appID, "1.5.0", "linux", "amd64", false, base.Add(time.Hour))
+				// 1 non-required on windows (2.0.0-beta is highest version overall)
+				seedRelease(t, s, appID, "2.0.0-beta", "windows", "amd64", false, base.Add(2*time.Hour))
+			},
+			wantTotalReleases: 3,
+			wantRequired:      1,
+			wantPlatformCount: 2,
+			wantLatestVersion: "2.0.0-beta",
+		},
+		{
+			name:              "app with no releases returns zero stats",
+			setup:             func(s *MemoryStorage) {},
+			wantTotalReleases: 0,
+			wantRequired:      0,
+			wantPlatformCount: 0,
+			wantLatestVersion: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s, err := NewMemoryStorage()
+			require.NoError(t, err)
+			defer s.Close()
+
+			tt.setup(s)
+
+			stats, err := s.GetApplicationStats(ctx, appID)
+			require.NoError(t, err)
+			assert.Equal(t, tt.wantTotalReleases, stats.TotalReleases)
+			assert.Equal(t, tt.wantRequired, stats.RequiredReleases)
+			assert.Equal(t, tt.wantPlatformCount, stats.PlatformCount)
+			assert.Equal(t, tt.wantLatestVersion, stats.LatestVersion)
+		})
+	}
+}

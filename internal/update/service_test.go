@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 	"updater/internal/models"
+	"updater/internal/storage"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -169,6 +170,22 @@ func (m *MockStorage) UpdateAPIKey(_ context.Context, _ *models.APIKey) error {
 
 func (m *MockStorage) DeleteAPIKey(_ context.Context, _ string) error {
 	return nil
+}
+
+func (m *MockStorage) ListApplicationsPaged(_ context.Context, _, _ int) ([]*models.Application, int, error) {
+	return nil, 0, nil
+}
+
+func (m *MockStorage) ListReleasesPaged(_ context.Context, _ string, _ models.ReleaseFilters, _, _ string, _, _ int) ([]*models.Release, int, error) {
+	return nil, 0, nil
+}
+
+func (m *MockStorage) GetLatestStableRelease(_ context.Context, _, _, _ string) (*models.Release, error) {
+	return nil, storage.ErrNotFound
+}
+
+func (m *MockStorage) GetApplicationStats(_ context.Context, _ string) (models.ApplicationStats, error) {
+	return models.ApplicationStats{}, nil
 }
 
 func TestNewService(t *testing.T) {
