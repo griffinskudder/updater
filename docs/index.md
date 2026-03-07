@@ -10,9 +10,11 @@ The updater service acts as a metadata provider, referencing externally hosted d
 
 - **Semantic Versioning Support**: Full semantic versioning compliance with flexible parsing
 - **Multi-Platform Support**: Windows, Linux, macOS, Android, and iOS compatibility
-- **Security First**: Strong cryptographic checksums and comprehensive validation
-- **Performance Optimized**: Caching-friendly design with efficient querying
-- **Developer Friendly**: Comprehensive API documentation and client libraries
+- **Security First**: API key authentication, role-based permissions, audit logging, and SHA256 checksums
+- **Multi-Provider Storage**: Memory, PostgreSQL, and SQLite backends with a unified interface
+- **Observability**: Prometheus metrics, OpenTelemetry tracing, and structured logging
+- **Performance Optimized**: Caching-friendly design with efficient querying and pagination
+- **Developer Friendly**: Swagger UI, OpenAPI specification, and comprehensive documentation
 
 ## Quick Navigation
 
@@ -43,55 +45,67 @@ Overview and auto-generated type reference for all data models:
 
 ## Development Status
 
-| Component | Implementation | Documentation | Tests |
-|-----------|----------------|---------------|-------|
-| Models Layer | Complete | Complete | Planned |
-| API Layer | Planned | Complete | Planned |
-| Storage Layer | Planned | Complete | Planned |
-| Business Logic | Planned | Complete | Planned |
+| Component      | Implementation | Documentation | Tests    |
+|----------------|----------------|---------------|----------|
+| Models Layer   | Complete       | Complete      | Complete |
+| API Layer      | Complete       | Complete      | Complete |
+| Storage Layer  | Complete       | Complete      | Complete |
+| Business Logic | Complete       | Complete      | Complete |
+| Observability  | Complete       | Complete      | Complete |
+| Logging        | Complete       | Complete      | Complete |
 
 ## Architecture Overview
 
 ```mermaid
 graph TB
-    subgraph "API Layer (Planned)"
+    subgraph "API Layer"
         api[HTTP Handlers & Routing]
+        mw[Auth & Permission Middleware]
     end
 
-    subgraph "Business Logic (Planned)"
+    subgraph "Business Logic"
         logic[Update Determination & Version Comparison]
     end
 
-    subgraph "Models Layer (COMPLETE)"
-        subgraph "Core Models"
-            version[Version Models]
-            platform[Platform Models]
-            release[Release Models]
-            apimodels[API Models]
-        end
+    subgraph "Models Layer"
+        models[Application, Release, Request, Response, APIKey]
         config[Configuration Models]
     end
 
-    subgraph "Storage Layer (Planned)"
-        storage[Data Persistence & Retrieval]
+    subgraph "Storage Layer"
+        iface[Storage Interface]
+        mem[Memory Provider]
+        pg[PostgreSQL Provider]
+        sqlite[SQLite Provider]
+        sqlc[sqlc-generated Queries]
     end
 
-    api --> logic
-    logic --> version
-    logic --> platform
-    logic --> release
-    logic --> apimodels
+    subgraph "Observability"
+        metrics[Prometheus Metrics]
+        tracing[OpenTelemetry Tracing]
+        instStorage[Instrumented Storage Wrapper]
+    end
+
+    subgraph "Logging"
+        logger[Structured log/slog Logger]
+    end
+
+    api --> mw
+    mw --> logic
+    logic --> models
     logic --> config
-    version --> storage
-    platform --> storage
-    release --> storage
-    config --> storage
+    logic --> instStorage
+    instStorage --> iface
+    iface --> mem
+    iface --> pg
+    iface --> sqlite
+    pg --> sqlc
+    sqlite --> sqlc
+    api --> metrics
+    api --> tracing
+    api --> logger
+    mw --> logger
 
-    classDef complete fill:#4caf50,stroke:#2e7d32,color:#fff
-    classDef planned fill:#ff9800,stroke:#f57c00,color:#fff
-
-    class version,platform,release,apimodels,config complete
-    class api,logic,storage planned
 ```
 
 ## Core Principles
@@ -124,10 +138,37 @@ graph TB
 
 The service provides RESTful API endpoints for update management:
 
+**Public:**
 - `GET /api/v1/updates/{app_id}/check` - Check for available updates
+- `POST /api/v1/check` - Check for updates via JSON body
 - `GET /api/v1/updates/{app_id}/latest` - Get latest version information
-- `GET /api/v1/updates/{app_id}/releases` - List all releases with filtering
-- `POST /api/v1/updates/{app_id}/register` - Register new release (admin)
+- `GET /api/v1/latest` - Get latest version with query params
+- `GET /health` - Health check
+- `GET /api/v1/health` - Versioned health check alias
+- `GET /version` - Version information
+- `GET /api/v1/version` - Versioned version information alias
+- `GET /api/v1/docs` - Swagger UI
+- `GET /api/v1/openapi.yaml` - OpenAPI specification
+
+**Protected endpoints** require an API key and are only enforced when `security.enable_auth: true`.
+
+**Protected (read):**
+- `GET /api/v1/updates/{app_id}/releases` - List releases
+- `GET /api/v1/applications` - List applications
+- `GET /api/v1/applications/{app_id}` - Get application details
+
+**Protected (write):**
+- `POST /api/v1/updates/{app_id}/register` - Register new release
+- `POST /api/v1/applications` - Create application
+
+**Protected (admin):**
+- `PUT /api/v1/applications/{app_id}` - Update application
+- `DELETE /api/v1/applications/{app_id}` - Delete application
+- `DELETE /api/v1/updates/{app_id}/releases/{version}/{platform}/{arch}` - Delete release
+- `GET /api/v1/admin/keys` - List API keys
+- `POST /api/v1/admin/keys` - Create API key
+- `PATCH /api/v1/admin/keys/{id}` - Update API key
+- `DELETE /api/v1/admin/keys/{id}` - Revoke API key
 
 Detailed API documentation is available in the [Architecture Documentation](ARCHITECTURE.md).
 
@@ -135,8 +176,8 @@ Detailed API documentation is available in the [Architecture Documentation](ARCH
 
 The service supports flexible configuration for different deployment scenarios:
 
-- **Development**: JSON file storage, permissive settings, debug logging
-- **Production**: Database storage, security hardening, structured logging
+- **Development**: SQLite file storage, permissive settings, debug logging
+- **Production**: PostgreSQL storage, security hardening, structured logging
 - **Container**: Environment variable configuration, health checks
 
 Full configuration options are documented in the [Model Reference](models/auto/models.md).
