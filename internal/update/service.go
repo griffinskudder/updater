@@ -338,6 +338,7 @@ func (s *Service) CreateApplication(ctx context.Context, req *models.CreateAppli
 		return nil, NewInternalError("failed to save application", err)
 	}
 
+	// app.CreatedAt was set via time.Now().Format(time.RFC3339) two lines above and is guaranteed valid.
 	createdAt, _ := time.Parse(time.RFC3339, app.CreatedAt)
 	return &models.CreateApplicationResponse{
 		ID:        app.ID,
@@ -358,8 +359,20 @@ func (s *Service) GetApplication(ctx context.Context, appID string) (*models.App
 		return nil, NewInternalError("failed to get application stats", err)
 	}
 
-	createdAt, _ := time.Parse(time.RFC3339, app.CreatedAt)
-	updatedAt, _ := time.Parse(time.RFC3339, app.UpdatedAt)
+	var createdAt time.Time
+	if app.CreatedAt != "" {
+		createdAt, err = time.Parse(time.RFC3339, app.CreatedAt)
+		if err != nil {
+			return nil, NewInternalError(fmt.Sprintf("corrupt created_at for application %s", appID), err)
+		}
+	}
+	var updatedAt time.Time
+	if app.UpdatedAt != "" {
+		updatedAt, err = time.Parse(time.RFC3339, app.UpdatedAt)
+		if err != nil {
+			return nil, NewInternalError(fmt.Sprintf("corrupt updated_at for application %s", appID), err)
+		}
+	}
 
 	return &models.ApplicationInfoResponse{
 		ID:          app.ID,
@@ -397,17 +410,27 @@ func (s *Service) ListApplications(ctx context.Context, req *models.ListApplicat
 	summaries := make([]models.ApplicationSummary, len(apps))
 	for i, app := range apps {
 		summaries[i].FromApplication(app)
-		summaries[i].CreatedAt, _ = time.Parse(time.RFC3339, app.CreatedAt)
-		summaries[i].UpdatedAt, _ = time.Parse(time.RFC3339, app.UpdatedAt)
+		var parseErr error
+		if app.CreatedAt != "" {
+			summaries[i].CreatedAt, parseErr = time.Parse(time.RFC3339, app.CreatedAt)
+			if parseErr != nil {
+				return nil, NewInternalError(fmt.Sprintf("corrupt created_at for application %s", app.ID), parseErr)
+			}
+		}
+		if app.UpdatedAt != "" {
+			summaries[i].UpdatedAt, parseErr = time.Parse(time.RFC3339, app.UpdatedAt)
+			if parseErr != nil {
+				return nil, NewInternalError(fmt.Sprintf("corrupt updated_at for application %s", app.ID), parseErr)
+			}
+		}
 	}
 
 	var nextCursor string
 	if len(apps) > 0 && len(apps) == req.Limit {
-		last := apps[len(apps)-1]
-		createdAt, _ := time.Parse(time.RFC3339, last.CreatedAt)
+		// Reuse the already-parsed CreatedAt from summaries to avoid a redundant parse.
 		c := &models.ApplicationCursor{
-			CreatedAt: createdAt,
-			ID:        last.ID,
+			CreatedAt: summaries[len(summaries)-1].CreatedAt,
+			ID:        apps[len(apps)-1].ID,
 		}
 		encoded, err := c.Encode()
 		if err != nil {

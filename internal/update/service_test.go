@@ -1381,6 +1381,80 @@ func TestService_CheckForUpdate_SemverOrdering(t *testing.T) {
 	assert.Equal(t, "1.10.0", response.LatestVersion)
 }
 
+func TestService_GetApplication_CorruptTimestamp(t *testing.T) {
+	tests := []struct {
+		name      string
+		createdAt string
+		updatedAt string
+	}{
+		{
+			name:      "corrupt created_at",
+			createdAt: "not-a-timestamp",
+			updatedAt: "2025-01-01T00:00:00Z",
+		},
+		{
+			name:      "corrupt updated_at",
+			createdAt: "2025-01-01T00:00:00Z",
+			updatedAt: "not-a-timestamp",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockStorage := NewMockStorage()
+			app := models.NewApplication("test-app", "Test App", []string{"windows"})
+			app.CreatedAt = tt.createdAt
+			app.UpdatedAt = tt.updatedAt
+			mockStorage.applications["test-app"] = app
+
+			service := NewService(mockStorage)
+			_, err := service.GetApplication(context.Background(), "test-app")
+
+			require.Error(t, err)
+			var svcErr *ServiceError
+			require.ErrorAs(t, err, &svcErr)
+			assert.Equal(t, models.ErrorCodeInternalError, svcErr.Code)
+		})
+	}
+}
+
+func TestService_ListApplications_CorruptTimestamp(t *testing.T) {
+	tests := []struct {
+		name      string
+		createdAt string
+		updatedAt string
+	}{
+		{
+			name:      "corrupt created_at in summary",
+			createdAt: "not-a-timestamp",
+			updatedAt: "2025-01-01T00:00:00Z",
+		},
+		{
+			name:      "corrupt updated_at in summary",
+			createdAt: "2025-01-01T00:00:00Z",
+			updatedAt: "not-a-timestamp",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockStorage := NewMockStorage()
+			app := models.NewApplication("test-app", "Test App", []string{"windows"})
+			app.CreatedAt = tt.createdAt
+			app.UpdatedAt = tt.updatedAt
+			mockStorage.applications["test-app"] = app
+
+			service := NewService(mockStorage)
+			_, err := service.ListApplications(context.Background(), &models.ListApplicationsRequest{Limit: 10})
+
+			require.Error(t, err)
+			var svcErr *ServiceError
+			require.ErrorAs(t, err, &svcErr)
+			assert.Equal(t, models.ErrorCodeInternalError, svcErr.Code)
+		})
+	}
+}
+
 // Helper functions
 
 func createTestReleaseForUpdate(appID, version, platform, arch string) *models.Release {

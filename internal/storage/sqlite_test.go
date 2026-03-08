@@ -964,3 +964,47 @@ func TestSQLiteStorageSaveRelease_VersionSortColumns(t *testing.T) {
 		})
 	}
 }
+
+func TestSQLiteReleaseToModel_CorruptTimestamp(t *testing.T) {
+	validTime := time.Now().UTC().Format(time.RFC3339)
+	tests := []struct {
+		name        string
+		releaseDate string
+		createdAt   string
+		wantErrMsg  string
+	}{
+		{
+			name:        "corrupt release_date",
+			releaseDate: "not-a-timestamp",
+			createdAt:   validTime,
+			wantErrMsg:  "corrupt release_date",
+		},
+		{
+			name:        "corrupt created_at",
+			releaseDate: validTime,
+			createdAt:   "not-a-timestamp",
+			wantErrMsg:  "corrupt created_at",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			row := sqlcite.Release{
+				ID:            "rel-1",
+				ApplicationID: "app-1",
+				Version:       "1.0.0",
+				Platform:      "windows",
+				Architecture:  "amd64",
+				DownloadUrl:   "https://example.com/file",
+				Checksum:      "abc123",
+				ChecksumType:  "sha256",
+				ReleaseDate:   tt.releaseDate,
+				CreatedAt:     tt.createdAt,
+			}
+
+			_, err := sqliteReleaseToModel(row)
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), tt.wantErrMsg)
+		})
+	}
+}

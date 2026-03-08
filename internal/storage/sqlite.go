@@ -298,8 +298,14 @@ func sqliteReleaseToModel(row sqlcite.Release) (*models.Release, error) {
 		return nil, err
 	}
 
-	releaseDate, _ := time.Parse(time.RFC3339, row.ReleaseDate)
-	createdAt, _ := time.Parse(time.RFC3339, row.CreatedAt)
+	releaseDate, err := time.Parse(time.RFC3339, row.ReleaseDate)
+	if err != nil {
+		return nil, fmt.Errorf("corrupt release_date for release %s: %w", row.ID, err)
+	}
+	createdAt, err := time.Parse(time.RFC3339, row.CreatedAt)
+	if err != nil {
+		return nil, fmt.Errorf("corrupt created_at for release %s: %w", row.ID, err)
+	}
 
 	return &models.Release{
 		ID:             row.ID,
@@ -375,8 +381,14 @@ func sqliteAPIKeyToModel(row sqlcite.ApiKey) (*models.APIKey, error) {
 		return nil, fmt.Errorf("failed to unmarshal permissions for key %s: %w", row.ID, err)
 	}
 
-	createdAt, _ := time.Parse(time.RFC3339, row.CreatedAt)
-	updatedAt, _ := time.Parse(time.RFC3339, row.UpdatedAt)
+	createdAt, err := time.Parse(time.RFC3339, row.CreatedAt)
+	if err != nil {
+		return nil, fmt.Errorf("corrupt created_at for api key %s: %w", row.ID, err)
+	}
+	updatedAt, err := time.Parse(time.RFC3339, row.UpdatedAt)
+	if err != nil {
+		return nil, fmt.Errorf("corrupt updated_at for api key %s: %w", row.ID, err)
+	}
 
 	return &models.APIKey{
 		ID:          row.ID,

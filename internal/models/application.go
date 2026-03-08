@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"time"
 )
 
 // Platform and Architecture Constants
@@ -118,6 +119,17 @@ func (a *Application) Validate() error {
 
 	if err := a.Config.Validate(); err != nil {
 		return fmt.Errorf("invalid config: %w", err)
+	}
+
+	if a.CreatedAt != "" {
+		if _, err := time.Parse(time.RFC3339, a.CreatedAt); err != nil {
+			return fmt.Errorf("invalid created_at timestamp: %w", err)
+		}
+	}
+	if a.UpdatedAt != "" {
+		if _, err := time.Parse(time.RFC3339, a.UpdatedAt); err != nil {
+			return fmt.Errorf("invalid updated_at timestamp: %w", err)
+		}
 	}
 
 	return nil
