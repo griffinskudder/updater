@@ -27,7 +27,6 @@ metrics:
 
 observability:
   service_name: "updater"
-  service_version: "1.0.0"
   tracing:
     enabled: true
     exporter: "otlp"
