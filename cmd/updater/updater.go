@@ -239,6 +239,9 @@ func printValidateResults(results []config.CheckResult, format string) {
 		fmt.Println(string(data))
 		return
 	}
+	if format != "text" {
+		fmt.Fprintf(os.Stderr, "unknown --validate-format %q, using text\n", format)
+	}
 	for _, r := range results {
 		if r.OK {
 			fmt.Printf("ok   %s\n", r.Name)
