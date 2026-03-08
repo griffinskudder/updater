@@ -50,26 +50,42 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SHA: ${{ inputs.sha }}
           REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
         run: |
           echo "Checking CI status for $SHA..."
-          RUNS=$(gh api \
-            "repos/$REPO/commits/$SHA/check-runs" \
-            --jq '.check_runs[] | {name: .name, status: .status, conclusion: .conclusion}')
 
-          if [ -z "$RUNS" ]; then
+          CURRENT_SUITE=$(gh api "repos/$REPO/actions/runs/$RUN_ID" --jq '.check_suite_id')
+          RUNS_JSON=$(gh api "repos/$REPO/commits/$SHA/check-runs")
+
+          RUNS=$(echo "$RUNS_JSON" | jq --argjson suite "$CURRENT_SUITE" \
+            '[.check_runs[] | select(.check_suite.id != $suite)]')
+
+          if [ -z "$RUNS" ] || [ "$RUNS" = "[]" ]; then
             echo "ERROR: No check runs found for SHA '$SHA'"
             exit 1
           fi
 
-          FAILED=$(gh api \
-            "repos/$REPO/commits/$SHA/check-runs" \
-            --jq '[.check_runs[] | select(.status != "completed" or (.conclusion != "success" and .conclusion != "skipped" and .conclusion != "neutral"))] | length')
+          FAILED=$(echo "$RUNS_JSON" | jq --argjson suite "$CURRENT_SUITE" \
+            '[.check_runs[]
+            | select(.check_suite.id != $suite)
+            | select(
+                .status != "completed" or
+                (.conclusion != "success" and
+                 .conclusion != "skipped" and
+                 .conclusion != "neutral"))
+            ] | length')
 
           if [ "$FAILED" -gt 0 ]; then
             echo "ERROR: $FAILED check run(s) are not completed and successful:"
-            gh api \
-              "repos/$REPO/commits/$SHA/check-runs" \
-              --jq '.check_runs[] | select(.status != "completed" or (.conclusion != "success" and .conclusion != "skipped" and .conclusion != "neutral")) | "  - \(.name): status=\(.status) conclusion=\(.conclusion)"'
+            echo "$RUNS_JSON" | jq -r --argjson suite "$CURRENT_SUITE" \
+              '.check_runs[]
+              | select(.check_suite.id != $suite)
+              | select(
+                  .status != "completed" or
+                  (.conclusion != "success" and
+                   .conclusion != "skipped" and
+                   .conclusion != "neutral"))
+              | "  - \(.name): status=\(.status) conclusion=\(.conclusion)"'
             exit 1
           fi
 
