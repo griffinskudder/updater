@@ -521,3 +521,15 @@ func (h *capturingSlogHandler) Handle(_ context.Context, r slog.Record) error {
 
 func (h *capturingSlogHandler) WithAttrs(_ []slog.Attr) slog.Handler { return h }
 func (h *capturingSlogHandler) WithGroup(_ string) slog.Handler      { return h }
+
+func TestSaveExample_FilePermissions(t *testing.T) {
+	tempDir := t.TempDir()
+	filePath := filepath.Join(tempDir, "example.yaml")
+
+	err := SaveExample(filePath)
+	require.NoError(t, err)
+
+	info, err := os.Stat(filePath)
+	require.NoError(t, err)
+	assert.Equal(t, os.FileMode(0600), info.Mode().Perm())
+}

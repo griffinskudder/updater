@@ -78,7 +78,7 @@ type SecurityConfig struct {
 	// when the api_keys table is empty. Required when EnableAuth is true.
 	// Set via the UPDATER_BOOTSTRAP_KEY environment variable or security.bootstrap_key
 	// in the config file. After the first startup, keys are managed via the REST API.
-	BootstrapKey string `yaml:"bootstrap_key" json:"bootstrap_key"`
+	BootstrapKey string `yaml:"bootstrap_key" json:"-"`
 	// EnableAuth toggles API key authentication. When false all endpoints are public.
 	EnableAuth bool `yaml:"enable_auth" json:"enable_auth"`
 }
