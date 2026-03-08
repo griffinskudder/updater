@@ -46,14 +46,15 @@ type Config struct {
 }
 
 type ServerConfig struct {
-	Port         int           `yaml:"port" json:"port"`
-	Host         string        `yaml:"host" json:"host"`
-	ReadTimeout  time.Duration `yaml:"read_timeout" json:"read_timeout"`
-	WriteTimeout time.Duration `yaml:"write_timeout" json:"write_timeout"`
-	IdleTimeout  time.Duration `yaml:"idle_timeout" json:"idle_timeout"`
-	TLSEnabled   bool          `yaml:"tls_enabled" json:"tls_enabled"`
-	TLSCertFile  string        `yaml:"tls_cert_file" json:"tls_cert_file"`
-	TLSKeyFile   string        `yaml:"tls_key_file" json:"tls_key_file"`
+	Port            int           `yaml:"port" json:"port"`
+	Host            string        `yaml:"host" json:"host"`
+	ReadTimeout     time.Duration `yaml:"read_timeout" json:"read_timeout"`
+	WriteTimeout    time.Duration `yaml:"write_timeout" json:"write_timeout"`
+	IdleTimeout     time.Duration `yaml:"idle_timeout" json:"idle_timeout"`
+	ShutdownTimeout time.Duration `yaml:"shutdown_timeout" json:"shutdown_timeout"`
+	TLSEnabled      bool          `yaml:"tls_enabled" json:"tls_enabled"`
+	TLSCertFile     string        `yaml:"tls_cert_file" json:"tls_cert_file"`
+	TLSKeyFile      string        `yaml:"tls_key_file" json:"tls_key_file"`
 }
 
 type StorageConfig struct {
@@ -129,12 +130,13 @@ type TracingConfig struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		Server: ServerConfig{
-			Port:         8080,
-			Host:         "0.0.0.0",
-			ReadTimeout:  30 * time.Second,
-			WriteTimeout: 30 * time.Second,
-			IdleTimeout:  60 * time.Second,
-			TLSEnabled:   false,
+			Port:            8080,
+			Host:            "0.0.0.0",
+			ReadTimeout:     30 * time.Second,
+			WriteTimeout:    30 * time.Second,
+			IdleTimeout:     60 * time.Second,
+			ShutdownTimeout: 30 * time.Second,
+			TLSEnabled:      false,
 		},
 		Storage: StorageConfig{
 			Type: "sqlite",
@@ -220,6 +222,10 @@ func (sc *ServerConfig) Validate() error {
 
 	if sc.IdleTimeout < 0 {
 		return errors.New("idle timeout cannot be negative")
+	}
+
+	if sc.ShutdownTimeout < 0 {
+		return errors.New("shutdown timeout cannot be negative")
 	}
 
 	if sc.TLSEnabled {

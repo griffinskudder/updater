@@ -175,10 +175,10 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	slog.Info("Shutting down server")
+	slog.Info("Shutting down server", "timeout", cfg.Server.ShutdownTimeout)
+	start := time.Now()
 
-	// Create a deadline to wait for shutdown
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), cfg.Server.ShutdownTimeout)
 	defer cancel()
 
 	// Shutdown metrics server
@@ -193,7 +193,7 @@ func main() {
 		slog.Error("Server forced to shutdown", "error", err)
 	}
 
-	slog.Info("Server shutdown complete")
+	slog.Info("Server shutdown complete", "elapsed", time.Since(start))
 }
 
 // initializeStorage creates and returns a storage instance based on configuration
