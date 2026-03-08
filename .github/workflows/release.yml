@@ -1,0 +1,125 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Semantic version tag to create (e.g. v0.0.4)'
+        required: true
+        type: string
+      sha:
+        description: 'Full commit SHA to tag and release'
+        required: true
+        type: string
+
+permissions: {}
+
+jobs:
+  release:
+    name: Validate, build, tag, and release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - name: Validate version format
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          if ! echo "$VERSION" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "ERROR: version '$VERSION' does not match v<major>.<minor>.<patch>"
+            exit 1
+          fi
+
+      - name: Checkout (full history for ancestry check)
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate SHA is on main
+        env:
+          SHA: ${{ inputs.sha }}
+        run: |
+          if ! git merge-base --is-ancestor "$SHA" origin/main; then
+            echo "ERROR: SHA '$SHA' is not reachable from origin/main"
+            exit 1
+          fi
+
+      - name: Verify CI checks passed on SHA
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SHA: ${{ inputs.sha }}
+          REPO: ${{ github.repository }}
+        run: |
+          echo "Checking CI status for $SHA..."
+          RUNS=$(gh api \
+            "repos/$REPO/commits/$SHA/check-runs" \
+            --jq '.check_runs[] | {name: .name, status: .status, conclusion: .conclusion}')
+
+          if [ -z "$RUNS" ]; then
+            echo "ERROR: No check runs found for SHA '$SHA'"
+            exit 1
+          fi
+
+          FAILED=$(gh api \
+            "repos/$REPO/commits/$SHA/check-runs" \
+            --jq '[.check_runs[] | select(.status != "completed" or (.conclusion != "success" and .conclusion != "skipped" and .conclusion != "neutral"))] | length')
+
+          if [ "$FAILED" -gt 0 ]; then
+            echo "ERROR: $FAILED check run(s) are not completed and successful:"
+            gh api \
+              "repos/$REPO/commits/$SHA/check-runs" \
+              --jq '.check_runs[] | select(.status != "completed" or (.conclusion != "success" and .conclusion != "skipped" and .conclusion != "neutral")) | "  - \(.name): status=\(.status) conclusion=\(.conclusion)"'
+            exit 1
+          fi
+
+          echo "All check runs passed."
+
+      - name: Checkout at release SHA
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ inputs.sha }}
+
+      - name: Log in to GHCR
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        env:
+          DOCKER_REGISTRY: ghcr.io/${{ github.repository_owner }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          chmod +x ./scripts/docker-build.sh
+          make docker-push
+
+      - name: Create and push git tag
+        env:
+          VERSION: ${{ inputs.version }}
+          SHA: ${{ inputs.sha }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git ls-remote --tags origin | grep -q "refs/tags/$VERSION$"; then
+            echo "Tag $VERSION already exists on remote, skipping tag creation"
+          else
+            git tag "$VERSION" "$SHA"
+            git push origin "$VERSION"
+          fi
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ inputs.version }}
+          SHA: ${{ inputs.sha }}
+        run: |
+          if gh release view "$VERSION" > /dev/null 2>&1; then
+            echo "Release $VERSION already exists, skipping release creation"
+          else
+            gh release create "$VERSION" \
+              --title "$VERSION" \
+              --generate-notes \
+              --target "$SHA"
+          fi
