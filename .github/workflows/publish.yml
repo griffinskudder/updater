@@ -21,13 +21,24 @@ jobs:
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Log in to GHCR
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Build (fork PR)
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository
+        env:
+          DOCKER_REGISTRY: ghcr.io/${{ github.repository_owner }}
+          LATEST_TAG: latest-dev
+        run: |
+          chmod +x ./scripts/docker-build.sh
+          make docker-build
+
       - name: Build and push
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         env:
           DOCKER_REGISTRY: ghcr.io/${{ github.repository_owner }}
           LATEST_TAG: latest-dev
