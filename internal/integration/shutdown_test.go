@@ -47,13 +47,12 @@ func TestMain(m *testing.M) {
 		fmt.Fprintf(os.Stderr, "failed to create temp dir: %v\n", err)
 		os.Exit(1)
 	}
-	defer os.RemoveAll(tmp)
-
 	binaryPath = filepath.Join(tmp, "updater")
 
 	root, err := moduleRoot()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to find module root: %v\n", err)
+		os.RemoveAll(tmp)
 		os.Exit(1)
 	}
 
@@ -63,10 +62,13 @@ func TestMain(m *testing.M) {
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
 		fmt.Fprintf(os.Stderr, "failed to build updater binary: %v\n", err)
+		os.RemoveAll(tmp)
 		os.Exit(1)
 	}
 
-	os.Exit(m.Run())
+	code := m.Run()
+	os.RemoveAll(tmp)
+	os.Exit(code)
 }
 
 // getFreePort returns an available TCP port by binding and immediately releasing it.
