@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"slices"
 	"time"
 )
 
@@ -38,7 +39,8 @@ func (c *ReleaseCursor) Encode() (string, error) {
 }
 
 // DecodeReleaseCursor deserialises a cursor produced by ReleaseCursor.Encode.
-// Returns an error if the string is not valid base64 or not valid JSON.
+// Returns an error if the string is not valid base64, not valid JSON, or
+// contains invalid sort_by / sort_order values.
 func DecodeReleaseCursor(s string) (*ReleaseCursor, error) {
 	b, err := base64.StdEncoding.DecodeString(s)
 	if err != nil {
@@ -47,6 +49,12 @@ func DecodeReleaseCursor(s string) (*ReleaseCursor, error) {
 	var c ReleaseCursor
 	if err := json.Unmarshal(b, &c); err != nil {
 		return nil, fmt.Errorf("invalid cursor format: %w", err)
+	}
+	if !slices.Contains(validReleaseSortFields, c.SortBy) {
+		return nil, fmt.Errorf("invalid cursor sort_by: %q", c.SortBy)
+	}
+	if !slices.Contains(validSortOrders, c.SortOrder) {
+		return nil, fmt.Errorf("invalid cursor sort_order: %q", c.SortOrder)
 	}
 	return &c, nil
 }
