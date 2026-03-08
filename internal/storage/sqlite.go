@@ -3,10 +3,8 @@ package storage
 import (
 	"context"
 	"database/sql"
-	"embed"
 	"errors"
 	"fmt"
-	"io/fs"
 	"sort"
 	"strings"
 	"time"
@@ -17,9 +15,6 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-//go:embed migrations/sqlite
-var sqliteMigrationsFS embed.FS
-
 // SQLiteStorage implements the Storage interface using SQLite with sqlc-generated queries.
 type SQLiteStorage struct {
 	db      *sql.DB
@@ -27,7 +22,7 @@ type SQLiteStorage struct {
 }
 
 // NewSQLiteStorage creates a new SQLite storage instance.
-// It automatically creates tables using the embedded schema if they do not exist.
+// The database must be migrated before use (e.g. via the migrate binary or goose).
 func NewSQLiteStorage(dsn string) (Storage, error) {
 	if dsn == "" {
 		return nil, fmt.Errorf("connection string is required for SQLite storage")
@@ -58,11 +53,6 @@ func NewSQLiteStorage(dsn string) (Storage, error) {
 	if _, err := db.Exec("PRAGMA foreign_keys=ON"); err != nil {
 		db.Close()
 		return nil, fmt.Errorf("failed to enable foreign keys: %w", err)
-	}
-
-	if err := runSQLiteMigrations(db); err != nil {
-		db.Close()
-		return nil, fmt.Errorf("failed to run migrations: %w", err)
 	}
 
 	return &SQLiteStorage{
@@ -823,89 +813,11 @@ func (ss *SQLiteStorage) GetApplicationStats(ctx context.Context, appID string) 
 	return stats, nil
 }
 
-// runSQLiteMigrations applies any unapplied migration files from the embedded
-// migrations/sqlite directory. Applied migrations are tracked in a
-// schema_migrations table so each file is executed at most once.
-// Only numbered migration files (e.g. 001_initial.sql) are processed;
-// sqlc query files are skipped. Goose annotations (-- +goose Up/Down)
-// are handled: only the Up section is executed.
-func runSQLiteMigrations(db *sql.DB) error {
-	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS schema_migrations (
-		name       TEXT NOT NULL PRIMARY KEY,
-		applied_at TEXT NOT NULL DEFAULT (datetime('now'))
-	)`); err != nil {
-		return fmt.Errorf("create schema_migrations: %w", err)
+// newSQLiteStorageFromDB creates a SQLiteStorage from an existing *sql.DB.
+// Used by tests to share a pre-migrated in-memory database connection.
+func newSQLiteStorageFromDB(db *sql.DB) *SQLiteStorage {
+	return &SQLiteStorage{
+		db:      db,
+		queries: sqlcite.New(db),
 	}
-
-	entries, err := fs.ReadDir(sqliteMigrationsFS, "migrations/sqlite")
-	if err != nil {
-		return fmt.Errorf("read migration dir: %w", err)
-	}
-
-	for _, entry := range entries {
-		name := entry.Name()
-		// Only process numbered migration files, skip query files.
-		if entry.IsDir() || !strings.HasSuffix(name, ".sql") || len(name) == 0 || name[0] < '0' || name[0] > '9' {
-			continue
-		}
-
-		var count int
-		if err := db.QueryRow("SELECT COUNT(*) FROM schema_migrations WHERE name = ?", name).Scan(&count); err != nil {
-			return fmt.Errorf("check migration %s: %w", name, err)
-		}
-		if count > 0 {
-			continue
-		}
-
-		data, err := fs.ReadFile(sqliteMigrationsFS, "migrations/sqlite/"+name)
-		if err != nil {
-			return fmt.Errorf("read migration %s: %w", name, err)
-		}
-
-		// Extract only the goose Up section if goose annotations are present.
-		sqlContent := extractGooseUpSection(string(data))
-
-		tx, err := db.Begin()
-		if err != nil {
-			return fmt.Errorf("begin migration %s: %w", name, err)
-		}
-		if _, err := tx.Exec(sqlContent); err != nil {
-			tx.Rollback()
-			return fmt.Errorf("apply migration %s: %w", name, err)
-		}
-		if _, err := tx.Exec("INSERT INTO schema_migrations (name) VALUES (?)", name); err != nil {
-			tx.Rollback()
-			return fmt.Errorf("record migration %s: %w", name, err)
-		}
-		if err := tx.Commit(); err != nil {
-			return fmt.Errorf("commit migration %s: %w", name, err)
-		}
-	}
-	return nil
-}
-
-// extractGooseUpSection returns only the SQL between "-- +goose Up" and
-// "-- +goose Down" annotations. If no goose annotations are found, the
-// entire content is returned unchanged.
-func extractGooseUpSection(content string) string {
-	const upMarker = "-- +goose Up"
-	const downMarker = "-- +goose Down"
-
-	upIdx := strings.Index(content, upMarker)
-	if upIdx == -1 {
-		return content
-	}
-
-	// Start after the Up marker line
-	start := upIdx + len(upMarker)
-	if idx := strings.Index(content[start:], "\n"); idx >= 0 {
-		start += idx + 1
-	}
-
-	downIdx := strings.Index(content, downMarker)
-	if downIdx == -1 {
-		return content[start:]
-	}
-
-	return content[start:downIdx]
 }

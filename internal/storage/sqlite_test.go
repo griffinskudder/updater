@@ -2,23 +2,45 @@ package storage
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"sync"
 	"testing"
 	"time"
 	"updater/internal/models"
+	"updater/internal/storage/migrations"
 	sqlcite "updater/internal/storage/sqlc/sqlite"
 
+	"github.com/pressly/goose/v3"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func newSQLiteTestStorage(t *testing.T) Storage {
 	t.Helper()
-	s, err := NewSQLiteStorage(":memory:")
+
+	db, err := sql.Open("sqlite", ":memory:")
 	if err != nil {
-		t.Fatalf("failed to create sqlite storage: %v", err)
+		t.Fatalf("failed to open database: %v", err)
 	}
+	db.SetMaxOpenConns(1)
+
+	if _, err := db.Exec("PRAGMA journal_mode=WAL"); err != nil {
+		t.Fatalf("failed to enable WAL mode: %v", err)
+	}
+	if _, err := db.Exec("PRAGMA foreign_keys=ON"); err != nil {
+		t.Fatalf("failed to enable foreign keys: %v", err)
+	}
+
+	goose.SetBaseFS(migrations.SQLiteFS)
+	if err := goose.SetDialect("sqlite3"); err != nil {
+		t.Fatalf("failed to set goose dialect: %v", err)
+	}
+	if err := goose.Up(db, "sqlite"); err != nil {
+		t.Fatalf("failed to run migrations: %v", err)
+	}
+
+	s := newSQLiteStorageFromDB(db)
 	t.Cleanup(func() { s.Close() })
 	return s
 }
@@ -459,12 +481,9 @@ func TestSQLiteStorage_DeleteApplication(t *testing.T) {
 }
 
 func TestSQLiteStorageClose(t *testing.T) {
-	s, err := NewSQLiteStorage(":memory:")
-	if err != nil {
-		t.Fatalf("failed to create storage: %v", err)
-	}
+	s := newSQLiteTestStorage(t)
 
-	err = s.Close()
+	err := s.Close()
 	if err != nil {
 		t.Errorf("Close failed: %v", err)
 	}
@@ -767,9 +786,7 @@ func TestSQLiteStorage_GetApplicationStats(t *testing.T) {
 }
 
 func TestSQLiteStorage_ListApplicationsPaged_TotalCountStable(t *testing.T) {
-	store, err := NewSQLiteStorage(":memory:")
-	require.NoError(t, err)
-	defer store.Close()
+	store := newSQLiteTestStorage(t)
 	ctx := context.Background()
 
 	now := time.Now().UTC()
@@ -802,9 +819,7 @@ func TestSQLiteStorage_ListApplicationsPaged_TotalCountStable(t *testing.T) {
 }
 
 func TestSQLiteStorage_ListReleasesPaged_TotalCountStable(t *testing.T) {
-	store, err := NewSQLiteStorage(":memory:")
-	require.NoError(t, err)
-	defer store.Close()
+	store := newSQLiteTestStorage(t)
 	ctx := context.Background()
 
 	app := &models.Application{
@@ -855,9 +870,7 @@ func TestSQLiteStorage_ListReleasesPaged_TotalCountStable(t *testing.T) {
 
 func TestSQLiteStorage_ListReleasesPaged_VersionSortPreReleaseOrder(t *testing.T) {
 	// Version sort DESC must give: stable, rc, beta, alpha (not stable, alpha, beta, rc).
-	store, err := NewSQLiteStorage(":memory:")
-	require.NoError(t, err)
-	defer store.Close()
+	store := newSQLiteTestStorage(t)
 	ctx := context.Background()
 
 	app := &models.Application{
@@ -1005,47 +1018,6 @@ func TestSQLiteReleaseToModel_CorruptTimestamp(t *testing.T) {
 			_, err := sqliteReleaseToModel(row)
 			require.Error(t, err)
 			assert.Contains(t, err.Error(), tt.wantErrMsg)
-		})
-	}
-}
-
-func TestExtractGooseUpSection(t *testing.T) {
-	tests := []struct {
-		name  string
-		input string
-		want  string
-	}{
-		{
-			name:  "no goose annotations returns full content",
-			input: "CREATE TABLE foo (id INT);\nCREATE TABLE bar (id INT);",
-			want:  "CREATE TABLE foo (id INT);\nCREATE TABLE bar (id INT);",
-		},
-		{
-			name:  "extracts only Up section",
-			input: "-- +goose Up\nCREATE TABLE foo (id INT);\n-- +goose Down\nDROP TABLE foo;",
-			want:  "CREATE TABLE foo (id INT);\n",
-		},
-		{
-			name:  "Up section without Down returns rest of content",
-			input: "-- +goose Up\nCREATE TABLE foo (id INT);\nCREATE TABLE bar (id INT);",
-			want:  "CREATE TABLE foo (id INT);\nCREATE TABLE bar (id INT);",
-		},
-		{
-			name:  "multiline Up section",
-			input: "-- +goose Up\n\nCREATE TABLE foo (\n    id INT PRIMARY KEY\n);\n\nCREATE INDEX idx ON foo(id);\n\n-- +goose Down\nDROP TABLE foo;",
-			want:  "\nCREATE TABLE foo (\n    id INT PRIMARY KEY\n);\n\nCREATE INDEX idx ON foo(id);\n\n",
-		},
-		{
-			name:  "empty Up section",
-			input: "-- +goose Up\n-- +goose Down\nDROP TABLE foo;",
-			want:  "",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := extractGooseUpSection(tt.input)
-			assert.Equal(t, tt.want, got)
 		})
 	}
 }
