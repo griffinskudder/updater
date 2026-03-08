@@ -13,6 +13,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"slices"
 	"strings"
 
 	"github.com/Masterminds/semver/v3"
@@ -20,6 +21,14 @@ import (
 
 // MaxPageSize is the maximum number of items that can be requested per page.
 const MaxPageSize = 500
+
+// validReleaseSortFields lists the permitted values for the sort_by field
+// in release list requests and cursors.
+var validReleaseSortFields = []string{"version", "release_date", "platform", "architecture", "created_at"}
+
+// validSortOrders lists the permitted values for the sort_order field
+// in release list requests and cursors.
+var validSortOrders = []string{"asc", "desc"}
 
 // UpdateCheckRequest represents a request to check for available updates.
 //
@@ -201,22 +210,12 @@ func (r *ListReleasesRequest) Validate() error {
 		return fmt.Errorf("limit cannot exceed %d", MaxPageSize)
 	}
 
-	if r.SortOrder != "" && r.SortOrder != "asc" && r.SortOrder != "desc" {
+	if r.SortOrder != "" && !slices.Contains(validSortOrders, r.SortOrder) {
 		return errors.New("sort_order must be 'asc' or 'desc'")
 	}
 
-	validSortFields := []string{"version", "release_date", "platform", "architecture", "created_at"}
-	if r.SortBy != "" {
-		found := false
-		for _, field := range validSortFields {
-			if r.SortBy == field {
-				found = true
-				break
-			}
-		}
-		if !found {
-			return fmt.Errorf("invalid sort_by field: %s", r.SortBy)
-		}
+	if r.SortBy != "" && !slices.Contains(validReleaseSortFields, r.SortBy) {
+		return fmt.Errorf("invalid sort_by field: %s", r.SortBy)
 	}
 
 	for _, platform := range r.Platforms {
