@@ -52,6 +52,7 @@ nav:
   - Observability: observability.md
   - Publishing: publishing.md
   - Makefile: makefile.md
+  - CI Pipeline: ci.md
   - Models:
     - Overview: models/index.md
     - Reference: models/auto/models.md
@@ -66,6 +67,9 @@ nav:
     - GitHub CI:
       - Design: plans/2026-02-16-github-ci-design.md
       - Implementation: plans/2026-02-16-github-ci-implementation.md
+    - CI Hardening:
+      - Design: plans/2026-03-08-ci-hardening-design.md
+      - Implementation: plans/2026-03-08-ci-hardening-implementation.md
     - GitHub Pages:
       - Design: plans/2026-02-16-github-pages-design.md
       - Implementation: plans/2026-02-16-github-pages-implementation.md
