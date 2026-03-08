@@ -29,6 +29,7 @@ type Provider struct {
 	tracerProvider *sdktrace.TracerProvider
 	meterProvider  *sdkmetric.MeterProvider
 	promExporter   *prometheus.Exporter
+	promGatherer   clientprom.Gatherer
 }
 
 // PrometheusExporter returns the Prometheus exporter for serving metrics.
@@ -123,6 +124,13 @@ func Setup(metrics models.MetricsConfig, obs models.ObservabilityConfig, ver ver
 			return nil, fmt.Errorf("failed to create prometheus exporter: %w", err)
 		}
 		p.promExporter = promExporter
+		// Derive the gatherer from the registerer. *prometheus.Registry implements both
+		// Registerer and Gatherer; fall back to DefaultGatherer for any other type.
+		if g, ok := o.prometheusRegisterer.(clientprom.Gatherer); ok {
+			p.promGatherer = g
+		} else {
+			p.promGatherer = clientprom.DefaultGatherer
+		}
 
 		mp := sdkmetric.NewMeterProvider(
 			sdkmetric.WithResource(res),

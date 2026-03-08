@@ -14,19 +14,25 @@ type MetricsServer struct {
 	server *http.Server
 }
 
+// newMetricsHandler builds the HTTP handler that serves Prometheus metrics for the given
+// provider at the given path. It uses the provider's configured gatherer via
+// promhttp.HandlerFor so that only metrics from the configured registry are served,
+// not the global default Prometheus registry.
+func newMetricsHandler(path string, provider *Provider) http.Handler {
+	mux := http.NewServeMux()
+	if provider != nil && provider.promExporter != nil {
+		mux.Handle(path, promhttp.HandlerFor(provider.promGatherer, promhttp.HandlerOpts{}))
+	}
+	return mux
+}
+
 // NewMetricsServer creates a metrics HTTP server serving the Prometheus handler
 // at the given path on the given port.
 func NewMetricsServer(port int, path string, provider *Provider) *MetricsServer {
-	mux := http.NewServeMux()
-
-	if provider != nil && provider.promExporter != nil {
-		mux.Handle(path, promhttp.Handler())
-	}
-
 	return &MetricsServer{
 		server: &http.Server{
 			Addr:    fmt.Sprintf(":%d", port),
-			Handler: mux,
+			Handler: newMetricsHandler(path, provider),
 		},
 	}
 }
