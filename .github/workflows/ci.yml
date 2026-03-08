@@ -8,23 +8,47 @@ on:
 permissions: {}
 
 jobs:
-  ci:
+  lint:
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          go-version-file: 'go.mod'
+
       - name: Check formatting
-        run: make fmt-check
+        # Equivalent to: make fmt-check
+        run: |
+          unformatted=$(gofmt -l .)
+          [ -z "$unformatted" ] || (printf "Unformatted files:\n$unformatted\n" && exit 1)
 
       - name: Vet
-        run: make vet
+        # Equivalent to: make vet
+        run: go vet ./...
+
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          go-version-file: 'go.mod'
 
       - name: Coverage
+        # Equivalent to: make cover, with a 70% threshold gate.
+        # Mirrors the Makefile exactly: -tags integration is applied to both the
+        # package list and the test run so coverage includes integration tests.
         run: |
           set -euo pipefail
-          COVERAGE=$(make cover | awk '/^total/ {gsub(/%/, "", $3); print $3}')
+          PKGS=$(go list -tags integration ./... | grep -vE '/cmd/|/storage/sqlc/')
+          go test -tags integration -coverpkg=$(echo $PKGS | tr ' ' ',') -coverprofile=coverage.out ./...
+          COVERAGE=$(go tool cover -func=coverage.out | awk '/^total/ {gsub(/%/, "", $3); print $3}')
           THRESHOLD=70.0
           echo "Coverage:  ${COVERAGE}%"
           echo "Threshold: ${THRESHOLD}%"
@@ -36,11 +60,35 @@ jobs:
             print \"PASS: coverage \" ${COVERAGE} \"% meets threshold \" ${THRESHOLD} \"%\"
           }"
 
-      - name: Validate OpenAPI spec
-        run: make openapi-validate
+  integration:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          go-version-file: 'go.mod'
 
       - name: Integration tests
-        run: make integration-test
+        # Equivalent to: make integration-test
+        run: go test -tags integration ./internal/integration/...
+
+  spec:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Validate OpenAPI spec
+        # Equivalent to: make openapi-validate
+        run: make openapi-validate
+
+      - name: Validate SQL schemas
+        # Equivalent to: make sqlc-vet
+        run: make sqlc-vet
 
   security:
     runs-on: ubuntu-latest
@@ -60,9 +108,11 @@ jobs:
         run: go install github.com/securego/gosec/v2/cmd/gosec@latest
 
       - name: Enforce security threshold
+        # Equivalent to: make security
         run: gosec -severity high -confidence medium ./...
 
       - name: Scan for secrets
+        # Equivalent to: make secrets
         uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -79,4 +129,6 @@ jobs:
           go-version-file: 'go.mod'
 
       - name: Race detector
+        # No make equivalent: the GO_DOCKER macro sets CGO_ENABLED=0, which disables
+        # the race detector. This job runs natively so CGO is available.
         run: go test -race ./...
