@@ -25,6 +25,10 @@
          <lastmod>2026-03-08</lastmod>
     </url>
     <url>
+         <loc>https://griffinskudder.github.io/updater/dev/ci/</loc>
+         <lastmod>2026-03-08</lastmod>
+    </url>
+    <url>
          <loc>https://griffinskudder.github.io/updater/dev/logging/</loc>
          <lastmod>2026-03-08</lastmod>
     </url>
@@ -198,6 +202,14 @@
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/plans/2026-03-07-storage-pagination-pushdown-implementation/</loc>
+         <lastmod>2026-03-08</lastmod>
+    </url>
+    <url>
+         <loc>https://griffinskudder.github.io/updater/dev/plans/2026-03-08-ci-hardening-design/</loc>
+         <lastmod>2026-03-08</lastmod>
+    </url>
+    <url>
+         <loc>https://griffinskudder.github.io/updater/dev/plans/2026-03-08-ci-hardening-implementation/</loc>
          <lastmod>2026-03-08</lastmod>
     </url>
     <url>

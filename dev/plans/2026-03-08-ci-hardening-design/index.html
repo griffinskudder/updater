@@ -12,13 +12,13 @@
         <meta name="author" content="Updater Service Team">
       
       
-        <link rel="canonical" href="https://griffinskudder.github.io/updater/dev/plans/2026-02-16-github-pages-implementation/">
+        <link rel="canonical" href="https://griffinskudder.github.io/updater/dev/plans/2026-03-08-ci-hardening-design/">
       
       
-        <link rel="prev" href="../2026-02-16-github-pages-design/">
+        <link rel="prev" href="../2026-02-16-github-ci-implementation/">
       
       
-        <link rel="next" href="../2026-02-16-issue-fixes-design/">
+        <link rel="next" href="../2026-03-08-ci-hardening-implementation/">
       
       
         
@@ -29,7 +29,7 @@
     
     
       
-        <title>Implementation - Updater Service Documentation</title>
+        <title>Design - Updater Service Documentation</title>
       
     
     
@@ -82,7 +82,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#github-pages-with-versioned-docs-implementation-plan" class="md-skip">
+        <a href="#ci-pipeline-hardening-design" class="md-skip">
           Skip to content
         </a>
       
@@ -120,7 +120,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Implementation
+              Design
             
           </span>
         </div>
@@ -1744,8 +1744,10 @@
                 
   
   
+    
   
   
+  
     
     
     
@@ -1759,13 +1761,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_16_5" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_16_5" checked>
         
           
           <label class="md-nav__link" for="__nav_16_5" id="__nav_16_5_label" tabindex="">
@@ -1786,7 +1786,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_16_5_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_16_5_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_16_5">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1801,10 +1801,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../2026-03-08-ci-hardening-design/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1820,6 +1847,131 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#problem" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Goals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture-decision-native-go-in-ci" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture Decision: Native Go in CI
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Architecture Decision: Native Go in CI">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#options-considered" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Options considered
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#coverage-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Coverage scope
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#job-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Job Structure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#makefile-sync-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Makefile Sync Strategy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files-to-create-or-modify" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Files to Create or Modify
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1865,8 +2017,6 @@
                 
   
   
-    
-  
   
   
     
@@ -1882,11 +2032,13 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_16_6" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_16_6" >
         
           
           <label class="md-nav__link" for="__nav_16_6" id="__nav_16_6_label" tabindex="">
@@ -1907,7 +2059,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_16_6_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_16_6_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_16_6">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1950,37 +2102,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Implementation
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../2026-02-16-github-pages-implementation/" class="md-nav__link">
         
   
   
@@ -1996,70 +2121,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#task-1-set-site_url-in-mkdocsyml" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Task 1: Set site_url in mkdocs.yml
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#task-2-create-the-github-actions-docs-workflow" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Task 2: Create the GitHub Actions docs workflow
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#task-3-add-implementation-plan-to-docs-nav-and-commit" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Task 3: Add implementation plan to docs nav and commit
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#task-4-configure-github-pages-in-repository-settings-manual" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Task 4: Configure GitHub Pages in repository settings (manual)
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -3723,10 +3784,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#task-1-set-site_url-in-mkdocsyml" class="md-nav__link">
+  <a href="#problem" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Task 1: Set site_url in mkdocs.yml
+        Problem
       
     </span>
   </a>
@@ -3734,10 +3795,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#task-2-create-the-github-actions-docs-workflow" class="md-nav__link">
+  <a href="#goals" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Task 2: Create the GitHub Actions docs workflow
+        Goals
       
     </span>
   </a>
@@ -3745,10 +3806,60 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#task-3-add-implementation-plan-to-docs-nav-and-commit" class="md-nav__link">
+  <a href="#architecture-decision-native-go-in-ci" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Task 3: Add implementation plan to docs nav and commit
+        Architecture Decision: Native Go in CI
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Architecture Decision: Native Go in CI">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#options-considered" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Options considered
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#coverage-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Coverage scope
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#job-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Job Structure
       
     </span>
   </a>
@@ -3756,10 +3867,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#task-4-configure-github-pages-in-repository-settings-manual" class="md-nav__link">
+  <a href="#makefile-sync-strategy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Task 4: Configure GitHub Pages in repository settings (manual)
+        Makefile Sync Strategy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files-to-create-or-modify" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Files to Create or Modify
       
     </span>
   </a>
@@ -3835,10 +3957,10 @@
     
     
       <li class="md-path__item">
-        <a href="../2026-02-16-github-pages-design/" class="md-path__link">
+        <a href="./" class="md-path__link">
           
   <span class="md-ellipsis">
-    GitHub Pages
+    CI Hardening
   </span>
 
         </a>
@@ -3860,122 +3982,102 @@
   
 
 
-<h1 id="github-pages-with-versioned-docs-implementation-plan">GitHub Pages with Versioned Docs — Implementation Plan<a class="headerlink" href="#github-pages-with-versioned-docs-implementation-plan" title="Permanent link">&para;</a></h1>
-<blockquote>
-<p><strong>For Claude:</strong> REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.</p>
-</blockquote>
-<p><strong>Goal:</strong> Publish the MkDocs site to GitHub Pages with versioned docs managed by <code>mike</code> — <code>dev</code> on every push to <code>main</code>, tagged releases as version numbers, with the latest stable release as the default landing page.</p>
-<p><strong>Architecture:</strong> A new <code>.github/workflows/docs.yml</code> workflow triggers on pushes to <code>main</code> and <code>v*</code> tags. It installs <code>mkdocs-material</code> and <code>mike</code> via pip, then uses <code>mike deploy</code> to publish to the <code>gh-pages</code> branch. MkDocs Material's native version picker reads the <code>mike</code>-managed version list from <code>gh-pages</code>.</p>
-<p><strong>Tech Stack:</strong> <code>mike</code> (MkDocs versioning), <code>mkdocs-material</code>, GitHub Actions, GitHub Pages (serving from <code>gh-pages</code> branch).</p>
-<hr />
-<h3 id="task-1-set-site_url-in-mkdocsyml">Task 1: Set <code>site_url</code> in <code>mkdocs.yml</code><a class="headerlink" href="#task-1-set-site_url-in-mkdocsyml" title="Permanent link">&para;</a></h3>
-<p><strong>Files:</strong>
-- Modify: <code>mkdocs.yml:4</code></p>
-<p><code>mike</code> requires <code>site_url</code> to resolve cross-version URLs correctly. It is currently empty.</p>
-<p><strong>Step 1: Update <code>site_url</code></strong></p>
-<p>In <code>mkdocs.yml</code>, change line 4 from:</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">site_url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span>
-</span></code></pre></div>
-<p>to:</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">site_url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://griffinskudder.github.io/updater/</span>
-</span></code></pre></div>
-<p><strong>Step 2: Verify the docs build</strong></p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>make<span class="w"> </span>docs-build
-</span></code></pre></div>
-<p>Expected: build completes without errors. The <code>site/</code> directory is populated.</p>
-<p><strong>Step 3: Commit</strong></p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>git<span class="w"> </span>add<span class="w"> </span>mkdocs.yml
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;chore(docs): set site_url for GitHub Pages&quot;</span>
-</span></code></pre></div>
-<hr />
-<h3 id="task-2-create-the-github-actions-docs-workflow">Task 2: Create the GitHub Actions docs workflow<a class="headerlink" href="#task-2-create-the-github-actions-docs-workflow" title="Permanent link">&para;</a></h3>
-<p><strong>Files:</strong>
-- Create: <code>.github/workflows/docs.yml</code></p>
-<p><strong>Step 1: Create the workflow file</strong></p>
-<p>Create <code>.github/workflows/docs.yml</code> with the following content:</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Docs</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="nt">on</span><span class="p">:</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span><span class="nt">push</span><span class="p">:</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">    </span><span class="nt">branches</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">main</span><span class="p p-Indicator">]</span>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">  </span><span class="nt">push</span><span class="p">:</span>
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">    </span><span class="nt">tags</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;v*&#39;</span><span class="p p-Indicator">]</span>
-</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>
-</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="nt">jobs</span><span class="p">:</span>
-</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">  </span><span class="nt">deploy</span><span class="p">:</span>
-</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">    </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
-</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">    </span><span class="nt">permissions</span><span class="p">:</span>
-</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="w">      </span><span class="nt">contents</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">write</span>
-</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="w">    </span><span class="nt">steps</span><span class="p">:</span>
-</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/checkout@v4</span>
-</span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="w">        </span><span class="nt">with</span><span class="p">:</span>
-</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="w">          </span><span class="nt">fetch-depth</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
-</span><span id="__span-4-18"><a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a>
-</span><span id="__span-4-19"><a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/setup-python@v5</span>
-</span><span id="__span-4-20"><a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a><span class="w">        </span><span class="nt">with</span><span class="p">:</span>
-</span><span id="__span-4-21"><a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a><span class="w">          </span><span class="nt">python-version</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;3.x&#39;</span>
-</span><span id="__span-4-22"><a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a>
-</span><span id="__span-4-23"><a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Install dependencies</span>
-</span><span id="__span-4-24"><a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a><span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pip install mkdocs-material mike</span>
-</span><span id="__span-4-25"><a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a>
-</span><span id="__span-4-26"><a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Configure git credentials</span>
-</span><span id="__span-4-27"><a id="__codelineno-4-27" name="__codelineno-4-27" href="#__codelineno-4-27"></a><span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
-</span><span id="__span-4-28"><a id="__codelineno-4-28" name="__codelineno-4-28" href="#__codelineno-4-28"></a><span class="w">          </span><span class="no">git config user.name &quot;github-actions[bot]&quot;</span>
-</span><span id="__span-4-29"><a id="__codelineno-4-29" name="__codelineno-4-29" href="#__codelineno-4-29"></a><span class="w">          </span><span class="no">git config user.email &quot;github-actions[bot]@users.noreply.github.com&quot;</span>
-</span><span id="__span-4-30"><a id="__codelineno-4-30" name="__codelineno-4-30" href="#__codelineno-4-30"></a>
-</span><span id="__span-4-31"><a id="__codelineno-4-31" name="__codelineno-4-31" href="#__codelineno-4-31"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Deploy dev docs</span>
-</span><span id="__span-4-32"><a id="__codelineno-4-32" name="__codelineno-4-32" href="#__codelineno-4-32"></a><span class="w">        </span><span class="nt">if</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">github.ref == &#39;refs/heads/main&#39;</span>
-</span><span id="__span-4-33"><a id="__codelineno-4-33" name="__codelineno-4-33" href="#__codelineno-4-33"></a><span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mike deploy --push --update-aliases dev</span>
-</span><span id="__span-4-34"><a id="__codelineno-4-34" name="__codelineno-4-34" href="#__codelineno-4-34"></a>
-</span><span id="__span-4-35"><a id="__codelineno-4-35" name="__codelineno-4-35" href="#__codelineno-4-35"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Deploy versioned docs</span>
-</span><span id="__span-4-36"><a id="__codelineno-4-36" name="__codelineno-4-36" href="#__codelineno-4-36"></a><span class="w">        </span><span class="nt">if</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">startsWith(github.ref, &#39;refs/tags/v&#39;)</span>
-</span><span id="__span-4-37"><a id="__codelineno-4-37" name="__codelineno-4-37" href="#__codelineno-4-37"></a><span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
-</span><span id="__span-4-38"><a id="__codelineno-4-38" name="__codelineno-4-38" href="#__codelineno-4-38"></a><span class="w">          </span><span class="no">VERSION=${GITHUB_REF#refs/tags/}</span>
-</span><span id="__span-4-39"><a id="__codelineno-4-39" name="__codelineno-4-39" href="#__codelineno-4-39"></a><span class="w">          </span><span class="no">mike deploy --push --update-aliases &quot;$VERSION&quot; latest</span>
-</span><span id="__span-4-40"><a id="__codelineno-4-40" name="__codelineno-4-40" href="#__codelineno-4-40"></a><span class="w">          </span><span class="no">mike set-default --push latest</span>
-</span></code></pre></div>
-<p>Note: <code>fetch-depth: 0</code> is required — <code>mike</code> reads and writes the <code>gh-pages</code> branch, which needs the full git history to avoid overwriting previous versions.</p>
-<p><code>--update-aliases</code> ensures the <code>latest</code> alias always points to the version being deployed, replacing any previous pointer.</p>
-<p><strong>Step 2: Commit</strong></p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>git<span class="w"> </span>add<span class="w"> </span>.github/workflows/docs.yml
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;ci: add GitHub Pages docs deployment workflow&quot;</span>
-</span></code></pre></div>
-<hr />
-<h3 id="task-3-add-implementation-plan-to-docs-nav-and-commit">Task 3: Add implementation plan to docs nav and commit<a class="headerlink" href="#task-3-add-implementation-plan-to-docs-nav-and-commit" title="Permanent link">&para;</a></h3>
-<p><strong>Files:</strong>
-- Modify: <code>mkdocs.yml</code></p>
-<p><strong>Step 1: Add implementation plan to nav</strong></p>
-<p>In <code>mkdocs.yml</code>, find the <code>Plans:</code> section in <code>nav</code> and add:</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">GitHub Pages Implementation</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">plans/2026-02-16-github-pages-implementation.md</span>
-</span></code></pre></div>
-<p>after the existing <code>GitHub Pages Design</code> entry.</p>
-<p><strong>Step 2: Verify the docs build</strong></p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>make<span class="w"> </span>docs-build
-</span></code></pre></div>
-<p>Expected: build completes without errors.</p>
-<p><strong>Step 3: Commit</strong></p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>git<span class="w"> </span>add<span class="w"> </span>mkdocs.yml<span class="w"> </span>docs/plans/2026-02-16-github-pages-implementation.md
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;docs: add GitHub Pages implementation plan&quot;</span>
-</span></code></pre></div>
-<hr />
-<h3 id="task-4-configure-github-pages-in-repository-settings-manual">Task 4: Configure GitHub Pages in repository settings (manual)<a class="headerlink" href="#task-4-configure-github-pages-in-repository-settings-manual" title="Permanent link">&para;</a></h3>
-<p>This is a one-time action in the GitHub web UI. <code>mike</code> creates and manages the <code>gh-pages</code> branch automatically on first deploy, but GitHub Pages won't serve it until you point the setting at it.</p>
-<p><strong>Step 1: Push changes to <code>main</code></strong></p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>git<span class="w"> </span>push
-</span></code></pre></div>
-<p>This triggers the workflow and creates the <code>gh-pages</code> branch with the <code>dev</code> docs.</p>
-<p><strong>Step 2: Wait for the workflow to complete</strong></p>
-<p>In the GitHub Actions tab, confirm the <code>Docs</code> workflow run succeeds and the <code>gh-pages</code> branch now exists.</p>
-<p><strong>Step 3: Configure GitHub Pages source</strong></p>
-<p>Go to the repository on GitHub: <em>Settings → Pages → Build and deployment → Source</em>.</p>
-<p>Set:
-- Source: <code>Deploy from a branch</code>
-- Branch: <code>gh-pages</code>
-- Folder: <code>/ (root)</code></p>
-<p>Save. GitHub Pages will begin serving from <code>https://griffinskudder.github.io/updater/</code>.</p>
-<p><strong>Step 4: Verify</strong></p>
-<p>Visit <code>https://griffinskudder.github.io/updater/</code>. The site should load and show the <code>dev</code> docs (there are no tagged releases yet, so <code>latest</code> does not exist; the <code>dev</code> docs will be visible directly).</p>
-<p>Once a <code>v*</code> tag is pushed, the <code>latest</code> alias will be created and the default will switch to the tagged version.</p>
+<h1 id="ci-pipeline-hardening-design">CI Pipeline Hardening Design<a class="headerlink" href="#ci-pipeline-hardening-design" title="Permanent link">&para;</a></h1>
+<p><strong>Date:</strong> 2026-03-08
+<strong>Issue:</strong> <a href="https://github.com/griffinskudder/updater/issues/72">#72 CI pipeline hardening</a></p>
+<h2 id="problem">Problem<a class="headerlink" href="#problem" title="Permanent link">&para;</a></h2>
+<p>The CI pipeline established in February 2026 covers the core quality gates but has three gaps:</p>
+<ol>
+<li>
+<p><strong>No caching.</strong> The <code>ci</code> job uses <code>make</code> targets that run Go inside Docker containers. Docker named volumes (<code>updater-go-mod-cache</code>, <code>updater-go-build-cache</code>) do not persist between GitHub Actions runs, so Go modules and the build cache are re-downloaded on every CI run. This makes each run slower than necessary.</p>
+</li>
+<li>
+<p><strong>No SQL schema validation.</strong> The <code>make sqlc-vet</code> target validates SQL queries against schemas, but it has no CI counterpart. A schema change that breaks a query can reach <code>main</code> undetected.</p>
+</li>
+<li>
+<p><strong>No CI reference documentation.</strong> The existing design and implementation docs describe the original setup but do not document the current pipeline state, local equivalents, or branch protection guidance.</p>
+</li>
+</ol>
+<p>Additionally, the existing <code>ci</code> job runs all steps sequentially. Unrelated checks (formatting, coverage, OpenAPI validation) block each other unnecessarily.</p>
+<h2 id="goals">Goals<a class="headerlink" href="#goals" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Add Go module caching to reduce CI run time.</li>
+<li>Add <code>sqlc-vet</code> to catch SQL query/schema mismatches on every PR.</li>
+<li>Parallelize unrelated checks across separate jobs.</li>
+<li>Write a reference doc for the CI pipeline.</li>
+</ul>
+<h2 id="architecture-decision-native-go-in-ci">Architecture Decision: Native Go in CI<a class="headerlink" href="#architecture-decision-native-go-in-ci" title="Permanent link">&para;</a></h2>
+<h3 id="options-considered">Options considered<a class="headerlink" href="#options-considered" title="Permanent link">&para;</a></h3>
+<p><strong>Option A (chosen): Native Go + targeted <code>make</code> calls.</strong>
+Use <code>actions/setup-go</code> (which automatically caches <code>$GOPATH/pkg/mod</code> and <code>~/.cache/go/build</code>) for Go commands, and call <code>make</code> targets only for non-Go Docker-based tools (Redocly, sqlc).</p>
+<p><strong>Option B: Keep Docker-based <code>make</code> targets.</strong>
+Call <code>make fmt-check</code>, <code>make vet</code>, etc. directly. No caching because Docker named volumes are ephemeral on runners. Ensures exact Makefile/CI parity.</p>
+<p><strong>Option C: Makefile-aware native mode.</strong>
+Modify the Makefile to detect <code>CI=true</code> and skip the Docker wrapper. Adds Makefile complexity.</p>
+<h3 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h3>
+<p>Option A. The core concern with native Go is Makefile divergence — if a flag changes in a <code>make</code> target, CI must also be updated. This is mitigated by two measures:</p>
+<ol>
+<li>Each CI step carries a comment identifying the equivalent make target (e.g. <code># Equivalent to: make vet</code>).</li>
+<li>The CI commands are the exact underlying commands from the Makefile Docker wrappers — only the <code>docker run ... golang:1.25-alpine</code> prefix is removed. Flags, patterns, and thresholds are identical.</li>
+</ol>
+<p>The <code>spec</code> job (<code>openapi-validate</code>, <code>sqlc-vet</code>) continues to call <code>make</code> targets directly because these use separate Docker images (Redocly, sqlc) for which native caching is not applicable. Docker is available on GitHub Actions ubuntu runners.</p>
+<h3 id="coverage-scope">Coverage scope<a class="headerlink" href="#coverage-scope" title="Permanent link">&para;</a></h3>
+<p>The <code>test</code> job mirrors <code>make cover</code> exactly: <code>-tags integration</code> is applied to both the <code>go list</code> package enumeration and the <code>go test</code> run, so coverage includes integration tests. The <code>integration</code> job runs the same integration tests independently to provide a separate pass/fail check in the PR status checks UI.</p>
+<h2 id="job-structure">Job Structure<a class="headerlink" href="#job-structure" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>graph TD
+    trigger["Push / PR"] --&gt; lint["lint\nfmt-check · vet"]
+    trigger --&gt; test["test\ncoverage ≥ 70%"]
+    trigger --&gt; integration["integration\nintegration tests"]
+    trigger --&gt; spec["spec\nopenapi-validate · sqlc-vet"]
+    trigger --&gt; security["security\ngosec · gitleaks"]
+    trigger --&gt; race["race\nrace detector"]
+    lint --&gt; required["required"]
+    test --&gt; required
+    integration --&gt; required
+    spec --&gt; required
+    security --&gt; required
+    race --&gt; required</code></pre>
+<p>The six parallel jobs feed into a <code>required</code> aggregator job (<code>if: always()</code>). Branch protection only needs to require <code>required</code>, rather than each individual job. The release workflow checks all CI status checks dynamically by commit SHA, so adding new jobs is automatically enforced without changing the release workflow.</p>
+<h2 id="makefile-sync-strategy">Makefile Sync Strategy<a class="headerlink" href="#makefile-sync-strategy" title="Permanent link">&para;</a></h2>
+<p>The Makefile remains the canonical local development interface. The CI workflow is the execution layer for the same checks in a cached, parallel environment.</p>
+<p>Rules for keeping them in sync:</p>
+<ul>
+<li>Go commands in CI must mirror the Makefile's underlying commands exactly (same flags, same patterns).</li>
+<li>Non-Go tools (Redocly, sqlc, gosec, gitleaks) must use the same flags and thresholds as the Makefile targets.</li>
+<li>Each CI step must include a <code># Equivalent to: make &lt;target&gt;</code> comment.</li>
+<li>When a Makefile target changes, the corresponding CI step must be updated in the same PR.</li>
+</ul>
+<h2 id="files-to-create-or-modify">Files to Create or Modify<a class="headerlink" href="#files-to-create-or-modify" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Change</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.github/workflows/ci.yml</code></td>
+<td>Replace single <code>ci</code> job with six parallel jobs; add <code>actions/setup-go</code> caching; add <code>sqlc-vet</code> step</td>
+</tr>
+<tr>
+<td><code>docs/ci.md</code></td>
+<td>New reference page</td>
+</tr>
+<tr>
+<td><code>docs/plans/2026-03-08-ci-hardening-design.md</code></td>
+<td>This file</td>
+</tr>
+<tr>
+<td><code>docs/plans/2026-03-08-ci-hardening-implementation.md</code></td>
+<td>Implementation notes</td>
+</tr>
+<tr>
+<td><code>mkdocs.yml</code></td>
+<td>Add <code>ci.md</code> to nav; add hardening plan docs to Design Docs section</td>
+</tr>
+</tbody>
+</table>
 
 
 
