@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"io/fs"
 	"sync"
 	"testing"
 	"time"
@@ -32,11 +33,15 @@ func newSQLiteTestStorage(t *testing.T) Storage {
 		t.Fatalf("failed to enable foreign keys: %v", err)
 	}
 
-	goose.SetBaseFS(migrations.SQLiteFS)
-	if err := goose.SetDialect("sqlite3"); err != nil {
-		t.Fatalf("failed to set goose dialect: %v", err)
+	fsys, err := fs.Sub(migrations.SQLiteFS, "sqlite")
+	if err != nil {
+		t.Fatalf("failed to get migration sub-filesystem: %v", err)
 	}
-	if err := goose.Up(db, "sqlite"); err != nil {
+	provider, err := goose.NewProvider(goose.DialectSQLite3, db, fsys)
+	if err != nil {
+		t.Fatalf("failed to create goose provider: %v", err)
+	}
+	if _, err := provider.Up(context.Background()); err != nil {
 		t.Fatalf("failed to run migrations: %v", err)
 	}
 

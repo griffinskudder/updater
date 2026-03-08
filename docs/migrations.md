@@ -230,7 +230,7 @@ This ensures the database schema is up to date before the application accepts tr
 
 ## Relationship to sqlc
 
-The migration files under `internal/storage/migrations/<dialect>/` define the schema. The query files under `internal/storage/sqlc/<dialect>/` define the queries. sqlc reads both to generate Go code:
+The migration files under `internal/storage/migrations/<dialect>/` define the schema. The query files under `internal/storage/queries/<dialect>/` define the queries. sqlc reads both to generate Go code:
 
 ```mermaid
 flowchart TD
@@ -239,7 +239,7 @@ flowchart TD
         M2[sqlite/001_initial.sql]
     end
 
-    subgraph sqlc_queries["internal/storage/sqlc/"]
+    subgraph sqlc_queries["internal/storage/queries/"]
         Q1[postgres/queries.sql]
         Q2[sqlite/queries.sql]
     end

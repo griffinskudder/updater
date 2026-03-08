@@ -38,16 +38,19 @@ internal/storage/
   migrations/
     postgres/
       001_initial.sql     # Goose-annotated, sqlc reads this too
-      queries.sql         # Moved from sqlc/schema/postgres/
     sqlite/
       001_initial.sql     # Goose-annotated, sqlc reads this too
-      queries.sql         # Moved from sqlc/schema/sqlite/
+  queries/
+    postgres/
+      queries.sql         # SQL queries for sqlc (moved from sqlc/schema/postgres/)
+    sqlite/
+      queries.sql         # SQL queries for sqlc (moved from sqlc/schema/sqlite/)
   sqlc/
     postgres/             # Generated code (unchanged)
     sqlite/               # Generated code (unchanged)
 ```
 
-Migration files serve dual purpose: goose uses them for migrations, sqlc uses them as schema source. The `-- +goose Down` sections are ignored by sqlc.
+Migration files serve dual purpose: goose uses them for migrations, sqlc uses them as schema source. The `-- +goose Down` sections are ignored by sqlc. Query files live in a separate `queries/` directory because goose attempted to parse `.sql` query files as migrations when they were co-located with migration files.
 
 ### Deleted
 
@@ -85,7 +88,6 @@ All commands map directly to goose's Go API:
 | `version` | Print current schema version |
 | `redo` | Re-run the latest migration |
 | `reset` | Roll back all migrations |
-| `validate` | Check migration files without running |
 
 ## Migration Files
 
@@ -164,11 +166,11 @@ All migrate targets run the `migrate` binary inside Docker, consistent with the 
 sql:
   - engine: postgresql
     schema: "internal/storage/migrations/postgres/"
-    queries: "internal/storage/migrations/postgres/queries.sql"
+    queries: "internal/storage/queries/postgres/"
     # ...
   - engine: sqlite
     schema: "internal/storage/migrations/sqlite/"
-    queries: "internal/storage/migrations/sqlite/queries.sql"
+    queries: "internal/storage/queries/sqlite/"
     # ...
 ```
 

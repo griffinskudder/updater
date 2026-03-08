@@ -2,6 +2,8 @@ package main
 
 import (
 	"testing"
+
+	"github.com/pressly/goose/v3"
 )
 
 func TestParseArgs_ValidPostgres(t *testing.T) {
@@ -111,16 +113,49 @@ func TestParseArgs_UpToMissingVersion(t *testing.T) {
 	}
 }
 
+func TestParseArgs_VerboseLong(t *testing.T) {
+	args := []string{"--dialect", "postgres", "--dsn", "test", "--verbose", "up"}
+	cfg, _, err := parseArgs(args)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !cfg.verbose {
+		t.Error("expected verbose to be true with --verbose flag")
+	}
+}
+
+func TestParseArgs_VerboseShort(t *testing.T) {
+	args := []string{"--dialect", "postgres", "--dsn", "test", "-v", "up"}
+	cfg, _, err := parseArgs(args)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !cfg.verbose {
+		t.Error("expected verbose to be true with -v flag")
+	}
+}
+
+func TestParseArgs_VerboseDefaultFalse(t *testing.T) {
+	args := []string{"--dialect", "postgres", "--dsn", "test", "up"}
+	cfg, _, err := parseArgs(args)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if cfg.verbose {
+		t.Error("expected verbose to default to false")
+	}
+}
+
 func TestGooseDialect_Postgres(t *testing.T) {
 	d := gooseDialect("postgres")
-	if d != "postgres" {
-		t.Errorf("expected postgres, got %s", d)
+	if d != goose.DialectPostgres {
+		t.Errorf("expected DialectPostgres, got %s", d)
 	}
 }
 
 func TestGooseDialect_SQLite(t *testing.T) {
 	d := gooseDialect("sqlite")
-	if d != "sqlite3" {
-		t.Errorf("expected sqlite3, got %s", d)
+	if d != goose.DialectSQLite3 {
+		t.Errorf("expected DialectSQLite3, got %s", d)
 	}
 }

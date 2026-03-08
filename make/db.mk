@@ -30,7 +30,7 @@ migrate-create: ## Create a new migration file (NAME=add_column DIALECT=sqlite)
 ifndef NAME
 	$(error NAME is required, e.g. make migrate-create NAME=add_column DIALECT=sqlite)
 endif
-	@next=$$(($$(ls internal/storage/migrations/$(DIALECT)/[0-9]*.sql 2>/dev/null | wc -l) + 1)); \
+	@next=$$(($$(ls internal/storage/migrations/$(DIALECT)/[0-9]*.sql 2>/dev/null | sed 's|.*/\([0-9]*\)_.*|\1|' | sort -n | tail -1 || echo 0) + 1)); \
 	file=internal/storage/migrations/$(DIALECT)/$$(printf '%03d' $$next)_$(NAME).sql; \
 	printf -- '-- +goose Up\n\n-- +goose Down\n' > "$$file"; \
 	echo "Created migration: $$file"

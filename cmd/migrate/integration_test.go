@@ -3,7 +3,9 @@
 package main
 
 import (
+	"context"
 	"database/sql"
+	"io/fs"
 	"os"
 	"testing"
 
@@ -28,13 +30,20 @@ func TestSQLiteMigrationUpDown(t *testing.T) {
 	}
 	defer db.Close()
 
-	if err := goose.SetDialect("sqlite3"); err != nil {
-		t.Fatalf("set dialect: %v", err)
+	fsys, err := fs.Sub(migrations.SQLiteFS, "sqlite")
+	if err != nil {
+		t.Fatalf("sub filesystem: %v", err)
 	}
-	goose.SetBaseFS(migrations.SQLiteFS)
+
+	provider, err := goose.NewProvider(goose.DialectSQLite3, db, fsys)
+	if err != nil {
+		t.Fatalf("create provider: %v", err)
+	}
+
+	ctx := context.Background()
 
 	// Apply migrations
-	if err := goose.Up(db, "sqlite"); err != nil {
+	if _, err := provider.Up(ctx); err != nil {
 		t.Fatalf("goose up: %v", err)
 	}
 
@@ -49,7 +58,7 @@ func TestSQLiteMigrationUpDown(t *testing.T) {
 	}
 
 	// Verify version
-	ver, err := goose.GetDBVersion(db)
+	ver, err := provider.GetDBVersion(ctx)
 	if err != nil {
 		t.Fatalf("get version: %v", err)
 	}
@@ -58,7 +67,7 @@ func TestSQLiteMigrationUpDown(t *testing.T) {
 	}
 
 	// Roll back
-	if err := goose.Down(db, "sqlite"); err != nil {
+	if _, err := provider.Down(ctx); err != nil {
 		t.Fatalf("goose down: %v", err)
 	}
 
@@ -69,5 +78,14 @@ func TestSQLiteMigrationUpDown(t *testing.T) {
 		if err == nil {
 			t.Errorf("table %s should not exist after migration down", table)
 		}
+	}
+
+	// Verify version is back to 0
+	ver, err = provider.GetDBVersion(ctx)
+	if err != nil {
+		t.Fatalf("get version after down: %v", err)
+	}
+	if ver != 0 {
+		t.Errorf("expected version 0 after down, got %d", ver)
 	}
 }

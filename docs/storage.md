@@ -245,6 +245,17 @@ The `api_keys.permissions` column stores a JSON array of permission strings (e.g
 | Large integers | `BIGINT` | `INTEGER` |
 | Nullable strings | `pgtype.Text` | `sql.NullString` |
 
+### Foreign Key Delete Behavior
+
+The `releases.application_id` foreign key uses different delete semantics per engine:
+
+| Engine | Behavior | Effect |
+|--------|----------|--------|
+| PostgreSQL | `ON DELETE RESTRICT` | Prevents deleting an application that still has releases |
+| SQLite | `ON DELETE CASCADE` | Deleting an application automatically removes its releases |
+
+This difference is intentional: PostgreSQL deployments typically run explicit cleanup logic before removing an application, while SQLite deployments (single-server, simpler workflows) benefit from automatic cascading deletes.
+
 ## Type Conversion
 
 Shared conversion helpers in `dbconvert.go` handle JSON marshaling for:

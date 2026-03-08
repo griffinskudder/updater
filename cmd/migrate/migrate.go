@@ -7,6 +7,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"flag"
 	"fmt"
@@ -14,6 +15,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"text/tabwriter"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
@@ -112,12 +114,12 @@ func parseArgs(args []string) (migrateConfig, string, error) {
 	return cfg, cmd, nil
 }
 
-// gooseDialect maps our dialect names to goose dialect strings.
-func gooseDialect(dialect string) string {
+// gooseDialect maps our dialect names to goose Dialect constants.
+func gooseDialect(dialect string) goose.Dialect {
 	if dialect == "sqlite" {
-		return "sqlite3"
+		return goose.DialectSQLite3
 	}
-	return dialect
+	return goose.DialectPostgres
 }
 
 // driverName maps our dialect names to database/sql driver names.
@@ -128,48 +130,88 @@ func driverName(dialect string) string {
 	return "sqlite"
 }
 
-// migrationFS returns the embedded filesystem and subdirectory for the given dialect.
-func migrationFS(dialect string) (fs.FS, string) {
+// migrationFS returns the embedded filesystem for the given dialect,
+// scoped to the dialect's subdirectory.
+func migrationFS(dialect string) (fs.FS, error) {
 	if dialect == "postgres" {
-		return migrations.PostgresFS, "postgres"
+		return fs.Sub(migrations.PostgresFS, "postgres")
 	}
-	return migrations.SQLiteFS, "sqlite"
+	return fs.Sub(migrations.SQLiteFS, "sqlite")
 }
 
 func runMigration(cfg migrateConfig, cmd string) error {
-	goose.SetVerbose(cfg.verbose)
-
-	if err := goose.SetDialect(gooseDialect(cfg.dialect)); err != nil {
-		return fmt.Errorf("set dialect: %w", err)
-	}
-
-	embedFS, dir := migrationFS(cfg.dialect)
-	goose.SetBaseFS(embedFS)
-
 	db, err := sql.Open(driverName(cfg.dialect), cfg.dsn)
 	if err != nil {
 		return fmt.Errorf("open database: %w", err)
 	}
 	defer db.Close()
 
+	fsys, err := migrationFS(cfg.dialect)
+	if err != nil {
+		return fmt.Errorf("migration filesystem: %w", err)
+	}
+
+	provider, err := goose.NewProvider(gooseDialect(cfg.dialect), db, fsys,
+		goose.WithVerbose(cfg.verbose),
+	)
+	if err != nil {
+		return fmt.Errorf("create provider: %w", err)
+	}
+
+	ctx := context.Background()
+
 	switch cmd {
 	case "up":
-		return goose.Up(db, dir)
+		_, err = provider.Up(ctx)
 	case "up-to":
-		return goose.UpTo(db, dir, cfg.version)
+		_, err = provider.UpTo(ctx, cfg.version)
 	case "down":
-		return goose.Down(db, dir)
+		_, err = provider.Down(ctx)
 	case "down-to":
-		return goose.DownTo(db, dir, cfg.version)
+		_, err = provider.DownTo(ctx, cfg.version)
 	case "status":
-		return goose.Status(db, dir)
+		return printStatus(ctx, provider)
 	case "version":
-		return goose.Version(db, dir)
+		return printVersion(ctx, provider)
 	case "redo":
-		return goose.Redo(db, dir)
+		if _, err = provider.Down(ctx); err != nil {
+			return fmt.Errorf("redo down: %w", err)
+		}
+		_, err = provider.UpByOne(ctx)
 	case "reset":
-		return goose.Reset(db, dir)
+		_, err = provider.DownTo(ctx, 0)
 	default:
 		return fmt.Errorf("unknown command: %s", cmd)
 	}
+	return err
+}
+
+// printStatus prints the status of all migrations in a tabular format.
+func printStatus(ctx context.Context, p *goose.Provider) error {
+	results, err := p.Status(ctx)
+	if err != nil {
+		return err
+	}
+
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', 0)
+	fmt.Fprintln(w, "Applied At\tMigration")
+	fmt.Fprintln(w, "=========\t=========")
+	for _, r := range results {
+		if r.State == goose.StateApplied {
+			fmt.Fprintf(w, "%s\t%s\n", r.AppliedAt.Format("20060102150405"), r.Source.Path)
+		} else {
+			fmt.Fprintf(w, "Pending\t%s\n", r.Source.Path)
+		}
+	}
+	return w.Flush()
+}
+
+// printVersion prints the current database schema version.
+func printVersion(ctx context.Context, p *goose.Provider) error {
+	ver, err := p.GetDBVersion(ctx)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("goose: version %d\n", ver)
+	return nil
 }
