@@ -17,7 +17,7 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-//go:embed sqlc/schema/sqlite
+//go:embed migrations/sqlite
 var sqliteMigrationsFS embed.FS
 
 // SQLiteStorage implements the Storage interface using SQLite with sqlc-generated queries.
@@ -824,8 +824,11 @@ func (ss *SQLiteStorage) GetApplicationStats(ctx context.Context, appID string) 
 }
 
 // runSQLiteMigrations applies any unapplied migration files from the embedded
-// sqlc/schema/sqlite directory. Applied migrations are tracked in a
+// migrations/sqlite directory. Applied migrations are tracked in a
 // schema_migrations table so each file is executed at most once.
+// Only numbered migration files (e.g. 001_initial.sql) are processed;
+// sqlc query files are skipped. Goose annotations (-- +goose Up/Down)
+// are handled: only the Up section is executed.
 func runSQLiteMigrations(db *sql.DB) error {
 	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS schema_migrations (
 		name       TEXT NOT NULL PRIMARY KEY,
@@ -834,14 +837,15 @@ func runSQLiteMigrations(db *sql.DB) error {
 		return fmt.Errorf("create schema_migrations: %w", err)
 	}
 
-	entries, err := fs.ReadDir(sqliteMigrationsFS, "sqlc/schema/sqlite")
+	entries, err := fs.ReadDir(sqliteMigrationsFS, "migrations/sqlite")
 	if err != nil {
 		return fmt.Errorf("read migration dir: %w", err)
 	}
 
 	for _, entry := range entries {
 		name := entry.Name()
-		if entry.IsDir() || !strings.HasSuffix(name, ".sql") {
+		// Only process numbered migration files, skip query files.
+		if entry.IsDir() || !strings.HasSuffix(name, ".sql") || len(name) == 0 || name[0] < '0' || name[0] > '9' {
 			continue
 		}
 
@@ -853,16 +857,19 @@ func runSQLiteMigrations(db *sql.DB) error {
 			continue
 		}
 
-		data, err := fs.ReadFile(sqliteMigrationsFS, "sqlc/schema/sqlite/"+name)
+		data, err := fs.ReadFile(sqliteMigrationsFS, "migrations/sqlite/"+name)
 		if err != nil {
 			return fmt.Errorf("read migration %s: %w", name, err)
 		}
+
+		// Extract only the goose Up section if goose annotations are present.
+		sqlContent := extractGooseUpSection(string(data))
 
 		tx, err := db.Begin()
 		if err != nil {
 			return fmt.Errorf("begin migration %s: %w", name, err)
 		}
-		if _, err := tx.Exec(string(data)); err != nil {
+		if _, err := tx.Exec(sqlContent); err != nil {
 			tx.Rollback()
 			return fmt.Errorf("apply migration %s: %w", name, err)
 		}
@@ -875,4 +882,30 @@ func runSQLiteMigrations(db *sql.DB) error {
 		}
 	}
 	return nil
+}
+
+// extractGooseUpSection returns only the SQL between "-- +goose Up" and
+// "-- +goose Down" annotations. If no goose annotations are found, the
+// entire content is returned unchanged.
+func extractGooseUpSection(content string) string {
+	const upMarker = "-- +goose Up"
+	const downMarker = "-- +goose Down"
+
+	upIdx := strings.Index(content, upMarker)
+	if upIdx == -1 {
+		return content
+	}
+
+	// Start after the Up marker line
+	start := upIdx + len(upMarker)
+	if idx := strings.Index(content[start:], "\n"); idx >= 0 {
+		start += idx + 1
+	}
+
+	downIdx := strings.Index(content, downMarker)
+	if downIdx == -1 {
+		return content[start:]
+	}
+
+	return content[start:downIdx]
 }

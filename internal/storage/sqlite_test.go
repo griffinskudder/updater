@@ -1008,3 +1008,44 @@ func TestSQLiteReleaseToModel_CorruptTimestamp(t *testing.T) {
 		})
 	}
 }
+
+func TestExtractGooseUpSection(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+		want  string
+	}{
+		{
+			name:  "no goose annotations returns full content",
+			input: "CREATE TABLE foo (id INT);\nCREATE TABLE bar (id INT);",
+			want:  "CREATE TABLE foo (id INT);\nCREATE TABLE bar (id INT);",
+		},
+		{
+			name:  "extracts only Up section",
+			input: "-- +goose Up\nCREATE TABLE foo (id INT);\n-- +goose Down\nDROP TABLE foo;",
+			want:  "CREATE TABLE foo (id INT);\n",
+		},
+		{
+			name:  "Up section without Down returns rest of content",
+			input: "-- +goose Up\nCREATE TABLE foo (id INT);\nCREATE TABLE bar (id INT);",
+			want:  "CREATE TABLE foo (id INT);\nCREATE TABLE bar (id INT);",
+		},
+		{
+			name:  "multiline Up section",
+			input: "-- +goose Up\n\nCREATE TABLE foo (\n    id INT PRIMARY KEY\n);\n\nCREATE INDEX idx ON foo(id);\n\n-- +goose Down\nDROP TABLE foo;",
+			want:  "\nCREATE TABLE foo (\n    id INT PRIMARY KEY\n);\n\nCREATE INDEX idx ON foo(id);\n\n",
+		},
+		{
+			name:  "empty Up section",
+			input: "-- +goose Up\n-- +goose Down\nDROP TABLE foo;",
+			want:  "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := extractGooseUpSection(tt.input)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
