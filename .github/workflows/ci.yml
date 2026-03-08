@@ -90,6 +90,15 @@ jobs:
         # Equivalent to: make sqlc-vet
         run: make sqlc-vet
 
+      - name: Check sqlc drift
+        run: |
+          make sqlc-generate
+          if [ -n "$(git diff --name-only internal/storage/sqlc/)" ]; then
+            echo "FAIL: sqlc-generate produced changes:"
+            git diff --name-only internal/storage/sqlc/
+            exit 1
+          fi
+
   security:
     runs-on: ubuntu-latest
     permissions:

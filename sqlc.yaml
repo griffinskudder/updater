@@ -1,8 +1,8 @@
 version: "2"
 sql:
   - engine: "postgresql"
-    queries: "internal/storage/sqlc/queries/postgres"
-    schema: "internal/storage/sqlc/schema/postgres"
+    queries: "internal/storage/queries/postgres"
+    schema: "internal/storage/migrations/postgres"
     gen:
       go:
         package: "sqlcpg"
@@ -14,8 +14,8 @@ sql:
         emit_exact_table_names: false
         emit_empty_slices: true
   - engine: "sqlite"
-    queries: "internal/storage/sqlc/queries/sqlite"
-    schema: "internal/storage/sqlc/schema/sqlite"
+    queries: "internal/storage/queries/sqlite"
+    schema: "internal/storage/migrations/sqlite"
     gen:
       go:
         package: "sqlcite"

@@ -26,7 +26,7 @@ graph TD
 | Performance | Fastest (no I/O) | Good for medium datasets | Best for large datasets |
 | Use Case | Testing, development | Single-server deployments | Production, multi-server |
 | CGO Required | No | No (pure Go driver) | No |
-| Schema Management | Automatic | Automatic (embedded DDL) | Manual migration required |
+| Schema Management | Automatic | goose migrations | goose migrations |
 
 ## Storage Interface
 
@@ -166,7 +166,7 @@ Stores data in Go maps protected by `sync.RWMutex`. Returns copies of all data t
 
 ### SQLite Storage
 
-Uses the `modernc.org/sqlite` pure-Go driver (no CGO required). The schema is automatically created on startup using an embedded SQL file with `IF NOT EXISTS` guards. Key characteristics:
+Uses the `modernc.org/sqlite` pure-Go driver (no CGO required). Schema migrations are managed by goose via the `migrate` binary (see [Migrations](migrations.md)). Key characteristics:
 
 - **WAL mode** enabled for better concurrent read performance
 - **Foreign keys** enabled for referential integrity
@@ -244,6 +244,17 @@ The `api_keys.permissions` column stores a JSON array of permission strings (e.g
 | Timestamps | `TIMESTAMPTZ` | `TEXT` (ISO8601) |
 | Large integers | `BIGINT` | `INTEGER` |
 | Nullable strings | `pgtype.Text` | `sql.NullString` |
+
+### Foreign Key Delete Behavior
+
+The `releases.application_id` foreign key uses different delete semantics per engine:
+
+| Engine | Behavior | Effect |
+|--------|----------|--------|
+| PostgreSQL | `ON DELETE RESTRICT` | Prevents deleting an application that still has releases |
+| SQLite | `ON DELETE CASCADE` | Deleting an application automatically removes its releases |
+
+This difference is intentional: PostgreSQL deployments typically run explicit cleanup logic before removing an application, while SQLite deployments (single-server, simpler workflows) benefit from automatic cascading deletes.
 
 ## Type Conversion
 

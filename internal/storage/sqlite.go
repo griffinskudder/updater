@@ -3,10 +3,8 @@ package storage
 import (
 	"context"
 	"database/sql"
-	"embed"
 	"errors"
 	"fmt"
-	"io/fs"
 	"sort"
 	"strings"
 	"time"
@@ -17,9 +15,6 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-//go:embed sqlc/schema/sqlite
-var sqliteMigrationsFS embed.FS
-
 // SQLiteStorage implements the Storage interface using SQLite with sqlc-generated queries.
 type SQLiteStorage struct {
 	db      *sql.DB
@@ -27,7 +22,7 @@ type SQLiteStorage struct {
 }
 
 // NewSQLiteStorage creates a new SQLite storage instance.
-// It automatically creates tables using the embedded schema if they do not exist.
+// The database must be migrated before use (e.g. via the migrate binary or goose).
 func NewSQLiteStorage(dsn string) (Storage, error) {
 	if dsn == "" {
 		return nil, fmt.Errorf("connection string is required for SQLite storage")
@@ -58,11 +53,6 @@ func NewSQLiteStorage(dsn string) (Storage, error) {
 	if _, err := db.Exec("PRAGMA foreign_keys=ON"); err != nil {
 		db.Close()
 		return nil, fmt.Errorf("failed to enable foreign keys: %w", err)
-	}
-
-	if err := runSQLiteMigrations(db); err != nil {
-		db.Close()
-		return nil, fmt.Errorf("failed to run migrations: %w", err)
 	}
 
 	return &SQLiteStorage{
@@ -823,56 +813,11 @@ func (ss *SQLiteStorage) GetApplicationStats(ctx context.Context, appID string) 
 	return stats, nil
 }
 
-// runSQLiteMigrations applies any unapplied migration files from the embedded
-// sqlc/schema/sqlite directory. Applied migrations are tracked in a
-// schema_migrations table so each file is executed at most once.
-func runSQLiteMigrations(db *sql.DB) error {
-	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS schema_migrations (
-		name       TEXT NOT NULL PRIMARY KEY,
-		applied_at TEXT NOT NULL DEFAULT (datetime('now'))
-	)`); err != nil {
-		return fmt.Errorf("create schema_migrations: %w", err)
+// newSQLiteStorageFromDB creates a SQLiteStorage from an existing *sql.DB.
+// Used by tests to share a pre-migrated in-memory database connection.
+func newSQLiteStorageFromDB(db *sql.DB) *SQLiteStorage {
+	return &SQLiteStorage{
+		db:      db,
+		queries: sqlcite.New(db),
 	}
-
-	entries, err := fs.ReadDir(sqliteMigrationsFS, "sqlc/schema/sqlite")
-	if err != nil {
-		return fmt.Errorf("read migration dir: %w", err)
-	}
-
-	for _, entry := range entries {
-		name := entry.Name()
-		if entry.IsDir() || !strings.HasSuffix(name, ".sql") {
-			continue
-		}
-
-		var count int
-		if err := db.QueryRow("SELECT COUNT(*) FROM schema_migrations WHERE name = ?", name).Scan(&count); err != nil {
-			return fmt.Errorf("check migration %s: %w", name, err)
-		}
-		if count > 0 {
-			continue
-		}
-
-		data, err := fs.ReadFile(sqliteMigrationsFS, "sqlc/schema/sqlite/"+name)
-		if err != nil {
-			return fmt.Errorf("read migration %s: %w", name, err)
-		}
-
-		tx, err := db.Begin()
-		if err != nil {
-			return fmt.Errorf("begin migration %s: %w", name, err)
-		}
-		if _, err := tx.Exec(string(data)); err != nil {
-			tx.Rollback()
-			return fmt.Errorf("apply migration %s: %w", name, err)
-		}
-		if _, err := tx.Exec("INSERT INTO schema_migrations (name) VALUES (?)", name); err != nil {
-			tx.Rollback()
-			return fmt.Errorf("record migration %s: %w", name, err)
-		}
-		if err := tx.Commit(); err != nil {
-			return fmt.Errorf("commit migration %s: %w", name, err)
-		}
-	}
-	return nil
 }

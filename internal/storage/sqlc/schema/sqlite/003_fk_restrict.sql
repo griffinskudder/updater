@@ -1,3 +1,0 @@
--- SQLite does not support altering FK constraints.
--- Referential integrity for DeleteApplication is enforced at the service layer.
--- This file exists for migration numbering parity with PostgreSQL.
