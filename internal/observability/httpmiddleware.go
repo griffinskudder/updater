@@ -1,6 +1,7 @@
 package observability
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -11,18 +12,25 @@ import (
 )
 
 // NewMetricsMiddleware creates middleware that records HTTP request count and latency.
-func NewMetricsMiddleware(provider *Provider) func(http.Handler) http.Handler {
+// It returns an error if any metric instrument cannot be created.
+func NewMetricsMiddleware(provider *Provider) (func(http.Handler) http.Handler, error) {
 	meter := provider.MeterProvider().Meter("updater.http")
 
-	requestsTotal, _ := meter.Int64Counter("updater_http_requests_total",
+	requestsTotal, err := meter.Int64Counter("updater_http_requests_total",
 		metric.WithDescription("Total HTTP requests"),
 		metric.WithUnit("{request}"),
 	)
+	if err != nil {
+		return nil, fmt.Errorf("create requests_total counter: %w", err)
+	}
 
-	requestDuration, _ := meter.Float64Histogram("updater_http_request_duration_seconds",
+	requestDuration, err := meter.Float64Histogram("updater_http_request_duration_seconds",
 		metric.WithDescription("HTTP request latency in seconds"),
 		metric.WithUnit("s"),
 	)
+	if err != nil {
+		return nil, fmt.Errorf("create request_duration histogram: %w", err)
+	}
 
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -46,7 +54,7 @@ func NewMetricsMiddleware(provider *Provider) func(http.Handler) http.Handler {
 			requestsTotal.Add(r.Context(), 1, metric.WithAttributes(attrs...))
 			requestDuration.Record(r.Context(), elapsed, metric.WithAttributes(attrs...))
 		})
-	}
+	}, nil
 }
 
 // statusWriter wraps http.ResponseWriter to capture the status code.
@@ -78,21 +86,28 @@ type AppMetrics struct {
 }
 
 // NewAppMetrics creates application-level business metric instruments.
-func NewAppMetrics(provider *Provider) *AppMetrics {
+// It returns an error if any metric instrument cannot be created.
+func NewAppMetrics(provider *Provider) (*AppMetrics, error) {
 	meter := provider.MeterProvider().Meter("updater.app")
 
-	updateChecks, _ := meter.Int64Counter("updater_update_checks_total",
+	updateChecks, err := meter.Int64Counter("updater_update_checks_total",
 		metric.WithDescription("Total update check requests"),
 		metric.WithUnit("{check}"),
 	)
+	if err != nil {
+		return nil, fmt.Errorf("create update_checks counter: %w", err)
+	}
 
-	releasesRegistered, _ := meter.Int64Counter("updater_releases_registered_total",
+	releasesRegistered, err := meter.Int64Counter("updater_releases_registered_total",
 		metric.WithDescription("Total releases registered"),
 		metric.WithUnit("{release}"),
 	)
+	if err != nil {
+		return nil, fmt.Errorf("create releases_registered counter: %w", err)
+	}
 
 	return &AppMetrics{
 		UpdateChecks:       updateChecks,
 		ReleasesRegistered: releasesRegistered,
-	}
+	}, nil
 }

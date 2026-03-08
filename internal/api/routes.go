@@ -45,10 +45,15 @@ func WithOTelMiddleware(serviceName string) RouteOption {
 }
 
 // WithMetricsMiddleware adds HTTP request count and latency recording.
-func WithMetricsMiddleware(provider *observability.Provider) RouteOption {
-	return func(r *mux.Router) {
-		r.Use(observability.NewMetricsMiddleware(provider))
+// It returns an error if the metric instruments cannot be created.
+func WithMetricsMiddleware(provider *observability.Provider) (RouteOption, error) {
+	mw, err := observability.NewMetricsMiddleware(provider)
+	if err != nil {
+		return nil, err
 	}
+	return func(r *mux.Router) {
+		r.Use(mw)
+	}, nil
 }
 
 // registerPublicEndpoint registers a handler at both root and /api/v1 paths.

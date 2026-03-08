@@ -25,7 +25,8 @@ func newTestProvider(t *testing.T) *Provider {
 
 func TestMetricsMiddleware_RecordsRequestCount(t *testing.T) {
 	provider := newTestProvider(t)
-	middleware := NewMetricsMiddleware(provider)
+	middleware, err := NewMetricsMiddleware(provider)
+	require.NoError(t, err)
 
 	router := mux.NewRouter()
 	router.Handle("/api/v1/updates/{app_id}/check", middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -41,7 +42,8 @@ func TestMetricsMiddleware_RecordsRequestCount(t *testing.T) {
 
 func TestMetricsMiddleware_CapturesStatusCode(t *testing.T) {
 	provider := newTestProvider(t)
-	middleware := NewMetricsMiddleware(provider)
+	middleware, err := NewMetricsMiddleware(provider)
+	require.NoError(t, err)
 
 	handler := middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
@@ -90,7 +92,8 @@ func TestStatusWriter_WriteSetsWrittenFlag(t *testing.T) {
 
 func TestNewAppMetrics(t *testing.T) {
 	provider := newTestProvider(t)
-	m := NewAppMetrics(provider)
+	m, err := NewAppMetrics(provider)
+	require.NoError(t, err)
 	assert.NotNil(t, m.UpdateChecks)
 	assert.NotNil(t, m.ReleasesRegistered)
 }
