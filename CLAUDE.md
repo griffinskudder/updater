@@ -4,7 +4,9 @@ This file provides guidance to Claude Code when working with this repository.
 
 ## Project Overview
 
-Go-based software update service ("updater") queried by desktop applications to check for and download updates, with downloads hosted externally.
+Go-based software update service ("updater") queried by desktop applications to check for and download updates, with downloads hosted externally.  
+
+**Repository URL**: https://github.com/griffinskudder/updater
 
 **Go version**: 1.25.0
 
