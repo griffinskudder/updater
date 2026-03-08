@@ -64,6 +64,16 @@ RUN CGO_ENABLED=0 \
     -o healthcheck \
     ./cmd/healthcheck
 
+# Build the migration binary
+RUN CGO_ENABLED=0 \
+    GOOS=linux \
+    GOARCH=amd64 \
+    go build \
+    -a \
+    -ldflags='-w -s -extldflags "-static"' \
+    -o migrate \
+    ./cmd/migrate
+
 # =============================================================================
 # Runtime Stage - Distroless (OS-less)
 # =============================================================================
@@ -82,6 +92,7 @@ COPY --from=builder --chown=65532:65532 /etc/ssl/certs/ca-certificates.crt /etc/
 # Copy the statically linked binary and health check helper
 COPY --from=builder --chown=65532:65532 /build/updater /usr/local/bin/updater
 COPY --from=builder --chown=65532:65532 /build/healthcheck /usr/local/bin/healthcheck
+COPY --from=builder --chown=65532:65532 /build/migrate /usr/local/bin/migrate
 
 COPY --from=builder --chown=65532:65532 /app /app
 
