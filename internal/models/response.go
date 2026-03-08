@@ -219,6 +219,19 @@ func NewErrorResponse(message string, code string) *ErrorResponse {
 	}
 }
 
+// copyMetadata returns a shallow copy of m, or nil if m is nil.
+// This prevents callers from mutating the original release's metadata map via a response.
+func copyMetadata(m map[string]string) map[string]string {
+	if m == nil {
+		return nil
+	}
+	out := make(map[string]string, len(m))
+	for k, v := range m {
+		out[k] = v
+	}
+	return out
+}
+
 func (r *UpdateCheckResponse) SetUpdateAvailable(release *Release) {
 	r.UpdateAvailable = true
 	r.LatestVersion = release.Version
@@ -230,7 +243,7 @@ func (r *UpdateCheckResponse) SetUpdateAvailable(release *Release) {
 	r.ReleaseDate = &release.ReleaseDate
 	r.Required = release.Required
 	r.MinimumVersion = release.MinimumVersion
-	r.Metadata = release.Metadata
+	r.Metadata = copyMetadata(release.Metadata)
 }
 
 func (r *UpdateCheckResponse) SetNoUpdateAvailable(currentVersion string) {
@@ -247,7 +260,7 @@ func (r *LatestVersionResponse) FromRelease(release *Release) {
 	r.ReleaseNotes = release.ReleaseNotes
 	r.ReleaseDate = release.ReleaseDate
 	r.Required = release.Required
-	r.Metadata = release.Metadata
+	r.Metadata = copyMetadata(release.Metadata)
 }
 
 func (ri *ReleaseInfo) FromRelease(release *Release) {
@@ -263,7 +276,7 @@ func (ri *ReleaseInfo) FromRelease(release *Release) {
 	ri.ReleaseDate = release.ReleaseDate
 	ri.Required = release.Required
 	ri.MinimumVersion = release.MinimumVersion
-	ri.Metadata = release.Metadata
+	ri.Metadata = copyMetadata(release.Metadata)
 }
 
 func (as *ApplicationSummary) FromApplication(app *Application) {

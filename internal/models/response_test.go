@@ -356,6 +356,36 @@ func TestComponentHealth_Structure(t *testing.T) {
 	assert.Equal(t, now, component.Timestamp)
 }
 
+func TestSetUpdateAvailable_MetadataNotShared(t *testing.T) {
+	release := &Release{Metadata: map[string]string{"k": "original"}}
+	resp := &UpdateCheckResponse{}
+	resp.SetUpdateAvailable(release)
+
+	resp.Metadata["k"] = "modified"
+
+	assert.Equal(t, "original", release.Metadata["k"], "response metadata must be a copy, not a shared reference")
+}
+
+func TestLatestVersionResponse_FromRelease_MetadataNotShared(t *testing.T) {
+	release := &Release{Metadata: map[string]string{"k": "original"}}
+	resp := &LatestVersionResponse{}
+	resp.FromRelease(release)
+
+	resp.Metadata["k"] = "modified"
+
+	assert.Equal(t, "original", release.Metadata["k"], "response metadata must be a copy, not a shared reference")
+}
+
+func TestReleaseInfo_FromRelease_MetadataNotShared(t *testing.T) {
+	release := &Release{Metadata: map[string]string{"k": "original"}}
+	ri := &ReleaseInfo{}
+	ri.FromRelease(release)
+
+	ri.Metadata["k"] = "modified"
+
+	assert.Equal(t, "original", release.Metadata["k"], "response metadata must be a copy, not a shared reference")
+}
+
 func TestListReleasesResponse_NextCursorAlwaysPresent(t *testing.T) {
 	resp := ListReleasesResponse{
 		Releases:   []ReleaseInfo{},
