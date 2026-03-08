@@ -40,7 +40,7 @@ docs-db: ## Generate database schema docs from PostgreSQL migrations using tbls
 	@echo "Generating database schema docs..."
 	@docker rm -f $(DOCS_PG_CONTAINER) 2>/dev/null || true
 	docker run -d --name $(DOCS_PG_CONTAINER) \
-		-v "$(CURDIR)/internal/storage/sqlc/schema/postgres:/migrations:ro" \
+		-v "$(CURDIR)/internal/storage/migrations/postgres:/migrations:ro" \
 		-e POSTGRES_PASSWORD=docs \
 		-e POSTGRES_USER=docs \
 		-e POSTGRES_DB=updater \
