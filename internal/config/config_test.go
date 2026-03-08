@@ -126,13 +126,14 @@ storage:
 func TestLoad_WithEnvironmentVariables(t *testing.T) {
 	// Set environment variables
 	originalEnv := map[string]string{
-		"UPDATER_PORT":          os.Getenv("UPDATER_PORT"),
-		"UPDATER_HOST":          os.Getenv("UPDATER_HOST"),
-		"UPDATER_STORAGE_TYPE":  os.Getenv("UPDATER_STORAGE_TYPE"),
-		"UPDATER_STORAGE_PATH":  os.Getenv("UPDATER_STORAGE_PATH"),
-		"UPDATER_ENABLE_AUTH":   os.Getenv("UPDATER_ENABLE_AUTH"),
-		"UPDATER_BOOTSTRAP_KEY": os.Getenv("UPDATER_BOOTSTRAP_KEY"),
-		"UPDATER_LOG_LEVEL":     os.Getenv("UPDATER_LOG_LEVEL"),
+		"UPDATER_PORT":             os.Getenv("UPDATER_PORT"),
+		"UPDATER_HOST":             os.Getenv("UPDATER_HOST"),
+		"UPDATER_STORAGE_TYPE":     os.Getenv("UPDATER_STORAGE_TYPE"),
+		"UPDATER_STORAGE_PATH":     os.Getenv("UPDATER_STORAGE_PATH"),
+		"UPDATER_ENABLE_AUTH":      os.Getenv("UPDATER_ENABLE_AUTH"),
+		"UPDATER_BOOTSTRAP_KEY":    os.Getenv("UPDATER_BOOTSTRAP_KEY"),
+		"UPDATER_LOG_LEVEL":        os.Getenv("UPDATER_LOG_LEVEL"),
+		"UPDATER_SHUTDOWN_TIMEOUT": os.Getenv("UPDATER_SHUTDOWN_TIMEOUT"),
 	}
 
 	// Clean up after test
@@ -154,6 +155,7 @@ func TestLoad_WithEnvironmentVariables(t *testing.T) {
 	os.Setenv("UPDATER_ENABLE_AUTH", "true")
 	os.Setenv("UPDATER_BOOTSTRAP_KEY", "upd_test-env-bootstrap-key")
 	os.Setenv("UPDATER_LOG_LEVEL", "warn")
+	os.Setenv("UPDATER_SHUTDOWN_TIMEOUT", "45s")
 
 	tempDir := t.TempDir()
 	configFile := filepath.Join(tempDir, "env_config.yaml")
@@ -187,6 +189,7 @@ logging:
 	assert.Equal(t, "/tmp/test.json", config.Storage.Path)
 	assert.True(t, config.Security.EnableAuth)
 	assert.Equal(t, "warn", config.Logging.Level)
+	assert.Equal(t, 45*time.Second, config.Server.ShutdownTimeout)
 }
 
 func TestLoad_NonExistentFile(t *testing.T) {

@@ -126,6 +126,12 @@ func loadFromEnvironment(config *models.Config) {
 		}
 	}
 
+	if timeout := os.Getenv("UPDATER_SHUTDOWN_TIMEOUT"); timeout != "" {
+		if d, err := time.ParseDuration(timeout); err == nil {
+			config.Server.ShutdownTimeout = d
+		}
+	}
+
 	if tls := os.Getenv("UPDATER_TLS_ENABLED"); tls != "" {
 		config.Server.TLSEnabled = strings.ToLower(tls) == "true"
 	}
