@@ -630,7 +630,7 @@ Configuration is loaded from a YAML file (via `-config` CLI flag) and overridden
 - `UPDATER_HOST`: Bind address (default: "")
 - `UPDATER_READ_TIMEOUT`: HTTP read timeout (default: 30s)
 - `UPDATER_WRITE_TIMEOUT`: HTTP write timeout (default: 30s)
-- `UPDATER_IDLE_TIMEOUT`: HTTP idle timeout (default: 120s)
+- `UPDATER_IDLE_TIMEOUT`: HTTP idle timeout (default: 60s)
 - `UPDATER_SHUTDOWN_TIMEOUT`: Maximum time to drain in-flight requests on SIGTERM/SIGINT (default: 30s)
 - `UPDATER_TLS_ENABLED`: Enable TLS (default: false)
 - `UPDATER_TLS_CERT_FILE`: Path to TLS certificate
