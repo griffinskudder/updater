@@ -46,7 +46,7 @@ docs-db: ## Generate database schema docs from PostgreSQL migrations using tbls
 		-e POSTGRES_DB=updater \
 		postgres:17-alpine
 	@until docker exec $(DOCS_PG_CONTAINER) psql -U docs -d updater -c "SELECT 1" >/dev/null 2>&1; do sleep 1; done
-	@docker exec $(DOCS_PG_CONTAINER) sh -c 'for f in /migrations/*.sql; do psql -U docs -d updater -f "$$f"; done'
+	@docker exec $(DOCS_PG_CONTAINER) sh -c 'for f in /migrations/[0-9]*.sql; do psql -U docs -d updater -f "$$f"; done'
 	@rm -rf docs/db && mkdir -p docs/db
 	docker run --rm \
 		-v "$(CURDIR)/docs/db:/out" \
