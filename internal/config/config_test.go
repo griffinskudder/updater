@@ -1,8 +1,16 @@
 package config
 
 import (
+	"bytes"
 	"context"
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
+	"crypto/x509"
+	"crypto/x509/pkix"
+	"encoding/pem"
 	"log/slog"
+	"math/big"
 	"os"
 	"path/filepath"
 	"testing"
@@ -524,6 +532,258 @@ func (h *capturingSlogHandler) Handle(_ context.Context, r slog.Record) error {
 
 func (h *capturingSlogHandler) WithAttrs(_ []slog.Attr) slog.Handler { return h }
 func (h *capturingSlogHandler) WithGroup(_ string) slog.Handler      { return h }
+
+// testGenerateSelfSignedCert creates a temporary self-signed ECDSA cert/key pair
+// and writes them to files in a temp directory. Returns the file paths.
+func testGenerateSelfSignedCert(t *testing.T) (certPath, keyPath string) {
+	t.Helper()
+
+	key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	require.NoError(t, err)
+
+	template := &x509.Certificate{
+		SerialNumber: big.NewInt(1),
+		Subject:      pkix.Name{CommonName: "test"},
+		NotBefore:    time.Now().Add(-time.Hour),
+		NotAfter:     time.Now().Add(time.Hour),
+	}
+	certDER, err := x509.CreateCertificate(rand.Reader, template, template, &key.PublicKey, key)
+	require.NoError(t, err)
+
+	var certBuf bytes.Buffer
+	require.NoError(t, pem.Encode(&certBuf, &pem.Block{Type: "CERTIFICATE", Bytes: certDER}))
+
+	keyDER, err := x509.MarshalECPrivateKey(key)
+	require.NoError(t, err)
+	var keyBuf bytes.Buffer
+	require.NoError(t, pem.Encode(&keyBuf, &pem.Block{Type: "EC PRIVATE KEY", Bytes: keyDER}))
+
+	dir := t.TempDir()
+	certPath = filepath.Join(dir, "cert.pem")
+	keyPath = filepath.Join(dir, "key.pem")
+	require.NoError(t, os.WriteFile(certPath, certBuf.Bytes(), 0600))
+	require.NoError(t, os.WriteFile(keyPath, keyBuf.Bytes(), 0600))
+
+	return certPath, keyPath
+}
+
+func TestValidateRuntime_TLSDisabled(t *testing.T) {
+	cfg := models.NewDefaultConfig()
+	cfg.Storage.Type = "memory"
+	err := ValidateRuntime(cfg)
+	assert.NoError(t, err)
+}
+
+func TestValidateRuntime_TLS_ValidPair(t *testing.T) {
+	certPath, keyPath := testGenerateSelfSignedCert(t)
+
+	cfg := models.NewDefaultConfig()
+	cfg.Storage.Type = "memory"
+	cfg.Server.TLSEnabled = true
+	cfg.Server.TLSCertFile = certPath
+	cfg.Server.TLSKeyFile = keyPath
+
+	err := ValidateRuntime(cfg)
+	assert.NoError(t, err)
+}
+
+func TestValidateRuntime_TLS_CertFileMissing(t *testing.T) {
+	_, keyPath := testGenerateSelfSignedCert(t)
+
+	cfg := models.NewDefaultConfig()
+	cfg.Storage.Type = "memory"
+	cfg.Server.TLSEnabled = true
+	cfg.Server.TLSCertFile = "/nonexistent/cert.pem"
+	cfg.Server.TLSKeyFile = keyPath
+
+	err := ValidateRuntime(cfg)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "cannot read TLS cert file")
+}
+
+func TestValidateRuntime_TLS_KeyFileMissing(t *testing.T) {
+	certPath, _ := testGenerateSelfSignedCert(t)
+
+	cfg := models.NewDefaultConfig()
+	cfg.Storage.Type = "memory"
+	cfg.Server.TLSEnabled = true
+	cfg.Server.TLSCertFile = certPath
+	cfg.Server.TLSKeyFile = "/nonexistent/key.pem"
+
+	err := ValidateRuntime(cfg)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "cannot read TLS key file")
+}
+
+func TestValidateRuntime_TLS_BothFilesMissing_BothReported(t *testing.T) {
+	cfg := models.NewDefaultConfig()
+	cfg.Storage.Type = "memory"
+	cfg.Server.TLSEnabled = true
+	cfg.Server.TLSCertFile = "/nonexistent/cert.pem"
+	cfg.Server.TLSKeyFile = "/nonexistent/key.pem"
+
+	err := ValidateRuntime(cfg)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "cannot read TLS cert file")
+	assert.Contains(t, err.Error(), "cannot read TLS key file")
+}
+
+func TestValidateRuntime_TLS_MismatchedPair(t *testing.T) {
+	certPath1, _ := testGenerateSelfSignedCert(t)
+	_, keyPath2 := testGenerateSelfSignedCert(t)
+
+	cfg := models.NewDefaultConfig()
+	cfg.Storage.Type = "memory"
+	cfg.Server.TLSEnabled = true
+	cfg.Server.TLSCertFile = certPath1
+	cfg.Server.TLSKeyFile = keyPath2
+
+	err := ValidateRuntime(cfg)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "invalid TLS cert/key pair")
+}
+
+func TestValidateRuntime_LogDir_NotFile(t *testing.T) {
+	cfg := models.NewDefaultConfig()
+	cfg.Storage.Type = "memory"
+	// Default output is stdout, not file — no log-dir check.
+	err := ValidateRuntime(cfg)
+	assert.NoError(t, err)
+}
+
+func TestValidateRuntime_LogDir_WritableDir(t *testing.T) {
+	dir := t.TempDir()
+
+	cfg := models.NewDefaultConfig()
+	cfg.Storage.Type = "memory"
+	cfg.Logging.Output = "file"
+	cfg.Logging.FilePath = filepath.Join(dir, "updater.log")
+
+	err := ValidateRuntime(cfg)
+	assert.NoError(t, err)
+}
+
+func TestValidateRuntime_LogDir_NonExistentDir(t *testing.T) {
+	cfg := models.NewDefaultConfig()
+	cfg.Storage.Type = "memory"
+	cfg.Logging.Output = "file"
+	// Use a path under t.TempDir() with a subdirectory that is never created.
+	cfg.Logging.FilePath = filepath.Join(t.TempDir(), "doesnotexist", "updater.log")
+
+	err := ValidateRuntime(cfg)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "log directory does not exist or is not accessible")
+}
+
+func TestValidateConfig_AllPass(t *testing.T) {
+	tempDir := t.TempDir()
+	configFile := filepath.Join(tempDir, "config.yaml")
+
+	require.NoError(t, os.WriteFile(configFile, []byte(`
+storage:
+  type: "memory"
+`), 0644))
+
+	results := ValidateConfig(configFile)
+	for _, r := range results {
+		assert.True(t, r.OK, "expected check %q to pass, got: %s", r.Name, r.Message)
+	}
+}
+
+func TestValidateConfig_FileNotFound(t *testing.T) {
+	results := ValidateConfig("/nonexistent/config.yaml")
+	require.Len(t, results, 1)
+	assert.Equal(t, "config.load", results[0].Name)
+	assert.False(t, results[0].OK)
+	assert.Contains(t, results[0].Message, "config file not found")
+}
+
+func TestValidateConfig_PortConflict(t *testing.T) {
+	tempDir := t.TempDir()
+	configFile := filepath.Join(tempDir, "config.yaml")
+
+	require.NoError(t, os.WriteFile(configFile, []byte(`
+storage:
+  type: "memory"
+server:
+  port: 9090
+metrics:
+  enabled: true
+  port: 9090
+  path: "/metrics"
+`), 0644))
+
+	results := ValidateConfig(configFile)
+
+	var crossFieldResult *CheckResult
+	for i := range results {
+		if results[i].Name == "config.cross-field" {
+			crossFieldResult = &results[i]
+			break
+		}
+	}
+	require.NotNil(t, crossFieldResult)
+	assert.False(t, crossFieldResult.OK)
+	assert.Contains(t, crossFieldResult.Message, "must not be the same")
+}
+
+func TestValidateConfig_InvalidOTLPEndpoint(t *testing.T) {
+	tempDir := t.TempDir()
+	configFile := filepath.Join(tempDir, "config.yaml")
+
+	require.NoError(t, os.WriteFile(configFile, []byte(`
+storage:
+  type: "memory"
+observability:
+  tracing:
+    enabled: true
+    exporter: "otlp"
+    sample_rate: 1.0
+    otlp_endpoint: "not-a-host-port"
+`), 0644))
+
+	results := ValidateConfig(configFile)
+
+	var obsResult *CheckResult
+	for i := range results {
+		if results[i].Name == "config.observability" {
+			obsResult = &results[i]
+			break
+		}
+	}
+	require.NotNil(t, obsResult)
+	assert.False(t, obsResult.OK)
+	assert.Contains(t, obsResult.Message, "invalid OTLP endpoint")
+}
+
+func TestValidateConfig_TLSFilesMissing(t *testing.T) {
+	tempDir := t.TempDir()
+	configFile := filepath.Join(tempDir, "config.yaml")
+
+	require.NoError(t, os.WriteFile(configFile, []byte(`
+storage:
+  type: "memory"
+server:
+  port: 8443
+  tls_enabled: true
+  tls_cert_file: "/nonexistent/cert.pem"
+  tls_key_file: "/nonexistent/key.pem"
+`), 0644))
+
+	results := ValidateConfig(configFile)
+
+	var tlsResult *CheckResult
+	for i := range results {
+		if results[i].Name == "runtime.tls" {
+			tlsResult = &results[i]
+			break
+		}
+	}
+	require.NotNil(t, tlsResult)
+	assert.False(t, tlsResult.OK)
+	assert.Contains(t, tlsResult.Message, "cannot read TLS cert file")
+	assert.Contains(t, tlsResult.Message, "cannot read TLS key file")
+}
 
 func TestSaveExample_FilePermissions(t *testing.T) {
 	tempDir := t.TempDir()

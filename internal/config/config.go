@@ -1,6 +1,8 @@
 package config
 
 import (
+	"crypto/tls"
+	"errors"
 	"fmt"
 	"log/slog"
 	"os"
@@ -214,6 +216,119 @@ func loadFromEnvironment(config *models.Config) {
 			config.Metrics.Port = p
 		}
 	}
+}
+
+// CheckResult holds the outcome of a single named validation check.
+type CheckResult struct {
+	Name    string `json:"name"`
+	OK      bool   `json:"ok"`
+	Message string `json:"message,omitempty"`
+}
+
+// ValidateConfig loads configuration from configPath (or defaults if empty) and runs
+// all validation checks, returning a structured list of per-section results. Unlike
+// Load, it does not fail fast — every check runs regardless of prior failures.
+// Intended for use with the --validate CLI flag.
+func ValidateConfig(configPath string) []CheckResult {
+	var results []CheckResult
+
+	add := func(name string, err error) {
+		r := CheckResult{Name: name, OK: err == nil}
+		if err != nil {
+			r.Message = err.Error()
+		}
+		results = append(results, r)
+	}
+
+	cfg := models.NewDefaultConfig()
+	if configPath != "" {
+		if err := loadFromFile(cfg, configPath); err != nil {
+			add("config.load", err)
+			return results // Cannot validate without a parseable config.
+		}
+	}
+	loadFromEnvironment(cfg)
+
+	add("config.server", cfg.Server.Validate())
+	add("config.storage", cfg.Storage.Validate())
+	add("config.security", cfg.Security.Validate())
+	add("config.logging", cfg.Logging.Validate())
+	add("config.metrics", cfg.Metrics.Validate())
+	add("config.observability", cfg.Observability.Validate())
+
+	// Cross-field: server and metrics ports must not conflict.
+	var crossErrs []error
+	if cfg.Metrics.Enabled && cfg.Server.Port > 0 && cfg.Metrics.Port > 0 && cfg.Server.Port == cfg.Metrics.Port {
+		crossErrs = append(crossErrs, fmt.Errorf(
+			"server port and metrics port must not be the same (both are %d)", cfg.Server.Port,
+		))
+	}
+	add("config.cross-field", errors.Join(crossErrs...))
+
+	add("runtime.tls", validateTLS(cfg))
+	add("runtime.log-dir", validateLogDir(cfg))
+
+	return results
+}
+
+// ValidateRuntime performs I/O-bound checks on a fully loaded and validated
+// configuration. It verifies that TLS files are readable and form a valid key
+// pair, and that the log file directory exists and is writable. All checks run
+// before any error is returned. Call this after Load and before starting any
+// subsystem.
+func ValidateRuntime(cfg *models.Config) error {
+	return errors.Join(validateTLS(cfg), validateLogDir(cfg))
+}
+
+// validateTLS checks that the TLS cert and key files exist and form a valid
+// key pair. It is a no-op when TLS is disabled.
+func validateTLS(cfg *models.Config) error {
+	if !cfg.Server.TLSEnabled {
+		return nil
+	}
+
+	var errs []error
+
+	certPEM, err := os.ReadFile(cfg.Server.TLSCertFile)
+	if err != nil {
+		errs = append(errs, fmt.Errorf("cannot read TLS cert file %q: %w", cfg.Server.TLSCertFile, err))
+	}
+
+	keyPEM, err := os.ReadFile(cfg.Server.TLSKeyFile)
+	if err != nil {
+		errs = append(errs, fmt.Errorf("cannot read TLS key file %q: %w", cfg.Server.TLSKeyFile, err))
+	}
+
+	// Only attempt pair validation when both reads succeeded.
+	if certPEM != nil && keyPEM != nil {
+		if _, err := tls.X509KeyPair(certPEM, keyPEM); err != nil {
+			errs = append(errs, fmt.Errorf("invalid TLS cert/key pair: %w", err))
+		}
+	}
+
+	return errors.Join(errs...)
+}
+
+// validateLogDir checks that the directory for the configured log file exists
+// and is writable. It is a no-op when log output is not "file".
+func validateLogDir(cfg *models.Config) error {
+	if cfg.Logging.Output != "file" {
+		return nil
+	}
+
+	dir := filepath.Dir(cfg.Logging.FilePath)
+	if _, err := os.Stat(dir); err != nil {
+		return fmt.Errorf("log directory does not exist or is not accessible %q: %w", dir, err)
+	}
+
+	tmp, err := os.CreateTemp(dir, ".updater-writable-check-*")
+	if err != nil {
+		return fmt.Errorf("log directory is not writable %q: %w", dir, err)
+	}
+	tmp.Close()
+	os.Remove(tmp.Name())
+
+	return nil
 }
 
 // SaveExample saves an example configuration file
