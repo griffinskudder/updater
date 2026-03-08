@@ -1,7 +1,7 @@
 version: "2"
 sql:
   - engine: "postgresql"
-    queries: "internal/storage/migrations/postgres"
+    queries: "internal/storage/queries/postgres"
     schema: "internal/storage/migrations/postgres"
     gen:
       go:
@@ -14,7 +14,7 @@ sql:
         emit_exact_table_names: false
         emit_empty_slices: true
   - engine: "sqlite"
-    queries: "internal/storage/migrations/sqlite"
+    queries: "internal/storage/queries/sqlite"
     schema: "internal/storage/migrations/sqlite"
     gen:
       go:

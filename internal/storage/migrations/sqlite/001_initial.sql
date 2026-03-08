@@ -68,19 +68,23 @@ CREATE INDEX idx_applications_config ON applications(config) WHERE config != '{}
 CREATE INDEX idx_api_keys_hash ON api_keys(key_hash);
 
 -- Triggers (RFC3339 format)
+-- +goose StatementBegin
 CREATE TRIGGER update_applications_updated_at
     AFTER UPDATE ON applications
     FOR EACH ROW
 BEGIN
     UPDATE applications SET updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE id = NEW.id;
 END;
+-- +goose StatementEnd
 
+-- +goose StatementBegin
 CREATE TRIGGER update_api_keys_updated_at
     AFTER UPDATE ON api_keys
     FOR EACH ROW
 BEGIN
     UPDATE api_keys SET updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE id = NEW.id;
 END;
+-- +goose StatementEnd
 
 -- +goose Down
 DROP TRIGGER IF EXISTS update_api_keys_updated_at;
