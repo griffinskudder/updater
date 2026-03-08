@@ -67,9 +67,12 @@ func TestInstrumentedStorage_ApplicationOperations(t *testing.T) {
 	ctx := context.Background()
 
 	// SaveApplication
+	now := time.Now().UTC().Format(time.RFC3339)
 	app := &models.Application{
-		ID:   "test-app",
-		Name: "Test App",
+		ID:        "test-app",
+		Name:      "Test App",
+		CreatedAt: now,
+		UpdatedAt: now,
 	}
 	err = instrumented.SaveApplication(ctx, app)
 	assert.NoError(t, err)

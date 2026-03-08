@@ -333,15 +333,33 @@ func (m *MemoryStorage) ListApplicationsPaged(ctx context.Context, limit int, cu
 		copied := *app
 		apps = append(apps, &copied)
 	}
-	// Sort by created_at DESC, id DESC to match the DB ordering.
-	sort.Slice(apps, func(i, j int) bool {
-		ti, _ := time.Parse(time.RFC3339, apps[i].CreatedAt)
-		tj, _ := time.Parse(time.RFC3339, apps[j].CreatedAt)
-		if !ti.Equal(tj) {
-			return ti.After(tj)
+	// Pre-parse timestamps so sort errors can be returned. Malformed timestamps indicate
+	// data corruption; Application.Validate() rejects them at write time.
+	parsed := make([]struct {
+		app       *models.Application
+		createdAt time.Time
+	}, len(apps))
+	for i, app := range apps {
+		parsed[i].app = app
+		if app.CreatedAt == "" {
+			continue
 		}
-		return apps[i].ID > apps[j].ID
+		t, err := time.Parse(time.RFC3339, app.CreatedAt)
+		if err != nil {
+			return nil, 0, fmt.Errorf("corrupt created_at for application %s: %w", app.ID, err)
+		}
+		parsed[i].createdAt = t
+	}
+	// Sort by created_at DESC, id DESC to match the DB ordering.
+	sort.Slice(parsed, func(i, j int) bool {
+		if !parsed[i].createdAt.Equal(parsed[j].createdAt) {
+			return parsed[i].createdAt.After(parsed[j].createdAt)
+		}
+		return parsed[i].app.ID > parsed[j].app.ID
 	})
+	for i, p := range parsed {
+		apps[i] = p.app
+	}
 
 	total := len(apps)
 

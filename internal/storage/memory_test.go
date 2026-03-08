@@ -782,3 +782,20 @@ func TestMemoryStorage_ListReleasesPaged_CursorNotFound(t *testing.T) {
 	require.NoError(t, err)
 	assert.Empty(t, results, "cursor pointing to a deleted item must return empty slice, not restart pagination")
 }
+
+func TestMemoryListApplicationsPaged_CorruptTimestamp(t *testing.T) {
+	store, err := NewMemoryStorage()
+	require.NoError(t, err)
+	defer store.Close()
+
+	ctx := context.Background()
+
+	// Bypass validation by writing directly to the internal map.
+	app := models.NewApplication("bad-app", "Bad App", []string{"windows"})
+	app.CreatedAt = "not-a-timestamp"
+	store.applications["bad-app"] = app
+
+	_, _, err = store.ListApplicationsPaged(ctx, 10, nil)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "corrupt created_at")
+}

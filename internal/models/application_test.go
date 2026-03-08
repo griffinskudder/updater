@@ -94,6 +94,40 @@ func TestApplication_Validate(t *testing.T) {
 			expectError: true,
 			errorMsg:    "invalid platform: invalid-platform",
 		},
+		{
+			name: "invalid created_at timestamp",
+			app: &Application{
+				ID:        "valid-app-id",
+				Name:      "Valid App",
+				Platforms: []string{"windows"},
+				Config:    ApplicationConfig{},
+				CreatedAt: "not-a-timestamp",
+			},
+			expectError: true,
+			errorMsg:    "invalid created_at timestamp",
+		},
+		{
+			name: "invalid updated_at timestamp",
+			app: &Application{
+				ID:        "valid-app-id",
+				Name:      "Valid App",
+				Platforms: []string{"windows"},
+				Config:    ApplicationConfig{},
+				UpdatedAt: "not-a-timestamp",
+			},
+			expectError: true,
+			errorMsg:    "invalid updated_at timestamp",
+		},
+		{
+			name: "empty timestamps pass validation",
+			app: &Application{
+				ID:        "valid-app-id",
+				Name:      "Valid App",
+				Platforms: []string{"windows"},
+				Config:    ApplicationConfig{},
+			},
+			expectError: false,
+		},
 	}
 
 	for _, tt := range tests {

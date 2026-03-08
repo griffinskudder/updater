@@ -38,10 +38,11 @@ CREATE INDEX idx_releases_version ON releases(version);
 CREATE INDEX idx_releases_date ON releases(release_date DESC);
 CREATE INDEX idx_releases_required ON releases(required);
 
--- Trigger to automatically update updated_at for applications (SQLite)
+-- Trigger to automatically update updated_at for applications (SQLite).
+-- Uses strftime to produce RFC3339-compatible timestamps; superseded by 006_fix_datetime_triggers.sql.
 CREATE TRIGGER update_applications_updated_at
     AFTER UPDATE ON applications
     FOR EACH ROW
 BEGIN
-    UPDATE applications SET updated_at = datetime('now') WHERE id = NEW.id;
+    UPDATE applications SET updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE id = NEW.id;
 END;
