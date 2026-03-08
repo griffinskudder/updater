@@ -3,7 +3,6 @@ name: Publish
 on:
   push:
     branches: [main]
-  pull_request:
 
 permissions: {}
 
@@ -11,7 +10,6 @@ jobs:
   publish:
     name: Build and push to GHCR
     runs-on: ubuntu-latest
-    if: github.ref_type == 'branch'
     permissions:
       contents: read
       packages: write
