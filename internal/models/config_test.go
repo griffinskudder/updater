@@ -16,6 +16,7 @@ func TestNewDefaultConfig(t *testing.T) {
 	assert.Equal(t, 30*time.Second, config.Server.ReadTimeout)
 	assert.Equal(t, 30*time.Second, config.Server.WriteTimeout)
 	assert.Equal(t, 60*time.Second, config.Server.IdleTimeout)
+	assert.Equal(t, 30*time.Second, config.Server.ShutdownTimeout)
 	assert.False(t, config.Server.TLSEnabled)
 
 	// Test storage defaults
@@ -78,6 +79,17 @@ func TestConfig_Validate(t *testing.T) {
 			},
 			expectError: true,
 			errorMsg:    "invalid server config",
+		},
+		{
+			name: "negative shutdown timeout",
+			config: func() *Config {
+				c := NewDefaultConfig()
+				c.Storage.Type = "memory"
+				c.Server.ShutdownTimeout = -1 * time.Second
+				return c
+			}(),
+			expectError: true,
+			errorMsg:    "shutdown timeout",
 		},
 		{
 			name: "invalid storage config",
