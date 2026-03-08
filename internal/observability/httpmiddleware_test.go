@@ -9,6 +9,7 @@ import (
 	"updater/internal/version"
 
 	"github.com/gorilla/mux"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -17,7 +18,9 @@ func newTestProvider(t *testing.T) *Provider {
 	t.Helper()
 	metrics := models.MetricsConfig{Enabled: true, Path: "/metrics", Port: 9090}
 	obs := models.ObservabilityConfig{ServiceName: "test"}
-	p, err := Setup(metrics, obs, version.Info{})
+	// Use an isolated registry per test to avoid duplicate-registration panics when
+	// multiple tests call Setup in the same process.
+	p, err := Setup(metrics, obs, version.Info{}, WithPrometheusRegisterer(prometheus.NewRegistry()))
 	require.NoError(t, err)
 	t.Cleanup(func() { p.Shutdown(context.Background()) })
 	return p

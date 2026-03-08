@@ -14,6 +14,9 @@ import (
 // NewMetricsMiddleware creates middleware that records HTTP request count and latency.
 // It returns an error if any metric instrument cannot be created.
 func NewMetricsMiddleware(provider *Provider) (func(http.Handler) http.Handler, error) {
+	if provider == nil || provider.MeterProvider() == nil {
+		return nil, fmt.Errorf("metrics provider is not initialised")
+	}
 	meter := provider.MeterProvider().Meter("updater.http")
 
 	requestsTotal, err := meter.Int64Counter("updater_http_requests_total",
@@ -88,6 +91,9 @@ type AppMetrics struct {
 // NewAppMetrics creates application-level business metric instruments.
 // It returns an error if any metric instrument cannot be created.
 func NewAppMetrics(provider *Provider) (*AppMetrics, error) {
+	if provider == nil || provider.MeterProvider() == nil {
+		return nil, fmt.Errorf("metrics provider is not initialised")
+	}
 	meter := provider.MeterProvider().Meter("updater.app")
 
 	updateChecks, err := meter.Int64Counter("updater_update_checks_total",

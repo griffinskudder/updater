@@ -20,7 +20,7 @@ type MetricsServer struct {
 // not the global default Prometheus registry.
 func newMetricsHandler(path string, provider *Provider) http.Handler {
 	mux := http.NewServeMux()
-	if provider != nil && provider.promExporter != nil {
+	if provider != nil && provider.promExporter != nil && provider.promGatherer != nil {
 		mux.Handle(path, promhttp.HandlerFor(provider.promGatherer, promhttp.HandlerOpts{}))
 	}
 	return mux
