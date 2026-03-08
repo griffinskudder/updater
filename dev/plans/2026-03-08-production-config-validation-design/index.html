@@ -12,13 +12,13 @@
         <meta name="author" content="Updater Service Team">
       
       
-        <link rel="canonical" href="https://griffinskudder.github.io/updater/dev/plans/2026-03-07-github-security-policy-design/">
+        <link rel="canonical" href="https://griffinskudder.github.io/updater/dev/plans/2026-03-08-production-config-validation-design/">
       
       
-        <link rel="prev" href="../2026-03-07-keyset-pagination-bugfixes/">
+        <link rel="prev" href="../2026-03-08-release-workflow/">
       
       
-        <link rel="next" href="../2026-03-07-github-security-policy/">
+        <link rel="next" href="../../db/">
       
       
         
@@ -29,7 +29,7 @@
     
     
       
-        <title>Design - Updater Service Documentation</title>
+        <title>Production Config Validation - Updater Service Documentation</title>
       
     
     
@@ -82,7 +82,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#design-github-security-policy" class="md-skip">
+        <a href="#production-configuration-validation" class="md-skip">
           Skip to content
         </a>
       
@@ -120,7 +120,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Design
+              Production Config Validation
             
           </span>
         </div>
@@ -2843,8 +2843,6 @@
                 
   
   
-    
-  
   
   
     
@@ -2860,11 +2858,13 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_15_15" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_15_15" >
         
           
           <label class="md-nav__link" for="__nav_15_15" id="__nav_15_15_label" tabindex="">
@@ -2885,7 +2885,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_15_15_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_15_15_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_15_15">
             <span class="md-nav__icon md-icon"></span>
             
@@ -2900,37 +2900,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Design
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../2026-03-07-github-security-policy-design/" class="md-nav__link">
         
   
   
@@ -2946,142 +2919,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#summary" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Summary
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#what-changes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        What Changes
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#content-design" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Content Design
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Content Design">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#supported-versions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Supported Versions
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#reporting-a-vulnerability" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Reporting a Vulnerability
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#disclosure-policy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Disclosure Policy
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#out-of-scope" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Out of Scope
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#reference" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Reference
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#rationale" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Rationale
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#implementation-steps" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Implementation Steps
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -3397,10 +3234,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../2026-03-08-production-config-validation-design/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Production Config Validation
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -3416,6 +3280,109 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#problem" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#design" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Design">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#layer-1-pure-validation-modelsconfigvalidate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Layer 1: Pure validation (models.Config.Validate)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#layer-2-io-validation-configvalidateruntime" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Layer 2: I/O validation (config.ValidateRuntime)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#-validate-flag" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        --validate flag
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files-modified" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Files Modified
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -3628,10 +3595,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#summary" class="md-nav__link">
+  <a href="#overview" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Summary
+        Overview
       
     </span>
   </a>
@@ -3639,10 +3606,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#what-changes" class="md-nav__link">
+  <a href="#problem" class="md-nav__link">
     <span class="md-ellipsis">
       
-        What Changes
+        Problem
       
     </span>
   </a>
@@ -3650,22 +3617,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#content-design" class="md-nav__link">
+  <a href="#design" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Content Design
+        Design
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Content Design">
+    <nav class="md-nav" aria-label="Design">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#supported-versions" class="md-nav__link">
+  <a href="#layer-1-pure-validation-modelsconfigvalidate" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Supported Versions
+        Layer 1: Pure validation (models.Config.Validate)
       
     </span>
   </a>
@@ -3673,10 +3640,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#reporting-a-vulnerability" class="md-nav__link">
+  <a href="#layer-2-io-validation-configvalidateruntime" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Reporting a Vulnerability
+        Layer 2: I/O validation (config.ValidateRuntime)
       
     </span>
   </a>
@@ -3684,32 +3651,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#disclosure-policy" class="md-nav__link">
+  <a href="#-validate-flag" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Disclosure Policy
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#out-of-scope" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Out of Scope
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#reference" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Reference
+        --validate flag
       
     </span>
   </a>
@@ -3722,21 +3667,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#rationale" class="md-nav__link">
+  <a href="#files-modified" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Rationale
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#implementation-steps" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Implementation Steps
+        Files Modified
       
     </span>
   </a>
@@ -3806,24 +3740,6 @@
   
 
       
-        
-  
-  
-    
-    
-      <li class="md-path__item">
-        <a href="./" class="md-path__link">
-          
-  <span class="md-ellipsis">
-    GitHub Security Policy
-  </span>
-
-        </a>
-      </li>
-    
-  
-
-      
     </ol>
   </nav>
 
@@ -3837,62 +3753,130 @@
   
 
 
-<h1 id="design-github-security-policy">Design: GitHub Security Policy<a class="headerlink" href="#design-github-security-policy" title="Permanent link">&para;</a></h1>
-<p>Date: 2026-03-07</p>
-<h2 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">&para;</a></h2>
-<p>Add <code>.github/SECURITY.md</code> — the GitHub-standard vulnerability disclosure policy file. GitHub surfaces this file in the repository's "Security" tab and in the "Report a vulnerability" UI, directing security researchers to the project's responsible disclosure process.</p>
-<p>This file is intentionally minimal (Option A). It does not duplicate the security architecture documentation already in <code>docs/SECURITY.md</code>; it links there instead.</p>
-<h2 id="what-changes">What Changes<a class="headerlink" href="#what-changes" title="Permanent link">&para;</a></h2>
-<ul>
-<li><strong>New file</strong>: <code>.github/SECURITY.md</code></li>
-<li><strong>No changes</strong> to <code>docs/SECURITY.md</code> or any other file</li>
-</ul>
-<h2 id="content-design">Content Design<a class="headerlink" href="#content-design" title="Permanent link">&para;</a></h2>
-<h3 id="supported-versions">Supported Versions<a class="headerlink" href="#supported-versions" title="Permanent link">&para;</a></h3>
-<p>A two-row table listing:</p>
+<h1 id="production-configuration-validation">Production Configuration Validation<a class="headerlink" href="#production-configuration-validation" title="Permanent link">&para;</a></h1>
+<p>Date: 2026-03-08
+Issue: #73</p>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>Add startup-time validation that catches misconfigurations early with clear, actionable error messages, and a <code>--validate</code> CLI flag for pre-flight config checks without starting the server.</p>
+<h2 id="problem">Problem<a class="headerlink" href="#problem" title="Permanent link">&para;</a></h2>
+<p>The existing <code>Config.Validate()</code> fails on the first sub-struct error, so operators must fix and restart repeatedly to see all problems. File-level checks (TLS cert validity, log directory writability) are not performed until the server actually starts, causing cryptic runtime failures rather than early, structured diagnostics.</p>
+<h2 id="design">Design<a class="headerlink" href="#design" title="Permanent link">&para;</a></h2>
+<p>Validation is split into two layers:</p>
+<pre class="mermaid"><code>flowchart TD
+    A[flag.Parse] --&gt; B{--validate?}
+
+    B -- yes --&gt; C[config.ValidateConfig]
+    C --&gt; D[load file + env]
+    D --&gt; E[per-section validators]
+    E --&gt; F[cross-field checks]
+    F --&gt; G[I/O checks]
+    G --&gt; H[print results]
+    H --&gt; I[exit 0 / 1]
+
+    B -- no --&gt; J[config.Load]
+    J --&gt; K[config.ValidateRuntime]
+    K -- error --&gt; L[slog.Error + exit 1]
+    K -- ok --&gt; M[logger.Setup]
+    M --&gt; N[observability.Setup]
+    N --&gt; O[initializeStorage]
+    O --&gt; P[HTTP server]</code></pre>
+<h3 id="layer-1-pure-validation-modelsconfigvalidate">Layer 1: Pure validation (<code>models.Config.Validate</code>)<a class="headerlink" href="#layer-1-pure-validation-modelsconfigvalidate" title="Permanent link">&para;</a></h3>
+<p>All sub-struct validators (<code>ServerConfig</code>, <code>StorageConfig</code>, <code>SecurityConfig</code>, <code>LoggingConfig</code>, <code>MetricsConfig</code>, <code>ObservabilityConfig</code>) accumulate errors using <code>errors.Join</code> rather than returning on the first failure. <code>Config.Validate</code> collects errors from all sub-structs before returning, so every misconfiguration in every section is visible in a single error.</p>
+<p>New checks added:</p>
 <table>
 <thead>
 <tr>
-<th>Version</th>
-<th>Supported</th>
+<th>Check</th>
+<th>Location</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Latest release</td>
-<td>Yes</td>
+<td>Server port and metrics port must differ</td>
+<td><code>Config.Validate</code> (cross-field)</td>
 </tr>
 <tr>
-<td>Previous major</td>
-<td>Yes</td>
-</tr>
-<tr>
-<td>Older versions</td>
-<td>No</td>
+<td>OTLP endpoint must be a valid <code>host:port</code> string</td>
+<td><code>ObservabilityConfig.Validate</code></td>
 </tr>
 </tbody>
 </table>
-<h3 id="reporting-a-vulnerability">Reporting a Vulnerability<a class="headerlink" href="#reporting-a-vulnerability" title="Permanent link">&para;</a></h3>
-<p>One paragraph directing researchers to GitHub's private security advisory workflow (the same URL referenced in <code>docs/SECURITY.md</code>). No email fallback — GitHub private advisories are the sole reporting channel.</p>
-<h3 id="disclosure-policy">Disclosure Policy<a class="headerlink" href="#disclosure-policy" title="Permanent link">&para;</a></h3>
-<p>90-day coordinated disclosure window from the date of the initial report. The maintainer aims to acknowledge reports within 5 business days and will publish a GitHub Security Advisory upon releasing a fix.</p>
-<h3 id="out-of-scope">Out of Scope<a class="headerlink" href="#out-of-scope" title="Permanent link">&para;</a></h3>
-<p>Issues explicitly outside the scope of this policy:</p>
-<ul>
-<li>DDoS and resource exhaustion (rate limiting is delegated to the reverse proxy, not the application)</li>
-<li>Vulnerabilities in upstream dependencies not yet patched by their maintainers</li>
-<li>Issues already publicly disclosed elsewhere</li>
-</ul>
-<h3 id="reference">Reference<a class="headerlink" href="#reference" title="Permanent link">&para;</a></h3>
-<p>Single link to <code>docs/SECURITY.md</code> for the full security architecture, threat model, API key management guidance, and operational security documentation.</p>
-<h2 id="rationale">Rationale<a class="headerlink" href="#rationale" title="Permanent link">&para;</a></h2>
-<p>GitHub's convention is that <code>SECURITY.md</code> is a disclosure policy, not a security manual. Keeping it short and focused avoids duplication and maintenance drift between two security documents.</p>
-<h2 id="implementation-steps">Implementation Steps<a class="headerlink" href="#implementation-steps" title="Permanent link">&para;</a></h2>
-<ol>
-<li>Create <code>.github/SECURITY.md</code> with the five sections above.</li>
-<li>Commit on <code>feat/github-security-policy</code> branch.</li>
-<li>Open a pull request targeting <code>main</code>.</li>
-</ol>
+<h3 id="layer-2-io-validation-configvalidateruntime">Layer 2: I/O validation (<code>config.ValidateRuntime</code>)<a class="headerlink" href="#layer-2-io-validation-configvalidateruntime" title="Permanent link">&para;</a></h3>
+<p>File-system checks that cannot be done in pure validation:</p>
+<table>
+<thead>
+<tr>
+<th>Check</th>
+<th>Condition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TLS cert file readable and valid PEM</td>
+<td><code>server.tls_enabled: true</code></td>
+</tr>
+<tr>
+<td>TLS key file readable, cert/key pair valid</td>
+<td><code>server.tls_enabled: true</code></td>
+</tr>
+<tr>
+<td>Log directory exists and is writable</td>
+<td><code>logging.output: file</code></td>
+</tr>
+</tbody>
+</table>
+<p><code>ValidateRuntime</code> runs on every normal startup after <code>config.Load</code>, before any subsystem initialises.</p>
+<h3 id="-validate-flag"><code>--validate</code> flag<a class="headerlink" href="#-validate-flag" title="Permanent link">&para;</a></h3>
+<p><code>--validate</code> loads config (file + environment) and runs all checks — including I/O — without starting the server, then exits.</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>$ updater --config config.yaml --validate
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>ok   config.server
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>ok   config.storage
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>ok   config.security
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>ok   config.logging
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>ok   config.metrics
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>ok   config.observability
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>ok   config.cross-field
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>FAIL runtime.tls: cannot read TLS cert file &quot;/etc/tls/cert.pem&quot;: open /etc/tls/cert.pem: no such file or directory
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>ok   runtime.log-dir
+</span></code></pre></div>
+<p><code>--validate-format json</code> produces machine-readable output for CI/CD pipelines:</p>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">[</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="p">{</span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="s2">&quot;config.server&quot;</span><span class="p">,</span><span class="nt">&quot;ok&quot;</span><span class="p">:</span><span class="kc">true</span><span class="p">},</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="p">{</span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="s2">&quot;runtime.tls&quot;</span><span class="p">,</span><span class="nt">&quot;ok&quot;</span><span class="p">:</span><span class="kc">false</span><span class="p">,</span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="s2">&quot;cannot read TLS cert file ...&quot;</span><span class="p">}</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="p">]</span>
+</span></code></pre></div>
+<p>Exit code 0 means all checks passed; exit code 1 means at least one check failed.</p>
+<h2 id="files-modified">Files Modified<a class="headerlink" href="#files-modified" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Change</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>internal/models/config.go</code></td>
+<td>All validators accumulate errors; new <code>net</code> import; cross-field port conflict and OTLP host:port checks</td>
+</tr>
+<tr>
+<td><code>internal/models/config_test.go</code></td>
+<td>Tests for accumulation, port conflict, OTLP endpoint format</td>
+</tr>
+<tr>
+<td><code>internal/config/config.go</code></td>
+<td><code>CheckResult</code>, <code>ValidateConfig</code>, <code>ValidateRuntime</code>, <code>validateTLS</code>, <code>validateLogDir</code></td>
+</tr>
+<tr>
+<td><code>internal/config/config_test.go</code></td>
+<td>Tests for <code>ValidateRuntime</code> and <code>ValidateConfig</code> including TLS cert generation helper</td>
+</tr>
+<tr>
+<td><code>cmd/updater/updater.go</code></td>
+<td><code>--validate</code> and <code>--validate-format</code> flags; <code>printValidateResults</code>; <code>ValidateRuntime</code> call in startup</td>
+</tr>
+</tbody>
+</table>
 
 
 
