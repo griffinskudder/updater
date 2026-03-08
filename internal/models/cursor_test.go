@@ -98,3 +98,90 @@ func TestDecodeApplicationCursor_InvalidJSON(t *testing.T) {
 	_, err := DecodeApplicationCursor("bm90IGpzb24=")
 	assert.Error(t, err)
 }
+
+func TestDecodeReleaseCursor_InvalidSortBy(t *testing.T) {
+	tests := []struct {
+		name      string
+		sortBy    string
+		sortOrder string
+		wantErr   string
+	}{
+		{
+			name:      "invalid sort_by",
+			sortBy:    "injected",
+			sortOrder: "desc",
+			wantErr:   "invalid cursor sort_by",
+		},
+		{
+			name:      "empty sort_by",
+			sortBy:    "",
+			sortOrder: "desc",
+			wantErr:   "invalid cursor sort_by",
+		},
+		{
+			name:      "invalid sort_order",
+			sortBy:    "release_date",
+			sortOrder: "sideways",
+			wantErr:   "invalid cursor sort_order",
+		},
+		{
+			name:      "empty sort_order",
+			sortBy:    "release_date",
+			sortOrder: "",
+			wantErr:   "invalid cursor sort_order",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cursor := &ReleaseCursor{
+				SortBy:    tt.sortBy,
+				SortOrder: tt.sortOrder,
+				ID:        "test-id",
+			}
+			encoded, err := cursor.Encode()
+			require.NoError(t, err)
+
+			_, err = DecodeReleaseCursor(encoded)
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), tt.wantErr)
+		})
+	}
+}
+
+func TestDecodeReleaseCursor_AllValidSortFields(t *testing.T) {
+	sortFields := []string{"version", "release_date", "platform", "architecture", "created_at"}
+	for _, field := range sortFields {
+		t.Run(field, func(t *testing.T) {
+			cursor := &ReleaseCursor{
+				SortBy:    field,
+				SortOrder: "desc",
+				ID:        "test-id",
+			}
+			encoded, err := cursor.Encode()
+			require.NoError(t, err)
+
+			decoded, err := DecodeReleaseCursor(encoded)
+			require.NoError(t, err)
+			assert.Equal(t, field, decoded.SortBy)
+		})
+	}
+}
+
+func TestDecodeReleaseCursor_AllValidSortOrders(t *testing.T) {
+	for _, order := range []string{"asc", "desc"} {
+		t.Run(order, func(t *testing.T) {
+			cursor := &ReleaseCursor{
+				SortBy:    "release_date",
+				SortOrder: order,
+				ID:        "test-id",
+			}
+			encoded, err := cursor.Encode()
+			require.NoError(t, err)
+
+			decoded, err := DecodeReleaseCursor(encoded)
+			require.NoError(t, err)
+			assert.Equal(t, order, decoded.SortOrder)
+		})
+	}
+}
