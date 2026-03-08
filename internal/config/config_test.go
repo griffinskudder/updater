@@ -690,6 +690,25 @@ storage:
 	}
 }
 
+func TestValidateConfig_EmptyPath_UsesDefaults(t *testing.T) {
+	results := ValidateConfig("")
+	require.NotEmpty(t, results)
+	for _, r := range results {
+		assert.True(t, r.OK, "expected check %q to pass, got: %s", r.Name, r.Message)
+	}
+	names := make(map[string]bool, len(results))
+	for _, r := range results {
+		names[r.Name] = true
+	}
+	for _, want := range []string{
+		"config.server", "config.storage", "config.security",
+		"config.logging", "config.metrics", "config.observability",
+		"config.cross-field", "runtime.tls", "runtime.log-dir",
+	} {
+		assert.True(t, names[want], "expected check %q to be present", want)
+	}
+}
+
 func TestValidateConfig_FileNotFound(t *testing.T) {
 	results := ValidateConfig("/nonexistent/config.yaml")
 	require.Len(t, results, 1)
