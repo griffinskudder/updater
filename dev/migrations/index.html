@@ -12,31 +12,31 @@
         <meta name="author" content="Updater Service Team">
       
       
-        <link rel="canonical" href="https://griffinskudder.github.io/updater/dev/plans/2026-02-16-github-ci-design/">
+        <link rel="canonical" href="https://griffinskudder.github.io/updater/dev/migrations/">
       
       
-        <link rel="prev" href="../2026-02-16-admin-frontend/">
+        <link rel="prev" href="../storage/">
       
       
-        <link rel="next" href="../2026-02-16-github-ci-implementation/">
+        <link rel="next" href="../reverse-proxy/">
       
       
         
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+      <link rel="icon" href="../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
     
     
       
-        <title>Design - Updater Service Documentation</title>
+        <title>Migrations - Updater Service Documentation</title>
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -55,9 +55,9 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/extra.css">
+      <link rel="stylesheet" href="../assets/extra.css">
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -82,7 +82,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#github-ci-pipeline-design" class="md-skip">
+        <a href="#migrations" class="md-skip">
           Skip to content
         </a>
       
@@ -100,7 +100,7 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="Updater Service Documentation" class="md-header__button md-logo" aria-label="Updater Service Documentation" data-md-component="logo">
+    <a href=".." title="Updater Service Documentation" class="md-header__button md-logo" aria-label="Updater Service Documentation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -120,7 +120,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Design
+              Migrations
             
           </span>
         </div>
@@ -236,7 +236,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../.." class="md-tabs__link">
+      <a href=".." class="md-tabs__link">
         
   
   
@@ -255,7 +255,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../ROADMAP/" class="md-tabs__link">
+      <a href="../ROADMAP/" class="md-tabs__link">
         
   
   
@@ -274,7 +274,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../use-cases/" class="md-tabs__link">
+      <a href="../use-cases/" class="md-tabs__link">
         
   
   
@@ -295,7 +295,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../api/" class="md-tabs__link">
+        <a href="../api/" class="md-tabs__link">
           
   
   
@@ -313,7 +313,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../ARCHITECTURE/" class="md-tabs__link">
+      <a href="../ARCHITECTURE/" class="md-tabs__link">
         
   
   
@@ -334,7 +334,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../SECURITY/" class="md-tabs__link">
+        <a href="../SECURITY/" class="md-tabs__link">
           
   
   
@@ -352,7 +352,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../rate-limiting/" class="md-tabs__link">
+      <a href="../rate-limiting/" class="md-tabs__link">
         
   
   
@@ -371,7 +371,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../logging/" class="md-tabs__link">
+      <a href="../logging/" class="md-tabs__link">
         
   
   
@@ -390,7 +390,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../storage/" class="md-tabs__link">
+      <a href="../storage/" class="md-tabs__link">
         
   
   
@@ -407,9 +407,11 @@
   
   
   
+    
   
-    <li class="md-tabs__item">
-      <a href="../../migrations/" class="md-tabs__link">
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
         
   
   
@@ -428,7 +430,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../reverse-proxy/" class="md-tabs__link">
+      <a href="../reverse-proxy/" class="md-tabs__link">
         
   
   
@@ -447,7 +449,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../observability/" class="md-tabs__link">
+      <a href="../observability/" class="md-tabs__link">
         
   
   
@@ -466,7 +468,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../publishing/" class="md-tabs__link">
+      <a href="../publishing/" class="md-tabs__link">
         
   
   
@@ -485,7 +487,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../makefile/" class="md-tabs__link">
+      <a href="../makefile/" class="md-tabs__link">
         
   
   
@@ -504,7 +506,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../ci/" class="md-tabs__link">
+      <a href="../ci/" class="md-tabs__link">
         
   
   
@@ -525,7 +527,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../models/" class="md-tabs__link">
+        <a href="../models/" class="md-tabs__link">
           
   
   
@@ -541,8 +543,6 @@
   
   
   
-    
-  
   
     
     
@@ -550,13 +550,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../2026-02-15-application-management-api-design/" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../plans/2026-02-15-application-management-api-design/" class="md-tabs__link">
           
   
   
@@ -579,7 +577,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../db/" class="md-tabs__link">
+        <a href="../db/" class="md-tabs__link">
           
   
   
@@ -613,7 +611,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="Updater Service Documentation" class="md-nav__button md-logo" aria-label="Updater Service Documentation" data-md-component="logo">
+    <a href=".." title="Updater Service Documentation" class="md-nav__button md-logo" aria-label="Updater Service Documentation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -643,7 +641,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../.." class="md-nav__link">
+      <a href=".." class="md-nav__link">
         
   
   
@@ -670,7 +668,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../ROADMAP/" class="md-nav__link">
+      <a href="../ROADMAP/" class="md-nav__link">
         
   
   
@@ -697,7 +695,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../use-cases/" class="md-nav__link">
+      <a href="../use-cases/" class="md-nav__link">
         
   
   
@@ -778,7 +776,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/" class="md-nav__link">
+      <a href="../api/" class="md-nav__link">
         
   
   
@@ -806,7 +804,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../openapi/" class="md-nav__link">
+      <a href="../openapi/" class="md-nav__link">
         
   
   
@@ -841,7 +839,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../ARCHITECTURE/" class="md-nav__link">
+      <a href="../ARCHITECTURE/" class="md-nav__link">
         
   
   
@@ -922,7 +920,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../SECURITY/" class="md-nav__link">
+      <a href="../SECURITY/" class="md-nav__link">
         
   
   
@@ -950,7 +948,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../DEPLOYMENT_SECURITY/" class="md-nav__link">
+      <a href="../DEPLOYMENT_SECURITY/" class="md-nav__link">
         
   
   
@@ -985,7 +983,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../rate-limiting/" class="md-nav__link">
+      <a href="../rate-limiting/" class="md-nav__link">
         
   
   
@@ -1012,7 +1010,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../logging/" class="md-nav__link">
+      <a href="../logging/" class="md-nav__link">
         
   
   
@@ -1039,7 +1037,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../storage/" class="md-nav__link">
+      <a href="../storage/" class="md-nav__link">
         
   
   
@@ -1063,10 +1061,37 @@
       
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../migrations/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migrations
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1082,6 +1107,231 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#directory-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Directory Structure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cli-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CLI Usage
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CLI Usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#flags" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Flags
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Commands
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Examples
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#make-targets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Make Targets
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#creating-new-migrations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Creating New Migrations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Creating New Migrations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#naming-convention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Naming Convention
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#goose-annotations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Goose Annotations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multi-statement-blocks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multi-statement Blocks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dialect-specific-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dialect-specific Files
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#development-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Development Workflow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#docker-and-kubernetes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Docker and Kubernetes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Docker and Kubernetes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#docker-image" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Docker Image
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kubernetes-init-container" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kubernetes Init Container
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#relationship-to-sqlc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Relationship to sqlc
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1093,7 +1343,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reverse-proxy/" class="md-nav__link">
+      <a href="../reverse-proxy/" class="md-nav__link">
         
   
   
@@ -1120,7 +1370,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../observability/" class="md-nav__link">
+      <a href="../observability/" class="md-nav__link">
         
   
   
@@ -1147,7 +1397,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../publishing/" class="md-nav__link">
+      <a href="../publishing/" class="md-nav__link">
         
   
   
@@ -1174,7 +1424,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../makefile/" class="md-nav__link">
+      <a href="../makefile/" class="md-nav__link">
         
   
   
@@ -1201,7 +1451,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../ci/" class="md-nav__link">
+      <a href="../ci/" class="md-nav__link">
         
   
   
@@ -1282,7 +1532,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../models/" class="md-nav__link">
+      <a href="../models/" class="md-nav__link">
         
   
   
@@ -1310,7 +1560,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../models/auto/models/" class="md-nav__link">
+      <a href="../models/auto/models/" class="md-nav__link">
         
   
   
@@ -1342,31 +1592,28 @@
       
   
   
-    
   
   
-  
     
     
     
     
-      
-        
-        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_17" checked>
         
           
-          <label class="md-nav__link" for="__nav_17" id="__nav_17_label" tabindex="">
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_17" >
+        
+          
+          <label class="md-nav__link" for="__nav_17" id="__nav_17_label" tabindex="0">
             
   
   
@@ -1384,7 +1631,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_17_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_17_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_17">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1408,13 +1655,10 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
@@ -1423,7 +1667,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_17_1" >
         
           
-          <label class="md-nav__link" for="__nav_17_1" id="__nav_17_1_label" tabindex="">
+          <label class="md-nav__link" for="__nav_17_1" id="__nav_17_1_label" tabindex="0">
             
   
   
@@ -1459,7 +1703,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../2026-02-15-application-management-api-design/" class="md-nav__link">
+      <a href="../plans/2026-02-15-application-management-api-design/" class="md-nav__link">
         
   
   
@@ -1487,7 +1731,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../2026-02-15-application-management-api-implementation/" class="md-nav__link">
+      <a href="../plans/2026-02-15-application-management-api-implementation/" class="md-nav__link">
         
   
   
@@ -1529,13 +1773,10 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
@@ -1544,7 +1785,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_17_2" >
         
           
-          <label class="md-nav__link" for="__nav_17_2" id="__nav_17_2_label" tabindex="">
+          <label class="md-nav__link" for="__nav_17_2" id="__nav_17_2_label" tabindex="0">
             
   
   
@@ -1580,7 +1821,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../2026-02-16-admin-key-management-design/" class="md-nav__link">
+      <a href="../plans/2026-02-16-admin-key-management-design/" class="md-nav__link">
         
   
   
@@ -1608,7 +1849,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../2026-02-16-admin-key-management/" class="md-nav__link">
+      <a href="../plans/2026-02-16-admin-key-management/" class="md-nav__link">
         
   
   
@@ -1644,7 +1885,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../2026-02-16-admin-frontend/" class="md-nav__link">
+      <a href="../plans/2026-02-16-admin-frontend/" class="md-nav__link">
         
   
   
@@ -1669,31 +1910,28 @@
                 
   
   
-    
   
   
-  
     
     
     
     
       
       
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
         
           
-          
         
-      
-    
-    
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_17_4" checked>
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_17_4" >
         
           
-          <label class="md-nav__link" for="__nav_17_4" id="__nav_17_4_label" tabindex="">
+          <label class="md-nav__link" for="__nav_17_4" id="__nav_17_4_label" tabindex="0">
             
   
   
@@ -1711,7 +1949,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_17_4_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_17_4_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_17_4">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1726,37 +1964,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Design
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../plans/2026-02-16-github-ci-design/" class="md-nav__link">
         
   
   
@@ -1772,164 +1983,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#overview" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Overview
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#goals" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Goals
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#workflow-structure" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Workflow Structure
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#job-ci" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Job: ci
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#job-security" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Job: security
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#coverage-ratchet" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Coverage Ratchet
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#new-make-targets" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        New Make Targets
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="New Make Targets">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#make-fmt-check" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        make fmt-check
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#make-cover" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        make cover
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#make-security" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        make security
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#security-scan-thresholds" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Security Scan Thresholds
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#files-created-or-modified" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Files Created or Modified
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1942,7 +1995,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../2026-02-16-github-ci-implementation/" class="md-nav__link">
+      <a href="../plans/2026-02-16-github-ci-implementation/" class="md-nav__link">
         
   
   
@@ -1984,13 +2037,10 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
@@ -1999,7 +2049,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_17_5" >
         
           
-          <label class="md-nav__link" for="__nav_17_5" id="__nav_17_5_label" tabindex="">
+          <label class="md-nav__link" for="__nav_17_5" id="__nav_17_5_label" tabindex="0">
             
   
   
@@ -2035,7 +2085,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../2026-03-08-ci-hardening-design/" class="md-nav__link">
+      <a href="../plans/2026-03-08-ci-hardening-design/" class="md-nav__link">
         
   
   
@@ -2063,7 +2113,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../2026-03-08-ci-hardening-implementation/" class="md-nav__link">
+      <a href="../plans/2026-03-08-ci-hardening-implementation/" class="md-nav__link">
         
   
   
@@ -2105,13 +2155,10 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
@@ -2120,7 +2167,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_17_6" >
         
           
-          <label class="md-nav__link" for="__nav_17_6" id="__nav_17_6_label" tabindex="">
+          <label class="md-nav__link" for="__nav_17_6" id="__nav_17_6_label" tabindex="0">
             
   
   
@@ -2156,7 +2203,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../2026-02-16-github-pages-design/" class="md-nav__link">
+      <a href="../plans/2026-02-16-github-pages-design/" class="md-nav__link">
         
   
   
@@ -2184,7 +2231,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../2026-02-16-github-pages-implementation/" class="md-nav__link">
+      <a href="../plans/2026-02-16-github-pages-implementation/" class="md-nav__link">
         
   
   
@@ -2226,13 +2273,10 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
@@ -2241,7 +2285,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_17_7" >
         
           
-          <label class="md-nav__link" for="__nav_17_7" id="__nav_17_7_label" tabindex="">
+          <label class="md-nav__link" for="__nav_17_7" id="__nav_17_7_label" tabindex="0">
             
   
   
@@ -2277,7 +2321,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../2026-02-16-issue-fixes-design/" class="md-nav__link">
+      <a href="../plans/2026-02-16-issue-fixes-design/" class="md-nav__link">
         
   
   
@@ -2305,7 +2349,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../2026-02-16-issue-fixes-implementation/" class="md-nav__link">
+      <a href="../plans/2026-02-16-issue-fixes-implementation/" class="md-nav__link">
         
   
   
@@ -2347,13 +2391,10 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
@@ -2362,7 +2403,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_17_8" >
         
           
-          <label class="md-nav__link" for="__nav_17_8" id="__nav_17_8_label" tabindex="">
+          <label class="md-nav__link" for="__nav_17_8" id="__nav_17_8_label" tabindex="0">
             
   
   
@@ -2398,7 +2439,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../2026-02-15-makefile-restructure-design/" class="md-nav__link">
+      <a href="../plans/2026-02-15-makefile-restructure-design/" class="md-nav__link">
         
   
   
@@ -2426,7 +2467,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../2026-02-15-makefile-restructure-implementation/" class="md-nav__link">
+      <a href="../plans/2026-02-15-makefile-restructure-implementation/" class="md-nav__link">
         
   
   
@@ -2468,13 +2509,10 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
@@ -2483,7 +2521,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_17_9" >
         
           
-          <label class="md-nav__link" for="__nav_17_9" id="__nav_17_9_label" tabindex="">
+          <label class="md-nav__link" for="__nav_17_9" id="__nav_17_9_label" tabindex="0">
             
   
   
@@ -2519,7 +2557,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../2026-02-18-proxy-delegation-design/" class="md-nav__link">
+      <a href="../plans/2026-02-18-proxy-delegation-design/" class="md-nav__link">
         
   
   
@@ -2547,7 +2585,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../2026-02-18-proxy-delegation-implementation/" class="md-nav__link">
+      <a href="../plans/2026-02-18-proxy-delegation-implementation/" class="md-nav__link">
         
   
   
@@ -2589,13 +2627,10 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
@@ -2604,7 +2639,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_17_10" >
         
           
-          <label class="md-nav__link" for="__nav_17_10" id="__nav_17_10_label" tabindex="">
+          <label class="md-nav__link" for="__nav_17_10" id="__nav_17_10_label" tabindex="0">
             
   
   
@@ -2640,7 +2675,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../2026-02-15-rate-limiter-design/" class="md-nav__link">
+      <a href="../plans/2026-02-15-rate-limiter-design/" class="md-nav__link">
         
   
   
@@ -2668,7 +2703,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../2026-02-15-rate-limiter-implementation/" class="md-nav__link">
+      <a href="../plans/2026-02-15-rate-limiter-implementation/" class="md-nav__link">
         
   
   
@@ -2704,7 +2739,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../2026-02-27-architecture-review/" class="md-nav__link">
+      <a href="../plans/2026-02-27-architecture-review/" class="md-nav__link">
         
   
   
@@ -2738,13 +2773,10 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
@@ -2753,7 +2785,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_17_12" >
         
           
-          <label class="md-nav__link" for="__nav_17_12" id="__nav_17_12_label" tabindex="">
+          <label class="md-nav__link" for="__nav_17_12" id="__nav_17_12_label" tabindex="0">
             
   
   
@@ -2789,7 +2821,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../2026-03-02-architecture-cleanup-design/" class="md-nav__link">
+      <a href="../plans/2026-03-02-architecture-cleanup-design/" class="md-nav__link">
         
   
   
@@ -2817,7 +2849,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../2026-03-02-architecture-cleanup-implementation/" class="md-nav__link">
+      <a href="../plans/2026-03-02-architecture-cleanup-implementation/" class="md-nav__link">
         
   
   
@@ -2859,13 +2891,10 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
@@ -2874,7 +2903,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_17_13" >
         
           
-          <label class="md-nav__link" for="__nav_17_13" id="__nav_17_13_label" tabindex="">
+          <label class="md-nav__link" for="__nav_17_13" id="__nav_17_13_label" tabindex="0">
             
   
   
@@ -2910,7 +2939,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../2026-03-07-observability-build-info-design/" class="md-nav__link">
+      <a href="../plans/2026-03-07-observability-build-info-design/" class="md-nav__link">
         
   
   
@@ -2938,7 +2967,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../2026-03-07-build-info-metric-implementation/" class="md-nav__link">
+      <a href="../plans/2026-03-07-build-info-metric-implementation/" class="md-nav__link">
         
   
   
@@ -2980,13 +3009,10 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
@@ -2995,7 +3021,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_17_14" >
         
           
-          <label class="md-nav__link" for="__nav_17_14" id="__nav_17_14_label" tabindex="">
+          <label class="md-nav__link" for="__nav_17_14" id="__nav_17_14_label" tabindex="0">
             
   
   
@@ -3031,7 +3057,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../2026-03-07-storage-pagination-pushdown-design/" class="md-nav__link">
+      <a href="../plans/2026-03-07-storage-pagination-pushdown-design/" class="md-nav__link">
         
   
   
@@ -3059,7 +3085,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../2026-03-07-storage-pagination-pushdown-implementation/" class="md-nav__link">
+      <a href="../plans/2026-03-07-storage-pagination-pushdown-implementation/" class="md-nav__link">
         
   
   
@@ -3101,13 +3127,10 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
@@ -3116,7 +3139,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_17_15" >
         
           
-          <label class="md-nav__link" for="__nav_17_15" id="__nav_17_15_label" tabindex="">
+          <label class="md-nav__link" for="__nav_17_15" id="__nav_17_15_label" tabindex="0">
             
   
   
@@ -3152,7 +3175,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../2026-03-07-keyset-pagination-design/" class="md-nav__link">
+      <a href="../plans/2026-03-07-keyset-pagination-design/" class="md-nav__link">
         
   
   
@@ -3180,7 +3203,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../2026-03-07-keyset-pagination-implementation/" class="md-nav__link">
+      <a href="../plans/2026-03-07-keyset-pagination-implementation/" class="md-nav__link">
         
   
   
@@ -3208,7 +3231,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../2026-03-07-keyset-pagination-bugfixes/" class="md-nav__link">
+      <a href="../plans/2026-03-07-keyset-pagination-bugfixes/" class="md-nav__link">
         
   
   
@@ -3250,13 +3273,10 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
@@ -3265,7 +3285,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_17_16" >
         
           
-          <label class="md-nav__link" for="__nav_17_16" id="__nav_17_16_label" tabindex="">
+          <label class="md-nav__link" for="__nav_17_16" id="__nav_17_16_label" tabindex="0">
             
   
   
@@ -3301,7 +3321,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../2026-03-07-github-security-policy-design/" class="md-nav__link">
+      <a href="../plans/2026-03-07-github-security-policy-design/" class="md-nav__link">
         
   
   
@@ -3329,7 +3349,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../2026-03-07-github-security-policy/" class="md-nav__link">
+      <a href="../plans/2026-03-07-github-security-policy/" class="md-nav__link">
         
   
   
@@ -3365,7 +3385,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../2026-03-08-security-sri-bootstrap-key-design/" class="md-nav__link">
+      <a href="../plans/2026-03-08-security-sri-bootstrap-key-design/" class="md-nav__link">
         
   
   
@@ -3399,13 +3419,10 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
@@ -3414,7 +3431,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_17_18" >
         
           
-          <label class="md-nav__link" for="__nav_17_18" id="__nav_17_18_label" tabindex="">
+          <label class="md-nav__link" for="__nav_17_18" id="__nav_17_18_label" tabindex="0">
             
   
   
@@ -3450,7 +3467,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../2026-03-08-graceful-shutdown-design/" class="md-nav__link">
+      <a href="../plans/2026-03-08-graceful-shutdown-design/" class="md-nav__link">
         
   
   
@@ -3478,7 +3495,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../2026-03-08-graceful-shutdown-implementation/" class="md-nav__link">
+      <a href="../plans/2026-03-08-graceful-shutdown-implementation/" class="md-nav__link">
         
   
   
@@ -3520,13 +3537,10 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
@@ -3535,7 +3549,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_17_19" >
         
           
-          <label class="md-nav__link" for="__nav_17_19" id="__nav_17_19_label" tabindex="">
+          <label class="md-nav__link" for="__nav_17_19" id="__nav_17_19_label" tabindex="0">
             
   
   
@@ -3571,7 +3585,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../2026-03-08-release-workflow-design/" class="md-nav__link">
+      <a href="../plans/2026-03-08-release-workflow-design/" class="md-nav__link">
         
   
   
@@ -3599,7 +3613,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../2026-03-08-release-workflow/" class="md-nav__link">
+      <a href="../plans/2026-03-08-release-workflow/" class="md-nav__link">
         
   
   
@@ -3635,7 +3649,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../2026-03-08-production-config-validation-design/" class="md-nav__link">
+      <a href="../plans/2026-03-08-production-config-validation-design/" class="md-nav__link">
         
   
   
@@ -3669,13 +3683,10 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
@@ -3684,7 +3695,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_17_21" >
         
           
-          <label class="md-nav__link" for="__nav_17_21" id="__nav_17_21_label" tabindex="">
+          <label class="md-nav__link" for="__nav_17_21" id="__nav_17_21_label" tabindex="0">
             
   
   
@@ -3720,7 +3731,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../2026-03-08-cursor-validation-design/" class="md-nav__link">
+      <a href="../plans/2026-03-08-cursor-validation-design/" class="md-nav__link">
         
   
   
@@ -3748,7 +3759,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../2026-03-08-cursor-validation-implementation/" class="md-nav__link">
+      <a href="../plans/2026-03-08-cursor-validation-implementation/" class="md-nav__link">
         
   
   
@@ -3790,13 +3801,10 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
@@ -3805,7 +3813,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_17_22" >
         
           
-          <label class="md-nav__link" for="__nav_17_22" id="__nav_17_22_label" tabindex="">
+          <label class="md-nav__link" for="__nav_17_22" id="__nav_17_22_label" tabindex="0">
             
   
   
@@ -3841,7 +3849,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../2026-03-08-migration-tooling-design/" class="md-nav__link">
+      <a href="../plans/2026-03-08-migration-tooling-design/" class="md-nav__link">
         
   
   
@@ -3869,7 +3877,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../2026-03-08-migration-tooling-implementation/" class="md-nav__link">
+      <a href="../plans/2026-03-08-migration-tooling-implementation/" class="md-nav__link">
         
   
   
@@ -3966,7 +3974,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../db/" class="md-nav__link">
+      <a href="../db/" class="md-nav__link">
         
   
   
@@ -3994,7 +4002,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../db/public.applications/" class="md-nav__link">
+      <a href="../db/public.applications/" class="md-nav__link">
         
   
   
@@ -4022,7 +4030,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../db/public.releases/" class="md-nav__link">
+      <a href="../db/public.releases/" class="md-nav__link">
         
   
   
@@ -4050,7 +4058,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../db/public.api_keys/" class="md-nav__link">
+      <a href="../db/public.api_keys/" class="md-nav__link">
         
   
   
@@ -4116,10 +4124,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#goals" class="md-nav__link">
+  <a href="#directory-structure" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Goals
+        Directory Structure
       
     </span>
   </a>
@@ -4127,66 +4135,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#workflow-structure" class="md-nav__link">
+  <a href="#cli-usage" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Workflow Structure
+        CLI Usage
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#job-ci" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Job: ci
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#job-security" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Job: security
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#coverage-ratchet" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Coverage Ratchet
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#new-make-targets" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        New Make Targets
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="New Make Targets">
+    <nav class="md-nav" aria-label="CLI Usage">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#make-fmt-check" class="md-nav__link">
+  <a href="#flags" class="md-nav__link">
     <span class="md-ellipsis">
       
-        make fmt-check
+        Flags
       
     </span>
   </a>
@@ -4194,10 +4158,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#make-cover" class="md-nav__link">
+  <a href="#commands" class="md-nav__link">
     <span class="md-ellipsis">
       
-        make cover
+        Commands
       
     </span>
   </a>
@@ -4205,10 +4169,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#make-security" class="md-nav__link">
+  <a href="#examples" class="md-nav__link">
     <span class="md-ellipsis">
       
-        make security
+        Examples
       
     </span>
   </a>
@@ -4221,10 +4185,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#security-scan-thresholds" class="md-nav__link">
+  <a href="#make-targets" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Security Scan Thresholds
+        Make Targets
       
     </span>
   </a>
@@ -4232,10 +4196,121 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#files-created-or-modified" class="md-nav__link">
+  <a href="#creating-new-migrations" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Files Created or Modified
+        Creating New Migrations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Creating New Migrations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#naming-convention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Naming Convention
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#goose-annotations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Goose Annotations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multi-statement-blocks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multi-statement Blocks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dialect-specific-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dialect-specific Files
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#development-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Development Workflow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#docker-and-kubernetes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Docker and Kubernetes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Docker and Kubernetes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#docker-image" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Docker Image
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kubernetes-init-container" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kubernetes Init Container
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#relationship-to-sqlc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Relationship to sqlc
       
     </span>
   </a>
@@ -4260,72 +4335,6 @@
   
 
 
-  <nav class="md-path" aria-label="Navigation" >
-    <ol class="md-path__list">
-      
-        
-  
-  
-    <li class="md-path__item">
-      <a href="../.." class="md-path__link">
-        
-  <span class="md-ellipsis">
-    Home
-  </span>
-
-      </a>
-    </li>
-  
-
-      
-      
-        
-  
-  
-    
-    
-      
-  
-  
-    
-    
-      <li class="md-path__item">
-        <a href="../2026-02-15-application-management-api-design/" class="md-path__link">
-          
-  <span class="md-ellipsis">
-    Design Docs
-  </span>
-
-        </a>
-      </li>
-    
-  
-
-    
-  
-
-      
-        
-  
-  
-    
-    
-      <li class="md-path__item">
-        <a href="./" class="md-path__link">
-          
-  <span class="md-ellipsis">
-    GitHub CI
-  </span>
-
-        </a>
-      </li>
-    
-  
-
-      
-    </ol>
-  </nav>
-
               
               <article class="md-content__inner md-typeset">
                 
@@ -4336,176 +4345,272 @@
   
 
 
-<h1 id="github-ci-pipeline-design">GitHub CI Pipeline Design<a class="headerlink" href="#github-ci-pipeline-design" title="Permanent link">&para;</a></h1>
-<p><strong>Date:</strong> 2026-02-16</p>
+<h1 id="migrations">Migrations<a class="headerlink" href="#migrations" title="Permanent link">&para;</a></h1>
+<p>Database schema changes are managed by <a href="https://github.com/pressly/goose">goose</a>, a zero-dependency Go migration tool. The project ships a <code>migrate</code> binary (<code>cmd/migrate</code>) that embeds all migration files and applies them via goose at the CLI.</p>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
-<p>A GitHub Actions CI pipeline that validates every push to <code>main</code> and every PR targeting <code>main</code>. All checks mirror the local development workflow via Docker, ensuring parity between local and CI environments.</p>
-<h2 id="goals">Goals<a class="headerlink" href="#goals" title="Permanent link">&para;</a></h2>
-<ul>
-<li>Run the full test suite on every PR and push to main</li>
-<li>Enforce formatting, vet, and OpenAPI spec validity</li>
-<li>Enforce a coverage ratchet: coverage must never decrease</li>
-<li>Run static security analysis (gosec) with threshold-based failure</li>
-<li>Surface security findings in the GitHub Security tab</li>
-</ul>
-<h2 id="workflow-structure">Workflow Structure<a class="headerlink" href="#workflow-structure" title="Permanent link">&para;</a></h2>
-<p>Two parallel jobs in <code>.github/workflows/ci.yml</code>:</p>
-<pre class="mermaid"><code>graph LR
-    trigger[Push / PR] --&gt; ci[ci job]
-    trigger --&gt; security[security job]
-    ci --&gt; done[Done]
-    security --&gt; done</code></pre>
-<p><strong>Triggers:</strong>
-- <code>push</code> to <code>main</code>
-- <code>pull_request</code> targeting <code>main</code></p>
-<h2 id="job-ci">Job: ci<a class="headerlink" href="#job-ci" title="Permanent link">&para;</a></h2>
-<p>Runs on <code>ubuntu-latest</code> using Docker-in-Docker (all Make targets run inside Docker).</p>
+<pre class="mermaid"><code>flowchart LR
+    A[SQL migration files] --&gt;|embed.FS| B[migrate binary]
+    B --&gt;|goose| C[Database]
+    A --&gt;|sqlc generate| D[Type-safe Go code]
+    D --&gt; E[Storage layer]
+    E --&gt; C</code></pre>
+<p>The migration files serve two purposes:</p>
+<ol>
+<li><strong>Schema management</strong> -- goose reads the <code>-- +goose Up</code> / <code>-- +goose Down</code> annotations to apply or roll back changes.</li>
+<li><strong>Query generation</strong> -- sqlc reads the same schema files (alongside query files) to generate type-safe Go code.</li>
+</ol>
+<p>This means a single set of SQL files is the source of truth for both the live database schema and the generated query code.</p>
+<h2 id="directory-structure">Directory Structure<a class="headerlink" href="#directory-structure" title="Permanent link">&para;</a></h2>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>internal/storage/migrations/
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    migrations.go              # embed.FS declarations
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    migrations_test.go         # Validates embedded files
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    postgres/
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>        001_initial.sql        # First PostgreSQL migration
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    sqlite/
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>        001_initial.sql        # First SQLite migration
+</span></code></pre></div>
+<p>Each dialect has its own subdirectory because PostgreSQL and SQLite use different types and syntax (e.g., <code>JSONB</code> vs <code>TEXT</code>, <code>TIMESTAMPTZ</code> vs ISO8601 strings, <code>GIN</code> indexes). The <code>migrations.go</code> file embeds both directories using <code>//go:embed</code> so the <code>migrate</code> binary needs no external files at runtime.</p>
+<h2 id="cli-usage">CLI Usage<a class="headerlink" href="#cli-usage" title="Permanent link">&para;</a></h2>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>migrate --dialect &lt;postgres|sqlite&gt; --dsn &lt;connection-string&gt; [--verbose] &lt;command&gt; [VERSION]
+</span></code></pre></div>
+<h3 id="flags">Flags<a class="headerlink" href="#flags" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
-<th>Step</th>
+<th>Flag</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--dialect</code></td>
+<td>Yes</td>
+<td>Database engine: <code>postgres</code> or <code>sqlite</code></td>
+</tr>
+<tr>
+<td><code>--dsn</code></td>
+<td>Yes</td>
+<td>Connection string (PostgreSQL URI or SQLite file path)</td>
+</tr>
+<tr>
+<td><code>--verbose</code>, <code>-v</code></td>
+<td>No</td>
+<td>Enable verbose goose output</td>
+</tr>
+</tbody>
+</table>
+<h3 id="commands">Commands<a class="headerlink" href="#commands" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
 <th>Command</th>
-<th>Fails on</th>
+<th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Format check</td>
-<td><code>make fmt-check</code></td>
-<td>Any unformatted file</td>
+<td><code>up</code></td>
+<td>Apply all pending migrations</td>
 </tr>
 <tr>
-<td>Vet</td>
-<td><code>make vet</code></td>
-<td>Any vet error</td>
+<td><code>up-to VERSION</code></td>
+<td>Migrate up to a specific version</td>
 </tr>
 <tr>
-<td>Test</td>
-<td><code>make test</code></td>
-<td>Any test failure</td>
+<td><code>down</code></td>
+<td>Roll back the most recent migration</td>
 </tr>
 <tr>
-<td>Coverage</td>
-<td><code>make cover</code> + threshold check</td>
-<td>Coverage below <code>.github/coverage-threshold</code></td>
+<td><code>down-to VERSION</code></td>
+<td>Roll back to a specific version</td>
 </tr>
 <tr>
-<td>OpenAPI validate</td>
-<td><code>make openapi-validate</code></td>
-<td>Invalid OpenAPI spec</td>
+<td><code>status</code></td>
+<td>Show the status of all migrations</td>
+</tr>
+<tr>
+<td><code>version</code></td>
+<td>Print the current migration version</td>
+</tr>
+<tr>
+<td><code>redo</code></td>
+<td>Roll back and re-apply the latest migration</td>
+</tr>
+<tr>
+<td><code>reset</code></td>
+<td>Roll back all migrations</td>
 </tr>
 </tbody>
 </table>
-<h2 id="job-security">Job: security<a class="headerlink" href="#job-security" title="Permanent link">&para;</a></h2>
-<p>Runs on <code>ubuntu-latest</code> with native Go 1.25.0 (no Docker needed for gosec).</p>
-<p>Requires <code>permissions: security-events: write</code> for SARIF upload.</p>
+<h3 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Apply all pending migrations to a PostgreSQL database</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>migrate<span class="w"> </span>--dialect<span class="w"> </span>postgres<span class="w"> </span>--dsn<span class="w"> </span><span class="s2">&quot;postgres://user:pass@localhost:5432/updater?sslmode=disable&quot;</span><span class="w"> </span>up
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1"># Check migration status on an SQLite database</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>migrate<span class="w"> </span>--dialect<span class="w"> </span>sqlite<span class="w"> </span>--dsn<span class="w"> </span><span class="s2">&quot;./data/updater.db&quot;</span><span class="w"> </span>status
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="c1"># Roll back the latest migration with verbose output</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>migrate<span class="w"> </span>--dialect<span class="w"> </span>postgres<span class="w"> </span>--dsn<span class="w"> </span><span class="s2">&quot;postgres://...&quot;</span><span class="w"> </span>-v<span class="w"> </span>down
+</span></code></pre></div>
+<h2 id="make-targets">Make Targets<a class="headerlink" href="#make-targets" title="Permanent link">&para;</a></h2>
+<p>The Makefile provides convenience targets that run the <code>migrate</code> binary inside Docker. The default dialect is <code>sqlite</code> with DSN <code>./data/updater.db</code>. Override with <code>DIALECT</code> and <code>DSN</code> variables.</p>
 <table>
 <thead>
 <tr>
-<th>Step</th>
-<th>Detail</th>
+<th>Target</th>
+<th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Install gosec</td>
-<td><code>go install github.com/securego/gosec/v2/cmd/gosec@latest</code></td>
+<td><code>make migrate-up</code></td>
+<td>Apply pending migrations</td>
 </tr>
 <tr>
-<td>Generate SARIF</td>
-<td><code>gosec -no-fail -fmt sarif -out gosec.sarif ./...</code></td>
+<td><code>make migrate-down</code></td>
+<td>Roll back one migration</td>
 </tr>
 <tr>
-<td>Upload to Security tab</td>
-<td><code>github/codeql-action/upload-sarif</code> with <code>gosec.sarif</code></td>
+<td><code>make migrate-status</code></td>
+<td>Show migration status</td>
 </tr>
 <tr>
-<td>Enforce threshold</td>
-<td><code>gosec -severity high -confidence medium ./...</code> — fails on High severity + Medium or High confidence findings</td>
+<td><code>make migrate-create NAME=&lt;name&gt;</code></td>
+<td>Create a new migration file</td>
 </tr>
 </tbody>
 </table>
-<p>SARIF is always uploaded (even when findings exist) so developers can inspect findings in the GitHub Security tab regardless of build outcome.</p>
-<h2 id="coverage-ratchet">Coverage Ratchet<a class="headerlink" href="#coverage-ratchet" title="Permanent link">&para;</a></h2>
-<p>Coverage is enforced via a committed threshold file:</p>
-<ul>
-<li><strong>File:</strong> <code>.github/coverage-threshold</code> — contains a single float, e.g. <code>78.4</code></li>
-<li><strong>CI:</strong> reads the file, parses coverage from <code>make cover</code> output, fails if current &lt; threshold</li>
-<li><strong>Developer workflow:</strong> update the file in the PR when coverage increases — the diff makes improvements explicit and reviewable</li>
-<li><strong>Initial value:</strong> set to the current coverage percentage on first run</li>
-</ul>
-<h2 id="new-make-targets">New Make Targets<a class="headerlink" href="#new-make-targets" title="Permanent link">&para;</a></h2>
-<p>Three new targets added to support CI and local parity:</p>
-<h3 id="make-fmt-check"><code>make fmt-check</code><a class="headerlink" href="#make-fmt-check" title="Permanent link">&para;</a></h3>
-<p>Checks formatting without modifying files. Uses <code>gofmt -l</code> and fails if any files need formatting.</p>
-<div class="language-makefile highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">fmt-check</span><span class="o">:</span><span class="w"> </span><span class="c">## Check formatting (non-destructive)</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-v<span class="w"> </span><span class="k">$(</span>PWD<span class="k">)</span>:/app<span class="w"> </span>-w<span class="w"> </span>/app<span class="w"> </span>golang:1.25<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">        </span>sh<span class="w"> </span>-c<span class="w"> </span><span class="s1">&#39;test -z &quot;$(gofmt -l .)&quot;&#39;</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># SQLite (defaults)</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>make<span class="w"> </span>migrate-up
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># PostgreSQL</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>make<span class="w"> </span>migrate-up<span class="w"> </span><span class="nv">DIALECT</span><span class="o">=</span>postgres<span class="w"> </span><span class="nv">DSN</span><span class="o">=</span><span class="s2">&quot;postgres://user:pass@localhost:5432/updater&quot;</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="c1"># Create a new migration</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>make<span class="w"> </span>migrate-create<span class="w"> </span><span class="nv">NAME</span><span class="o">=</span>add_audit_log<span class="w"> </span><span class="nv">DIALECT</span><span class="o">=</span>postgres
 </span></code></pre></div>
-<h3 id="make-cover"><code>make cover</code><a class="headerlink" href="#make-cover" title="Permanent link">&para;</a></h3>
-<p>Runs tests with coverage and prints a parseable total line.</p>
-<div class="language-makefile highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nf">cover</span><span class="o">:</span><span class="w"> </span><span class="c">## Run tests with coverage report</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-v<span class="w"> </span><span class="k">$(</span>PWD<span class="k">)</span>:/app<span class="w"> </span>-w<span class="w"> </span>/app<span class="w"> </span>golang:1.25<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">        </span>go<span class="w"> </span><span class="nb">test</span><span class="w"> </span>-coverprofile<span class="o">=</span>coverage.out<span class="w"> </span>./...<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">        </span>go<span class="w"> </span>tool<span class="w"> </span>cover<span class="w"> </span>-func<span class="o">=</span>coverage.out<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>^total
+<h2 id="creating-new-migrations">Creating New Migrations<a class="headerlink" href="#creating-new-migrations" title="Permanent link">&para;</a></h2>
+<h3 id="naming-convention">Naming Convention<a class="headerlink" href="#naming-convention" title="Permanent link">&para;</a></h3>
+<p>Migration files use a three-digit sequential prefix followed by a descriptive snake_case name:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>NNN_description.sql
 </span></code></pre></div>
-<p>Outputs: <code>total: (statements)  78.4%</code></p>
-<h3 id="make-security"><code>make security</code><a class="headerlink" href="#make-security" title="Permanent link">&para;</a></h3>
-<p>Runs gosec locally using the official Docker image, matching CI threshold.</p>
-<div class="language-makefile highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nf">security</span><span class="o">:</span><span class="w"> </span><span class="c">## Run gosec security scanner</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">        </span>-v<span class="w"> </span><span class="k">$(</span>PWD<span class="k">)</span>:/app<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">        </span>-w<span class="w"> </span>/app<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">        </span>securego/gosec:latest<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">        </span>-severity<span class="w"> </span>high<span class="w"> </span>-confidence<span class="w"> </span>medium<span class="w"> </span>./...
+<p>For example: <code>002_add_audit_log.sql</code>, <code>003_add_release_channels.sql</code>.</p>
+<p>Use <code>make migrate-create</code> to generate the file with the correct sequence number and boilerplate.</p>
+<h3 id="goose-annotations">Goose Annotations<a class="headerlink" href="#goose-annotations" title="Permanent link">&para;</a></h3>
+<p>Every migration file must contain <code>-- +goose Up</code> and <code>-- +goose Down</code> annotations. Goose uses these markers to determine which SQL to run in each direction.</p>
+<div class="language-sql highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1">-- +goose Up</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">audit_log</span><span class="w"> </span><span class="p">(</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="n">id</span><span class="w"> </span><span class="nb">TEXT</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="p">,</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span><span class="n">action</span><span class="w"> </span><span class="nb">TEXT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">    </span><span class="n">created_at</span><span class="w"> </span><span class="n">TIMESTAMPTZ</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="n">NOW</span><span class="p">()</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="p">);</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="c1">-- +goose Down</span>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="k">DROP</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="n">audit_log</span><span class="p">;</span>
 </span></code></pre></div>
-<h2 id="security-scan-thresholds">Security Scan Thresholds<a class="headerlink" href="#security-scan-thresholds" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Dimension</th>
-<th>Threshold</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Severity</td>
-<td>High only</td>
-</tr>
-<tr>
-<td>Confidence</td>
-<td>Medium and above</td>
-</tr>
-</tbody>
-</table>
-<p>Findings below threshold appear in the GitHub Security tab but do not fail the build. Specific false positives can be suppressed inline with <code>// #nosec G###</code> comments.</p>
-<h2 id="files-created-or-modified">Files Created or Modified<a class="headerlink" href="#files-created-or-modified" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>File</th>
-<th>Change</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>.github/workflows/ci.yml</code></td>
-<td>New — GitHub Actions workflow</td>
-</tr>
-<tr>
-<td><code>.github/coverage-threshold</code></td>
-<td>New — coverage ratchet baseline</td>
-</tr>
-<tr>
-<td><code>make/go.mk</code></td>
-<td>Modified — add <code>fmt-check</code>, <code>cover</code>, <code>security</code> targets</td>
-</tr>
-<tr>
-<td><code>mkdocs.yml</code></td>
-<td>Modified — add CI design doc to Plans nav</td>
-</tr>
-</tbody>
-</table>
+<h3 id="multi-statement-blocks">Multi-statement Blocks<a class="headerlink" href="#multi-statement-blocks" title="Permanent link">&para;</a></h3>
+<p>Triggers, functions, and other multi-statement constructs must be wrapped in <code>-- +goose StatementBegin</code> / <code>-- +goose StatementEnd</code> annotations. Without these, goose splits on semicolons and the statements fail.</p>
+<div class="language-sql highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1">-- +goose Up</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="c1">-- +goose StatementBegin</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="k">CREATE</span><span class="w"> </span><span class="k">OR</span><span class="w"> </span><span class="k">REPLACE</span><span class="w"> </span><span class="k">FUNCTION</span><span class="w"> </span><span class="n">update_updated_at_column</span><span class="p">()</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="k">RETURNS</span><span class="w"> </span><span class="k">TRIGGER</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="err">$$</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="k">BEGIN</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">    </span><span class="k">NEW</span><span class="p">.</span><span class="n">updated_at</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">NOW</span><span class="p">();</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">    </span><span class="k">RETURN</span><span class="w"> </span><span class="k">NEW</span><span class="p">;</span>
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="k">END</span><span class="p">;</span>
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="err">$$</span><span class="w"> </span><span class="k">language</span><span class="w"> </span><span class="s1">&#39;plpgsql&#39;</span><span class="p">;</span>
+</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="c1">-- +goose StatementEnd</span>
+</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>
+</span><span id="__span-6-13"><a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="c1">-- +goose Down</span>
+</span><span id="__span-6-14"><a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a><span class="k">DROP</span><span class="w"> </span><span class="k">FUNCTION</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="n">update_updated_at_column</span><span class="p">();</span>
+</span></code></pre></div>
+<h3 id="dialect-specific-files">Dialect-specific Files<a class="headerlink" href="#dialect-specific-files" title="Permanent link">&para;</a></h3>
+<p>Because PostgreSQL and SQLite use different SQL syntax, every migration must be created in both dialect directories. Use the <code>DIALECT</code> variable with <code>make migrate-create</code> and repeat for the other dialect:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>make<span class="w"> </span>migrate-create<span class="w"> </span><span class="nv">NAME</span><span class="o">=</span>add_audit_log<span class="w"> </span><span class="nv">DIALECT</span><span class="o">=</span>postgres
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>make<span class="w"> </span>migrate-create<span class="w"> </span><span class="nv">NAME</span><span class="o">=</span>add_audit_log<span class="w"> </span><span class="nv">DIALECT</span><span class="o">=</span>sqlite
+</span></code></pre></div>
+<p>Then edit both files with the appropriate engine-specific SQL.</p>
+<h2 id="development-workflow">Development Workflow<a class="headerlink" href="#development-workflow" title="Permanent link">&para;</a></h2>
+<p>When making schema changes, follow this sequence:</p>
+<pre class="mermaid"><code>flowchart TD
+    A[Create migration files] --&gt; B[Run sqlc-generate]
+    B --&gt; C[Update Go storage code]
+    C --&gt; D[Run migrate-up]
+    D --&gt; E[Run tests]
+    E --&gt; F{Tests pass?}
+    F --&gt;|Yes| G[Commit]
+    F --&gt;|No| H[Fix and repeat]
+    H --&gt; B</code></pre>
+<ol>
+<li><strong>Create migration files</strong> -- <code>make migrate-create NAME=&lt;name&gt; DIALECT=postgres</code> and repeat for <code>sqlite</code>. Write the Up and Down SQL for both dialects.</li>
+<li><strong>Regenerate sqlc code</strong> -- <code>make sqlc-generate</code>. This picks up the new schema and regenerates the type-safe query code.</li>
+<li><strong>Update Go code</strong> -- Modify storage provider code and queries as needed for the new schema.</li>
+<li><strong>Apply migrations</strong> -- <code>make migrate-up</code> to verify the migration applies cleanly.</li>
+<li><strong>Run tests</strong> -- <code>make check</code> to verify everything passes.</li>
+<li><strong>Commit</strong> -- Commit the migration files, generated code, and Go changes together.</li>
+</ol>
+<h2 id="docker-and-kubernetes">Docker and Kubernetes<a class="headerlink" href="#docker-and-kubernetes" title="Permanent link">&para;</a></h2>
+<h3 id="docker-image">Docker Image<a class="headerlink" href="#docker-image" title="Permanent link">&para;</a></h3>
+<p>The <code>migrate</code> binary is included in the production Docker image at <code>/usr/local/bin/migrate</code>. Run it as an entrypoint override or in a shell:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>myregistry/updater:latest<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">    </span>/usr/local/bin/migrate<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">    </span>--dialect<span class="w"> </span>postgres<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">    </span>--dsn<span class="w"> </span><span class="s2">&quot;postgres://user:pass@db:5432/updater?sslmode=disable&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">    </span>up
+</span></code></pre></div>
+<h3 id="kubernetes-init-container">Kubernetes Init Container<a class="headerlink" href="#kubernetes-init-container" title="Permanent link">&para;</a></h3>
+<p>A common pattern is to run migrations as an init container before the main application starts:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">apps/v1</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Deployment</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="nt">spec</span><span class="p">:</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">  </span><span class="nt">template</span><span class="p">:</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">    </span><span class="nt">spec</span><span class="p">:</span>
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">      </span><span class="nt">initContainers</span><span class="p">:</span>
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">migrate</span>
+</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="w">          </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">myregistry/updater:latest</span>
+</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="w">          </span><span class="nt">command</span><span class="p">:</span>
+</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/usr/local/bin/migrate</span>
+</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--dialect</span>
+</span><span id="__span-9-12"><a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a><span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">postgres</span>
+</span><span id="__span-9-13"><a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--dsn</span>
+</span><span id="__span-9-14"><a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a><span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">$(DATABASE_DSN)</span>
+</span><span id="__span-9-15"><a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a><span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">up</span>
+</span><span id="__span-9-16"><a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a><span class="w">          </span><span class="nt">env</span><span class="p">:</span>
+</span><span id="__span-9-17"><a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a><span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DATABASE_DSN</span>
+</span><span id="__span-9-18"><a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a><span class="w">              </span><span class="nt">valueFrom</span><span class="p">:</span>
+</span><span id="__span-9-19"><a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a><span class="w">                </span><span class="nt">secretKeyRef</span><span class="p">:</span>
+</span><span id="__span-9-20"><a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a><span class="w">                  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">db-credentials</span>
+</span><span id="__span-9-21"><a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a><span class="w">                  </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dsn</span>
+</span><span id="__span-9-22"><a id="__codelineno-9-22" name="__codelineno-9-22" href="#__codelineno-9-22"></a><span class="w">      </span><span class="nt">containers</span><span class="p">:</span>
+</span><span id="__span-9-23"><a id="__codelineno-9-23" name="__codelineno-9-23" href="#__codelineno-9-23"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">updater</span>
+</span><span id="__span-9-24"><a id="__codelineno-9-24" name="__codelineno-9-24" href="#__codelineno-9-24"></a><span class="w">          </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">myregistry/updater:latest</span>
+</span></code></pre></div>
+<p>This ensures the database schema is up to date before the application accepts traffic.</p>
+<h2 id="relationship-to-sqlc">Relationship to sqlc<a class="headerlink" href="#relationship-to-sqlc" title="Permanent link">&para;</a></h2>
+<p>The migration files under <code>internal/storage/migrations/&lt;dialect&gt;/</code> define the schema. The query files under <code>internal/storage/queries/&lt;dialect&gt;/</code> define the queries. sqlc reads both to generate Go code:</p>
+<pre class="mermaid"><code>flowchart TD
+    subgraph migrations["internal/storage/migrations/"]
+        M1[postgres/001_initial.sql]
+        M2[sqlite/001_initial.sql]
+    end
+
+    subgraph sqlc_queries["internal/storage/queries/"]
+        Q1[postgres/queries.sql]
+        Q2[sqlite/queries.sql]
+    end
+
+    subgraph generated["Generated Go code"]
+        G1[sqlc/postgres/*.go]
+        G2[sqlc/sqlite/*.go]
+    end
+
+    M1 --&gt; G1
+    Q1 --&gt; G1
+    M2 --&gt; G2
+    Q2 --&gt; G2</code></pre>
+<p>The sqlc configuration references the migration files as the schema source. When you add a new migration, run <code>make sqlc-generate</code> to regenerate the query code against the updated schema.</p>
 
 
 
@@ -4581,10 +4686,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.path", "navigation.top", "search.highlight", "search.share", "toc.follow", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "latest", "provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.path", "navigation.top", "search.highlight", "search.share", "toc.follow", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "latest", "provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
       
     
   </body>

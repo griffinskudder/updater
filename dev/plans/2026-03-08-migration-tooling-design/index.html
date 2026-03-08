@@ -12,13 +12,13 @@
         <meta name="author" content="Updater Service Team">
       
       
-        <link rel="canonical" href="https://griffinskudder.github.io/updater/dev/plans/2026-02-16-github-ci-design/">
+        <link rel="canonical" href="https://griffinskudder.github.io/updater/dev/plans/2026-03-08-migration-tooling-design/">
       
       
-        <link rel="prev" href="../2026-02-16-admin-frontend/">
+        <link rel="prev" href="../2026-03-08-cursor-validation-implementation/">
       
       
-        <link rel="next" href="../2026-02-16-github-ci-implementation/">
+        <link rel="next" href="../2026-03-08-migration-tooling-implementation/">
       
       
         
@@ -82,7 +82,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#github-ci-pipeline-design" class="md-skip">
+        <a href="#database-migration-tooling-design" class="md-skip">
           Skip to content
         </a>
       
@@ -1669,8 +1669,6 @@
                 
   
   
-    
-  
   
   
     
@@ -1686,11 +1684,13 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_17_4" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_17_4" >
         
           
           <label class="md-nav__link" for="__nav_17_4" id="__nav_17_4_label" tabindex="">
@@ -1711,7 +1711,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_17_4_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_17_4_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_17_4">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1726,37 +1726,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Design
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../2026-02-16-github-ci-design/" class="md-nav__link">
         
   
   
@@ -1772,164 +1745,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#overview" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Overview
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#goals" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Goals
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#workflow-structure" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Workflow Structure
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#job-ci" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Job: ci
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#job-security" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Job: security
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#coverage-ratchet" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Coverage Ratchet
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#new-make-targets" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        New Make Targets
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="New Make Targets">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#make-fmt-check" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        make fmt-check
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#make-cover" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        make cover
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#make-security" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        make security
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#security-scan-thresholds" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Security Scan Thresholds
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#files-created-or-modified" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Files Created or Modified
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -3781,8 +3596,10 @@
                 
   
   
+    
   
   
+  
     
     
     
@@ -3796,13 +3613,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_17_22" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_17_22" checked>
         
           
           <label class="md-nav__link" for="__nav_17_22" id="__nav_17_22_label" tabindex="">
@@ -3823,7 +3638,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_17_22_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_17_22_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_17_22">
             <span class="md-nav__icon md-icon"></span>
             
@@ -3838,10 +3653,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../2026-03-08-migration-tooling-design/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -3857,6 +3699,259 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#problem" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Decision">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#why-goose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why goose
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-a-separate-binary-not-a-subcommand" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why a separate binary (not a subcommand)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#directory-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Directory Structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deleted" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deleted
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cli-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CLI Interface
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CLI Interface">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#flags" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Flags
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Commands
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#migration-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Migration Files
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Migration Files">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#postgresql-001_initialsql" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PostgreSQL 001_initial.sql
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sqlite-001_initialsql" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SQLite 001_initial.sql
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Format
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#docker-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Docker Changes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#make-targets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Make Targets
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sqlc-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        sqlc Configuration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#verification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verification
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -4105,10 +4200,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#overview" class="md-nav__link">
+  <a href="#problem" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Overview
+        Problem
       
     </span>
   </a>
@@ -4116,77 +4211,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#goals" class="md-nav__link">
+  <a href="#decision" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Goals
+        Decision
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#workflow-structure" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Workflow Structure
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#job-ci" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Job: ci
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#job-security" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Job: security
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#coverage-ratchet" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Coverage Ratchet
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#new-make-targets" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        New Make Targets
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="New Make Targets">
+    <nav class="md-nav" aria-label="Decision">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#make-fmt-check" class="md-nav__link">
+  <a href="#why-goose" class="md-nav__link">
     <span class="md-ellipsis">
       
-        make fmt-check
+        Why goose
       
     </span>
   </a>
@@ -4194,21 +4234,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#make-cover" class="md-nav__link">
+  <a href="#why-a-separate-binary-not-a-subcommand" class="md-nav__link">
     <span class="md-ellipsis">
       
-        make cover
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#make-security" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        make security
+        Why a separate binary (not a subcommand)
       
     </span>
   </a>
@@ -4221,10 +4250,138 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#security-scan-thresholds" class="md-nav__link">
+  <a href="#architecture" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Security Scan Thresholds
+        Architecture
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#directory-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Directory Structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deleted" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deleted
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cli-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CLI Interface
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CLI Interface">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#flags" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Flags
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Commands
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#migration-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Migration Files
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Migration Files">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#postgresql-001_initialsql" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PostgreSQL 001_initial.sql
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sqlite-001_initialsql" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SQLite 001_initial.sql
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Format
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#docker-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Docker Changes
       
     </span>
   </a>
@@ -4232,10 +4389,43 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#files-created-or-modified" class="md-nav__link">
+  <a href="#make-targets" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Files Created or Modified
+        Make Targets
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sqlc-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        sqlc Configuration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#verification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verification
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing
       
     </span>
   </a>
@@ -4314,7 +4504,7 @@
         <a href="./" class="md-path__link">
           
   <span class="md-ellipsis">
-    GitHub CI
+    Migration Tooling
   </span>
 
         </a>
@@ -4336,176 +4526,222 @@
   
 
 
-<h1 id="github-ci-pipeline-design">GitHub CI Pipeline Design<a class="headerlink" href="#github-ci-pipeline-design" title="Permanent link">&para;</a></h1>
-<p><strong>Date:</strong> 2026-02-16</p>
-<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
-<p>A GitHub Actions CI pipeline that validates every push to <code>main</code> and every PR targeting <code>main</code>. All checks mirror the local development workflow via Docker, ensuring parity between local and CI environments.</p>
-<h2 id="goals">Goals<a class="headerlink" href="#goals" title="Permanent link">&para;</a></h2>
+<h1 id="database-migration-tooling-design">Database Migration Tooling Design<a class="headerlink" href="#database-migration-tooling-design" title="Permanent link">&para;</a></h1>
+<p><strong>Issue:</strong> <a href="https://github.com/griffinskudder/updater/issues/71">#71</a>
+<strong>Date:</strong> 2026-03-08
+<strong>Status:</strong> Approved</p>
+<h2 id="problem">Problem<a class="headerlink" href="#problem" title="Permanent link">&para;</a></h2>
+<p>The project has no unified migration system. SQLite has a hand-rolled migrator that runs on startup. PostgreSQL has no migration mechanism at all. Schema files exist as numbered SQL files with no tooling to apply, track, or roll back changes.</p>
+<h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
+<p>Use <a href="https://github.com/pressly/goose">goose</a> (pure Go, no CGO) as the migration library, exposed via a separate <code>cmd/migrate/</code> binary that embeds migration files and ships in the same Docker image as the <code>updater</code> binary.</p>
+<h3 id="why-goose">Why goose<a class="headerlink" href="#why-goose" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Run the full test suite on every PR and push to main</li>
-<li>Enforce formatting, vet, and OpenAPI spec validity</li>
-<li>Enforce a coverage ratchet: coverage must never decrease</li>
-<li>Run static security analysis (gosec) with threshold-based failure</li>
-<li>Surface security findings in the GitHub Security tab</li>
+<li>Works directly with <code>*sql.DB</code> (reuses existing connection patterns)</li>
+<li>Native <code>embed.FS</code> support</li>
+<li>Single-file migrations with <code>-- +goose Up</code> / <code>-- +goose Down</code> annotations</li>
+<li>Sequential numbered filenames match existing <code>001_*.sql</code> convention</li>
+<li>sqlc natively parses goose annotations (ignores <code>-- +goose Down</code> blocks)</li>
 </ul>
-<h2 id="workflow-structure">Workflow Structure<a class="headerlink" href="#workflow-structure" title="Permanent link">&para;</a></h2>
-<p>Two parallel jobs in <code>.github/workflows/ci.yml</code>:</p>
-<pre class="mermaid"><code>graph LR
-    trigger[Push / PR] --&gt; ci[ci job]
-    trigger --&gt; security[security job]
-    ci --&gt; done[Done]
-    security --&gt; done</code></pre>
-<p><strong>Triggers:</strong>
-- <code>push</code> to <code>main</code>
-- <code>pull_request</code> targeting <code>main</code></p>
-<h2 id="job-ci">Job: ci<a class="headerlink" href="#job-ci" title="Permanent link">&para;</a></h2>
-<p>Runs on <code>ubuntu-latest</code> using Docker-in-Docker (all Make targets run inside Docker).</p>
+<h3 id="why-a-separate-binary-not-a-subcommand">Why a separate binary (not a subcommand)<a class="headerlink" href="#why-a-separate-binary-not-a-subcommand" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Keeps the <code>updater</code> binary focused on serving</li>
+<li>Different entrypoint to the same Docker image (<code>--entrypoint /bin/migrate</code>)</li>
+<li>Clean fit for Kubernetes init containers and CI pipelines</li>
+<li>No subcommand framework needed in the main binary</li>
+</ul>
+<h2 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h2>
+<h3 id="directory-structure">Directory Structure<a class="headerlink" href="#directory-structure" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>cmd/migrate/
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>  migrate.go              # Entry point: parse args, call goose API
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>internal/storage/
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>  migrations/
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    postgres/
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>      001_initial.sql     # Goose-annotated, sqlc reads this too
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    sqlite/
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>      001_initial.sql     # Goose-annotated, sqlc reads this too
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>  queries/
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    postgres/
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>      queries.sql         # SQL queries for sqlc (moved from sqlc/schema/postgres/)
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>    sqlite/
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>      queries.sql         # SQL queries for sqlc (moved from sqlc/schema/sqlite/)
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>  sqlc/
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>    postgres/             # Generated code (unchanged)
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>    sqlite/               # Generated code (unchanged)
+</span></code></pre></div>
+<p>Migration files serve dual purpose: goose uses them for migrations, sqlc uses them as schema source. The <code>-- +goose Down</code> sections are ignored by sqlc. Query files live in a separate <code>queries/</code> directory because goose attempted to parse <code>.sql</code> query files as migrations when they were co-located with migration files.</p>
+<h3 id="deleted">Deleted<a class="headerlink" href="#deleted" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>internal/storage/sqlc/schema/</code> -- replaced by <code>internal/storage/migrations/</code></li>
+<li><code>runSQLiteMigrations()</code> in <code>internal/storage/sqlite.go</code> -- replaced by the <code>migrate</code> binary</li>
+<li><code>schema_migrations</code> table -- replaced by goose's <code>goose_db_version</code> table</li>
+</ul>
+<h2 id="cli-interface">CLI Interface<a class="headerlink" href="#cli-interface" title="Permanent link">&para;</a></h2>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>migrate --dialect postgres --dsn &quot;postgres://...&quot; up
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>migrate --dialect sqlite --dsn &quot;./data/updater.db&quot; status
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>migrate --dialect postgres --dsn &quot;...&quot; down
+</span></code></pre></div>
+<h3 id="flags">Flags<a class="headerlink" href="#flags" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
-<th>Step</th>
+<th>Flag</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--dialect</code></td>
+<td>Yes</td>
+<td><code>postgres</code> or <code>sqlite</code></td>
+</tr>
+<tr>
+<td><code>--dsn</code></td>
+<td>Yes</td>
+<td>Database connection string</td>
+</tr>
+<tr>
+<td><code>--verbose</code> / <code>-v</code></td>
+<td>No</td>
+<td>Enable verbose output</td>
+</tr>
+</tbody>
+</table>
+<h3 id="commands">Commands<a class="headerlink" href="#commands" title="Permanent link">&para;</a></h3>
+<p>All commands map directly to goose's Go API:</p>
+<table>
+<thead>
+<tr>
 <th>Command</th>
-<th>Fails on</th>
+<th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Format check</td>
-<td><code>make fmt-check</code></td>
-<td>Any unformatted file</td>
+<td><code>up</code></td>
+<td>Apply all pending migrations</td>
 </tr>
 <tr>
-<td>Vet</td>
-<td><code>make vet</code></td>
-<td>Any vet error</td>
+<td><code>up-to VERSION</code></td>
+<td>Migrate up to a specific version</td>
 </tr>
 <tr>
-<td>Test</td>
-<td><code>make test</code></td>
-<td>Any test failure</td>
+<td><code>down</code></td>
+<td>Roll back one migration</td>
 </tr>
 <tr>
-<td>Coverage</td>
-<td><code>make cover</code> + threshold check</td>
-<td>Coverage below <code>.github/coverage-threshold</code></td>
+<td><code>down-to VERSION</code></td>
+<td>Roll back to a specific version</td>
 </tr>
 <tr>
-<td>OpenAPI validate</td>
-<td><code>make openapi-validate</code></td>
-<td>Invalid OpenAPI spec</td>
+<td><code>status</code></td>
+<td>Show migration status</td>
+</tr>
+<tr>
+<td><code>version</code></td>
+<td>Print current schema version</td>
+</tr>
+<tr>
+<td><code>redo</code></td>
+<td>Re-run the latest migration</td>
+</tr>
+<tr>
+<td><code>reset</code></td>
+<td>Roll back all migrations</td>
 </tr>
 </tbody>
 </table>
-<h2 id="job-security">Job: security<a class="headerlink" href="#job-security" title="Permanent link">&para;</a></h2>
-<p>Runs on <code>ubuntu-latest</code> with native Go 1.25.0 (no Docker needed for gosec).</p>
-<p>Requires <code>permissions: security-events: write</code> for SARIF upload.</p>
+<h2 id="migration-files">Migration Files<a class="headerlink" href="#migration-files" title="Permanent link">&para;</a></h2>
+<p>Existing migrations collapse into a single <code>001_initial.sql</code> per engine. The content is the final schema state (all current migrations applied in sequence).</p>
+<h3 id="postgresql-001_initialsql">PostgreSQL <code>001_initial.sql</code><a class="headerlink" href="#postgresql-001_initialsql" title="Permanent link">&para;</a></h3>
+<p>Combined result of existing 001-005: <code>applications</code>, <code>releases</code>, <code>api_keys</code> tables with all indexes, triggers, FK constraints, and semver sort columns.</p>
+<h3 id="sqlite-001_initialsql">SQLite <code>001_initial.sql</code><a class="headerlink" href="#sqlite-001_initialsql" title="Permanent link">&para;</a></h3>
+<p>Combined result of existing 001-006: same tables adapted for SQLite types, plus datetime trigger fixes.</p>
+<h3 id="format">Format<a class="headerlink" href="#format" title="Permanent link">&para;</a></h3>
+<div class="language-sql highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1">-- +goose Up</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">applications</span><span class="w"> </span><span class="p">(...);</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">releases</span><span class="w"> </span><span class="p">(...);</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">api_keys</span><span class="w"> </span><span class="p">(...);</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="c1">-- indexes, triggers, etc.</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="c1">-- +goose Down</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="k">DROP</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="n">api_keys</span><span class="p">;</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="k">DROP</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="n">releases</span><span class="p">;</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="k">DROP</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="n">applications</span><span class="p">;</span>
+</span></code></pre></div>
+<h2 id="docker-changes">Docker Changes<a class="headerlink" href="#docker-changes" title="Permanent link">&para;</a></h2>
+<p>The Dockerfile builds both binaries in the build stage and copies both into the distroless final image.</p>
+<div class="language-dockerfile highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">RUN</span><span class="w"> </span>go<span class="w"> </span>build<span class="w"> </span>-o<span class="w"> </span>/bin/updater<span class="w"> </span>./cmd/updater
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="k">RUN</span><span class="w"> </span>go<span class="w"> </span>build<span class="w"> </span>-o<span class="w"> </span>/bin/migrate<span class="w"> </span>./cmd/migrate
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="k">COPY</span><span class="w"> </span>--from<span class="o">=</span>builder<span class="w"> </span>/bin/updater<span class="w"> </span>/bin/updater
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="k">COPY</span><span class="w"> </span>--from<span class="o">=</span>builder<span class="w"> </span>/bin/migrate<span class="w"> </span>/bin/migrate
+</span></code></pre></div>
+<p>Default entrypoint remains <code>updater</code>. Migrations run via:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>docker run --entrypoint /bin/migrate myimage --dialect postgres --dsn &quot;...&quot; up
+</span></code></pre></div>
+<p>Kubernetes init container:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nt">initContainers</span><span class="p">:</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">migrate</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">myimage</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;/bin/migrate&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">    </span><span class="nt">args</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;--dialect&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;postgres&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;--dsn&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;$(DSN)&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;up&quot;</span><span class="p p-Indicator">]</span>
+</span></code></pre></div>
+<h2 id="make-targets">Make Targets<a class="headerlink" href="#make-targets" title="Permanent link">&para;</a></h2>
+<p>New targets added to <code>make/db.mk</code>:</p>
 <table>
 <thead>
 <tr>
-<th>Step</th>
-<th>Detail</th>
+<th>Target</th>
+<th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Install gosec</td>
-<td><code>go install github.com/securego/gosec/v2/cmd/gosec@latest</code></td>
+<td><code>make migrate-up</code></td>
+<td>Apply pending migrations (requires <code>DIALECT</code>, <code>DSN</code>)</td>
 </tr>
 <tr>
-<td>Generate SARIF</td>
-<td><code>gosec -no-fail -fmt sarif -out gosec.sarif ./...</code></td>
+<td><code>make migrate-down</code></td>
+<td>Roll back one migration</td>
 </tr>
 <tr>
-<td>Upload to Security tab</td>
-<td><code>github/codeql-action/upload-sarif</code> with <code>gosec.sarif</code></td>
+<td><code>make migrate-status</code></td>
+<td>Show migration status</td>
 </tr>
 <tr>
-<td>Enforce threshold</td>
-<td><code>gosec -severity high -confidence medium ./...</code> — fails on High severity + Medium or High confidence findings</td>
+<td><code>make migrate-create</code></td>
+<td>Create a new migration file</td>
+</tr>
+<tr>
+<td><code>make sqlc-diff</code></td>
+<td>Fail if <code>sqlc-generate</code> would change generated output (CI check)</td>
 </tr>
 </tbody>
 </table>
-<p>SARIF is always uploaded (even when findings exist) so developers can inspect findings in the GitHub Security tab regardless of build outcome.</p>
-<h2 id="coverage-ratchet">Coverage Ratchet<a class="headerlink" href="#coverage-ratchet" title="Permanent link">&para;</a></h2>
-<p>Coverage is enforced via a committed threshold file:</p>
+<p>All migrate targets run the <code>migrate</code> binary inside Docker, consistent with the project's "everything runs in Docker" pattern.</p>
+<h2 id="sqlc-configuration">sqlc Configuration<a class="headerlink" href="#sqlc-configuration" title="Permanent link">&para;</a></h2>
+<p><code>sqlc.yaml</code> updated to point <code>schema:</code> at the new migration directories:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nt">sql</span><span class="p">:</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">engine</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">postgresql</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="nt">schema</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;internal/storage/migrations/postgres/&quot;</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">    </span><span class="nt">queries</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;internal/storage/queries/postgres/&quot;</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">    </span><span class="c1"># ...</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">engine</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sqlite</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">    </span><span class="nt">schema</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;internal/storage/migrations/sqlite/&quot;</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">    </span><span class="nt">queries</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;internal/storage/queries/sqlite/&quot;</span>
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="w">    </span><span class="c1"># ...</span>
+</span></code></pre></div>
+<h2 id="verification">Verification<a class="headerlink" href="#verification" title="Permanent link">&para;</a></h2>
+<p>After moving files and adding goose annotations, run <code>make sqlc-generate</code> and verify the generated Go code has zero diff. This confirms the schema is equivalent.</p>
+<p>A new <code>make sqlc-diff</code> CI target runs <code>sqlc-generate</code> and fails if there are uncommitted changes to generated files, catching schema drift permanently.</p>
+<h2 id="testing">Testing<a class="headerlink" href="#testing" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>File:</strong> <code>.github/coverage-threshold</code> — contains a single float, e.g. <code>78.4</code></li>
-<li><strong>CI:</strong> reads the file, parses coverage from <code>make cover</code> output, fails if current &lt; threshold</li>
-<li><strong>Developer workflow:</strong> update the file in the PR when coverage increases — the diff makes improvements explicit and reviewable</li>
-<li><strong>Initial value:</strong> set to the current coverage percentage on first run</li>
+<li>Unit tests for the <code>cmd/migrate/</code> binary (flag parsing, dialect selection)</li>
+<li>Integration tests that run migrations against in-memory SQLite and verify schema state</li>
+<li>PostgreSQL integration tests (gated on <code>POSTGRES_TEST_DSN</code>)</li>
+<li>Verification that <code>make sqlc-generate</code> produces identical output after migration file restructuring</li>
 </ul>
-<h2 id="new-make-targets">New Make Targets<a class="headerlink" href="#new-make-targets" title="Permanent link">&para;</a></h2>
-<p>Three new targets added to support CI and local parity:</p>
-<h3 id="make-fmt-check"><code>make fmt-check</code><a class="headerlink" href="#make-fmt-check" title="Permanent link">&para;</a></h3>
-<p>Checks formatting without modifying files. Uses <code>gofmt -l</code> and fails if any files need formatting.</p>
-<div class="language-makefile highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">fmt-check</span><span class="o">:</span><span class="w"> </span><span class="c">## Check formatting (non-destructive)</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-v<span class="w"> </span><span class="k">$(</span>PWD<span class="k">)</span>:/app<span class="w"> </span>-w<span class="w"> </span>/app<span class="w"> </span>golang:1.25<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">        </span>sh<span class="w"> </span>-c<span class="w"> </span><span class="s1">&#39;test -z &quot;$(gofmt -l .)&quot;&#39;</span>
-</span></code></pre></div>
-<h3 id="make-cover"><code>make cover</code><a class="headerlink" href="#make-cover" title="Permanent link">&para;</a></h3>
-<p>Runs tests with coverage and prints a parseable total line.</p>
-<div class="language-makefile highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nf">cover</span><span class="o">:</span><span class="w"> </span><span class="c">## Run tests with coverage report</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-v<span class="w"> </span><span class="k">$(</span>PWD<span class="k">)</span>:/app<span class="w"> </span>-w<span class="w"> </span>/app<span class="w"> </span>golang:1.25<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">        </span>go<span class="w"> </span><span class="nb">test</span><span class="w"> </span>-coverprofile<span class="o">=</span>coverage.out<span class="w"> </span>./...<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">        </span>go<span class="w"> </span>tool<span class="w"> </span>cover<span class="w"> </span>-func<span class="o">=</span>coverage.out<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>^total
-</span></code></pre></div>
-<p>Outputs: <code>total: (statements)  78.4%</code></p>
-<h3 id="make-security"><code>make security</code><a class="headerlink" href="#make-security" title="Permanent link">&para;</a></h3>
-<p>Runs gosec locally using the official Docker image, matching CI threshold.</p>
-<div class="language-makefile highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nf">security</span><span class="o">:</span><span class="w"> </span><span class="c">## Run gosec security scanner</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">        </span>-v<span class="w"> </span><span class="k">$(</span>PWD<span class="k">)</span>:/app<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">        </span>-w<span class="w"> </span>/app<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">        </span>securego/gosec:latest<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">        </span>-severity<span class="w"> </span>high<span class="w"> </span>-confidence<span class="w"> </span>medium<span class="w"> </span>./...
-</span></code></pre></div>
-<h2 id="security-scan-thresholds">Security Scan Thresholds<a class="headerlink" href="#security-scan-thresholds" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Dimension</th>
-<th>Threshold</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Severity</td>
-<td>High only</td>
-</tr>
-<tr>
-<td>Confidence</td>
-<td>Medium and above</td>
-</tr>
-</tbody>
-</table>
-<p>Findings below threshold appear in the GitHub Security tab but do not fail the build. Specific false positives can be suppressed inline with <code>// #nosec G###</code> comments.</p>
-<h2 id="files-created-or-modified">Files Created or Modified<a class="headerlink" href="#files-created-or-modified" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>File</th>
-<th>Change</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>.github/workflows/ci.yml</code></td>
-<td>New — GitHub Actions workflow</td>
-</tr>
-<tr>
-<td><code>.github/coverage-threshold</code></td>
-<td>New — coverage ratchet baseline</td>
-</tr>
-<tr>
-<td><code>make/go.mk</code></td>
-<td>Modified — add <code>fmt-check</code>, <code>cover</code>, <code>security</code> targets</td>
-</tr>
-<tr>
-<td><code>mkdocs.yml</code></td>
-<td>Modified — add CI design doc to Plans nav</td>
-</tr>
-</tbody>
-</table>
 
 
 
