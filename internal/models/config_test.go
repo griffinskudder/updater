@@ -114,6 +114,29 @@ func TestConfig_Validate(t *testing.T) {
 			expectError: true,
 			errorMsg:    "invalid storage config",
 		},
+		{
+			name: "server and metrics ports conflict",
+			config: func() *Config {
+				c := NewDefaultConfig()
+				c.Storage.Type = "memory"
+				c.Metrics.Enabled = true
+				c.Metrics.Port = c.Server.Port // same port
+				return c
+			}(),
+			expectError: true,
+			errorMsg:    "server port and metrics port must not be the same",
+		},
+		{
+			name: "accumulates server and storage errors together",
+			config: &Config{
+				Server:  ServerConfig{Port: -1},
+				Storage: StorageConfig{Type: "invalid-type"},
+				Logging: LoggingConfig{Level: "info", Format: "json", Output: "stdout"},
+				Metrics: MetricsConfig{Enabled: false},
+			},
+			expectError: true,
+			errorMsg:    "invalid server config",
+		},
 	}
 
 	for _, tt := range tests {
@@ -603,6 +626,31 @@ func TestObservabilityConfig_Validate(t *testing.T) {
 			expectError: true,
 			errorMsg:    "OTLP endpoint is required when tracing exporter is otlp",
 		},
+		{
+			name: "otlp endpoint not host:port",
+			config: ObservabilityConfig{
+				Tracing: TracingConfig{
+					Enabled:      true,
+					Exporter:     "otlp",
+					SampleRate:   1.0,
+					OTLPEndpoint: "not-a-valid-host-port",
+				},
+			},
+			expectError: true,
+			errorMsg:    "invalid OTLP endpoint",
+		},
+		{
+			name: "otlp endpoint valid host:port",
+			config: ObservabilityConfig{
+				Tracing: TracingConfig{
+					Enabled:      true,
+					Exporter:     "otlp",
+					SampleRate:   1.0,
+					OTLPEndpoint: "localhost:4317",
+				},
+			},
+			expectError: false,
+		},
 	}
 
 	for _, tt := range tests {
@@ -617,6 +665,35 @@ func TestObservabilityConfig_Validate(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestServerConfig_Validate_BothTLSFilesReported(t *testing.T) {
+	cfg := ServerConfig{
+		Port:       8080,
+		Host:       "localhost",
+		TLSEnabled: true,
+		// Both cert and key missing
+	}
+	err := cfg.Validate()
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "TLS cert file is required when TLS is enabled")
+	assert.Contains(t, err.Error(), "TLS key file is required when TLS is enabled")
+}
+
+func TestConfig_Validate_AccumulatesMultipleSectionErrors(t *testing.T) {
+	cfg := &Config{
+		Server:  ServerConfig{Port: -1},
+		Storage: StorageConfig{Type: "invalid-type"},
+		Logging: LoggingConfig{Level: "info", Format: "json", Output: "stdout"},
+		Metrics: MetricsConfig{Enabled: false},
+	}
+	err := cfg.Validate()
+	assert.Error(t, err)
+	// Both sub-struct errors must appear in a single error, not just the first.
+	assert.Contains(t, err.Error(), "invalid server config")
+	assert.Contains(t, err.Error(), "invalid storage config")
+	// The invalid storage type should NOT produce a spurious DSN error.
+	assert.NotContains(t, err.Error(), "database DSN is required")
 }
 
 func TestAPIKey_HasPermission(t *testing.T) {

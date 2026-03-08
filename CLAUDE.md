@@ -24,7 +24,7 @@ internal/
   update/             - Business logic: version comparison, release management, errors
   observability/      - Metrics (Prometheus) and distributed tracing (OpenTelemetry)
 make/                 - Split Makefile targets (go.mk, docs.mk, docker.mk, db.mk)
-configs/              - Configuration files
+configs/              - Observability config (dev-observability.yaml); app config passed via -config flag
 data/                 - Data directory
 deployments/          - Kubernetes deployment manifests
 docker/               - Nginx, Prometheus, Grafana configuration
@@ -50,6 +50,8 @@ make vet              # Vet code (Docker)
 make clean            # Remove build artifacts (bin/)
 make tidy             # Tidy go.mod dependencies (Docker)
 make check            # Format + vet + test (Docker)
+make cover            # Run tests with coverage report (includes integration tests)
+make fmt-check        # Check formatting without modifying files (CI-style)
 make docs-serve       # MkDocs dev server (http://localhost:8000)
 make docs-build       # Build docs site (openapi-validate + docs-generate + docs-db + MkDocs)
 make docs-generate    # Auto-generate model reference from Go doc comments (gomarkdoc -> docs/models/auto/models.md)
@@ -130,6 +132,7 @@ See `docs/ARCHITECTURE.md` for full design details and rationales.
 - ALWAYS: Use context7 before using library code.
 - ALWAYS: Use the Makefile targets to run commands, rather than running commands directly. This is to ensure that the commands are run in a consistent environment and to avoid accidentally running commands that are not intended.
 - ALWAYS: Update the openapi spec BEFORE updating the API implementation. This is to ensure that the openapi spec is always up to date and that the API implementation is always consistent with the openapi spec.
+- NEVER: Commit directly to main. It's a protected branch and any push must go through a pull request. This is to ensure that all changes are reviewed and that the main branch is always in a deployable state.
 
 ## Gotchas
 

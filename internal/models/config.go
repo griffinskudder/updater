@@ -12,6 +12,7 @@ package models
 import (
 	"errors"
 	"fmt"
+	"net"
 	"time"
 )
 
@@ -176,71 +177,71 @@ func NewDefaultConfig() *Config {
 }
 
 func (c *Config) Validate() error {
+	var errs []error
+
 	if err := c.Server.Validate(); err != nil {
-		return fmt.Errorf("invalid server config: %w", err)
+		errs = append(errs, fmt.Errorf("invalid server config: %w", err))
 	}
-
 	if err := c.Storage.Validate(); err != nil {
-		return fmt.Errorf("invalid storage config: %w", err)
+		errs = append(errs, fmt.Errorf("invalid storage config: %w", err))
 	}
-
 	if err := c.Security.Validate(); err != nil {
-		return fmt.Errorf("invalid security config: %w", err)
+		errs = append(errs, fmt.Errorf("invalid security config: %w", err))
 	}
-
 	if err := c.Logging.Validate(); err != nil {
-		return fmt.Errorf("invalid logging config: %w", err)
+		errs = append(errs, fmt.Errorf("invalid logging config: %w", err))
 	}
-
 	if err := c.Metrics.Validate(); err != nil {
-		return fmt.Errorf("invalid metrics config: %w", err)
+		errs = append(errs, fmt.Errorf("invalid metrics config: %w", err))
 	}
-
 	if err := c.Observability.Validate(); err != nil {
-		return fmt.Errorf("invalid observability config: %w", err)
+		errs = append(errs, fmt.Errorf("invalid observability config: %w", err))
 	}
 
-	return nil
+	// Cross-field: server and metrics ports must not conflict.
+	if c.Metrics.Enabled && c.Server.Port > 0 && c.Metrics.Port > 0 && c.Server.Port == c.Metrics.Port {
+		errs = append(errs, fmt.Errorf("server port and metrics port must not be the same (both are %d)", c.Server.Port))
+	}
+
+	return errors.Join(errs...)
 }
 
 func (sc *ServerConfig) Validate() error {
+	var errs []error
+
 	if sc.Port <= 0 || sc.Port > 65535 {
-		return errors.New("port must be between 1 and 65535")
+		errs = append(errs, errors.New("port must be between 1 and 65535"))
 	}
-
 	if sc.Host == "" {
-		return errors.New("host cannot be empty")
+		errs = append(errs, errors.New("host cannot be empty"))
 	}
-
 	if sc.ReadTimeout < 0 {
-		return errors.New("read timeout cannot be negative")
+		errs = append(errs, errors.New("read timeout cannot be negative"))
 	}
-
 	if sc.WriteTimeout < 0 {
-		return errors.New("write timeout cannot be negative")
+		errs = append(errs, errors.New("write timeout cannot be negative"))
 	}
-
 	if sc.IdleTimeout < 0 {
-		return errors.New("idle timeout cannot be negative")
+		errs = append(errs, errors.New("idle timeout cannot be negative"))
 	}
-
 	if sc.ShutdownTimeout < 0 {
-		return errors.New("shutdown timeout cannot be negative")
+		errs = append(errs, errors.New("shutdown timeout cannot be negative"))
 	}
-
 	if sc.TLSEnabled {
 		if sc.TLSCertFile == "" {
-			return errors.New("TLS cert file is required when TLS is enabled")
+			errs = append(errs, errors.New("TLS cert file is required when TLS is enabled"))
 		}
 		if sc.TLSKeyFile == "" {
-			return errors.New("TLS key file is required when TLS is enabled")
+			errs = append(errs, errors.New("TLS key file is required when TLS is enabled"))
 		}
 	}
 
-	return nil
+	return errors.Join(errs...)
 }
 
 func (stc *StorageConfig) Validate() error {
+	var errs []error
+
 	validTypes := []string{StorageTypeMemory, StorageTypePostgres, StorageTypeSQLite}
 	found := false
 	for _, vt := range validTypes {
@@ -250,30 +251,30 @@ func (stc *StorageConfig) Validate() error {
 		}
 	}
 	if !found {
-		return fmt.Errorf("invalid storage type: %s", stc.Type)
+		errs = append(errs, fmt.Errorf("invalid storage type: %s", stc.Type))
 	}
 
-	if stc.Type == StorageTypeMemory {
-		// Memory storage requires no additional configuration
-		return nil
+	// Only check DSN when the type is a known database backend.
+	if found && stc.Type != StorageTypeMemory && stc.Database.DSN == "" {
+		errs = append(errs, errors.New("database DSN is required for database storage"))
 	}
 
-	if (stc.Type == StorageTypePostgres || stc.Type == StorageTypeSQLite) && stc.Database.DSN == "" {
-		return errors.New("database DSN is required for database storage")
-	}
-
-	return nil
+	return errors.Join(errs...)
 }
 
 func (sec *SecurityConfig) Validate() error {
+	var errs []error
+
 	if sec.EnableAuth && sec.BootstrapKey == "" {
-		return errors.New("bootstrap key is required when auth is enabled")
+		errs = append(errs, errors.New("bootstrap key is required when auth is enabled"))
 	}
 
-	return nil
+	return errors.Join(errs...)
 }
 
 func (lc *LoggingConfig) Validate() error {
+	var errs []error
+
 	validLevels := []string{"debug", "info", "warn", "error"}
 	found := false
 	for _, vl := range validLevels {
@@ -283,7 +284,7 @@ func (lc *LoggingConfig) Validate() error {
 		}
 	}
 	if !found {
-		return fmt.Errorf("invalid log level: %s", lc.Level)
+		errs = append(errs, fmt.Errorf("invalid log level: %s", lc.Level))
 	}
 
 	validFormats := []string{"json", "text"}
@@ -295,7 +296,7 @@ func (lc *LoggingConfig) Validate() error {
 		}
 	}
 	if !found {
-		return fmt.Errorf("invalid log format: %s", lc.Format)
+		errs = append(errs, fmt.Errorf("invalid log format: %s", lc.Format))
 	}
 
 	validOutputs := []string{"stdout", "stderr", "file"}
@@ -307,14 +308,14 @@ func (lc *LoggingConfig) Validate() error {
 		}
 	}
 	if !found {
-		return fmt.Errorf("invalid log output: %s", lc.Output)
+		errs = append(errs, fmt.Errorf("invalid log output: %s", lc.Output))
 	}
 
 	if lc.Output == "file" && lc.FilePath == "" {
-		return errors.New("file path is required when output is file")
+		errs = append(errs, errors.New("file path is required when output is file"))
 	}
 
-	return nil
+	return errors.Join(errs...)
 }
 
 func (mc *MetricsConfig) Validate() error {
@@ -322,39 +323,48 @@ func (mc *MetricsConfig) Validate() error {
 		return nil
 	}
 
+	var errs []error
+
 	if mc.Path == "" {
-		return errors.New("metrics path cannot be empty")
+		errs = append(errs, errors.New("metrics path cannot be empty"))
 	}
-
 	if mc.Port <= 0 || mc.Port > 65535 {
-		return errors.New("metrics port must be between 1 and 65535")
+		errs = append(errs, errors.New("metrics port must be between 1 and 65535"))
 	}
 
-	return nil
+	return errors.Join(errs...)
 }
 
 func (oc *ObservabilityConfig) Validate() error {
-	if oc.Tracing.Enabled {
-		validExporters := []string{"stdout", "otlp"}
-		found := false
-		for _, ve := range validExporters {
-			if oc.Tracing.Exporter == ve {
-				found = true
-				break
-			}
-		}
-		if !found {
-			return fmt.Errorf("invalid tracing exporter: %s (must be stdout or otlp)", oc.Tracing.Exporter)
-		}
+	if !oc.Tracing.Enabled {
+		return nil
+	}
 
-		if oc.Tracing.SampleRate < 0 || oc.Tracing.SampleRate > 1 {
-			return errors.New("tracing sample rate must be between 0 and 1")
-		}
+	var errs []error
 
-		if oc.Tracing.Exporter == "otlp" && oc.Tracing.OTLPEndpoint == "" {
-			return errors.New("OTLP endpoint is required when tracing exporter is otlp")
+	validExporters := []string{"stdout", "otlp"}
+	found := false
+	for _, ve := range validExporters {
+		if oc.Tracing.Exporter == ve {
+			found = true
+			break
+		}
+	}
+	if !found {
+		errs = append(errs, fmt.Errorf("invalid tracing exporter: %s (must be stdout or otlp)", oc.Tracing.Exporter))
+	}
+
+	if oc.Tracing.SampleRate < 0 || oc.Tracing.SampleRate > 1 {
+		errs = append(errs, errors.New("tracing sample rate must be between 0 and 1"))
+	}
+
+	if oc.Tracing.Exporter == "otlp" {
+		if oc.Tracing.OTLPEndpoint == "" {
+			errs = append(errs, errors.New("OTLP endpoint is required when tracing exporter is otlp"))
+		} else if _, _, err := net.SplitHostPort(oc.Tracing.OTLPEndpoint); err != nil {
+			errs = append(errs, fmt.Errorf("invalid OTLP endpoint %q: must be host:port", oc.Tracing.OTLPEndpoint))
 		}
 	}
 
-	return nil
+	return errors.Join(errs...)
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log/slog"
@@ -21,8 +22,10 @@ import (
 )
 
 var (
-	configFile  = flag.String("config", "", "Path to configuration file")
-	showVersion = flag.Bool("version", false, "Show version information and exit")
+	configFile     = flag.String("config", "", "Path to configuration file")
+	showVersion    = flag.Bool("version", false, "Show version information and exit")
+	validateOnly   = flag.Bool("validate", false, "Validate configuration and exit")
+	validateFormat = flag.String("validate-format", "text", "Output format for --validate (text or json)")
 )
 
 func main() {
@@ -37,10 +40,28 @@ func main() {
 		os.Exit(0)
 	}
 
+	// Handle --validate flag: run all checks and exit without starting the server.
+	if *validateOnly {
+		results := config.ValidateConfig(*configFile)
+		printValidateResults(results, *validateFormat)
+		for _, r := range results {
+			if !r.OK {
+				os.Exit(1)
+			}
+		}
+		os.Exit(0)
+	}
+
 	// Load configuration
 	cfg, err := config.Load(*configFile)
 	if err != nil {
 		slog.Error("Failed to load configuration", "error", err)
+		os.Exit(1)
+	}
+
+	// I/O validation: verify TLS files and log directory before starting subsystems.
+	if err := config.ValidateRuntime(cfg); err != nil {
+		slog.Error("Configuration runtime validation failed", "error", err)
 		os.Exit(1)
 	}
 
@@ -153,10 +174,6 @@ func main() {
 
 		var err error
 		if cfg.Server.TLSEnabled {
-			if cfg.Server.TLSCertFile == "" || cfg.Server.TLSKeyFile == "" {
-				slog.Error("TLS is enabled but cert file or key file is not specified")
-				os.Exit(1)
-			}
 			slog.Info("Starting HTTPS server with TLS")
 			err = server.ListenAndServeTLS(cfg.Server.TLSCertFile, cfg.Server.TLSKeyFile)
 		} else {
@@ -207,6 +224,30 @@ func initializeStorage(cfg *models.Config) (storage.Storage, error) {
 		return storage.NewSQLiteStorage(cfg.Storage.Database.DSN)
 	default:
 		return nil, fmt.Errorf("unsupported storage type: %s", cfg.Storage.Type)
+	}
+}
+
+// printValidateResults writes validation check results to stdout in the
+// requested format. Unrecognised formats fall back to text.
+func printValidateResults(results []config.CheckResult, format string) {
+	if format == "json" {
+		data, err := json.Marshal(results)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "failed to marshal validation results: %v\n", err)
+			return
+		}
+		fmt.Println(string(data))
+		return
+	}
+	if format != "text" {
+		fmt.Fprintf(os.Stderr, "unknown --validate-format %q, using text\n", format)
+	}
+	for _, r := range results {
+		if r.OK {
+			fmt.Printf("ok   %s\n", r.Name)
+		} else {
+			fmt.Printf("FAIL %s: %s\n", r.Name, r.Message)
+		}
 	}
 }
 
