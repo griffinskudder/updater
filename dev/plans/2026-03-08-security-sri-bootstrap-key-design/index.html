@@ -12,13 +12,13 @@
         <meta name="author" content="Updater Service Team">
       
       
-        <link rel="canonical" href="https://griffinskudder.github.io/updater/dev/plans/2026-02-16-github-pages-design/">
+        <link rel="canonical" href="https://griffinskudder.github.io/updater/dev/plans/2026-03-08-security-sri-bootstrap-key-design/">
       
       
-        <link rel="prev" href="../2026-02-16-github-ci-implementation/">
+        <link rel="prev" href="../2026-03-07-github-security-policy/">
       
       
-        <link rel="next" href="../2026-02-16-github-pages-implementation/">
+        <link rel="next" href="../../db/">
       
       
         
@@ -29,7 +29,7 @@
     
     
       
-        <title>Design - Updater Service Documentation</title>
+        <title>Security SRI and Bootstrap Key - Updater Service Documentation</title>
       
     
     
@@ -82,7 +82,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#github-pages-with-versioned-docs-design" class="md-skip">
+        <a href="#security-fixes-swagger-ui-sri-and-bootstrap-key-exposure" class="md-skip">
           Skip to content
         </a>
       
@@ -120,7 +120,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Design
+              Security SRI and Bootstrap Key
             
           </span>
         </div>
@@ -1698,8 +1698,6 @@
                 
   
   
-    
-  
   
   
     
@@ -1715,11 +1713,13 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_15_5" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_15_5" >
         
           
           <label class="md-nav__link" for="__nav_15_5" id="__nav_15_5_label" tabindex="">
@@ -1740,7 +1740,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_15_5_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_15_5_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_15_5">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1755,37 +1755,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Design
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../2026-02-16-github-pages-design/" class="md-nav__link">
         
   
   
@@ -1801,142 +1774,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#overview" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Overview
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#goals" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Goals
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#approach" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Approach
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#components" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Components
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Components">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#github-actions-workflow" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        GitHub Actions Workflow
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#mkdocs-configuration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        MkDocs Configuration
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#github-pages-repository-setting" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        GitHub Pages Repository Setting
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#data-flow" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Data Flow
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#versioning-scheme" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Versioning Scheme
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#out-of-scope" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Out of Scope
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -3127,10 +2964,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../2026-03-08-security-sri-bootstrap-key-design/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security SRI and Bootstrap Key
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -3146,6 +3010,126 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#issue-51-swagger-ui-cdn-assets-without-subresource-integrity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Issue #51: Swagger UI CDN Assets Without Subresource Integrity
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Issue #51: Swagger UI CDN Assets Without Subresource Integrity">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#problem" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fix
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#issue-52-bootstrap-key-json-serialization-and-file-permissions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Issue #52: Bootstrap Key JSON Serialization and File Permissions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Issue #52: Bootstrap Key JSON Serialization and File Permissions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#problem_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fix
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files-to-modify" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Files to Modify
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -3369,44 +3353,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#goals" class="md-nav__link">
+  <a href="#issue-51-swagger-ui-cdn-assets-without-subresource-integrity" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Goals
+        Issue #51: Swagger UI CDN Assets Without Subresource Integrity
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#approach" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Approach
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#components" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Components
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Components">
+    <nav class="md-nav" aria-label="Issue #51: Swagger UI CDN Assets Without Subresource Integrity">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#github-actions-workflow" class="md-nav__link">
+  <a href="#problem" class="md-nav__link">
     <span class="md-ellipsis">
       
-        GitHub Actions Workflow
+        Problem
       
     </span>
   </a>
@@ -3414,21 +3376,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#mkdocs-configuration" class="md-nav__link">
+  <a href="#fix" class="md-nav__link">
     <span class="md-ellipsis">
       
-        MkDocs Configuration
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#github-pages-repository-setting" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        GitHub Pages Repository Setting
+        Fix
       
     </span>
   </a>
@@ -3441,32 +3392,49 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#data-flow" class="md-nav__link">
+  <a href="#issue-52-bootstrap-key-json-serialization-and-file-permissions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Data Flow
+        Issue #52: Bootstrap Key JSON Serialization and File Permissions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Issue #52: Bootstrap Key JSON Serialization and File Permissions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#problem_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#versioning-scheme" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#fix_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Versioning Scheme
+        Fix
       
     </span>
   </a>
   
 </li>
+        
+      </ul>
+    </nav>
+  
+</li>
       
         <li class="md-nav__item">
-  <a href="#out-of-scope" class="md-nav__link">
+  <a href="#files-to-modify" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Out of Scope
+        Files to Modify
       
     </span>
   </a>
@@ -3536,24 +3504,6 @@
   
 
       
-        
-  
-  
-    
-    
-      <li class="md-path__item">
-        <a href="./" class="md-path__link">
-          
-  <span class="md-ellipsis">
-    GitHub Pages
-  </span>
-
-        </a>
-      </li>
-    
-  
-
-      
     </ol>
   </nav>
 
@@ -3567,108 +3517,62 @@
   
 
 
-<h1 id="github-pages-with-versioned-docs-design">GitHub Pages with Versioned Docs — Design<a class="headerlink" href="#github-pages-with-versioned-docs-design" title="Permanent link">&para;</a></h1>
-<p><strong>Date:</strong> 2026-02-16
-<strong>Status:</strong> Approved</p>
+<h1 id="security-fixes-swagger-ui-sri-and-bootstrap-key-exposure">Security Fixes: Swagger UI SRI and Bootstrap Key Exposure<a class="headerlink" href="#security-fixes-swagger-ui-sri-and-bootstrap-key-exposure" title="Permanent link">&para;</a></h1>
+<p>Date: 2026-03-08
+Issues: #51, #52</p>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
-<p>Publish the MkDocs documentation site to GitHub Pages with versioned docs managed by <code>mike</code>. Development docs are published on every push to <code>main</code> under the <code>dev</code> label. Tagged releases publish under their version number (e.g., <code>v1.2.0</code>) and update a <code>latest</code> alias that serves as the site default.</p>
-<h2 id="goals">Goals<a class="headerlink" href="#goals" title="Permanent link">&para;</a></h2>
-<ul>
-<li>Visitors landing on the docs site without a version in the URL see the latest stable release.</li>
-<li>The <code>dev</code> label always reflects the current state of <code>main</code>.</li>
-<li>Each <code>v*</code> tag produces a permanent, browsable version of the docs.</li>
-<li>No local tooling required beyond what already exists; deployment runs entirely in CI.</li>
-</ul>
-<h2 id="approach">Approach<a class="headerlink" href="#approach" title="Permanent link">&para;</a></h2>
-<p><code>mike</code> manages multiple doc versions on a single <code>gh-pages</code> branch. MkDocs Material has native support for <code>mike</code> via its version picker UI. This is the standard, supported approach for versioned MkDocs sites.</p>
-<h2 id="components">Components<a class="headerlink" href="#components" title="Permanent link">&para;</a></h2>
-<h3 id="github-actions-workflow">GitHub Actions Workflow<a class="headerlink" href="#github-actions-workflow" title="Permanent link">&para;</a></h3>
-<p>New file: <code>.github/workflows/docs.yml</code></p>
-<p><strong>Triggers:</strong></p>
-<table>
-<thead>
-<tr>
-<th>Event</th>
-<th>Condition</th>
-<th>Action</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>push</code></td>
-<td>branch <code>main</code></td>
-<td>Deploy as <code>dev</code></td>
-</tr>
-<tr>
-<td><code>push</code></td>
-<td>tag matching <code>v*</code></td>
-<td>Deploy as version + update <code>latest</code> alias</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Permissions:</strong> <code>contents: write</code> (to push to <code>gh-pages</code> branch).</p>
-<p><strong>Steps:</strong></p>
+<p>Two small, independent security fixes.</p>
+<h2 id="issue-51-swagger-ui-cdn-assets-without-subresource-integrity">Issue #51: Swagger UI CDN Assets Without Subresource Integrity<a class="headerlink" href="#issue-51-swagger-ui-cdn-assets-without-subresource-integrity" title="Permanent link">&para;</a></h2>
+<h3 id="problem">Problem<a class="headerlink" href="#problem" title="Permanent link">&para;</a></h3>
+<p><code>internal/api/handlers_openapi.go</code> loads <code>swagger-ui.css</code> and <code>swagger-ui-bundle.js</code> from <code>https://unpkg.com/swagger-ui-dist@5/</code> with no <code>integrity</code> attribute. If unpkg.com is compromised or the package is tampered with, malicious scripts execute in the context of users entering bearer tokens into the Swagger UI.</p>
+<h3 id="fix">Fix<a class="headerlink" href="#fix" title="Permanent link">&para;</a></h3>
+<p>Pin both assets to a specific <code>swagger-ui-dist@5.x.y</code> patch version and add <code>integrity="sha384-..."</code> and <code>crossorigin="anonymous"</code> attributes to the <code>&lt;link&gt;</code> and <code>&lt;script&gt;</code> tags in the <code>swaggerUIHTML</code> constant.</p>
+<p>SRI hashes are computed as base64-encoded SHA-384 digests of the exact files served by unpkg at the pinned version URL, using <code>openssl dgst -sha384 -binary | base64</code>.</p>
+<p>No test changes required. The handler test already covers correct HTTP response behaviour.</p>
+<h2 id="issue-52-bootstrap-key-json-serialization-and-file-permissions">Issue #52: Bootstrap Key JSON Serialization and File Permissions<a class="headerlink" href="#issue-52-bootstrap-key-json-serialization-and-file-permissions" title="Permanent link">&para;</a></h2>
+<h3 id="problem_1">Problem<a class="headerlink" href="#problem_1" title="Permanent link">&para;</a></h3>
+<p>Two independent defects:</p>
 <ol>
-<li><code>actions/checkout@v4</code> with <code>fetch-depth: 0</code> — mike requires full git history to manage <code>gh-pages</code>.</li>
-<li><code>actions/setup-python@v5</code></li>
-<li><code>pip install mkdocs-material mike</code></li>
-<li>Configure git user identity for the commit mike makes to <code>gh-pages</code>.</li>
-<li>On <code>main</code> push: <code>mike deploy --push --update-aliases dev</code></li>
-<li>On <code>v*</code> tag push: <code>mike deploy --push --update-aliases $VERSION latest</code> then <code>mike set-default --push latest</code></li>
+<li>
+<p><code>SecurityConfig.BootstrapKey</code> in <code>internal/models/config.go</code> is tagged <code>json:"bootstrap_key"</code>. Any JSON serialization of a <code>Config</code> struct (debug endpoints, audit log entries, config dumps) would expose the bootstrap key in plaintext.</p>
+</li>
+<li>
+<p><code>SaveExample</code> in <code>internal/config/config.go</code> writes the generated config file with <code>0644</code> permissions (world-readable), rather than <code>0600</code> (owner-only).</p>
+</li>
 </ol>
-<h3 id="mkdocs-configuration">MkDocs Configuration<a class="headerlink" href="#mkdocs-configuration" title="Permanent link">&para;</a></h3>
-<p>One change to <code>mkdocs.yml</code>:</p>
-<ul>
-<li>Set <code>site_url</code> to <code>https://griffinskudder.github.io/updater/</code>. The field is currently empty, which breaks mike's URL resolution when switching between versions.</li>
-</ul>
-<p><code>extra.version.provider: mike</code> and <code>extra.version.default: latest</code> are already present — no further changes needed.</p>
-<h3 id="github-pages-repository-setting">GitHub Pages Repository Setting<a class="headerlink" href="#github-pages-repository-setting" title="Permanent link">&para;</a></h3>
-<p>One-time manual configuration: set Pages source to the <code>gh-pages</code> branch, root <code>/</code>, in <em>Settings → Pages → Source</em>. Mike creates and manages the <code>gh-pages</code> branch automatically on first deploy.</p>
-<h2 id="data-flow">Data Flow<a class="headerlink" href="#data-flow" title="Permanent link">&para;</a></h2>
-<pre class="mermaid"><code>flowchart TD
-    A[Push to main] --&gt;|trigger| W[docs.yml workflow]
-    B[Push v* tag] --&gt;|trigger| W
-    W --&gt; C{Which trigger?}
-    C --&gt;|main| D["mike deploy dev --push"]
-    C --&gt;|tag| E["mike deploy vX.Y.Z latest --push"]
-    E --&gt; F["mike set-default latest --push"]
-    D --&gt; G[gh-pages branch]
-    F --&gt; G
-    G --&gt; H[GitHub Pages]
-    H --&gt; I[https://griffinskudder.github.io/updater/]</code></pre>
-<h2 id="versioning-scheme">Versioning Scheme<a class="headerlink" href="#versioning-scheme" title="Permanent link">&para;</a></h2>
+<h3 id="fix_1">Fix<a class="headerlink" href="#fix_1" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p>Change the struct tag from <code>json:"bootstrap_key"</code> to <code>json:"-"</code>. The <code>yaml:"bootstrap_key"</code> tag is unchanged, so YAML config file loading is unaffected. JSON deserialization of the bootstrap key (not used anywhere in the codebase) is also dropped, but this is intentional — the key should only ever arrive via YAML file or environment variable.</p>
+</li>
+<li>
+<p>Change <code>os.WriteFile(filePath, data, 0644)</code> to <code>os.WriteFile(filePath, data, 0600)</code> in <code>SaveExample</code>.</p>
+</li>
+</ol>
+<p>No test changes required. Existing tests load config from YAML and inspect Go struct fields directly — neither path is affected by the JSON tag change.</p>
+<h2 id="files-to-modify">Files to Modify<a class="headerlink" href="#files-to-modify" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Label</th>
-<th>Source</th>
-<th>Default?</th>
+<th>File</th>
+<th>Change</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>dev</code></td>
-<td><code>main</code> branch</td>
-<td>No</td>
+<td><code>internal/api/handlers_openapi.go</code></td>
+<td>Pin Swagger UI version; add <code>integrity</code> and <code>crossorigin</code> attributes</td>
 </tr>
 <tr>
-<td><code>vX.Y.Z</code></td>
-<td><code>vX.Y.Z</code> tag</td>
-<td>No</td>
+<td><code>internal/models/config.go</code></td>
+<td><code>json:"bootstrap_key"</code> -&gt; <code>json:"-"</code></td>
 </tr>
 <tr>
-<td><code>latest</code></td>
-<td>Alias → most recent <code>vX.Y.Z</code></td>
-<td>Yes</td>
+<td><code>internal/config/config.go</code></td>
+<td><code>0644</code> -&gt; <code>0600</code> in <code>SaveExample</code></td>
 </tr>
 </tbody>
 </table>
-<h2 id="out-of-scope">Out of Scope<a class="headerlink" href="#out-of-scope" title="Permanent link">&para;</a></h2>
-<ul>
-<li>Version retention policy (all versions are kept indefinitely).</li>
-<li>Custom domain configuration.</li>
-<li>PR preview deployments.</li>
-</ul>
 
 
 
