@@ -102,7 +102,12 @@ func main() {
 		api.WithVersionInfo(versionInfo),
 	}
 	if cfg.Metrics.Enabled {
-		handlerOpts = append(handlerOpts, api.WithAppMetrics(observability.NewAppMetrics(otelProvider)))
+		appMetrics, err := observability.NewAppMetrics(otelProvider)
+		if err != nil {
+			slog.Error("Failed to create app metrics", "error", err)
+			os.Exit(1)
+		}
+		handlerOpts = append(handlerOpts, api.WithAppMetrics(appMetrics))
 	}
 	handlers := api.NewHandlers(updateService, handlerOpts...)
 
@@ -112,7 +117,12 @@ func main() {
 		routeOpts = append(routeOpts, api.WithOTelMiddleware(cfg.Observability.ServiceName))
 	}
 	if cfg.Metrics.Enabled {
-		routeOpts = append(routeOpts, api.WithMetricsMiddleware(otelProvider))
+		mw, err := api.WithMetricsMiddleware(otelProvider)
+		if err != nil {
+			slog.Error("Failed to create metrics middleware", "error", err)
+			os.Exit(1)
+		}
+		routeOpts = append(routeOpts, mw)
 	}
 
 	router := api.SetupRoutes(handlers, cfg, routeOpts...)

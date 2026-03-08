@@ -3,11 +3,13 @@ package observability
 import (
 	"context"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 	"updater/internal/models"
 	"updater/internal/version"
 
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -73,4 +75,27 @@ func TestMetricsServer_StartAndShutdown(t *testing.T) {
 func TestNewMetricsServer_NilProvider(t *testing.T) {
 	ms := NewMetricsServer(9090, "/metrics", nil)
 	assert.NotNil(t, ms)
+}
+
+func TestMetricsHandler_ServesConfiguredRegistry(t *testing.T) {
+	// Use an isolated registry: OTel metrics are registered here, not in the global default registry.
+	reg := prometheus.NewRegistry()
+
+	metrics := models.MetricsConfig{Enabled: true, Path: "/metrics", Port: 0}
+	obs := models.ObservabilityConfig{ServiceName: "test-svc"}
+
+	provider, err := Setup(metrics, obs, version.Info{}, WithPrometheusRegisterer(reg))
+	require.NoError(t, err)
+	defer provider.Shutdown(context.Background())
+
+	handler := newMetricsHandler("/metrics", provider)
+
+	req := httptest.NewRequest(http.MethodGet, "/metrics", nil)
+	rec := httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+	// updater_build_info is registered by Setup into the custom registry.
+	// With the bug (promhttp.Handler() using global registry), this metric would NOT appear.
+	assert.Contains(t, rec.Body.String(), "updater_build_info")
 }
