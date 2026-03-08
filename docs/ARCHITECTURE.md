@@ -666,7 +666,7 @@ server:
   host: ""
   read_timeout: 30s
   write_timeout: 30s
-  idle_timeout: 120s
+  idle_timeout: 60s
   shutdown_timeout: 30s
   tls_enabled: false
   tls_cert_file: ""
