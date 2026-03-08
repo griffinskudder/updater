@@ -53,14 +53,20 @@ The `test` job mirrors `make cover` exactly: `-tags integration` is applied to b
 ```mermaid
 graph TD
     trigger["Push / PR"] --> lint["lint\nfmt-check · vet"]
-    trigger --> test["test\nunit coverage ≥ 70%"]
+    trigger --> test["test\ncoverage ≥ 70%"]
     trigger --> integration["integration\nintegration tests"]
     trigger --> spec["spec\nopenapi-validate · sqlc-vet"]
     trigger --> security["security\ngosec · gitleaks"]
     trigger --> race["race\nrace detector"]
+    lint --> required["required"]
+    test --> required
+    integration --> required
+    spec --> required
+    security --> required
+    race --> required
 ```
 
-All six jobs run in parallel. The release workflow checks all CI status checks dynamically by commit SHA, so adding new jobs is automatically enforced without changing the release workflow.
+The six parallel jobs feed into a `required` aggregator job (`if: always()`). Branch protection only needs to require `required`, rather than each individual job. The release workflow checks all CI status checks dynamically by commit SHA, so adding new jobs is automatically enforced without changing the release workflow.
 
 ## Makefile Sync Strategy
 

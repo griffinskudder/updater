@@ -7,11 +7,17 @@ The CI pipeline runs on every pull request and push to `main` using GitHub Actio
 ```mermaid
 graph TD
     trigger["Push / PR"] --> lint["lint\nfmt-check · vet"]
-    trigger --> test["test\nunit coverage ≥ 70%"]
+    trigger --> test["test\ncoverage ≥ 70%"]
     trigger --> integration["integration\nintegration tests"]
     trigger --> spec["spec\nopenapi-validate · sqlc-vet"]
     trigger --> security["security\ngosec · gitleaks"]
     trigger --> race["race\nrace detector"]
+    lint --> required["required"]
+    test --> required
+    integration --> required
+    spec --> required
+    security --> required
+    race --> required
 ```
 
 ## Jobs
@@ -19,11 +25,14 @@ graph TD
 | Job | Steps | Equivalent make target(s) |
 |-----|-------|--------------------------|
 | `lint` | Format check, vet | `make fmt-check`, `make vet` |
-| `test` | Unit test coverage with 70% threshold | `make cover` (unit only) |
+| `test` | Full test coverage with 70% threshold | `make cover` |
 | `integration` | Integration test suite | `make integration-test` |
 | `spec` | OpenAPI spec validation, SQL schema validation | `make openapi-validate`, `make sqlc-vet` |
 | `security` | Static security analysis, secret scanning | `make security`, `make secrets` |
 | `race` | Data race detection | `go test -race ./...` |
+| `required` | Aggregates all job results | — |
+
+The `required` job has no steps of its own. It depends on all other jobs and always runs (`if: always()`), failing if any upstream job failed or was cancelled. Branch protection only needs to require this single check.
 
 ## Job Details
 
@@ -113,15 +122,11 @@ The `race` job has no make target; run `go test -race ./...` directly with Go in
 
 ## Branch Protection
 
-Configure branch protection on `main` to require all six CI jobs to pass before merging. In the GitHub repository settings under **Branches**, add a protection rule for `main` with the following required status checks:
+Configure branch protection on `main` with a single required status check: `required`. This aggregator job depends on all six parallel jobs and fails if any of them fail or are cancelled, so you do not need to list each job individually.
 
-| Status check | Job |
-|---|---|
-| `lint` | Format and vet |
-| `test` | Unit coverage |
-| `integration` | Integration tests |
-| `spec` | Schema validation |
-| `security` | Security analysis |
-| `race` | Race detection |
+In the GitHub repository settings under **Branches**, add a protection rule for `main` with:
 
-Also enable **Require branches to be up to date before merging** to ensure checks always run against the merged result.
+- **Required status check**: `required`
+- **Require branches to be up to date before merging**: enabled
+
+This ensures checks always run against the merged result and a single configuration point covers all CI gates.
