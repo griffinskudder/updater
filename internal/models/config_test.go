@@ -206,6 +206,16 @@ func TestServerConfig_Validate(t *testing.T) {
 			errorMsg:    "idle timeout cannot be negative",
 		},
 		{
+			name: "negative shutdown timeout",
+			config: ServerConfig{
+				Port:            8080,
+				Host:            "localhost",
+				ShutdownTimeout: -1 * time.Second,
+			},
+			expectError: true,
+			errorMsg:    "shutdown timeout cannot be negative",
+		},
+		{
 			name: "TLS enabled without cert file",
 			config: ServerConfig{
 				Port:       8080,
