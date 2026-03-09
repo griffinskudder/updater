@@ -804,6 +804,48 @@ server:
 	assert.Contains(t, tlsResult.Message, "cannot read TLS key file")
 }
 
+func TestLoad_ExampleConfigFile(t *testing.T) {
+	// Verify that the shipped examples/config.yaml loads successfully and
+	// passes validation so it never drifts out of sync with models.Config.
+	examplePath := filepath.Join("..", "..", "examples", "config.yaml")
+	if _, err := os.Stat(examplePath); os.IsNotExist(err) {
+		t.Skip("examples/config.yaml not found; skipping")
+	}
+
+	config, err := Load(examplePath)
+	require.NoError(t, err, "examples/config.yaml must load without error")
+	require.NoError(t, config.Validate(), "examples/config.yaml must pass validation")
+
+	// Verify key values match what the example documents.
+	assert.Equal(t, 8080, config.Server.Port)
+	assert.Equal(t, "0.0.0.0", config.Server.Host)
+	assert.Equal(t, 30*time.Second, config.Server.ReadTimeout)
+	assert.Equal(t, 30*time.Second, config.Server.WriteTimeout)
+	assert.Equal(t, 60*time.Second, config.Server.IdleTimeout)
+	assert.Equal(t, 30*time.Second, config.Server.ShutdownTimeout)
+	assert.False(t, config.Server.TLSEnabled)
+
+	assert.Equal(t, "sqlite", config.Storage.Type)
+	assert.Equal(t, "./data/updater.db", config.Storage.Database.DSN)
+	assert.Equal(t, 25, config.Storage.Database.MaxOpenConns)
+	assert.Equal(t, 5, config.Storage.Database.MaxIdleConns)
+
+	assert.False(t, config.Security.EnableAuth)
+
+	assert.Equal(t, "info", config.Logging.Level)
+	assert.Equal(t, "json", config.Logging.Format)
+	assert.Equal(t, "stdout", config.Logging.Output)
+
+	assert.True(t, config.Metrics.Enabled)
+	assert.Equal(t, "/metrics", config.Metrics.Path)
+	assert.Equal(t, 9090, config.Metrics.Port)
+
+	assert.Equal(t, "updater", config.Observability.ServiceName)
+	assert.False(t, config.Observability.Tracing.Enabled)
+	assert.Equal(t, "stdout", config.Observability.Tracing.Exporter)
+	assert.Equal(t, 1.0, config.Observability.Tracing.SampleRate)
+}
+
 func TestSaveExample_FilePermissions(t *testing.T) {
 	tempDir := t.TempDir()
 	filePath := filepath.Join(tempDir, "example.yaml")

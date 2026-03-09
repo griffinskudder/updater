@@ -1,4 +1,13 @@
 # Example configuration for the updater service
+#
+# All fields shown below are the defaults produced by models.NewDefaultConfig().
+# Override only the values you need to change.
+#
+# Environment variables override file values:
+#   UPDATER_PORT, UPDATER_HOST, UPDATER_STORAGE_TYPE, UPDATER_DATABASE_DSN,
+#   UPDATER_DATABASE_DRIVER, UPDATER_DATABASE_MAX_OPEN_CONNS,
+#   UPDATER_DATABASE_MAX_IDLE_CONNS, UPDATER_ENABLE_AUTH, UPDATER_BOOTSTRAP_KEY,
+#   UPDATER_LOG_LEVEL, UPDATER_LOG_FORMAT, UPDATER_LOG_OUTPUT
 server:
   port: 8080
   host: "0.0.0.0"
@@ -14,16 +23,15 @@ server:
   # tls_key_file: "/path/to/key.pem"
 
 storage:
+  # Supported types: memory, sqlite, postgres
   type: "sqlite"
-  path: "./data/updater.db"
   database:
-    driver: "sqlite3"
+    # DSN is the connection string used by SQLite and PostgreSQL providers.
+    # SQLite example: ./data/updater.db
+    # PostgreSQL example: postgres://user:pass@localhost:5432/updater?sslmode=disable
     dsn: "./data/updater.db"
     max_open_conns: 25
     max_idle_conns: 5
-    conn_max_lifetime: 300s
-    conn_max_idle_time: 300s
-  options: {}
 
 security:
   # Set to true to enable API key authentication.
@@ -41,3 +49,13 @@ metrics:
   enabled: true
   path: "/metrics"
   port: 9090
+
+observability:
+  service_name: "updater"
+  tracing:
+    enabled: false
+    # Exporter type: stdout or otlp
+    exporter: "stdout"
+    sample_rate: 1.0
+    # Required when exporter is "otlp"
+    # otlp_endpoint: "localhost:4317"

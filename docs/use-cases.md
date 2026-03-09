@@ -467,12 +467,11 @@ security:
 
 ```yaml
 storage:
-  provider: "postgres"
-  postgres:
-    connection_string: "${DATABASE_URL}"
+  type: "postgres"
+  database:
+    dsn: "${DATABASE_URL}"
     max_open_conns: 25
     max_idle_conns: 5
-    conn_max_lifetime: "5m"
 ```
 
 ### Key Points
@@ -488,7 +487,7 @@ storage:
 
 | Scenario | Key Feature | Recommended Storage | Auth Required |
 |----------|-------------|---------------------|---------------|
-| Cross-platform desktop app | Platform/arch routing | JSON or SQLite | No (check endpoint is public) |
+| Cross-platform desktop app | Platform/arch routing | SQLite | No (check endpoint is public) |
 | Critical security patch | `required` flag | Any | Write (to register the release) |
 | Pre-release channels | Semver pre-release filtering | Any | Write (to register the release) |
 | CI/CD integration | Scoped write API key | SQLite or PostgreSQL | Write (to register the release) |
