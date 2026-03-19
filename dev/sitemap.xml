@@ -2,258 +2,258 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/ARCHITECTURE/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/DEPLOYMENT_SECURITY/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/ROADMAP/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/SECURITY/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/api/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/ci/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/logging/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/makefile/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/migrations/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/observability/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/openapi/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/publishing/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/rate-limiting/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/reverse-proxy/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/storage/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/use-cases/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/db/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/db/public.api_keys/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/db/public.applications/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/db/public.releases/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/models/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/models/auto/models/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/plans/2026-02-15-application-management-api-design/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/plans/2026-02-15-application-management-api-implementation/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/plans/2026-02-15-makefile-restructure-design/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/plans/2026-02-15-makefile-restructure-implementation/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/plans/2026-02-15-rate-limiter-design/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/plans/2026-02-15-rate-limiter-implementation/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/plans/2026-02-16-admin-frontend/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/plans/2026-02-16-admin-key-management-design/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/plans/2026-02-16-admin-key-management/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/plans/2026-02-16-github-ci-design/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/plans/2026-02-16-github-ci-implementation/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/plans/2026-02-16-github-pages-design/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/plans/2026-02-16-github-pages-implementation/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/plans/2026-02-16-issue-fixes-design/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/plans/2026-02-16-issue-fixes-implementation/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/plans/2026-02-18-proxy-delegation-design/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/plans/2026-02-18-proxy-delegation-implementation/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/plans/2026-02-27-architecture-review/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/plans/2026-03-02-architecture-cleanup-design/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/plans/2026-03-02-architecture-cleanup-implementation/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/plans/2026-03-07-build-info-metric-implementation/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/plans/2026-03-07-github-security-policy-design/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/plans/2026-03-07-github-security-policy/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/plans/2026-03-07-keyset-pagination-bugfixes/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/plans/2026-03-07-keyset-pagination-design/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/plans/2026-03-07-keyset-pagination-implementation/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/plans/2026-03-07-observability-build-info-design/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/plans/2026-03-07-storage-pagination-pushdown-design/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/plans/2026-03-07-storage-pagination-pushdown-implementation/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/plans/2026-03-08-ci-hardening-design/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/plans/2026-03-08-ci-hardening-implementation/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/plans/2026-03-08-cursor-validation-design/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/plans/2026-03-08-cursor-validation-implementation/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/plans/2026-03-08-graceful-shutdown-design/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/plans/2026-03-08-graceful-shutdown-implementation/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/plans/2026-03-08-migration-tooling-design/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/plans/2026-03-08-migration-tooling-implementation/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/plans/2026-03-08-production-config-validation-design/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/plans/2026-03-08-release-workflow-design/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/plans/2026-03-08-release-workflow/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
     <url>
          <loc>https://griffinskudder.github.io/updater/dev/plans/2026-03-08-security-sri-bootstrap-key-design/</loc>
-         <lastmod>2026-03-09</lastmod>
+         <lastmod>2026-03-19</lastmod>
     </url>
 </urlset>
