@@ -10,6 +10,8 @@ FROM golang:1.25-alpine AS builder
 ARG VERSION=unknown
 ARG BUILD_DATE=unknown
 ARG VCS_REF=unknown
+ARG TARGETARCH
+
 
 # Security: Create non-root user for build process
 RUN adduser -D -s /bin/sh -u 1001 appuser
@@ -42,7 +44,7 @@ COPY --chown=appuser:appuser . .
 # Security: Build with security flags, static linking, and version metadata
 RUN CGO_ENABLED=0 \
     GOOS=linux \
-    GOARCH=amd64 \
+    GOARCH=${TARGETARCH} \
     go build \
     -a \
     -installsuffix cgo \
@@ -57,7 +59,7 @@ RUN CGO_ENABLED=0 \
 # Build the health check binary (used by Docker Compose / distroless HEALTHCHECK)
 RUN CGO_ENABLED=0 \
     GOOS=linux \
-    GOARCH=amd64 \
+    GOARCH=${TARGETARCH} \
     go build \
     -a \
     -ldflags='-w -s -extldflags "-static"' \
@@ -67,7 +69,7 @@ RUN CGO_ENABLED=0 \
 # Build the migration binary
 RUN CGO_ENABLED=0 \
     GOOS=linux \
-    GOARCH=amd64 \
+    GOARCH=${TARGETARCH} \
     go build \
     -a \
     -ldflags='-w -s -extldflags "-static"' \
