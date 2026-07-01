@@ -12,7 +12,6 @@ ARG BUILD_DATE=unknown
 ARG VCS_REF=unknown
 ARG TARGETARCH
 
-
 # Security: Create non-root user for build process
 RUN adduser -D -s /bin/sh -u 1001 appuser
 
